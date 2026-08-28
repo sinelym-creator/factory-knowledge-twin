@@ -1,0 +1,69 @@
+---
+asset_class: contract
+description: REST API 계약 v0.1 — P0 화면 5종의 데이터 요구 커버 (T0-5)
+status: draft
+lifecycle: D1 동결(T0-3 wireframe 교차 후)
+size_limit: 8KB
+---
+
+# REST API Contract v0.1
+
+> base = `/api` · 전 응답 JSON · 오류 = `{ "error": { "code", "message" } }` + HTTP 4xx/5xx. 인증 없음(공개 Sandbox) — 세션 키가 격리 단위. rate limit·크기 제한은 미들웨어(계약 외 운영 §16.3).
+
+## 세션 (격리·리셋)
+
+| 메서드 경로 | 요청 | 응답 | 화면 |
+|---|---|---|---|
+| POST `/sessions` | — | `{ sessionId }` (쿠키 병행) | 입장 시 |
+| POST `/sessions/{sid}/reset` | — | `{ ok: true }` — 해당 세션 상태만 초기화 | reset 버튼 |
+
+## 공장·설비 (Overview)
+
+| 메서드 경로 | 응답 요지 | 화면 |
+|---|---|---|
+| GET `/plants` | 공장 목록 `[{ plantId, name, lineCount, alarmCount }]` | Overview |
+| GET `/plants/{plantId}/overview` | 라인·설비 상태 트리 + 활성 알람 `[{ equipmentId, status, activeAlarms }]` | Overview |
+| GET `/equipment/{equipmentId}` | 설비 상세: 속성·상태·센서 목록·최근 알람·정비 이력 요약 | Incident |
+| GET `/equipment/{equipmentId}/sensors/{sensorId}/series?window=24h\|3w` | 시계열 `[{ ts, value }]` + threshold | 추세 chart |
+
+## 시나리오·조사 실행 (Incident·Agent)
+
+| 메서드 경로 | 요청 | 응답 요지 | 화면 |
+|---|---|---|---|
+| GET `/scenarios` | — | 승인된 시나리오 목록(allowlist — GS-01 등) | 시나리오 선택 |
+| POST `/scenarios/{scenarioId}/runs` | `{ sessionId, mode: "live"\|"replay" }` | `{ runId, mode }` — live 불가 시 `mode:"replay"`로 강등 응답 | 조사 시작 |
+| GET `/runs/{runId}` | — | `{ status, candidates[], workOrderDraftId?, events[]? }` — 완주 후 결과 스냅샷 | Evidence |
+| WS `/ws/runs/{runId}` | — | agent-events 스키마 스트림 | 진행 표시 |
+
+## 근거·그래프 (Evidence)
+
+| 메서드 경로 | 응답 요지 | 화면 |
+|---|---|---|
+| GET `/evidence/{evidenceId}` | kind별 실체: doc-chunk(원문+강조 offset)·graph-path(노드/엣지)·record·sensor-series 참조 | Evidence 뷰 |
+| GET `/graph/paths?from={id}&to={id}\|byRun={runId}` | 그래프 경로(노드·엣지·라벨) — 고정 template 조회만 | graph 시각화 |
+| GET `/documents/{docId}?highlight={chunkId}` | 문서 미리보기 + 인용 문장 강조 좌표 | 문서 preview |
+
+## 검색 전략 비교
+
+| 메서드 경로 | 요청 | 응답 요지 | 화면 |
+|---|---|---|---|
+| POST `/retrieval/compare` | `{ sessionId, question, strategies: ["vector","hybrid","graphrag"] }` — question은 «승인 시나리오 질문 목록» 내 선택(자유 입력은 길이·rate 제한 하에 허용하되 P0에선 preset 우선) | 전략별 `[{ strategy, hits: [{ evidenceId, score, excerpt }] , elapsedMs }]` | 전략비교 |
+
+## 작업지시 (Work Order)
+
+| 메서드 경로 | 요청 | 응답 요지 | 화면 |
+|---|---|---|---|
+| GET `/work-orders/{woId}` | — | 초안 전문(항목·부품·절차·안전 조치·근거 evidenceIds) | WO 화면 |
+| PATCH `/work-orders/{woId}` | 편집 필드 부분 갱신 | 갱신본 | 편집 |
+| POST `/work-orders/{woId}/approve` \| `/reject` | `{ comment? }` | `{ status, auditId }` — 세션 내 이력 기록 | 승인/반려 |
+
+## 운영
+
+| 메서드 경로 | 응답 | 용도 |
+|---|---|---|
+| GET `/health` | `{ ok, version }` | Vercel·모니터 |
+| GET `/live/status` | `{ online: bool, checkedAt }` | Live/Replay 모드 배지·fallback |
+
+## P0 커버리지 자기점검 (T0-3 교차 예정)
+
+Overview·추세·시나리오 실행/중지(reset)·session 격리·event replay·graph evidence·문서 인용 강조·WO 편집/승인/반려·전략 비교·Live 감지·fallback = §12.1 공개 Sandbox 11항 전부 위 표에 매핑. wireframe(T0-3) 도착 후 화면별 데이터 요구 대조로 동결.
