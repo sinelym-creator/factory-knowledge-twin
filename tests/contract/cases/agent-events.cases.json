@@ -65,6 +65,20 @@
     { "group": "⑤ envelope 형식", "expect": "reject", "label": "seq 음수(minimum 위반)",
       "event": { "seq": -1, "type": "run.stopped", "payload": { "reason": "user" } } },
     { "group": "⑤ envelope 형식", "expect": "reject", "label": "미정의 mode",
-      "event": { "mode": "sandbox", "type": "run.stopped", "payload": { "reason": "user" } } }
+      "event": { "mode": "sandbox", "type": "run.stopped", "payload": { "reason": "user" } } },
+
+    { "group": "⑥ 선택 필드(커버리지)", "label": "run.completed 선택 필드 전부", "expect": "accept",
+      "why": "totalElapsedMs·workOrderDraftId·confidenceNote가 케이스에 한 번도 안 나오면 타입이 바뀌어도 harness가 모른다",
+      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "베어링 마모", "confidenceNote": "1순위", "evidenceIds": ["E1"] }], "workOrderDraftId": "WO-2026-0113", "totalElapsedMs": 72000 } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "totalElapsedMs 음수", "expect": "reject",
+      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "F", "label": "x", "evidenceIds": ["E1"] }], "totalElapsedMs": -1 } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "evidence 선택 필드(excerpt·score)", "expect": "accept",
+      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "DOC-MAN-0021@r1#014", "revisionId": "DOC-MAN-0021@r1", "contentHash": "abc", "stale": false, "excerpt": "베어링 마모 시 진동 RMS가 상승한다", "score": 0.82 } } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "score가 숫자가 아님", "expect": "reject",
+      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "alarm", "sourceId": "AL-20260826-0041", "score": "높음" } } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "run.failed fallback=replay", "expect": "accept",
+      "event": { "type": "run.failed", "payload": { "code": "LIVE_OFFLINE", "message": "live 불가", "fallback": "replay" } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "미정의 fallback 값", "expect": "reject",
+      "event": { "type": "run.failed", "payload": { "code": "E", "message": "m", "fallback": "sandbox" } } }
   ]
 }
