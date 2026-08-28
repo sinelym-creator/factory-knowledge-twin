@@ -140,10 +140,14 @@ def paragraph_around(text: str, quote: str) -> str | None:
 
 
 def intact_seq(chunks, needle: str) -> int | None:
-    """needle이 «통째로» 들어간 chunk의 1-based 좌표(없으면 None = 경계에서 절단)."""
+    """needle이 «통째로» 들어간 chunk의 0-based 좌표(없으면 None = 경계에서 절단).
+
+    🔴 좌표가 0-based이므로 호출부는 반드시 `is None`으로 판정한다. 첫 chunk(`#000`)가
+       falsy라, 진리값으로 보면 「인용이 절단됐다」로 뒤집힌다.
+    """
     for c in chunks:
         if needle and needle in c.text:
-            return c.seq
+            return c.index
     return None
 
 
@@ -263,9 +267,9 @@ def main() -> int:
     for r in primary["rows"]:
         cells = []
         for q in r["quotes"]:
-            if q.get("para_seq"):
+            if q.get("para_seq") is not None:
                 cells.append(f"#{q['para_seq']:03d}")
-            elif q.get("sent_seq"):
+            elif q.get("sent_seq") is not None:
                 cells.append(f"#{q['sent_seq']:03d}⚠문단")
             else:
                 cells.append("🔴절단")
