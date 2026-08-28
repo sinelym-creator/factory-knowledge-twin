@@ -25,6 +25,7 @@ size_limit: 4KB
 | `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
 | `apps/web-console/` | Next.js 웹 콘솔(Sandbox UI · App Router) | S2~ 구현 |
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
+| `services/indexer/` | 색인 파이프라인(동결 chunk 정책 정본 `FROZEN_POLICY`·probe 도구 2종 — T1-4) | S3 색인 진행 시 |
 | `infra/` | 로컬 인프라 보조(postgres init SQL 등) | 환경 변경 시 |
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
 | `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
