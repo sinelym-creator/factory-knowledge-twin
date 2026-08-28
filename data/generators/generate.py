@@ -138,6 +138,16 @@ def self_check(tables: dict, counts: dict) -> list[str]:
     if len({r["content_sha256"] for r in revs}) != 2:
         fails.append("D-2 위반: r1·r2의 content_sha256이 같다(본문이 동일하다)")
 
+    # 🔴 F-1 — MaintenanceRecord ID의 연도는 «실제 수행 연도»여야 한다.
+    #    이 프로젝트는 ID를 읽어 시점을 판단한다(스펙 §3.2 규칙3). 연도가 어긋난 ID는 검사에
+    #    걸리지 않은 채 조사자를 오독으로 데려가므로, DB가 아니라 여기서 죽어야 한다.
+    for r in tables["maintenance_record"]:
+        performed = r["performed_at"]
+        if r["id"][3:7] != performed[:4]:
+            fails.append(f"F-1 위반: {r['id']} 의 ID 연도 ≠ 수행 연도({performed[:4]})")
+        if performed > REFERENCE_NOW.isoformat():
+            fails.append(f"{r['id']} 의 수행 시각이 기준 시각 이후다: {performed}")
+
     # revision 2개 이상 문서 8건 (data-ontology-spec §5)
     per_doc: dict[str, int] = {}
     for r in tables["document_revision"]:

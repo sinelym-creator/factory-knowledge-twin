@@ -30,6 +30,7 @@ import re
 from datetime import date, timedelta
 
 from .config import DATA_DIR, GS, REFERENCE_NOW
+from .events import MR_DOCUMENTED_ID
 from .structure import SAFETY_RULES, SOPS
 
 DOCUMENT_DIR = DATA_DIR / "documents"
@@ -64,7 +65,8 @@ MANUALS = [
     (28, None, "공통 안전 운전 매뉴얼"),
 ]
 
-# 정비 보고서 9건 ↔ MaintenanceRecord 번호 (MR-2025-00NN ↔ DOC-MRP-00NN)
+# 정비 보고서 9건 ↔ MaintenanceRecord 번호 (MR-{YYYY}-00NN ↔ DOC-MRP-00NN)
+# 🔴 연도는 여기서 정하지 않는다 — 실제 수행일에서 도출한 `MR_DOCUMENTED_ID`가 정본이다(F-1).
 MAINT_REPORT_NOS = [81, 82, 83, 84, 85, 86, 87, 88, 89]
 
 # 🔴 DOC-SOP-0014의 r1·r2 본문은 `data/documents/`의 파일이 정본이다(T1-3).
@@ -262,7 +264,7 @@ def _safety_body(saf_id: str, title: str, rev_no: int) -> str:
 def _maint_report_body(no: int, rev_no: int) -> str:
     if no == 87:
         # 🔴 GS-01 S4 「유사 사례 검색」의 정답 문서. MR-2025-0087과 같은 사건을 서술한다.
-        return f"""# 정비 보고서 MR-2025-0087 (r{rev_no})
+        return f"""# 정비 보고서 {MR_DOCUMENTED_ID[87]} (r{rev_no})
 
 ## 1. 대상
 설비 {GS['equipment']} · 부품 {GS['component']} (스핀들 베어링)
@@ -281,7 +283,7 @@ def _maint_report_body(no: int, rev_no: int) -> str:
 ## 5. 후속
 동일 모델 설비의 진동 추세를 월 단위로 확인하도록 점검 주기를 조정했다.
 """
-    return f"""# 정비 보고서 MR-2025-00{no} (r{rev_no})
+    return f"""# 정비 보고서 {MR_DOCUMENTED_ID[no]} (r{rev_no})
 
 ## 1. 대상
 정기 점검 대상 설비.
@@ -349,7 +351,7 @@ def build_documents() -> tuple[list[dict], list[dict], dict[str, str]]:
     # 정비 보고서 9건
     for no in MAINT_REPORT_NOS:
         doc_id = f"DOC-MRP-{no:04d}"
-        add_doc(doc_id, "MAINT_REPORT", f"정비 보고서 MR-2025-00{no}", "maintenance_engineer",
+        add_doc(doc_id, "MAINT_REPORT", f"정비 보고서 {MR_DOCUMENTED_ID[no]}", "maintenance_engineer",
                 lambda rev_no, _n=no: _maint_report_body(_n, rev_no))
 
     current = {r["document_id"]: r["id"] for r in revisions if r["_current"]}
