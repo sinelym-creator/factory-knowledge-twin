@@ -17,6 +17,8 @@ artifacts:
 
 | 안 | 이름 | 한 줄 | mock |
 |---|---|---|---|
+🔴 **mock의 색값·간격은 «확정 팔레트»가 아니다** — 각 안의 **구조와 성격을 비교하기 위한 예시**다. D-002 유보 ①③(색상·디자인 대폭 개선 · 모션/애니메이션 도입)에 따라 최종 시각은 **기능 완료 후 «UX 폴리시 패스»에서 확정**한다. 채택된 A안에서 확정된 것은 **레이아웃 구조·정보 위계**이며 색값이 아니다.
+
 | **A** | Control Room | 관제실 — 한 화면에 공장 전체를 담는 고밀도 다크 콘솔 | `mocks/direction-a-control-room.html` |
 | **B** | Investigation Desk | 조사 데스크 — 「지금 무슨 일이 있나」를 문장으로 먼저 말하는 서사형 | `mocks/direction-b-investigation-desk.html` |
 | **C** | Blueprint | 설계도 — 공장을 도면으로 그리는 라이트 테마 엔지니어링 뷰 | `mocks/direction-c-blueprint.html` |
