@@ -1,6 +1,6 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
-> **«지금»만 담는다.** Phase 상태 = project-plan §1 · 재개 = checkpoint 1 Read.
+> **«지금»만 담는다.** Phase 상태 = project-plan §4 · 진행률 = 티켓 원장 · 재개 = checkpoint 1 Read. done 10행 초과분은 CHANGELOG로 회전.
 
 ## in progress
 

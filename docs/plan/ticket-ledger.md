@@ -1,3 +1,11 @@
+---
+asset_class: operations
+description: 티켓 원장 — 진행률 유일 산법(✅/총)
+status: active
+lifecycle: 단위 완료·분모 변경 시 갱신 · 분모 변경은 「N→M」 선행 선언
+size_limit: 8KB
+---
+
 # 티켓 원장 — factory-knowledge-twin
 
 > **진행률의 유일 정본** = 본 원장의 티켓별 ✅/총(가중치 금지). 계층 = project-plan §5. 티켓은 해당 일차 발주 시 등재한다(선행 과계획 금지) — Phase 0은 전량 등재. 티켓 상세(AC 전문·하위 태스크·경과) = `docs/plan/tickets/T{ID}.md`(발주 시 생성 · 발주문 겸용).

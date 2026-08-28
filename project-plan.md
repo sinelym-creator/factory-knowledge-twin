@@ -1,3 +1,11 @@
+---
+asset_class: ssot
+description: 확정 계획 요약 단일본 — 7일 배포 일정 · 운영 사이클
+status: provisional
+lifecycle: 변경 발생 «즉시» 갱신(살아있는 플랜) · 전략 변경 = 운영자 재가
+size_limit: 10KB
+---
+
 # 프로젝트 플랜 — factory-knowledge-twin
 
 > **확정 계획 요약 단일본.** 정본 = `docs/baseline/poc-baseline-v0.2.md`(§21 개발 단계 · §33 실행 계획 · §12 P0/P1/P2) — 여기 재기술하지 않는다. 「지금 어디」 = checkpoint · 현황 = PROGRESS.
@@ -53,6 +61,8 @@
 - **Phase 게이트**: 전환 = DoD 실측 충족 + 운영자 직보 후 진입 · Gate 8종(§32)·측정-주장 경계(§0.2)를 Phase DoD에 결속.
 - **변경 관리**: scope 변경·모호점·destructive = 즉시 운영자 회귀 · 결정 대기 항목엔 권장 1줄 병기 · 재가 인용 = 원문 message id.
 - 발주 단위 = 티켓 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
+- **확정 기록** = `docs/decisions/NNN-*.md` — 수정 대신 새 번호(구본 superseded 표기) · 운영자 승인 원문 id를 헤더에 기입 · 비확정 논의를 확정처럼 인용 금지.
+- **누락 방지 장치**: 신규 파일 = 생성 커밋에서 루트 `INDEX.md` 등재(미등록 0 = 검출기) · 문서별 frontmatter `size_limit` = 비대 검출기(초과 = 회전·다이어트) · PROGRESS done 10행 초과 = CHANGELOG 회전 · 재개점(checkpoint)은 백지 재작성(이력 축적 금지 — 이력은 CHANGELOG·회고 몫).
 - lane(§33.2→3좌석 매핑 = CLAUDE.md §3): 오케 = contracts·docs·통합 / 구현 = apps·services·data·ontology / 검증 = benchmarks·tests·evidence.
 - 매일 통합 주기(§33.5) 최소 2회 · Golden Scenario 회귀 = 최우선 복구(§33.1) · Stop 조건(§33.6) 발생 = 신규 기능 중단→운영자 회귀.
 - 순차 의존성(§33.3): Ontology→DB→Graph · Contract→Backend→Frontend · Live Golden Scenario→Replay Fixture→Sandbox.
