@@ -64,6 +64,7 @@ size_limit: 10KB
 - **Phase 게이트**: 전환 = DoD 실측 충족 + 운영자 직보 후 진입 · Gate 8종(§32)·측정-주장 경계(§0.2)를 Phase DoD에 결속.
 - **변경 관리**: scope 변경·모호점·destructive = 즉시 운영자 회귀 · 결정 대기 항목엔 권장 1줄 병기 · 재가 인용 = 원문 message id.
 - 발주 단위 = 티켓 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
+- **진행률·보고 서식(운영자·교육 확정 08-28)**: 진행률 = 이중 표기(「Phase 0 = N/M ≈%(원장 E1) · 전체 = Phase x/6(미분해 명시)」 · 분모 변경은 % 앞에 선행 선언) · 보고 3종 default(태스크 완료 시마다 3단 · 병합 직후 1줄 · cycle 마감 4항{잔여 0건도 명시}) · 현황 보고 = ①전체 ②진행중 ③닫음(근거) ④다음(= checkpoint 「다음」과 동일 값 · 결정 대기엔 권장 1줄) ⑤팀(좌석별 ctx·유휴) 고정 순서.
 - **확정 기록** = `docs/decisions/NNN-*.md` — 수정 대신 새 번호(구본 superseded 표기) · 기록 6요소: 결정 1줄 · **결정의 범위(기각안 포함)** · 근거 상신 요지 · **승인 원문 무수정 인용**(해석은 별줄) · 승인 id · 일시 · 비확정 논의를 확정처럼 인용 금지 · 상신 시 결정 대기 항목마다 권장 1줄 병기.
 - **누락 방지 장치**: 신규 파일 = 생성 커밋에서 루트 `INDEX.md` 등재(미등록 0 = 검출기) · 문서별 frontmatter `size_limit` = 비대 검출기(초과 = 회전·다이어트) · PROGRESS done 10행 초과 = CHANGELOG 회전 · 재개점(checkpoint)은 백지 재작성(이력 축적 금지 — 이력은 CHANGELOG·회고 몫).
 - 🔴 **git 작업 구조(08-28 공유 index 사고 후 · 운영자 확정 14:54 · 교육 표준 반영)**: 좌석별 worktree(`../fkt-{seat}` · `lane/{seat}` 브랜치)에서 작업·커밋 — 주 체크아웃 = 오케 전용. **통합 = lane push → PR(1티켓 1PR) → 오케 리뷰·서버 측 merge commit → 완료 PR의 worktree·브랜치 즉시 정리.** 🔴 develop 직접 push는 **전 좌석 소거**(오케 포함) — 로컬 develop = pull-only. non-ff 거부 = 「정본 경로 밖 커밋」 신호: force 금지 → 원격 실물 확인 → 뒤처짐이면 ff-pull · 고아 커밋이면 브랜치로 빼 PR. `add -A`·`commit -a`·`--amend`·`reset` 금지, 경로 지정 add만.
