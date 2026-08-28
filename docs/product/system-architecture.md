@@ -61,6 +61,14 @@ size_limit: 8KB
 - health endpoint(§12.1) · one-click reset · 방문자 session 격리(서버 세션 키 단위).
 - 잠정 목표(실측 전): Sandbox 첫 화면 로드 < 3s · Live 조사 1건 < 60s — 측정 후 Target/Actual 분리.
 
+## 7. 백엔드 품질 원칙 (운영자 확정 08-28 — 실무 투입 수준 · Phase 2 AC에 결속)
+
+- **완전 비동기 경로**: async 드라이버 일관(asyncpg·Neo4j async·httpx) · 이벤트 루프 블로킹 0(블로킹 작업 = `to_thread`/전용 executor) · 타임아웃·취소 전파(structured concurrency) 전 구간.
+- **실행 분리·확장 경계**: API 계층 stateless(세션·run 상태 = 저장소) · agent 실행은 run-orchestrator 인터페이스 뒤로 격리 — PoC는 인프로세스 워커로 돌되 **분산 큐(Redis/NATS 계열)로 승격 가능한 어댑터 경계**를 계약으로 보존. 수평 확장 시 코드 변경 최소.
+- **견고성**: bounded queue + backpressure(동시 조사 1~2 · 초과 = 대기/거절 명시 응답) · 외부 의존(DB·graph·모델) 재시도+서킷브레이커 · idempotent run 생성 · graceful shutdown(진행 run 정리·이벤트 flush).
+- **관측성**: structured logging(JSON·run_id correlation) · audit event = 정본 흐름과 동일 스키마 · health/readiness 분리 · 지표 노출 지점 예약.
+- **품질 게이트**: 위 원칙은 Phase 2 티켓 AC로 분해되어 독립 검증 대상이다 — «돌아간다»는 통과 기준이 아니다.
+
 ## 6. D2 skeleton 착수 지시서 (이 문서가 주는 것)
 
 - 리포 구조: `apps/web-console/`(Next.js) · `services/ai-api/`(FastAPI) · `packages/contracts/` · `packages/ontology/` · `data/`(seed) · `benchmarks/` · `tests/` · `evidence/`.
