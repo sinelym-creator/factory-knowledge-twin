@@ -277,3 +277,4 @@ Factory ─1:N─ ProductionLine ─1:N─ Equipment ─1:N─ Component
 | # | 위치 | 정정 | 근거 |
 |---|---|---|---|
 | E-1 | R15 속성 `confidence` | 구현·계약 정본 = `confidence_note`(contracts v0.1 동결·DDL 일치). R15의 `confidence` 표기는 초기 명명 — 이후 문서·구현은 `confidence_note`를 따른다 | T1-1 스키마 검증(evidence/t1-1-schema-verification.md) · 2026-08-28 |
+| E-2 | §5 SensorReading 총량 추정 950,400 | 실측 = **949,680**(E1 · T1-2 생성기) — 추정이 기저·사건 구간 경계의 PK 중복 720행을 빼지 않았다. 스펙 결함 아님·실측 갱신 | T1-2 seed 생성기(PR#37 · 보고 id 1542836825981452298) · 2026-08-28 |
