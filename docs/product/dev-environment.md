@@ -63,7 +63,7 @@ size_limit: 12KB
 | `infra/postgres/init/01-extensions.sql` | 최초 기동 시 `CREATE EXTENSION IF NOT EXISTS vector` 1회 |
 | `.env.example` | 🔴 **키 목록만 · 값 0** (baseline §34.6) — 키마다 1줄 설명 |
 | `.gitignore` | `.volumes/` · `.env` · `.venv/` · `__pycache__/` 추가 |
-| `services/ai-api/` | FastAPI 골격 — `/health` 하나뿐(계약의 자리표시자) |
+| `services/ai-api/` | FastAPI async 골격 — 계약 v0.1 표면 23 라우트 · `/api/health`(status·dependencies 확장) · 미구현 호출 = 계약 오류 형상 501 (T1-8) |
 | `apps/web-console/` | Next.js 스캐폴드 — 기본 페이지 그대로 |
 
 🔴 **ai-api 컨테이너는 compose에 넣지 않았다.** 본 티켓 범위는 데이터 계층 2종이고, 앱 서비스의 컨테이너화는 코드가 생긴 뒤(S2)가 순서다. 지금 넣으면 매 코드 변경마다 재빌드만 하게 된다.
@@ -132,7 +132,7 @@ docker compose up -d
 | 4 | Neo4j | `docker compose exec -T neo4j cypher-shell -u neo4j -p fkt_local_dev 'RETURN 1 AS ok'` | **`ok / 1`** |
 | 5 | 스키마 적용 | `pwsh services/ai-api/db/migrate.ps1` | exit 0 · `schema_migration` 1행 (**3회 연속 재실행 오류 0**) |
 | 6 | 테이블 수 | `docker compose exec -T postgres psql -U fkt -d fkt -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'"` | **26** |
-| 7 | ai-api | `cd services/ai-api; python -m venv .venv; .venv\Scripts\python.exe -m pip install -r requirements.txt; .venv\Scripts\python.exe -m uvicorn app.main:app --port 8000` → 다른 창에서 `Invoke-WebRequest http://localhost:8000/health -UseBasicParsing` | **HTTP 200** · `{"ok":true,"version":"0.0.1"}` · `/openapi.json` **200** |
+| 7 | ai-api | `cd services/ai-api; python -m venv .venv; .venv\Scripts\python.exe -m pip install -r requirements.txt; .venv\Scripts\python.exe -m uvicorn app.main:app --port 8000` → 다른 창에서 `Invoke-WebRequest http://localhost:8000/api/health -UseBasicParsing` | **HTTP 200** · `ok:true` + `status`=`ok`(의존 기동)/`degraded`(미기동 — boot는 성립) · `/openapi.json` **200** — 🔴 T1-8부터 루트 `/health`는 없다(계약 base=/api) |
 | 8 | web-console | `cd apps/web-console; pnpm install; node node_modules/next/dist/bin/next dev --port 3100` → `Invoke-WebRequest http://localhost:3100 -UseBasicParsing` | **HTTP 200** · 15,428 bytes · Ready 5.5s |
 | 9 | 병렬 격리(D-1) | 위 §4.2 env 5개 설정 후 `docker compose up -d` | `fkt-probe-postgres-1`(5534)·`fkt-probe-neo4j-1`(7574/7587)이 기본 스택과 **동시 기동** — 포트·이름 충돌 0 |
 
