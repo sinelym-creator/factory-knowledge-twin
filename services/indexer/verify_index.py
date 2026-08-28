@@ -25,13 +25,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from build_index import MODEL_ID, dsn_from_env  # noqa: E402
 
-# 화면(wireframes.md)이 박은 인용 좌표 4건 — V-1 인수 조건(검증 좌석 이월).
-# 🔴 표기 그대로 옮긴다. 「@r 이 없는 것」도 화면의 사실이므로 고치지 않고 그대로 잰다.
+# 화면(wireframes.md v0.4)이 박은 인용 좌표 4건 — V-1 인수 조건.
+# 🔴 이 목록은 화면의 «거울»이다. wireframes가 바뀌면 여기도 바뀌어야 하고, 어긋난 채로 두면
+#    도구가 옛 화면을 검사한다(v0.3 좌표를 그대로 들고 있다가 실제로 그렇게 됐다).
+#    with_quotes=True 면 「실재」만이 아니라 「그 chunk 본문이 해당 인용을 담는가」까지 본다.
 WIREFRAME_ANCHORS = [
-    ("DOC-MAN-0021#014", "DOC-MAN-0021@r1", 14),
-    ("DOC-MAN-0022#009", "DOC-MAN-0022@r1", 9),
-    ("DOC-SOP-0014@r2#007", "DOC-SOP-0014@r2", 7),
-    ("DOC-MRP-0087#003", "DOC-MRP-0087@r1", 3),
+    ("DOC-MAN-0021@r1#004", "DOC-MAN-0021@r1", 4, True),
+    ("DOC-MAN-0022@r1#000", "DOC-MAN-0022@r1", 0, False),  # 인용문 없는 대표 좌표
+    ("DOC-SOP-0014@r2#001", "DOC-SOP-0014@r2", 1, True),
+    ("DOC-MRP-0087@r1#000", "DOC-MRP-0087@r1", 0, True),
 ]
 
 
@@ -93,8 +95,18 @@ def report(cur) -> int:
     # --- 2. 신선도 (스펙 §3.3 STALE) ---------------------------------------------
     cur.execute("SELECT freshness, count(*) FROM v_index_freshness GROUP BY 1 ORDER BY 1")
     fresh = dict(cur.fetchall())
-    print(f"[2] 신선도: {fresh}")
+    cur.execute("SELECT DISTINCT current_ontology_version FROM v_index_freshness")
+    onto_db = ", ".join(str(r[0]) for r in cur.fetchall())
+    print(f"[2] 신선도: {fresh} · DB 거울 ontology_version = {onto_db}")
     if fresh.get("STALE") or fresh.get("BUILD_FAILED") or fresh.get("NOT_INDEXED"):
+        # 🔴 사유를 갈라 찍는다 — 「STALE 1건」만으로는 원문이 바뀐 건지 ontology가 올라간
+        #    건지 알 수 없고, 둘은 고칠 곳이 다르다(스펙 §3.3은 «처리»만 같다고 했다).
+        cur.execute(
+            "SELECT revision_id, freshness, coalesce(stale_reason,'-') FROM v_index_freshness "
+            "WHERE freshness <> 'FRESH' AND freshness <> 'SKIPPED' ORDER BY revision_id LIMIT 10"
+        )
+        for rid, fr, why in cur.fetchall():
+            print(f"    🔴 {rid:24s} {fr:12s} 사유 {why}")
         print("    🔴 FAIL STALE·실패·미색인 revision 존재")
         fails += 1
 
@@ -131,7 +143,11 @@ def report(cur) -> int:
     #    화면이 없는 번호를 가리키고 있는 것이다(원인 = wireframes.md · 오케 scope · V-1).
     #    그래서 exit code로 삼지 않는다. 대신 좌표가 «해소되면» 같은 도구가 ✅로 바뀐다.
     print("[4] wireframes 앵커 4좌표 (V-1 인수 조건 · 0-based #NNN ≡ chunk_index)")
-    for shown, rev_id, idx in WIREFRAME_ANCHORS:
+    quotes_by_rev: dict[str, list[str]] = {}
+    for rid, q, _screen in expected_quotes():
+        quotes_by_rev.setdefault(rid, []).append(q)
+
+    for shown, rev_id, idx, with_quotes in WIREFRAME_ANCHORS:
         cur.execute(
             "SELECT count(*), min(chunk_index), max(chunk_index) "
             "FROM document_chunk WHERE revision_id = %s",
@@ -142,11 +158,30 @@ def report(cur) -> int:
         cur.execute("SELECT 1 FROM document_chunk WHERE id = %s", (target,))
         exists = cur.fetchone() is not None
         rng = f"#{lo_i:03d}~#{hi_i:03d}" if c else "없음"
-        mark = "✅ 실재" if exists else "🔴 부재"
-        note = "" if "@r" in shown else "  ⚠ 화면 표기에 revision(@rN)이 없다"
-        print(f"    {mark} 화면 {shown:20s} → {target:24s} · 실재 범위 {rng}({c}건){note}")
+
+        # 🔴 양방향: ① 화면 좌표가 실재하는가 ② 그 chunk가 화면이 붙인 인용을 «담는가».
+        #    ①만 보면 「번호는 있는데 다른 내용이 든」 경우를 통과시킨다.
+        missing: list[str] = []
+        if exists and with_quotes:
+            for q in quotes_by_rev.get(rev_id, []):
+                cur.execute(
+                    "SELECT 1 FROM document_chunk WHERE id = %s AND strpos(text, %s) > 0",
+                    (target, q),
+                )
+                if cur.fetchone() is None:
+                    missing.append(q[:20])
+
         if not exists:
+            mark, note = "🔴 부재", ""
             pending += 1
+        elif missing:
+            mark, note = "🔴 내용 불일치", f"  인용 미포함 {len(missing)}건: {missing}"
+            pending += 1
+        else:
+            n_q = len(quotes_by_rev.get(rev_id, [])) if with_quotes else 0
+            mark = "✅ 실재"
+            note = f"  인용 {n_q}건 포함 확인(양방향)" if n_q else "  (인용 없는 대표 좌표 — 실재만 판정)"
+        print(f"    {mark} 화면 {shown:20s} → {target:24s} · 실재 범위 {rng}({c}건){note}")
 
     # --- 5. 검색 실동작 (벡터가 «쓰이는가») ----------------------------------------
     print("[5] 벡터 검색 실동작 — 질의 「스핀들 베어링 마모 진동」 상위 3")

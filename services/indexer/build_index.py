@@ -80,6 +80,29 @@ def preflight(cur) -> int:
     return dim
 
 
+def check_ontology_registry(cur, canon: str) -> None:
+    """정본 파일과 DB 거울(004 ontology_registry)이 같은 값을 말하는지 «본다».
+
+    🔴 어긋난 채로 빌드하면 원장에 정본 값이 박히고, view는 거울과 비교해 STALE을 낸다 —
+       즉 «방금 만든 색인»이 태어나자마자 낡은 것으로 보인다. 원인은 데이터가 아니라 설정인데
+       증상은 데이터 쪽에 나타나므로, 여기서 멈추고 사유를 말하는 편이 낫다.
+    """
+    cur.execute("SELECT to_regclass('ontology_registry')")
+    if cur.fetchone()[0] is None:
+        raise SystemExit(
+            "ontology_registry 없음 — 004_ontology_freshness.sql 미적용. migrate.ps1을 돌려라"
+        )
+    cur.execute("SELECT ontology_version FROM ontology_registry")
+    row = cur.fetchone()
+    if row is None:
+        raise SystemExit("ontology_registry 0행 — 004가 넣는 기준 행이 지워졌다")
+    if row[0] != canon:
+        raise SystemExit(
+            f"🔴 ontology_version 불일치: 정본 파일 {canon} ≠ DB 거울 {row[0]}. "
+            "정본이 올라갔다면 거울을 올리는 «신규 마이그레이션»이 필요하다(004 선례)."
+        )
+
+
 def ontology_version() -> str:
     if not ONTOLOGY_VERSION_FILE.exists():
         raise SystemExit(f"ontology 정본 없음: {ONTOLOGY_VERSION_FILE} (스펙 §3.3)")
@@ -112,6 +135,7 @@ def main() -> int:
     with psycopg.connect(dsn_from_env(args.dsn)) as conn:
         with conn.cursor() as cur:
             col_dim = preflight(cur)
+            check_ontology_registry(cur, onto)
 
             # --- 1. 원천 수집 (approved만 색인 · 그 외는 사유와 함께 원장에) --------------
             cur.execute(
