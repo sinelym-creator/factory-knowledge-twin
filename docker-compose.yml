@@ -1,0 +1,50 @@
+# Factory Knowledge Twin — 로컬 개발 인프라 (T1-0 골격)
+# 🔴 데이터는 전부 synthetic · 볼륨은 .gitignore 경로(리포에 미포함 — baseline §34.6)
+# 기동: docker compose up -d   /   중지+볼륨 삭제: docker compose down -v
+#
+# 포트는 로컬 점유 실측(2026-08-28) 후 선택했다:
+#   5432·5433 = 이미 사용 중 → postgres는 5434
+#   7474·7687 = free         → neo4j 기본값 유지
+# ai-api 서비스는 S2에서 추가한다(본 티켓 범위 = 데이터 계층 2종만).
+
+services:
+  postgres:
+    # pgvector 확장이 미리 빌드된 공식 이미지 — 별도 CREATE EXTENSION 빌드 불필요
+    image: pgvector/pgvector:pg16
+    container_name: fkt-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fkt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fkt_local_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-fkt}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - ./.volumes/postgres:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fkt} -d ${POSTGRES_DB:-fkt}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: fkt-neo4j
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-fkt_local_dev}
+      NEO4J_server_memory_heap_max__size: 1G
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"   # browser·HTTP API
+      - "${NEO4J_BOLT_PORT:-7687}:7687"   # bolt driver
+    volumes:
+      - ./.volumes/neo4j/data:/data
+      - ./.volumes/neo4j/logs:/logs
+    healthcheck:
+      # HTTP 엔드포인트 200 확인 — 이미지에 curl/wget이 없어 cypher-shell로 대체
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-fkt_local_dev} 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped

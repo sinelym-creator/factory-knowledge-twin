@@ -1,0 +1,4 @@
+# ai-api 최소 부팅 의존성 (T1-0)
+# 버전 고정 이유: Python 3.14 로컬 환경에서 wheel 제공 여부를 실측으로 확정하기 위함.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
