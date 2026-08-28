@@ -119,7 +119,10 @@ class ChunkPolicy:
 
 @dataclass(frozen=True)
 class Chunk:
-    seq: int  # 1-based — 화면 앵커(`#014`)가 가리키는 좌표
+    # 🔴 0-based다. `document_chunk.id`의 `#NNN` 표기가 이 값과 «동치»이며(오케 판정
+    #    2026-08-29 · `#000` = 첫 chunk · 3자리 zero-pad), id와 index 사이에 변환 계층을
+    #    두지 않는 것이 off-by-one을 구조적으로 막는 방법이다. 표시 편의보다 동치가 앞선다.
+    index: int
     start: int  # 정규화 본문의 문자 오프셋 [start, end)
     end: int
     n_tokens: int
@@ -290,7 +293,7 @@ def chunk(body: str, counter: TokenCounter, policy: ChunkPolicy) -> list[Chunk]:
     spans = _apply_overlap(text, offsets, spans, policy)
     return [
         Chunk(
-            seq=i + 1,
+            index=i,
             start=s,
             end=e,
             n_tokens=_n_tokens(offsets, s, e),
