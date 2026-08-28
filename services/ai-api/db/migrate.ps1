@@ -9,7 +9,9 @@
 # =============================================================================
 param(
   [int]    $EmbeddingDim = 768,
-  [string] $Container    = 'fkt-postgres',
+  # 🔴 D-1 구조 격리: 컨테이너를 «이름»이 아니라 compose «서비스명»으로 지목한다.
+  #    container_name을 없앴으므로 프로젝트명이 달라도(좌석별 병렬 스택) 그대로 동작한다.
+  [string] $Service      = 'postgres',
   [string] $DbUser       = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { 'fkt' }),
   [string] $DbName       = $(if ($env:POSTGRES_DB)   { $env:POSTGRES_DB }   else { 'fkt' })
 )
@@ -19,10 +21,15 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 $migrationDir = Join-Path $PSScriptRoot 'migrations'
 
-# 컨테이너가 살아 있는지 먼저 확인 — 없으면 psql 오류 대신 사람이 읽을 안내를 낸다
-$running = docker ps --filter "name=$Container" --format '{{.Names}}'
-if ($running -ne $Container) {
-  throw "컨테이너 '$Container' 가 기동 중이 아닙니다. 먼저 'docker compose up -d' 를 실행하십시오."
+# compose 파일이 있는 리포 루트에서 실행해야 서비스명이 해석된다
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..\..')
+Push-Location $repoRoot
+try {
+
+# 서비스가 살아 있는지 먼저 확인 — 없으면 psql 오류 대신 사람이 읽을 안내를 낸다
+$running = docker compose ps --status running --services
+if ($running -notcontains $Service) {
+  throw "compose 서비스 '$Service' 가 기동 중이 아닙니다. 먼저 'docker compose up -d' 를 실행하십시오."
 }
 
 $files = Get-ChildItem -Path $migrationDir -Filter '*.sql' | Sort-Object Name
@@ -34,11 +41,13 @@ foreach ($f in $files) {
   Write-Host "-- apply $($f.Name)" -ForegroundColor DarkCyan
   # ON_ERROR_STOP=1 : 한 문장이라도 실패하면 즉시 비정상 종료(부분 적용 방지)
   Get-Content -Raw -Encoding UTF8 $f.FullName |
-    docker exec -i $Container psql -U $DbUser -d $DbName `
+    docker compose exec -T $Service psql -U $DbUser -d $DbName `
       -v ON_ERROR_STOP=1 -v embedding_dim=$EmbeddingDim -q
   if ($LASTEXITCODE -ne 0) { throw "실패: $($f.Name) (exit $LASTEXITCODE)" }
 }
 
 Write-Host '== 적용 완료 ==' -ForegroundColor Green
-docker exec $Container psql -U $DbUser -d $DbName -c `
+docker compose exec -T $Service psql -U $DbUser -d $DbName -c `
   "SELECT filename, applied_at FROM schema_migration ORDER BY filename;"
+
+} finally { Pop-Location }

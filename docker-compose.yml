@@ -2,16 +2,24 @@
 # 🔴 데이터는 전부 synthetic · 볼륨은 .gitignore 경로(리포에 미포함 — baseline §34.6)
 # 기동: docker compose up -d   /   중지+볼륨 삭제: docker compose down -v
 #
-# 포트는 로컬 점유 실측(2026-08-28) 후 선택했다:
-#   5432·5433 = 이미 사용 중 → postgres는 5434
+# 포트 기본값은 로컬 점유 실측(2026-08-28) 후 선택했다:
+#   5432·5433 = 이미 사용 중 → postgres 기본 5434
 #   7474·7687 = free         → neo4j 기본값 유지
 # ai-api 서비스는 S2에서 추가한다(본 티켓 범위 = 데이터 계층 2종만).
+#
+# 🔴 구조 격리(D-1): container_name을 고정하지 않고 프로젝트명·포트를 전부 파라미터화했다.
+#    좌석/워크트리마다 값을 달리 주면 스택이 서로 침범하지 않고 «동시에» 뜬다.
+#      COMPOSE_PROJECT_NAME=fkt-levi2  POSTGRES_PORT=5534  NEO4J_HTTP_PORT=7574
+#      VOLUME_ROOT=./.volumes-levi2      ← 🔴 같은 워크트리에서 병렬로 띄울 때는 이것도 달리 준다
+#                                          (bind mount 경로가 같으면 두 스택이 같은 데이터를 물어 손상된다)
+#    컨테이너를 지목할 때는 이름 대신 «서비스명»을 쓴다:  docker compose exec postgres ...
+
+name: ${COMPOSE_PROJECT_NAME:-fkt}
 
 services:
   postgres:
     # pgvector 확장이 미리 빌드된 공식 이미지 — 별도 CREATE EXTENSION 빌드 불필요
     image: pgvector/pgvector:pg16
-    container_name: fkt-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-fkt}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fkt_local_dev}
@@ -19,7 +27,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5434}:5432"
     volumes:
-      - ./.volumes/postgres:/var/lib/postgresql/data
+      - ${VOLUME_ROOT:-./.volumes}/postgres:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fkt} -d ${POSTGRES_DB:-fkt}"]
@@ -30,7 +38,6 @@ services:
 
   neo4j:
     image: neo4j:5-community
-    container_name: fkt-neo4j
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-fkt_local_dev}
       NEO4J_server_memory_heap_max__size: 1G
@@ -38,8 +45,8 @@ services:
       - "${NEO4J_HTTP_PORT:-7474}:7474"   # browser·HTTP API
       - "${NEO4J_BOLT_PORT:-7687}:7687"   # bolt driver
     volumes:
-      - ./.volumes/neo4j/data:/data
-      - ./.volumes/neo4j/logs:/logs
+      - ${VOLUME_ROOT:-./.volumes}/neo4j/data:/data
+      - ${VOLUME_ROOT:-./.volumes}/neo4j/logs:/logs
     healthcheck:
       # HTTP 엔드포인트 200 확인 — 이미지에 curl/wget이 없어 cypher-shell로 대체
       test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-fkt_local_dev} 'RETURN 1' || exit 1"]
