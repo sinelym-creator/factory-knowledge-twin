@@ -45,9 +45,13 @@
 | 5 | 평가·보안·운영(Gate 1~8 전건) | 배포 후 | 대기 |
 | 6 | 포트폴리오 패키징(영상·README·Release) | 배포 후 | 대기 |
 
-## 5. 실행 규율 (baseline 포인터)
+## 5. 실행 규율 (baseline 포인터 + 운영 사이클 — 운영자 확정 08-28)
 
-- 발주 단위 = 일차별 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
+- **플랜 계층(위→아래 단방향)**: 본 플랜(전략 · 변경 = 운영자 재가) → 티켓(`docs/plan/ticket-ledger.md` — Phase 분해 · 티켓마다 AC) → 원장(티켓별 ✅/총 = 진행률 유일 정본 · 가중치 금지) → PROGRESS(«지금» 티켓만) → CHANGELOG(끝난 것 append). 같은 사실은 한 곳에만.
+- **cycle 루프**: 보드 순서 확정(운영자 우선순위 보존) → 티켓별 발주(실멘션+AC 동봉) → ack → 점검 → 검수(독립 검증 좌석 경유 — 구현자 자기 검증만으로 닫지 않는다) → 반영 → 원장 갱신+즉시 1줄 보고 → cycle 마감 4항.
+- **Phase 게이트**: 전환 = DoD 실측 충족 + 운영자 직보 후 진입 · Gate 8종(§32)·측정-주장 경계(§0.2)를 Phase DoD에 결속.
+- **변경 관리**: scope 변경·모호점·destructive = 즉시 운영자 회귀 · 결정 대기 항목엔 권장 1줄 병기 · 재가 인용 = 원문 message id.
+- 발주 단위 = 티켓 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
 - lane(§33.2→3좌석 매핑 = CLAUDE.md §3): 오케 = contracts·docs·통합 / 구현 = apps·services·data·ontology / 검증 = benchmarks·tests·evidence.
 - 매일 통합 주기(§33.5) 최소 2회 · Golden Scenario 회귀 = 최우선 복구(§33.1) · Stop 조건(§33.6) 발생 = 신규 기능 중단→운영자 회귀.
 - 순차 의존성(§33.3): Ontology→DB→Graph · Contract→Backend→Frontend · Live Golden Scenario→Replay Fixture→Sandbox.
