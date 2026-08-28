@@ -1,11 +1,152 @@
-# ai-api (skeleton)
+# ai-api — 계약 v0.1 표면의 비동기 골격 (T1-8)
 
-FastAPI 서비스 골격. **T1-0 범위 = 부팅 확인까지** — 기능 코드는 없다.
+FastAPI 서비스. **계약 v0.1(`packages/contracts/`)이 약속한 API 표면을 전부 세우고, 도메인
+구현은 아직 넣지 않았다.** 라우트는 존재하고, 호출하면 계약이 정한 오류 형상으로 「아직
+없다」고 답한다.
+
+> 🔴 골격이 그럴듯한 값을 지어내지 않는 이유: 없는 근거를 채운 응답은 화면과 통합될 때까지
+> 살아남는다. 계약 README 원칙2(「붙일 근거가 없으면 필드를 비우는 게 아니라 이벤트를
+> 내보내지 않는다」)와 같은 자리다.
+
+## 실행
 
 ```powershell
 cd services/ai-api
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install -r requirements.txt        # 실측·도구까지: requirements-dev.txt
 .venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
-# 확인: http://localhost:8000/health
+# 확인: http://localhost:8000/api/health   ← 🔴 계약의 base = /api (아래 §정합 메모)
 ```
+
+의존은 **환경변수로만** 준다(`.env` 파일을 읽지 않는다 — `app/settings.py` 머리말).
+주지 않으면 서비스는 뜨고 `/api/health` 가 `unconfigured` 라고 말한다.
+
+```powershell
+$env:FKT_POSTGRES_DSN = 'postgresql://fkt:***@localhost:5634/fkt'
+$env:FKT_NEO4J_URI    = 'bolt://localhost:7687'
+$env:FKT_NEO4J_USER   = 'neo4j'
+$env:FKT_NEO4J_PASSWORD = '***'
+```
+
+## 계약 표면 대조 (AC ①)
+
+```powershell
+.venv\Scripts\python.exe -m tools.contract_surface     # exit 0 = 전건 일치 · 계약 밖 경로 0
+```
+
+기대 목록을 도구에 적어 두지 않는다 — `packages/contracts/rest-api-v0.1.md` 에서 매 실행
+뽑는다. 상수로 베껴 두면 계약이 개정될 때 도구가 옛 계약을 기준으로 green 을 말한다.
+
+**실측 (E1 · 2026-08-29)**: 계약 표면 **23개 · 앱 등록 23개 · 전건 일치 · 계약 밖 경로 0**.
+
+| 계약 v0.1 경로 | 메서드 | 골격 |
+|---|---|---|
+| `/sessions` | POST | 501 |
+| `/sessions/{sid}/reset` | POST | 501 |
+| `/plants` | GET | 501 |
+| `/plants/{plantId}/overview` | GET | 501 |
+| `/equipment/{equipmentId}` | GET | 501 |
+| `/equipment/{equipmentId}/sensors/{sensorId}/series` | GET | 501 |
+| `/scenarios` | GET | 501 |
+| `/scenarios/{scenarioId}/runs` | POST | 501 |
+| `/incidents/{incidentId}` | GET | 501 |
+| `/runs/{runId}` | GET | 501 |
+| `/runs/{runId}/stop` | POST | 501 |
+| `/runs/{runId}/events` | GET | 501 |
+| `/ws/runs/{runId}` | WS | accept 후 close 4501 |
+| `/evidence/{evidenceId}` | GET | 501 |
+| `/graph/paths` | GET | 501 |
+| `/documents/{docId}` | GET | 501 |
+| `/retrieval/compare` | POST | 501 |
+| `/work-orders/{woId}` | GET | 501 |
+| `/work-orders/{woId}` | PATCH | 501 |
+| `/work-orders/{woId}/approve` | POST | 501 |
+| `/work-orders/{woId}/reject` | POST | 501 |
+| `/health` | GET | ✅ 동작 |
+| `/live/status` | GET | ✅ 동작 (`online:false` — 아래) |
+
+WebSocket 은 OpenAPI 에 실리지 않아 도구가 라우트 표에서 직접 확인한다. 종료 코드는
+`4501` 이다 — `1011`(예기치 못한 조건)은 사실과 다르고, 이 종료는 «예정된 미구현»이라
+애플리케이션 대역에서 HTTP 501 에 대응시켰다.
+
+## blocking 0 — 근거와 실측 (AC ②)
+
+**코드 경로 근거.** 이 서비스가 하는 IO 는 두 갈래뿐이고 둘 다 async 드라이버를 지난다.
+
+| 경로 | 무엇을 쓰는가 | 어디 |
+|---|---|---|
+| PostgreSQL | `asyncpg` 풀(`await pool.acquire()` · `await conn.fetchval`) | `app/probes.py` |
+| Neo4j | `neo4j.AsyncGraphDatabase` (`await driver.verify_connectivity()`) | `app/probes.py` |
+| 그 외 라우트 | IO 없음 — 계약 형상만 알고 즉시 501 을 던진다 | `app/routers/*` |
+
+동기 드라이버(psycopg2 계열·neo4j 동기 세션)는 의존 목록에 없다. 파일 읽기·`time.sleep`·
+`requests` 도 런타임 코드에 없다. 두 프로브는 `asyncio.timeout` 으로 상한이 걸려 있고,
+`CancelledError` 는 잡지 않고 그대로 올려 취소가 전파된다(§7).
+
+**실측.**
+
+```powershell
+.venv\Scripts\python.exe -m tools.measure_loop_lag                  # 실제 라우트
+.venv\Scripts\python.exe -m tools.measure_loop_lag --blocking-demo  # 대조군
+```
+
+10ms 주기로 깨어나기로 한 태스크가 실제로 언제 깨어났는지(lag)를 **유휴 구간과 부하 구간에서
+각각** 모아 비교한다. 🔴 유휴 기준선을 먼저 재는 이유: Windows 의 기본 타이머 해상도가 10ms
+보다 굵어 부하가 없어도 lag 이 수 ms 나온다. 그 바닥을 모르면 플랫폼 특성을 「루프 점유」로
+읽는다. **판정은 언제나 기준선 대비 증가로 한다.**
+
+| 측정 (E1 · 2026-08-29 · 동시 20 · 각 2초) | p50 | p95 | 최대 |
+|---|---:|---:|---:|
+| 유휴 기준선 | 5.87 ms | 6.45 ms | 6.84 ms |
+| 부하 중 (`/api/health` · 4,040건 · 약 2,009 req/s) | 5.73 ms | 10.46 ms | 13.20 ms |
+| **증가** | **-0.14 ms** | **+4.01 ms** | **+6.36 ms** |
+| 대조군 — 핸들러에 `time.sleep(0.05)` 을 끼운 경우 **증가** | +1,224.61 ms | **+1,230.67 ms** | +1,230.27 ms |
+
+증가분이 유휴 기준선 수준(수 ms)이고, 같은 측정이 블로킹 호출 하나에 **300배 이상** 반응한다.
+대조군을 함께 두는 이유가 이것이다 — 「lag 이 작다」는 측정이 민감할 때만 증거가 된다.
+
+## 부팅·프로브 실측 (AC ① · E1 · 2026-08-29)
+
+`uvicorn app.main:app` 로 실제 기동한 서버를 밖에서 확인했다.
+
+| 확인 | 의존 없이 | 의존 붙이고 |
+|---|---|---|
+| `GET /api/health` | **200** · `ok:true` · `status:"degraded"` · 두 의존 `unconfigured` | **200** · `ok:true` · `status:"ok"` · postgres 17 ms · neo4j 24 ms |
+| `GET /openapi.json` | **200** · paths 21개(WS 제외 · `/work-orders/{woId}` 는 GET·PATCH 한 경로) | 동일 |
+| `POST /api/sessions` | **501** · `{"error":{"code":"not_implemented","message":"…"}}` | 동일 |
+| `WS /api/ws/runs/{runId}` | accept 후 **close 4501** · `not_implemented: run 이벤트 원천 없음` | 동일 |
+
+두 열을 다 본 이유: degraded 만 확인하면 「프로브가 성공하는 경로」를 한 번도 관측하지 않은
+채 넘어간다. 의존을 실제로 붙여 `ok` 가 나오는 것까지 봐야 프로브가 동작한다고 말할 수 있다.
+
+`tests/contract/run.js` (계약 harness) **34/34 · 자기 검증 PASS** — 계약 파일은 건드리지
+않았고 골격만 얹었다(AC ④).
+
+## 없는 것과 그 이유
+
+| 없는 것 | 왜 |
+|---|---|
+| 도메인 구현 전부 | 티켓 범위가 표면이다. 라우터는 계약 형상만 알고, 저장소·조회·조사 실행을 모른다 |
+| run-orchestrator 어댑터 | §7 이 요구하는 실행 격리 경계. 붙일 실행이 없는 단계에서 인터페이스만 먼저 굳히면 실제 실행이 그 모양을 못 따를 때 두 번 고친다 |
+| bounded queue·backpressure·서킷브레이커 | 같은 이유 — 흘릴 작업이 생기는 티켓의 몫이다 |
+| structured logging(run_id correlation)·지표 노출 | 상관시킬 run 이 아직 없다. 지금 넣으면 필드가 빈 로그만 쌓인다 |
+| 일부 응답의 pydantic 모델 | 🔴 계약이 서술로만 둔 응답(설비 상세·evidence 실체·시나리오 항목 등)에는 모델을 만들지 않았다. 여기서 필드명을 지어내면 골격이 계약을 앞질러 정하고, 계약은 오케만 바꾼다 |
+| agent-events 의 pydantic 전체 사본 | 정본은 `agent-events-v0.1.schema.json` 이다. 옮겨 적으면 정본이 둘이 되어 조용히 갈라진다 — envelope 필수 6필드만 얇게 두고 payload 는 열어 뒀다 |
+| compose 의 ai-api 서비스 | `dev-environment.md` §3 판단(코드가 생긴 뒤 컨테이너화)을 유지한다 |
+
+## 정합 메모 — 오케 확인 요청
+
+1. **`/health` 경로가 `/api/health` 로 이동했다.** 계약 v0.1 이 「base = `/api`」를 선언하고
+   운영 표의 `/health` 도 그 아래다. T1-0 이 임시로 쓰던 루트 `/health` 를 남기면 계약 밖
+   경로가 하나 생기므로 옮겼다. `docs/product/dev-environment.md` §7 재현 절차와 §「검수」
+   표가 아직 `http://localhost:8000/health` 를 친다 — 갱신 대상이다(docs 는 오케 scope).
+2. **`/api/live/status` 는 `online: false` 를 답한다.** live 조사를 돌릴 실행 경로가 없으므로
+   지금은 그게 참이다. true 가 되는 것은 실행이 붙는 티켓의 결과여야 한다.
+3. **`/api/health` 응답에 `status`·`dependencies` 를 더했다.** 계약의 `ok`·`version` 은
+   그대로 두었으므로 소비자 호환은 유지된다(계약 개정 아님). `ok` 는 프로세스 생존이고,
+   의존 상태는 `status`(`ok`|`degraded`)가 말한다 — 의존이 죽었다고 `ok:false` 를 주면
+   모니터가 프로세스 다운으로 읽고 재시작을 돌린다.
+
+## 데이터 계층
+
+DDL·마이그레이션은 `db/` 에 있다(T1-1). `pwsh db/migrate.ps1` — 자세한 것은 `db/README.md`.

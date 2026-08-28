@@ -1,0 +1,7 @@
+# ai-api 개발·실측 전용 의존 (T1-8)
+-r requirements.txt
+
+# httpx : ASGI 앱을 프로세스 안에서 직접 호출해 이벤트 루프 점유를 재기 위해 쓴다
+#         (tools/measure_loop_lag.py). 서버를 띄우고 밖에서 때리면 네트워크 스택 지연이
+#         섞여 「루프가 막혔는가」를 분리해 볼 수 없다. §7 의 async HTTP 클라이언트이기도 하다.
+httpx==0.28.1
