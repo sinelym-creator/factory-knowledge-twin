@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fkt/contracts/agent-events-v0.1",
+  "title": "FKT Agent Event Envelope v0.1",
+  "description": "WebSocket(live)과 replay fixture가 공용하는 agent 진행 이벤트. replay는 동일 스키마에 mode=replay만 다르다. type↔payload는 allOf/if-then으로 «스키마 수준에서» 결속된다(검증 F-1·F-2 처방).",
+  "type": "object",
+  "required": ["runId", "seq", "ts", "mode", "type", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "runId": { "type": "string" },
+    "seq": { "type": "integer", "minimum": 0, "description": "run 내 단조 증가 — replay 재생 순서 보장" },
+    "ts": { "type": "string", "format": "date-time" },
+    "mode": { "enum": ["live", "replay"] },
+    "type": {
+      "enum": [
+        "run.started",
+        "plan.updated",
+        "step.started",
+        "step.evidence",
+        "step.completed",
+        "run.completed",
+        "run.stopped",
+        "run.failed"
+      ]
+    },
+    "payload": { "type": "object" }
+  },
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "run.started" } } },   "then": { "properties": { "payload": { "$ref": "#/$defs/runStarted" } } } },
+    { "if": { "properties": { "type": { "const": "plan.updated" } } },  "then": { "properties": { "payload": { "$ref": "#/$defs/planUpdated" } } } },
+    { "if": { "properties": { "type": { "const": "step.started" } } },  "then": { "properties": { "payload": { "$ref": "#/$defs/stepStarted" } } } },
+    { "if": { "properties": { "type": { "const": "step.evidence" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/stepEvidence" } } } },
+    { "if": { "properties": { "type": { "const": "step.completed" } } },"then": { "properties": { "payload": { "$ref": "#/$defs/stepCompleted" } } } },
+    { "if": { "properties": { "type": { "const": "run.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runCompleted" } } } },
+    { "if": { "properties": { "type": { "const": "run.stopped" } } },   "then": { "properties": { "payload": { "$ref": "#/$defs/runStopped" } } } },
+    { "if": { "properties": { "type": { "const": "run.failed" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runFailed" } } } }
+  ],
+  "$defs": {
+    "stepId": {
+      "enum": ["structured", "vector", "graph", "synthesize", "draft_work_order"],
+      "description": "LangGraph 조사 단계 — GS-01 S3~S7 대응"
+    },
+    "evidenceRef": {
+      "type": "object",
+      "required": ["evidenceId", "kind", "sourceId"],
+      "additionalProperties": false,
+      "properties": {
+        "evidenceId": { "type": "string" },
+        "kind": { "enum": ["alarm", "sensor-series", "record", "doc-chunk", "graph-path"] },
+        "sourceId": { "type": "string", "description": "온톨로지 ID 체계(T0-6) 실체 참조" },
+        "excerpt": { "type": "string", "description": "doc-chunk일 때 인용 문장" },
+        "score": { "type": "number" },
+        "revisionId": { "type": "string", "description": "doc-chunk: 인용한 문서 revision (신뢰 장치 — 검증 F-4)" },
+        "contentHash": { "type": "string", "description": "doc-chunk: 인용 시점 문서 hash" },
+        "stale": { "type": "boolean", "description": "doc-chunk: 색인이 최신 revision보다 낡았는지" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "doc-chunk" } } },
+          "then": { "required": ["evidenceId", "kind", "sourceId", "revisionId", "contentHash"] }
+        }
+      ]
+    },
+    "runStarted": {
+      "type": "object",
+      "required": ["scenarioId", "question"],
+      "additionalProperties": false,
+      "properties": {
+        "scenarioId": { "type": "string" },
+        "question": { "type": "string" }
+      }
+    },
+    "planUpdated": {
+      "type": "object",
+      "required": ["steps"],
+      "additionalProperties": false,
+      "properties": {
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/stepId" }, "minItems": 1 }
+      }
+    },
+    "stepStarted": {
+      "type": "object",
+      "required": ["step"],
+      "additionalProperties": false,
+      "properties": {
+        "step": { "$ref": "#/$defs/stepId" },
+        "note": { "type": "string" }
+      }
+    },
+    "stepEvidence": {
+      "type": "object",
+      "required": ["step", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "step": { "$ref": "#/$defs/stepId" },
+        "evidence": { "$ref": "#/$defs/evidenceRef" }
+      }
+    },
+    "stepCompleted": {
+      "type": "object",
+      "required": ["step", "elapsedMs"],
+      "additionalProperties": false,
+      "properties": {
+        "step": { "$ref": "#/$defs/stepId" },
+        "summary": { "type": "string" },
+        "elapsedMs": { "type": "integer", "minimum": 0, "description": "필수 — TTAE 합산 표시(검증 F-9)의 원천" }
+      }
+    },
+    "runCompleted": {
+      "type": "object",
+      "required": ["candidates"],
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["rank", "failureModeId", "label", "evidenceIds"],
+            "additionalProperties": false,
+            "properties": {
+              "rank": { "type": "integer", "minimum": 1 },
+              "failureModeId": { "type": "string" },
+              "label": { "type": "string" },
+              "confidenceNote": { "type": "string" },
+              "evidenceIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            }
+          }
+        },
+        "workOrderDraftId": { "type": "string" },
+        "totalElapsedMs": { "type": "integer", "minimum": 0, "description": "조사 총 경과 — TTAE 표시용(검증 F-9)" }
+      }
+    },
+    "runStopped": {
+      "type": "object",
+      "required": ["reason"],
+      "additionalProperties": false,
+      "properties": {
+        "reason": { "enum": ["user", "timeout", "reset"] },
+        "note": { "type": "string" }
+      },
+      "description": "POST /runs/{id}/stop 대응 종료 신호(검증 F-3b) — 타임라인은 이 이벤트로 닫힌다"
+    },
+    "runFailed": {
+      "type": "object",
+      "required": ["code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "fallback": { "enum": ["replay"], "description": "live 실패 시 replay 강등 신호" }
+      }
+    }
+  }
+}

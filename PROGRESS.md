@@ -1,19 +1,20 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
-> **«지금»만 담는다.** Phase 상태 = project-plan §1 · 재개 = checkpoint 1 Read.
+> **«지금»만 담는다.** Phase 상태 = project-plan §4 · 진행률 = 티켓 원장 · 재개 = checkpoint 1 Read. done 10행 초과분은 CHANGELOG로 회전.
 
 ## in progress
 
-| Phase | 태스크 | 담당 |
+| Phase | 티켓 | 담당 |
 |---|---|---|
-| 부트스트랩 | GitHub Public 개설 + CI 위생 게이트 배선 | 오케스트레이터 |
+| 0 | T0-1 product-brief · T0-4 storyboard · T0-5 contracts · T0-7 architecture | 오케 |
+| 0 | T0-2 UX 3안 · T0-3 wireframe · T0-6 ontology(선착수) | 구현 |
+| 0 | T0-8 평가 질문 · T0-9 독립 검증(체크리스트 선행) | 검증 |
 
-## todo (오케 인수 완료 — 첫 발주 준비)
+## todo
 
 | Phase | 태스크 | 선결 |
 |---|---|---|
-| 0 | UX visual direction 3안 · wireframe · Golden Scenario storyboard | 첫 발주 |
-| 0 | baseline §26 후속 산출물 8종 착수 순서 확정 | 첫 발주 |
+| 1 | S2 티켓 등재(skeleton·seed·harness) | Phase 0 게이트(S1) |
 
 ## blocked (운영자)
 
