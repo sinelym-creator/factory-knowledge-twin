@@ -3,7 +3,7 @@ asset_class: product
 description: 데이터·온톨로지 스펙 v0.1 — entity·relation·identifier·SSOT/파생 저장 분담 (T0-6 · D1 동결 대상)
 status: draft
 lifecycle: D1(08-29) 동결 · 이후 변경 = contract 개정 절차(baseline §0.3)
-size_limit: 16KB
+size_limit: 20KB
 depends_on: [docs/product/golden-scenario-spec.md, docs/baseline/poc-baseline-v0.2.md §7.7~§8.3 · §10 · §12.1]
 ---
 
