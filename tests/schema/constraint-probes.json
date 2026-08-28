@@ -2,6 +2,27 @@
   "name": "T1-1 스키마 제약 재현 표본 — «거부돼야 하는데 통과하는가»",
   "target": "services/ai-api/db/migrations/001_core_schema.sql",
   "note": "구현 좌석이 이미 실측한 단일 칼럼 제약 7종(ID 패턴·NOT NULL·PK 중복·FK·status CHECK·승인자 누락·sha256 형식)은 넣지 않았다. 자기 실측의 복창은 검증이 아니다. 여기 있는 것은 그가 시험하지 않은 방향 — «칼럼 사이의 정합»이다.",
+  "expectSemantics": "expect=reject : 스키마가 막아야 한다(막지 못하면 결함). expect=accept : 통과하는 것이 «설계»다 — 대조군(P-8)이거나, 오케가 비강제로 확정한 축이다. 🔴 accept가 늘어난다고 표본이 무뎌진 것은 아니지만, «무엇이 대신 지키는가»가 why에 적혀 있지 않은 accept는 눈감기다.",
+  "revision": {
+    "at": "2026-08-28",
+    "by": "검증(리바이2) · 오케 판정 승인",
+    "what": "P-5·P-6을 tests/data로 이관하고 P-3·P-4의 기대를 재설정했다. 그 전까지 이 표본은 4/8·exit 1로 «확정된 설계»를 결함으로 계속 보고했다 — 도구가 영구 red면 아무도 읽지 않는다.",
+    "basis": "evidence/t1-2-seed-verification.md §1"
+  },
+  "relocated": [
+    {
+      "id": "P-5",
+      "gap": "G-4b ID 구성요소 정합 (component)",
+      "to": "tests/data/seed-integrity.sql C-10",
+      "why": "T1-1 처방표가 «CHECK로 불가 · T1-2 seed 생성 시 검증»으로 이관한 축이다. 스키마 표본에 두면 영원히 FAIL이고, 실제로 지켜지는지는 데이터에서만 볼 수 있다. T1-2 실측 = 불일치 0/24."
+    },
+    {
+      "id": "P-6",
+      "gap": "G-4b ID 구성요소 정합 (sensor)",
+      "to": "tests/data/seed-integrity.sql C-11",
+      "why": "P-5와 같은 계열. T1-2 실측 = 불일치 0/30."
+    }
+  ],
   "isolation": "probe 1건 = 트랜잭션 1개(BEGIN … ROLLBACK). 준비 행까지 전부 되감기므로 대상 DB에 아무것도 남지 않는다 — 타 좌석 스택에서도 안전하게 돌릴 수 있다.",
   "commonSetup": [
     "INSERT INTO factory (id,name,site_code) VALUES ('FAC-P','probe','P')",
@@ -30,38 +51,22 @@
     },
     {
       "id": "P-3",
-      "expect": "reject",
-      "gap": "G-2 동시 유효 revision",
-      "label": "같은 문서에 유효 기간이 겹치는 approved revision 2건",
-      "why": "인용 가능 = approved AND 기간 내. 겹치면 «지금 인용할 revision»이 2개가 되어 판정 자체가 불가능하다 — T0-8 Q-DIRECT-003의 «정답 1건» 전제가 깨진다.",
+      "expect": "accept",
+      "gap": "G-2 동시 유효 revision — 🔴 비강제 «확정»(오케 판정)",
+      "label": "같은 문서에 유효 기간이 겹치는 approved revision 2건 (스키마는 막지 않는다)",
+      "why": "겹치면 «지금 인용할 revision»이 2개가 되어 T0-8 Q-DIRECT-003의 «정답 1건» 전제가 깨진다. 그러나 README D절 원칙(스키마는 사실만 담고 판정은 질의/서비스 계층)에 따라 «막지 않기로 확정»했다 — 여기서 통과하는 것이 설계다. 실제 데이터가 지키는지는 tests/data C-4가 본다(45문서 전부 인용 가능 revision 1건 실측).",
       "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,effective_to,approval_state,approved_by) VALUES ('DOC-SOP-9001@r2','DOC-SOP-9001',2,'2222222222222222222222222222222222222222222222222222222222222222','x','2026-01-01','2027-01-01','approved','qa'), ('DOC-SOP-9001@r3','DOC-SOP-9001',3,'3333333333333333333333333333333333333333333333333333333333333333','x','2026-06-01','2027-06-01','approved','qa')"
     },
     {
       "id": "P-4",
-      "expect": "reject",
-      "gap": "G-3 전이 방향",
-      "label": "approved → draft 역방향 전이",
-      "why": "스펙 §3.3: 상태 전이 «역방향 없음». 값 CHECK는 전이를 막지 못한다 — 승인된 문서를 초안으로 되돌리면 감사 이력이 무너진다.",
+      "expect": "accept",
+      "gap": "G-3 전이 방향 — 🔴 비강제 «확정»(오케 판정)",
+      "label": "approved → draft 역방향 전이 (스키마는 막지 않는다)",
+      "why": "스펙 §3.3은 «역방향 없음»이지만 값 CHECK로는 전이를 막을 수 없고, 같은 D절 원칙에 따라 트리거를 두지 않기로 확정했다 — 여기서 통과하는 것이 설계다. 🔴 이 축만은 아직 «데이터 그물이 없다» — 상태 전이는 쓰기 경로가 생기는 시점(서비스 계층)에 강제해야 하며, 그때까지 이 표본은 그 부채를 눈에 보이게 남겨 두는 자리다.",
       "setup": [
         "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r1','DOC-SOP-9001',1,'1111111111111111111111111111111111111111111111111111111111111111','x','2026-01-01','approved','qa')"
       ],
       "sql": "UPDATE document_revision SET approval_state='draft' WHERE id='DOC-SOP-9001@r1'"
-    },
-    {
-      "id": "P-5",
-      "expect": "reject",
-      "gap": "G-4 ID 구성요소 정합",
-      "label": "component id의 설비 번호가 소속 설비와 다름",
-      "why": "스펙 §3.1: CP-{EQ_NUM}-{CLASS3}-{NN}. EQ-CNC-902 소속인데 id는 901을 가리켜도 통과한다 — ID로 설비를 추정하는 코드가 전부 틀린 답을 낸다.",
-      "sql": "INSERT INTO component (id,equipment_id,name,component_class,installed_on) VALUES ('CP-901-BRG-01','EQ-CNC-902','probe','BRG','2026-01-01')"
-    },
-    {
-      "id": "P-6",
-      "expect": "reject",
-      "gap": "G-4 ID 구성요소 정합",
-      "label": "sensor id의 설비 번호가 소속 설비와 다름",
-      "why": "P-5와 같은 계열(SN-{EQ_NUM}-{MEAS}). GS-01 경로가 센서→설비를 ID로 읽는다.",
-      "sql": "INSERT INTO sensor (id,equipment_id,measurement_type,unit,sampling_hz) VALUES ('SN-901-VIB','EQ-CNC-902','VIB','mm/s',1)"
     },
     {
       "id": "P-7",
