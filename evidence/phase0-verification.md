@@ -3,7 +3,7 @@ artifact: phase0-verification
 ticket: T0-9
 owner: 검증(리바이2)
 status: 판정 제출 — 최종 판정권은 오케
-version: 1.3.0
+version: 1.4.0
 verified_at: 2026-08-28
 verification_base: develop `b502a2b` (§8 최종 확인) · §7 재검증 `baa332b` · 초판 `c4aa7b6`
 size_limit: 32KB
@@ -20,7 +20,7 @@ size_limit: 32KB
 | **검증 base** | `c4aa7b6` — 🔴 착수 시 base는 `12457be`였다. **stale base 위 판정을 전량 폐기하고 재실측**했다(아래 §0.2). PR #7 이후 `2ff5525→c4aa7b6` 구간은 `docs/product`·`packages/contracts` **diff 0** 실측 확인 — F-1~F-8 판정 유효. |
 | 대조 기준 | 각 티켓 md의 AC. 산문형 AC(T0-1·4·5·7)는 §1에서 **항목 단위로 분해**해 대조했다 — 분해안의 확정은 오케 판정 사항. |
 | 판정 근거 | **실파일 Read + grep 실측 + 스키마 재현 스크립트**. SSOT 문서가 아니라 실제 로드/소비되는 파일을 읽었다. |
-| 재현 | `tests/contract/oneof-discrimination.check.js` — F-1 재현용(의존성 없음, `node` 단독 실행). |
+| 재현 | **현행 = `node tests/contract/run.js`** (T1-6 harness). 본문 §4·§7·§8이 인용하는 검사기 파일명은 **그때 실제로 돌린 것**이므로 소급 수정하지 않는다 — 폐기본은 `tests/contract/archive/`에 보존. |
 | 근거 등급 | 본 문서 전 판정 = **E1(실측)**. 권고·설계 소견만 E3으로 표기. |
 
 ### 0.1 🔴 독립성 선언 — T0-8은 판정 유보
@@ -386,9 +386,13 @@ T0-3 L172가 ③ 문서 헤더에 요구하는 항목과 현 계약의 대조(E1
 
 ## 부록 B. 재현 방법
 
+**현행(T1-6 harness 승격 후)**
+
 ```
-node tests/contract/oneof-discrimination.check.js packages/contracts/agent-events-v0.1.schema.json
-# 기대: "oneOf 판별 실패 케이스: 0건 / 8"  → 현재 "2건 / 8" (F-1 미해소)
+node tests/contract/run.js            # 전건 · 자기 검증 포함
+node tests/contract/run.js --quiet    # CI용(실패·요약만)
 ```
 
-의존성 없음(`node` 단독). F-1 수정 후 회귀 확인용으로 `tests/contract/`에 존치한다.
+exit code: `0` 전건 통과 · `1` 실패 · `2` 실행 오류. 케이스는 `tests/contract/cases/*.cases.json` 데이터로 분리됐다.
+
+**이력**: 본 문서가 §4·§7·§8에서 인용한 검사기 2종은 그 시점의 실행 기록이다. `oneof-discrimination.check.js`는 `oneOf` 구조 철거로 폐기되어 `tests/contract/archive/`에 이력 보존(🔴 회귀 판정에 쓰지 말 것), `event-binding.check.js`는 T1-6에서 `run.js` + `cases/`로 승격되며 흡수됐다. **파일명이 사라졌다고 해서 당시 판정이 무효가 되지는 않는다** — 판정 근거는 문서 본문에 남아 있고, 같은 케이스가 현행 harness에 전량 이관됐다.
