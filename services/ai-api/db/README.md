@@ -1,8 +1,8 @@
 # DB 마이그레이션 · 스펙 대조표 (T1-1)
 
 > 🔴 **유일 원천 = `docs/product/data-ontology-spec.md`(동결 v0.1).** 이 표는 스펙 항목이 DDL의 어디에 착지했는지를 1:1로 보여준다 — 검증 좌석은 이 표로 대조한다.
-> DDL 파일 = `migrations/001_core_schema.sql` + `002_id_integrity_checks.sql` + `003_vector_index_build.sql`
-> · 적용 = `pwsh services/ai-api/db/migrate.ps1` (전 파일 순서 적용 · 재실행 멱등)
+> DDL 파일 = `migrations/001` ~ `005` · 적용 = `pwsh services/ai-api/db/migrate.ps1`
+> (🔴 이미 적용된 파일은 `schema_migration` 이력을 보고 건너뛴다 — 아래 F절)
 
 ## 적용 (1명령)
 
@@ -89,7 +89,8 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔 새로 
 | 항목 | 이유 |
 |---|---|
 | ~~벡터 인덱스(HNSW/IVFFlat)~~ | ✅ **003에서 착지**(HNSW·코사인). 아래 E절. |
-| ~~index build 기록·`ontology_version`~~ | ✅ **003에서 착지**(`index_build` 테이블). `ssot_manifest_hash`는 여전히 없다 — E절 참조. |
+| ~~index build 기록·`ontology_version`~~ | ✅ **003에서 착지**(`index_build` 테이블). |
+| ~~`ssot_manifest_hash`~~ | ✅ **005에서 착지**(`v_ssot_manifest`). F절. |
 | Neo4j 투영 | **T1-5** 소관 (본 스키마가 그 원천) |
 | 인용 가능 여부 «판정» | 스키마는 사실만 담고 판정은 질의/서비스 계층에서 한다 |
 
@@ -142,8 +143,7 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔 새로 
 
 ### 여전히 없는 것
 
-`ssot_manifest_hash`(스펙 §3.3) — 문서 전체 집합에 대한 단일 해시로, 색인이 아니라 **SSOT
-manifest 산출물**이다. 003은 revision 단위 기록만 담는다. 어느 티켓 소관인지는 미확정.
+~~`ssot_manifest_hash`~~ — **005에서 닫혔다**(Q-2). 003이 revision 단위 기록만 담은 것은 그대로다.
 
 ### 재적용 실측 (E1 · 2026-08-29)
 
@@ -151,3 +151,44 @@ manifest 산출물**이다. 003은 revision 단위 기록만 담는다. 어느 �
 |---|---|
 | 1차 | `003: embedding → vector(384) 적용` · `schema_migration` 3행 |
 | 2차(멱등) | `003: embedding 이미 vector(384) — 차원 변경 건너뜀` · 오류 0 |
+
+## F. 004·005 — ontology 신선도 축과 SSOT manifest (Q-4·Q-2 · 2026-08-29)
+
+| 파일 | 무엇 | 왜 |
+|---|---|---|
+| `004_ontology_freshness.sql` | `ontology_registry`(한 행) + `v_index_freshness` 교체 | 스펙 §3.3의 「ontology_version 불일치도 동일 처리」를 003이 구현하지 않았다. view가 파일을 읽을 수 없어 **비교 대상을 DB에 세우는 것**이 선결이었다. |
+| `005_ssot_manifest.sql` | `v_ssot_manifest` view | §3.3 `ssot_manifest_hash` 정의(approved 1문서 1행 · 문서 ID 오름차순 · 개행 결합 · SHA-256). |
+
+- `freshness`는 **STALE 하나**로 둔다(§3.3 「동일 처리」). 원인은 `stale_reason`(`SOURCE_SHA`·`ONTOLOGY_VERSION`)으로 나눈다 — 처리는 같아도 **고칠 곳이 다르다**.
+- 지문·stale 모두 **저장하지 않고 파생**한다. 저장하면 원문이 바뀌는 순간 그 사본이 낡고, 낡음을 감지하려 둔 값이 낡는다.
+- 산출 알고리즘은 **SQL에만** 둔다. 파이썬에 같은 식을 또 적으면 정본이 둘이 되어 조용히 갈라진다.
+
+### 🔴 migrate.ps1 동작 변경 — 「적용된 파일은 건너뛴다」 (실측된 결함의 수정)
+
+기존 러너는 **매번 전 파일을 재적용**했고, 「모든 DDL이 IF NOT EXISTS」가 그 근거였다.
+004가 그 전제를 깼다 — 003의 `v_index_freshness`에 열을 더하자, 다음 실행에서 **003이 그 view를
+옛 모양으로 되돌리려다 `cannot drop columns from view`로 죽는다.** 004가 착지한 DB에서는
+migrate 자체가 실행 불가가 된다. 개별 파일의 멱등성으로는 막을 수 없는 **순서 문제**다
+(앞 파일이 뒤 파일의 결과를 되감는다).
+
+`schema_migration`은 이미 그 이력을 들고 있었다 — **쓰기만 하고 읽지 않았을 뿐이다.**
+
+| 실측 (E1 · 2026-08-29) | 결과 |
+|---|---|
+| 신규 DB 1차 (001~005 순차) | exit 0 |
+| 신규 DB 2차 (전건 skip) | exit 0 |
+| 기존 DB (005까지 적용됨) | 전건 skip · exit 0 |
+| 🔴 「전부 재적용」 동작 (`-Force`로 만들어 실측) | **exit 1** — 위 결함 재현 |
+
+마지막 줄 때문에 재적용 스위치는 **두지 않았다**. 결함을 재현하는 것 외에 쓸모가 없다.
+DB를 처음부터 세우려면 데이터베이스를 새로 만들고 이 스크립트를 돌린다.
+
+### 실측 — SSOT manifest (Q-2 AC)
+
+```
+① 같은 입력 2회 재계산   45 docs · 0b2145bf8bb6…5361a  (2회 동일)
+② 독립 재도출            스펙 §3.3 문장을 파이썬으로 따로 구현 → «같은 값».
+                        SQL이 자기 자신과만 일치하는 게 아니라 «정의»와 일치함을 본 것이다
+③ 대조군                 문서 1건의 content_sha256을 바꾸자 지문이 05bb703b…로 바뀐다
+                        (지문이 실제로 문서 집합에 반응한다 — seed 복구 후 원값 회귀 확인)
+```

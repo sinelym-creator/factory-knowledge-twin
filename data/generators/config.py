@@ -69,6 +69,38 @@ GS = {
     "safety_ppe": "SAF-PPE-01",
 }
 
+# 🔴 GS 키의 «소유 테이블» — 바인딩 검사는 여기 적힌 테이블의 id에서«만» 찾는다.
+#
+# 왜 필요한가(F-2 · evidence/t1-7-a-selfcheck-and-nets.md §2.4): 전 테이블의 문자열을 한 집합에
+# 부어 「존재」만 보면, 소유 테이블에서 ID가 사라져도 그것을 «참조하는» 다른 테이블이 옛 문자열을
+# 들고 있는 한 검사가 통과한다. 검증 좌석 실측으로 GS 20키 중 18키가 그 그림자 참조를 1~8곳
+# 가지고 있었다 — 즉 검사의 사정거리가 2키뿐이었다.
+#
+# 정본 대응 = tests/data/seed-integrity.sql C-1 (DB 층에서 이미 테이블별로 지목하고 있다).
+# 🔴 GS에 키를 더하면 여기에도 더해야 한다 — 빠뜨리면 self_check가 «미정의»로 FAIL을 낸다.
+GS_OWNER = {
+    "factory":               ("factory", "id"),
+    "line":                  ("production_line", "id"),
+    "equipment":             ("equipment", "id"),
+    "peer_equipment":        ("equipment", "id"),
+    "component":             ("component", "id"),
+    "sensor_vib":            ("sensor", "id"),
+    "sensor_temp":           ("sensor", "id"),
+    "sensor_cur":            ("sensor", "id"),
+    "alarm":                 ("alarm", "id"),
+    "incident":              ("incident", "id"),
+    "work_order":            ("work_order", "id"),
+    "maintenance_record":    ("maintenance_record", "id"),
+    "failure_mode":          ("failure_mode", "id"),
+    "failure_mode_unmapped": ("failure_mode", "id"),
+    "sop":                   ("sop", "id"),
+    "sop_document":          ("document", "id"),
+    "manual_document":       ("document", "id"),
+    "maint_report_document": ("document", "id"),
+    "safety_loto":           ("safety_rule", "id"),
+    "safety_ppe":            ("safety_rule", "id"),
+}
+
 # 🔴 Q-UNANS-002 — 이 ID는 «절대 생성하지 않는다». 미등록 상태 자체가 정답 근거다.
 FORBIDDEN_IDS = frozenset({"EQ-CNC-999"})
 

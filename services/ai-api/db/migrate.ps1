@@ -4,7 +4,21 @@
 #   pwsh services/ai-api/db/migrate.ps1
 #   pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔서 신규 적용 시
 #
-# 🔴 재실행 멱등 — 모든 DDL이 IF NOT EXISTS다. 두 번 돌려도 오류가 나지 않는다.
+# 🔴 재실행 멱등 — 이미 적용된 파일은 schema_migration 이력을 보고 «건너뛴다».
+#
+# 🔴 「전부 다시 돌리기」 스위치는 «두지 않았다». 그 동작이 바로 아래 결함이며, 결함을
+#    재현하는 것 말고는 쓸모가 없다(-Force 로 만들어 실측했더니 정확히 exit 1이 났다).
+#    DB 상태를 처음부터 다시 세우려면 데이터베이스를 새로 만들고 이 스크립트를 돌려라 —
+#    실측: 신규 DB에 001~005 순차 적용 exit 0 · 재실행 exit 0(전건 skip).
+#
+# 🔴 왜 「전부 다시 돌리기」를 그만두었나 (2026-08-29 · 004 착지에서 실측된 결함):
+#    각 DDL이 IF NOT EXISTS라 재적용이 안전하다는 전제로 매번 전 파일을 돌렸다. 그런데
+#    «객체를 교체하는» 마이그레이션이 생기면 그 전제가 깨진다 — 004가 003의 v_index_freshness
+#    에 열을 더하자, 다음 실행에서 003이 그 view를 옛 모양으로 되돌리려다
+#    `cannot drop columns from view` 로 죽었다. 즉 004가 착지한 DB에서는 migrate 자체가
+#    실행 불가가 된다. 「앞 파일이 뒤 파일의 결과를 되감는다」는 순서 문제라 개별 파일의
+#    멱등성으로는 막을 수 없다. schema_migration은 이미 그 이력을 들고 있었다 — 쓰기만
+#    하고 읽지 않았을 뿐이다.
 # 🔴 compose 스택(fkt-postgres)이 기동 중이어야 한다: docker compose up -d
 # =============================================================================
 param(
@@ -35,9 +49,19 @@ if ($running -notcontains $Service) {
 $files = Get-ChildItem -Path $migrationDir -Filter '*.sql' | Sort-Object Name
 if (-not $files) { throw "적용할 마이그레이션이 없습니다: $migrationDir" }
 
-Write-Host "== migrate: $($files.Count)개 · embedding_dim=$EmbeddingDim · db=$DbName ==" -ForegroundColor Cyan
+# 이미 적용된 파일 목록. 테이블이 아직 없는 «최초» 실행에서는 조회가 실패하므로 빈 목록으로 둔다.
+$applied = @()
+$out = docker compose exec -T $Service psql -U $DbUser -d $DbName -tAc `
+  "SELECT filename FROM schema_migration" 2>$null
+if ($LASTEXITCODE -eq 0 -and $out) { $applied = @($out | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
+
+Write-Host "== migrate: $($files.Count)개 · 적용됨 $($applied.Count)개 · embedding_dim=$EmbeddingDim · db=$DbName ==" -ForegroundColor Cyan
 
 foreach ($f in $files) {
+  if ($applied -contains $f.Name) {
+    Write-Host "-- skip  $($f.Name) (적용됨)" -ForegroundColor DarkGray
+    continue
+  }
   Write-Host "-- apply $($f.Name)" -ForegroundColor DarkCyan
   # ON_ERROR_STOP=1 : 한 문장이라도 실패하면 즉시 비정상 종료(부분 적용 방지)
   Get-Content -Raw -Encoding UTF8 $f.FullName |
