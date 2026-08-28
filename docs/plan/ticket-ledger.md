@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 3 / 총 12)
+## 원장 (진행률 = ✅ 9 / 총 12)
 
 ### 부트스트랩 (완결)
 
@@ -26,15 +26,15 @@ size_limit: 8KB
 
 | ID | 티켓 | 담당 | AC 요지 | 상태 |
 |---|---|---|---|---|
-| T0-1 | `docs/product/product-brief.md` 초안 | 오케 | 사용자·문제·가치·3분 데모 narrative — 운영자 승인 가능 상태 | 검수 대기 |
-| T0-2 | `docs/product/ux-direction.md` — visual direction 3안 | 구현 | 3안 각: 무드·레이아웃·팔레트·대표 화면 1커트 + 선택 근거 | A안 승인(D-002 · senku2 · PR#6) |
-| T0-3 | P0 핵심 화면 wireframe + route/interaction 목록 | 구현 | Overview·Incident·Evidence·WorkOrder·전략비교 5화면 | 진행(senku2) |
-| T0-4 | `docs/product/golden-scenario-spec.md` 초안(storyboard) | 오케 | 시나리오 단계·기대 evidence·데모 스크립트 | 검수 대기 |
-| T0-5 | `packages/contracts/` API·event contract v0.1 | 오케 | REST·WebSocket·replay event 스키마 — 동결 대기 | 검수 대기 |
-| T0-6 | `docs/product/data-ontology-spec.md` v0.1 | 구현 | entity·relation·identifier 체계 — 동결 대기 | 착지·대조 중(senku2 · 922eb7f) |
-| T0-7 | `docs/product/system-architecture.md` | 오케 | container·network·data flow·trust boundary | 검수 대기 |
-| T0-8 | 평가 질문 초안 8~10문 + acceptance threshold | 검증 | Direct·Multi-hop·Safety·Unanswerable 포함 | v0.2 재바인딩 중(levi2 · 보고 1542773410831011850) |
-| T0-9 | Phase 0 산출물 독립 검증(AC 대조·정합) | 검증 | 전 산출물 PASS/FAIL 판정 + 지적사항 | 발주 |
+| T0-1 | `docs/product/product-brief.md` 초안 | 오케 | 사용자·문제·가치·3분 데모 narrative — 운영자 승인 가능 상태 | ✅ PASS(T0-9 v1.1 · suzaku · ffaa9e0) |
+| T0-2 | `docs/product/ux-direction.md` — visual direction 3안 | 구현 | 3안 각: 무드·레이아웃·팔레트·대표 화면 1커트 + 선택 근거 | ✅ PASS(T0-9 v1.1 · D-002 승인 · senku2 · PR#6) |
+| T0-3 | P0 핵심 화면 wireframe + route/interaction 목록 | 구현 | Overview·Incident·Evidence·WorkOrder·전략비교 5화면 | ✅ PASS(T0-9 v1.1 · senku2 · PR#2) |
+| T0-4 | `docs/product/golden-scenario-spec.md` 초안(storyboard) | 오케 | 시나리오 단계·기대 evidence·데모 스크립트 | F-6 수정 완료 · 재검증 대기(suzaku) |
+| T0-5 | `packages/contracts/` API·event contract v0.1 | 오케 | REST·WebSocket·replay event 스키마 — 동결 대기 | F-1·2·3b·4 수정 완료 · 재검증 대기(suzaku) |
+| T0-6 | `docs/product/data-ontology-spec.md` v0.1 | 구현 | entity·relation·identifier 체계 — 동결 대기 | ✅ PASS(T0-9 v1.1 · senku2 · 922eb7f) |
+| T0-7 | `docs/product/system-architecture.md` | 오케 | container·network·data flow·trust boundary | ✅ PASS(T0-9 v1.1 · suzaku · fcfb11e) |
+| T0-8 | 평가 질문 초안 8~10문 + acceptance threshold | 검증 | Direct·Multi-hop·Safety·Unanswerable 포함 | ✅ PASS(오케 판정 · levi2 · PR#3 — 표본 검문 4축 일치) |
+| T0-9 | Phase 0 산출물 독립 검증(AC 대조·정합) | 검증 | 전 산출물 PASS/FAIL 판정 + 지적사항 | v1.1 완주(levi2 · PR#9) · T0-4/5 재검증 1회 잔여 |
 
 > **정정 append(08-28 15:55)**: `4f638c7` 내 T0-8 파일 포함은 좌석 의사와 무관한 혼입(공유 index 사고)이다 — T0-8 산출물 귀속 = 검증 좌석(levi2), 귀속 정본 = 보고 message id(위 표 병기). 원장 행 근거 병기 표준은 plan §5.
 

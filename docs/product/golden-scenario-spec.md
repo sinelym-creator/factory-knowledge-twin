@@ -36,7 +36,7 @@ CNC 밀링 설비의 스핀들 진동 RMS가 임계 초과 → AI 조사 → 원
 | S2 | 조사 개시 | Agent | 조사 계획 선언(조사 단계 목록 스트리밍) | agent event: plan 노드 |
 | S3 | 구조화 조회 | Agent | 알람·센서 통계·최근 정비 이력 요약 | SQL 결과: ALM-2041·WO-HIST-0087 |
 | S4 | 유사 사례 검색 | Agent | 유사 장애·매뉴얼 진동 진단 절 인용 | vector hit: MAN-CNC-2xx 해당 문장 · WO-HIST 유사건 |
-| S5 | 그래프 추적 | Agent | EQ-CNC-204 →(모델)→ FM-BRG-WEAR →(절차)→ SOP-BRG-INSP-v2 →(의무)→ SAF-LOTO-01 경로 | graph path 3~4 hop 시각화 |
+| S5 | 그래프 추적 | Agent | EQ-CNC-204 →(구성품 HAS_COMPONENT)→ (베어링 부품) →(고장모드)→ FM-BRG-WEAR →(절차)→ SOP-BRG-INSP-v2 →(의무)→ SAF-LOTO-01 경로 (**4-hop** · Component 경유 — T0-6 §6·검증 F-6 정합) | graph path 4-hop 시각화 |
 | S6 | 원인 종합 | Agent | 후보 2개 + 신뢰 순위 + 각 근거 묶음 | 후보별 evidence ID 목록(S3~S5의 실체) |
 | S7 | 작업지시 초안 | Agent | 베어링 점검·교체 초안(부품·절차·LOTO 안전 조치 포함) | SOP-BRG-INSP-v2·SAF-LOTO-01 인용 |
 | S8 | 편집·승인 | 방문자 | 초안 수정(예: 일정 변경) → 승인 → 상태 전이·이력 기록 | 승인 audit 기록 |

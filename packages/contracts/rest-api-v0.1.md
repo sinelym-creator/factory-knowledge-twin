@@ -33,7 +33,7 @@ size_limit: 8KB
 | GET `/scenarios` | — | 승인된 시나리오 목록(allowlist — GS-01 등) | 시나리오 선택 |
 | POST `/scenarios/{scenarioId}/runs` | `{ sessionId, mode: "live"\|"replay" }` | `{ runId, incidentId, mode }` — live 불가 시 `mode:"replay"`로 강등 응답 | 조사 시작 |
 | GET `/incidents/{incidentId}` | — | incident 표제: 제목·상태·대상 설비·연결 알람·runId (G1) | Incident 라우트 |
-| POST `/runs/{runId}/stop` | — | `{ status: "stopped" }` — §12.1 «실행·중지·재설정»의 중지 (G2) | 조사 중지 |
+| POST `/runs/{runId}/stop` | — | `{ status: "stopped" }` — §12.1 «실행·중지·재설정»의 중지 (G2) · 타임라인에 `run.stopped` 이벤트 발행(F-3b) | 조사 중지 |
 | GET `/runs/{runId}` | — | `{ status, candidates[], workOrderDraftId? }` — 완주 후 결과 스냅샷 | Evidence |
 | GET `/runs/{runId}/events` | — | 전체 이벤트 배열(agent-events 스키마 · seq 순) — replay 되감기 정본 (G3) | 되감기 |
 | WS `/ws/runs/{runId}` | — | agent-events 스키마 스트림 | 진행 표시 |
@@ -42,9 +42,9 @@ size_limit: 8KB
 
 | 메서드 경로 | 응답 요지 | 화면 |
 |---|---|---|
-| GET `/evidence/{evidenceId}` | kind별 실체: doc-chunk(원문+강조 offset)·graph-path(노드/엣지)·record·sensor-series 참조 | Evidence 뷰 |
+| GET `/evidence/{evidenceId}` | kind별 실체: doc-chunk(원문+강조 offset + `revisionId`·`contentHash`·`stale` — 신뢰 배지 F-4)·graph-path(노드/엣지)·record·sensor-series 참조 | Evidence 뷰 |
 | GET `/graph/paths?from={id}&to={id}\|byRun={runId}` | 그래프 경로(노드·엣지·라벨) — 고정 template 조회만 | graph 시각화 |
-| GET `/documents/{docId}?highlight={chunkId}` | 문서 미리보기 + 인용 문장 강조 좌표 | 문서 preview |
+| GET `/documents/{docId}?highlight={chunkId}` | 문서 미리보기 + 인용 문장 강조 좌표 + `revisionId`·`contentHash`·`stale`(F-4) | 문서 preview |
 
 ## 검색 전략 비교
 
