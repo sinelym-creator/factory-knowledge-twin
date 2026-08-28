@@ -27,6 +27,8 @@ size_limit: 4KB
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
 | `infra/` | 로컬 인프라 보조(postgres init SQL 등) | 환경 변경 시 |
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
+| `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
+| `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
 | `evidence/` | 독립 검증 보고(phase0-verification 등) | 검증 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |
