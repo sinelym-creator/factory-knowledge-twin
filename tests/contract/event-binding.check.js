@@ -70,6 +70,7 @@ const CASES = [
   // ③ F-4 신뢰 필드 — doc-chunk 조건부 required
   ['reject', '③ doc-chunk에 revisionId 누락', env('step.evidence', { step: 'vector', evidence: { evidenceId: 'E1', kind: 'doc-chunk', sourceId: 'S', contentHash: 'a' } })],
   ['reject', '③ doc-chunk에 contentHash 누락', env('step.evidence', { step: 'vector', evidence: { evidenceId: 'E1', kind: 'doc-chunk', sourceId: 'S', revisionId: 'R' } })],
+  ['reject', '③ doc-chunk에 stale 누락',     env('step.evidence', { step: 'vector', evidence: { evidenceId: 'E1', kind: 'doc-chunk', sourceId: 'S', revisionId: 'R', contentHash: 'h' } })],
   ['accept', '③ 비 doc-chunk는 면제(alarm)',  env('step.evidence', { step: 'vector', evidence: { evidenceId: 'E2', kind: 'alarm', sourceId: 'AL-20260826-0041' } })],
   // ④ replay ⊂ live — 동일 payload가 mode만 바꿔 통과해야 한다
   ['accept', '④ replay 모드 동일 이벤트',     env('step.evidence', { step: 'vector', evidence: DOC }, { mode: 'replay' })],

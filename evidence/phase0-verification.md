@@ -3,10 +3,10 @@ artifact: phase0-verification
 ticket: T0-9
 owner: 검증(리바이2)
 status: 판정 제출 — 최종 판정권은 오케
-version: 1.2.0
+version: 1.3.0
 verified_at: 2026-08-28
-verification_base: develop `baa332b` (§7 재검증) · 초판 판정 base `c4aa7b6`
-size_limit: 28KB
+verification_base: develop `b502a2b` (§8 최종 확인) · §7 재검증 `baa332b` · 초판 `c4aa7b6`
+size_limit: 32KB
 ---
 
 # Phase 0 독립 검증 — T0-1~T0-8
@@ -316,6 +316,57 @@ T0-3 L172가 ③ 문서 헤더에 요구하는 항목과 현 계약의 대조(E1
 | 교차 ② T0-5↔T0-3 | 🔴 FAIL | ◻ **부분** — 중지 종료신호 ✅ / 문서 헤더 3/5 |
 
 🔴 **T0-5 및 교차 ②는 아직 완전 PASS가 아니다.** 남은 것은 **계약 표 2줄**(§7.3)이며, 그 밖의 차단 요소는 없다. 「일부 축 통과를 합격이라 부르지 않는다」(baseline §32.1)에 따라 **부분 해소로 계수**한다 — 다만 **재설계 요소는 0**이고 수정 비용은 초판 4건 중 가장 작다.
+
+---
+
+## 8. F-4 최종 확인 (base `b502a2b` · PR #14)
+
+### 8.1 재판정 범위의 근거
+
+`baa332b → b502a2b` diff 실측: 교차 ② 관련 파일 중 변경된 것은 **`agent-events` 1줄 · `rest-api` 2줄뿐**이고 **`wireframes.md`는 diff 0**이다. 따라서 ②의 나머지 행은 §7 판정이 그대로 유효하며, **F-4 행만 재판정**한다.
+
+### 8.2 화면 요구 5필드 대조 — **5/5 충족**
+
+| T0-3 L172 요구 | 계약 반영 (REST L45·L47 **양쪽**) | 판정 |
+|---|---|---|
+| `documentId@rN` | `revisionId` | ✅ |
+| `approval_state` | `approvalState` | ✅ **신규** |
+| `effective_from` / `effective_to` | `effectiveFrom` / `effectiveTo` | ✅ **신규** |
+| `content_sha256` | `contentHash` | ✅ |
+| 색인 신선도 | `stale` | ✅ |
+
+두 엔드포인트 모두 「인용 유효 조건 = T0-6 §3.3」을 **본문에 명시**했다 — 필드만 늘린 게 아니라 **왜 필요한지가 계약에 남았다.**
+
+### 8.3 N-1 해소 — `stale` 조건부 필수화
+
+스키마 doc-chunk `then.required` = `["evidenceId","kind","sourceId","revisionId","contentHash","stale"]`. **`stale` 편입 확인.**
+
+**양방향 실측 (`event-binding.check.js` · 케이스 1건 추가 → 22케이스)**
+
+```
+③ doc-chunk에 stale 누락   기대 reject  실제 reject   ← 이번에 새로 강제됨
+결속 검사: 22/22 통과 · 실패 0건
+관찰: doc-chunk에서 «stale» 생략 시 → 거부(= 필수 필드)
+```
+
+§7.4에서 「선택 필드(통과)」였던 관찰 라인이 **「필수 필드(거부)」로 뒤집힌 것**이 해소의 증거다. 「추가했다」는 말이 아니라 **빠지면 거부되는가**로 확인했다.
+
+### 8.4 계층 분담 확인 (지적 아님 · 기록)
+
+이벤트 `evidenceRef`는 `revisionId`·`contentHash`·`stale`만 갖고 `approvalState`·`effective*`는 **REST에만** 있다. 이는 결함이 아니라 **의도적 분담**으로 읽힌다 — T0-3 L125의 ② Evidence 스트립 요구는 `evidenceId·kind·sourceId·excerpt·score`뿐이고, 유효성 전량이 필요한 곳은 ③ 상세 뷰(REST 경유)다. **이벤트 = 참조 + 신선도 / REST = 유효성 전량**으로 층이 갈린다. 스트립 요구의 상위집합이므로 화면은 전부 충족된다.
+
+### 8.5 최종 판정
+
+| 항목 | 초판 | §7 | **§8 최종** |
+|---|---|---|---|
+| **F-4** | 🔴 FAIL | ◻ 부분(3/5) | ✅ **해소(5/5)** |
+| **N-1** (`stale`) | — | ◻ 보고-실물 불일치 | ✅ **해소** |
+| **T0-5** | 🔴 FAIL 2/3 | ◻ 부분 | ✅ **PASS 3/3** |
+| **교차 ②** | 🔴 FAIL | ◻ 부분 | ✅ **PASS** |
+
+🔴 **초판 차단 4건(F-1·F-2·F-3b·F-4) + F-6 전건 해소.** 검증 좌석 기준 **Phase 0 잔여 차단 = 0**.
+
+> 남은 것은 차단이 아닌 것들뿐이다: **F-7·F-8**(◻ 경미) · **F-9·F-11**(D-002 후행 delta — T0-10으로 등재됨) · **T0-8 판정**(오케가 08-28 PASS 판정 · 판정자 원장 기록 확인). 전부 Phase 0 게이트 밖이다.
 
 ---
 
