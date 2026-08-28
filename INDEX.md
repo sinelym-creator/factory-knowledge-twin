@@ -21,5 +21,13 @@ size_limit: 4KB
 | `docs/plan/ticket-ledger.md` | 티켓 원장 = 진행률 유일 산법 | 단위 완료·분모 변경 시 |
 | `docs/plan/tickets/` | 티켓 상세(1티켓 1파일) | 발주 시 생성 |
 | `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) | 확정 시 |
+| `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
+| `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
+| `apps/web-console/` | Next.js 웹 콘솔(Sandbox UI · App Router) | S2~ 구현 |
+| `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
+| `infra/` | 로컬 인프라 보조(postgres init SQL 등) | 환경 변경 시 |
+| `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
+| `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
+| `evidence/` | 독립 검증 보고(phase0-verification 등) | 검증 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |
 | `.claude/context/checkpoint.md` | 재개점(로컬 전용·비추적 · 백지 재작성) | 세션 마감 시 |
