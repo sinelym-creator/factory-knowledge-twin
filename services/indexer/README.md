@@ -1,7 +1,8 @@
 # indexer — chunk 분할 정책과 실측 (T1-4)
 
-색인 파이프라인의 첫 단계. **지금 있는 것은 「자르는 법」과 「후보안을 재는 도구」뿐이다** —
-임베딩·pgvector 적재는 티켓 T1-4 단계 게이트 ②(오케 동결) 이후다.
+색인 파이프라인. chunk 분할(게이트 ①·②) · 임베딩 택일(③) · **pgvector 적재와 검증(④·⑤)** 까지
+들어 있다. 원천은 `document_revision.body`(PostgreSQL = 권위 원본 · 스펙 §4)이고,
+`data/documents/*.md` 를 직접 읽는 것은 probe 도구뿐이다.
 
 > 🔴 **정책은 동결됐다** — `chunking_policy_version = 1` · `section_sentence` · 512 token ·
 > overlap 0 (오케스트레이터 판정 2026-08-29 · 근거는 아래 실측). `chunking.FROZEN_POLICY`가
@@ -21,6 +22,19 @@ services\indexer\.venv\Scripts\python.exe services\indexer\probe_chunking.py
 
 `data/documents/*.md` 7건과 `data/generators/config.py`의 `EXPECTED_QUOTES` 9건을 읽어
 후보안 18종(3 전략 × 3 크기 × overlap 0/15%)을 계수기 5종으로 잰다. DB를 켜지 않는다.
+
+### 색인 빌드·검증 (게이트 ④·⑤ · DB 필요)
+
+```powershell
+# 전제: docker compose up -d  →  migrate.ps1  →  data/seed.ps1
+$env:PYTHONUTF8 = '1'
+$env:PGPORT     = '5535'    # 좌석별 격리 스택을 쓸 때만(dev-environment §4.2)
+services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py
+services\indexer\.venv\Scripts\python.exe services\indexer\verify_index.py
+```
+
+`verify_index.py --dump` 는 `document_chunk` 전열(384차원 벡터 포함)을 정렬된 TSV로 낸다 —
+두 번 빌드한 뒤 이 출력을 `diff` 하는 것이 멱등 판정이다.
 
 ## 전략 3종
 
@@ -166,10 +180,11 @@ services\indexer\.venv\Scripts\python.exe services\indexer\probe_embedding.py
 
 | 없는 것 | 이유 |
 |---|---|
-| 임베딩·pgvector 적재 | 게이트 ② 동결 전. `FROZEN_POLICY=None`이 그 표시다. |
-| `chunk_sha256` 계산 | 경계가 정책에 종속이라(spec §3.3) 동결 후에 확정된다. |
-| 배경 문서(38건)의 chunk 실측 | 생성기가 템플릿으로 만드는 본문이라 파일이 없다. 색인 빌드 때 생성기 출력으로 함께 잰다. |
-| `sentence-transformers`·`fastembed` 설치 | 게이트 ③. 여기서는 **토크나이저만** 쓴다(설치가 가볍고, 분할에 모델 가중치가 필요 없다). |
+| `MaintenanceRecord.note`·`FailureMode.description` 임베딩 | 스펙 §4는 이 둘도 pgvector 대상으로 둔다. 본 티켓 AC는 «문서 chunk 색인»이고, 두 열은 chunk가 아니라 단문이라 정책·저장 형상이 따로 필요하다 — 범위를 넘겨 만들지 않았다(후속 발주 대상). |
+| 재랭킹·하이브리드 검색 | 벡터 단독 검색까지가 T1-4다. BM25 결합·rerank는 retrieval 품질 티켓의 몫이다. |
+| `/api/evidence`·`/api/documents` 501 해제 | 🔴 티켓 「범위 밖」 명시 — `services/ai-api/` 라우트를 손대지 않았다. |
+| `wireframes.md` 앵커 수정 | docs = 오케 scope. 실값만 보고한다(게이트 ⑤). |
+| graph projection version 값 | T1-5 미착수라 **NULL이 참**이다. 자리표시자를 넣으면 「투영이 있었다」는 거짓이 원장에 남는다. |
 
 ## 부수 실측 — Python 3.14 wheel (E1 · 2026-08-29)
 
@@ -179,3 +194,104 @@ services\indexer\.venv\Scripts\python.exe services\indexer\probe_embedding.py
 4,991자 문서가 6,700 token이 되는데 모델 `max_length`가 128이라 **문서 한 건도 담지 못한다**.
 덧붙여 이 토크나이저는 기본 truncation이 켜져 있어, `no_truncation()`을 부르지 않으면
 자/token이 39.6으로 잘못 측정된다(1차 실측이 그랬다 — 해제 후 값이 정본이다).
+
+## 게이트 ④ — 색인 빌드 (E1 · 2026-08-29 · `build_index.py`)
+
+| 항목 | 실측 |
+|---|---|
+| 원천 | `document_revision` 60행 → **approved 45건 색인** · 15건 건너뜀 |
+| chunk | **59건** · token 70~468 · 전건 `chunking_policy_version=1` |
+| 벡터 | 59/59 · `vector(384)` · L2 노름 1.000000 (정규화 임베딩) |
+| 모델 | `intfloat/multilingual-e5-small` · 로드 18~32s · 임베딩 49~54 ms/chunk |
+| 신선도 | `FRESH 45` · `SKIPPED 15` · STALE 0 · 미색인 0 |
+
+### 무엇을 색인하지 «않는가», 그리고 왜
+
+`approval_state='approved'` 가 아닌 revision 15건은 색인하지 않는다. 스펙 §3.3이 인용 가능을
+approved로 한정하므로, 이것을 색인하면 검색이 **인용해서는 안 되는 문장**을 꺼낸다.
+다만 «조용히» 빼지 않는다 — 원장(`index_build`)에 `status='skipped'` 와 사유를 남긴다.
+「왜 이 문서는 검색되지 않는가」에 원장이 답하지 못하면, 빠진 것과 없는 것이 구별되지 않는다.
+
+### 🔴 동결 재확인 — 상한은 «접두를 붙인 뒤» 다시 재야 한다
+
+e5 계열은 문서에 `passage: `, 질의에 `query: ` 접두를 붙여 학습됐다. 접두를 빼면 오류 없이
+유사도만 나빠지므로 실행 중에는 보이지 않는다. 그런데 접두는 **입력 토큰을 늘린다** — chunk
+예산 512를 지켜도 임베딩 입력이 모델 상한을 넘으면 모델이 말없이 끝을 자른다.
+
+| 측정 지점 | 값 |
+|---|---|
+| chunk 최대 (정책 예산 512) | **468** |
+| 임베딩 입력 최대 (`passage: ` 포함 · 모델 상한 512) | **473** — 여유 39 |
+
+🔴 게이트 ③의 «484»와 다른 이유는 오차가 아니라 **모집단이 다르기 때문**이다. 484는
+`data/documents/*.md` 7건 기준이고 그 최댓값은 `DOC-SOP-0014@r1`(483+특수토큰)에서 나왔다.
+r1은 `superseded` — 인용 불가라 색인 집합에 없다. 색인되는 것 중 최대는 `DOC-SOP-0014@r2`의
+468이다. 두 숫자는 **둘 다 참이고, 서로 다른 집합의 값**이다. 숫자만 옮겨 적으면 어긋나 보인다.
+(참고: superseded까지 색인하더라도 483+5=488 ≤ 512로 동결은 유지된다.)
+
+### 멱등 — seed→색인 재생성 «연속 2회 diff 0» (원장 AC)
+
+`pwsh data/seed.ps1` → `build_index.py` → `verify_index.py --dump` 를 두 번 돌려 TSV를 비교했다.
+
+```
+run1-chunks.tsv  sha256 03c674202938bae4badd7aaa9e56a60305d851e7c4099d52d861edb0321c638d
+run2-chunks.tsv  sha256 03c674202938bae4badd7aaa9e56a60305d851e7c4099d52d861edb0321c638d
+diff 0 — 59행 × 9열(384차원 벡터 전량 포함) 완전 일치 · 이후 3·4회째도 동일
+```
+
+🔴 **「diff 0」은 그 자체로 증거가 아니다** — 덤프가 실제로 무엇을 담았는지, 그리고 그 비교가
+실패를 낼 수 있는지를 먼저 봤다(대조군 · E1):
+
+| 확인 | 결과 |
+|---|---|
+| 덤프 적재량 | 행당 9열 · embedding 열의 원소 **384개**(잘림 없음) |
+| 대조군 — 22,656개 float 중 **1개**만 변조 | diff가 **2행 차이로 감지** · `verify_index.py`도 노름 이상으로 FAIL |
+
+`index_build`는 이 멱등의 예외다. 원장은 실행마다 60행이 쌓이는 것이 정상이고, 그것이 감사
+기록이다. 대신 **내용열**(`build_id`·`built_at` 제외)은 두 실행이 완전히 같음을 따로 확인했다.
+
+### STALE 판정이 «불이 켜지는가» (스펙 §3.3 · GS-01 S6 · 대조군 E1)
+
+원문 sha만 바꾸고 재색인하지 않자 `v_index_freshness` 가 그 revision 1건을 `STALE`로 집었다
+(`FRESH 44 · STALE 1 · SKIPPED 15`). 판정이 «항상 FRESH를 말하는 장식»이 아님을 확인한 것이다.
+
+## 게이트 ⑤ — 앵커 실값 «보고» (wireframes 수정은 오케 scope · 손대지 않았다)
+
+### GS-01 S4·S7 기대 인용 9건 — 색인 후 DB에서 재도출한 실좌표
+
+| 인용 | chunk 좌표(0-based) | 화면 |
+|---|---|---|
+| 진동 RMS가 기준치의 150%를 3일 이상… | `DOC-SOP-0014@r2#001` | ③ 문서 원문 탭 |
+| `### 3.2 진단 기준` | `DOC-SOP-0014@r2#001` | ③·⑤ · ④ 근거 패널 |
+| `### 3.3 필요 부품` | `DOC-SOP-0014@r2#001` | ④ 근거 패널 |
+| 베어링 마모는 초기에 RMS가… | `DOC-MAN-0021@r1#004` | ② evidence 카드 |
+| 진동 RMS가… | `DOC-MAN-0021@r1#004` | ⑤ Vector-only 1위 |
+| 베어링 교체… | `DOC-MRP-0087@r1#000` | ② evidence 카드 |
+| 2025-02-11 | `DOC-MRP-0087@r1#000` | ② evidence 카드 작업일 |
+| 전원 차단 후 잠금·표시(LOTO) 시행 | `DOC-SAF-0029@r3#000` | ④ 안전 조치 |
+| 보호장갑·보안경 | `DOC-SAF-0030@r3#000` | ④ 안전 조치 PPE |
+
+9건 전부 **한 chunk 안에 온전**하며 각각 **정확히 하나의** chunk에만 있다(중복 0 · 절단 0).
+게이트 ⑤ 예고 좌표와 전건 일치한다 — 예고는 파일에서, 이 표는 적재된 DB에서 나왔다.
+
+🔴 포함 검사에 `LIKE`를 쓰지 않는다. 인용문 「기준치의 **150%**를」의 `%`가 와일드카드가 되어
+원문에 없는 문장까지 통과시킨다. 리터럴 포함은 `strpos`다 — 1차 구현에서 실제로 밟은 자리다.
+
+### V-1 화면 4좌표 — 🔴 색인 후에도 **4건 전부 부재**
+
+| 화면 표기 | 실제 chunk id | 실재 범위 | 판정 |
+|---|---|---|---|
+| `DOC-MAN-0021#014` | `DOC-MAN-0021@r1#014` | `#000~#007` (8건) | 🔴 부재 |
+| `DOC-MAN-0022#009` | `DOC-MAN-0022@r1#009` | `#000~#005` (6건) | 🔴 부재 |
+| `DOC-SOP-0014@r2#007` | `DOC-SOP-0014@r2#007` | `#000~#002` (3건) | 🔴 부재 |
+| `DOC-MRP-0087#003` | `DOC-MRP-0087@r1#003` | `#000` (1건) | 🔴 부재 |
+
+**원인은 색인이 아니다.** 색인은 문서가 가진 만큼만 chunk를 만든다 — 화면이 없는 번호를
+가리키고 있다. 그래서 `verify_index.py`는 이 4건을 exit code로 삼지 않고 «이월»로 보고한다.
+좌표가 해소되면 같은 도구가 ✅로 바뀐다.
+
+🔴 **두 번째 어긋남 — 표기 규칙이 4건 안에서 이미 갈라져 있다.** `DOC-SOP-0014@r2#007`은
+revision을 달고 있는데 나머지 3건은 `@rN`이 없다. 스펙 §3.1의 chunk id는 `{revision_id}#{NNN}`
+이므로 `DOC-MAN-0021#014`는 **형식상 chunk id가 아니다**. 그리고 revision을 떼면 D-2(r1≠r2가
+서로 다른 값을 말하는 문서)에서 «어느 판을 인용했는가»가 사라진다 — 인용 가능성을 revision에
+묶은 §3.3의 전제가 화면 표기에서 풀린다. 값 치환이 아니라 참조 구조의 문제다(오케 선판정과 동일).

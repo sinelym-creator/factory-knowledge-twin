@@ -1,7 +1,8 @@
 # DB 마이그레이션 · 스펙 대조표 (T1-1)
 
 > 🔴 **유일 원천 = `docs/product/data-ontology-spec.md`(동결 v0.1).** 이 표는 스펙 항목이 DDL의 어디에 착지했는지를 1:1로 보여준다 — 검증 좌석은 이 표로 대조한다.
-> DDL 파일 = `migrations/001_core_schema.sql` · 적용 = `pwsh services/ai-api/db/migrate.ps1`
+> DDL 파일 = `migrations/001_core_schema.sql` + `002_id_integrity_checks.sql` + `003_vector_index_build.sql`
+> · 적용 = `pwsh services/ai-api/db/migrate.ps1` (전 파일 순서 적용 · 재실행 멱등)
 
 ## 적용 (1명령)
 
@@ -87,8 +88,8 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔 새로 
 
 | 항목 | 이유 |
 |---|---|
-| 벡터 인덱스(HNSW/IVFFlat) | 데이터가 있어야 의미가 있다 — **T1-4**에서 생성 |
-| `ontology_version`·`ssot_manifest_hash`·index build 기록 | 색인 파이프라인 산출물 — **T1-4** 소관 |
+| ~~벡터 인덱스(HNSW/IVFFlat)~~ | ✅ **003에서 착지**(HNSW·코사인). 아래 E절. |
+| ~~index build 기록·`ontology_version`~~ | ✅ **003에서 착지**(`index_build` 테이블). `ssot_manifest_hash`는 여전히 없다 — E절 참조. |
 | Neo4j 투영 | **T1-5** 소관 (본 스키마가 그 원천) |
 | 인용 가능 여부 «판정» | 스키마는 사실만 담고 판정은 질의/서비스 계층에서 한다 |
 
@@ -118,3 +119,35 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔 새로 
 | 임베딩 칼럼 타입 | `vector(768)` |
 | 제약 실효성 | 정상 INSERT 1건 **ACCEPTED** / 위반 7종 **전부 REJECTED** — ID 패턴·NOT NULL·PK 중복·FK·status CHECK·승인자 누락 CHECK·sha256 형식 |
 | asyncpg 실런타임 | **asyncpg 0.31.0 · Python 3.14 · 연결→INSERT→SELECT→DELETE 왕복 성공** (PostgreSQL 16.14) |
+
+## E. 003 — 임베딩 차원 확정과 index build 원장 (T1-4 · 2026-08-29)
+
+> 파일 = `migrations/003_vector_index_build.sql` · 001·002 **무수정**.
+
+| 무엇 | 왜 001이 아니라 새 파일인가 |
+|---|---|
+| `document_chunk.embedding` → `vector(384)` | 001은 전 객체가 `IF NOT EXISTS`라 **이미 만들어진 DB에는 반영되지 않는다**. 001 주석이 예고한 「모델 확정 시 신규 마이그레이션」이 이 파일이다. |
+| `embedding_model`·`chunking_policy_version` 열 | chunk는 «정책과 모델의 산물»이다. 행 자체가 그것을 말하지 않으면, 정책이 바뀐 뒤 남은 행을 원장 조인 없이는 구분할 수 없다. |
+| `index_build` 테이블 | baseline §8.3 9항목 · 스펙 §4 저장 분담표. 행 입도 = (빌드 1회) × (색인한 revision). |
+| `v_index_freshness` view | §8.3 ⑨ stale·drift 판정. |
+| `ix_chunk_embedding_cos` (HNSW · 코사인) | D절의 「벡터 인덱스는 T1-4에서」가 여기서 닫힌다. |
+
+### 🔴 설계 결정 3건 (이유가 있는 «안 한 것»들)
+
+| 결정 | 이유 |
+|---|---|
+| `index_build.revision_id`에 **FK를 걸지 않는다** | 원장은 자기가 기술하는 대상보다 오래 살아야 한다. `data/seed.ps1`의 load.sql이 `TRUNCATE document_revision … CASCADE`를 도는데, FK가 있으면 seed 한 번에 빌드 이력이 조용히 사라진다. 게다가 STALE 판정은 revision이 «교체된 뒤에» 의미가 생기는 비교다. (실측: seed 3회를 통과하고 원장 4빌드 240행 생존) |
+| stale을 **열이 아니라 view로** 판정 | 빌드 시점에 계산해 저장하면 그 값은 원문이 바뀌는 순간 스스로 낡는다 — 낡음을 감지하려고 둔 필드가 낡는다. 저장하는 것은 사실(빌드 당시 sha)뿐이다. |
+| `graph_projection_version`을 **NULL로 둔다** | T1-5 미착수라 NULL이 참이다. 자리표시자 문자열은 「투영이 있었다」는 거짓을 원장에 남긴다(baseline §0.2). |
+
+### 여전히 없는 것
+
+`ssot_manifest_hash`(스펙 §3.3) — 문서 전체 집합에 대한 단일 해시로, 색인이 아니라 **SSOT
+manifest 산출물**이다. 003은 revision 단위 기록만 담는다. 어느 티켓 소관인지는 미확정.
+
+### 재적용 실측 (E1 · 2026-08-29)
+
+| 회차 | 결과 |
+|---|---|
+| 1차 | `003: embedding → vector(384) 적용` · `schema_migration` 3행 |
+| 2차(멱등) | `003: embedding 이미 vector(384) — 차원 변경 건너뜀` · 오류 0 |

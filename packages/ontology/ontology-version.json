@@ -1,0 +1,7 @@
+{
+  "ontology_version": "0.1.0",
+  "spec": "docs/product/data-ontology-spec.md",
+  "spec_version": "v0.1",
+  "entity_count": 16,
+  "note": "SemVer — entity/relation 추가 = minor, 카디널리티·ID 규칙 변경 = major (스펙 §3.3). 이 파일이 정본 위치이며, 값을 읽는 쪽(index_build.ontology_version 등)은 문자열을 복사해 두지 않는다."
+}
