@@ -130,7 +130,28 @@ WITH checks(ord, check_id, what, expected, actual) AS (
 
   (20, 'C-20', '고아 참조(sensor·component → equipment)', 0, (
       (SELECT count(*)::bigint FROM sensor s WHERE NOT EXISTS (SELECT 1 FROM equipment e WHERE e.id=s.equipment_id))
-    + (SELECT count(*)::bigint FROM component c WHERE NOT EXISTS (SELECT 1 FROM equipment e WHERE e.id=c.equipment_id))))
+    + (SELECT count(*)::bigint FROM component c WHERE NOT EXISTS (SELECT 1 FROM equipment e WHERE e.id=c.equipment_id)))),
+
+  -- 🔴 C-21·C-22 = G-2(동시 유효 revision)를 «대신 지키는» 그물. T1-7 A단 ③으로 신설했다.
+  --    스키마는 이 축을 막지 않기로 확정했고(tests/schema P-3 · expect=accept), 그때 「데이터는
+  --    tests/data C-4가 지킨다」고 적혔다. 그러나 C-4는 DOC-SOP-0014 «한 문서»만 본다 —
+  --    주장이 그물보다 넓었다. 전 문서로 넓힌 것이 C-21이고, 겹침 자체를 직접 보는 것이 C-22다.
+  (21, 'C-21', 'G-2 전 문서 «지금 인용 가능 revision» = 정확히 1건이 아닌 문서', 0, (
+      SELECT count(*)::bigint FROM document d WHERE 1 <> (
+        SELECT count(*) FROM document_revision r
+        WHERE r.document_id=d.id AND r.approval_state='approved'
+          AND r.effective_from <= DATE '2026-08-26'
+          AND (r.effective_to IS NULL OR r.effective_to > DATE '2026-08-26')))),
+
+  -- 겹침은 «조회시각»과 무관한 구조적 위반이다. C-21은 한 시점만 보므로 다른 시점의 겹침을
+  -- 놓친다 — 두 축은 서로를 대신하지 못한다.
+  (22, 'C-22', 'G-2 approved revision 유효구간이 서로 겹치는 문서', 0, (
+      SELECT count(DISTINCT a.document_id)::bigint
+      FROM document_revision a JOIN document_revision b
+        ON a.document_id=b.document_id AND a.id < b.id
+      WHERE a.approval_state='approved' AND b.approval_state='approved'
+        AND a.effective_from < COALESCE(b.effective_to, DATE '9999-12-31')
+        AND b.effective_from < COALESCE(a.effective_to, DATE '9999-12-31')))
 )
 SELECT check_id, what, expected, actual,
        CASE WHEN actual = expected THEN 'PASS' ELSE 'FAIL' END AS verdict

@@ -54,7 +54,7 @@
       "expect": "accept",
       "gap": "G-2 동시 유효 revision — 🔴 비강제 «확정»(오케 판정)",
       "label": "같은 문서에 유효 기간이 겹치는 approved revision 2건 (스키마는 막지 않는다)",
-      "why": "겹치면 «지금 인용할 revision»이 2개가 되어 T0-8 Q-DIRECT-003의 «정답 1건» 전제가 깨진다. 그러나 README D절 원칙(스키마는 사실만 담고 판정은 질의/서비스 계층)에 따라 «막지 않기로 확정»했다 — 여기서 통과하는 것이 설계다. 실제 데이터가 지키는지는 tests/data C-4가 본다(45문서 전부 인용 가능 revision 1건 실측).",
+      "why": "겹치면 «지금 인용할 revision»이 2개가 되어 T0-8 Q-DIRECT-003의 «정답 1건» 전제가 깨진다. 그러나 README D절 원칙(스키마는 사실만 담고 판정은 질의/서비스 계층)에 따라 «막지 않기로 확정»했다 — 여기서 통과하는 것이 설계다. 🔴 대신 지키는 것 = tests/data C-21(전 45문서의 «지금 인용 가능 revision»이 정확히 1건) + C-22(approved 유효구간 겹침 문서 = 0). 그 두 그물이 살아 있다는 실측 = tests/data/net-liveness.sql L-21·L-22. 🔴 2026-08-29 정정(T1-7 A단 ③): 그전까지 이 자리는 「tests/data C-4가 본다(45문서 전부 인용 가능 revision 1건 실측)」였다. C-4 실물은 DOC-SOP-0014 «한 문서»만 본다 — 45문서라는 사실은 맞았으나 그것을 «지키는 검사»는 없었다. 주장이 그물보다 넓은 accept는 눈감기다(expectSemantics).",
       "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,effective_to,approval_state,approved_by) VALUES ('DOC-SOP-9001@r2','DOC-SOP-9001',2,'2222222222222222222222222222222222222222222222222222222222222222','x','2026-01-01','2027-01-01','approved','qa'), ('DOC-SOP-9001@r3','DOC-SOP-9001',3,'3333333333333333333333333333333333333333333333333333333333333333','x','2026-06-01','2027-06-01','approved','qa')"
     },
     {
@@ -62,7 +62,7 @@
       "expect": "accept",
       "gap": "G-3 전이 방향 — 🔴 비강제 «확정»(오케 판정)",
       "label": "approved → draft 역방향 전이 (스키마는 막지 않는다)",
-      "why": "스펙 §3.3은 «역방향 없음»이지만 값 CHECK로는 전이를 막을 수 없고, 같은 D절 원칙에 따라 트리거를 두지 않기로 확정했다 — 여기서 통과하는 것이 설계다. 🔴 이 축만은 아직 «데이터 그물이 없다» — 상태 전이는 쓰기 경로가 생기는 시점(서비스 계층)에 강제해야 하며, 그때까지 이 표본은 그 부채를 눈에 보이게 남겨 두는 자리다.",
+      "why": "스펙 §3.3은 «역방향 없음»이지만 값 CHECK로는 전이를 막을 수 없고, 같은 D절 원칙에 따라 트리거를 두지 않기로 확정했다 — 여기서 통과하는 것이 설계다. 🔴 «전이 자체»를 보는 그물은 아직 없다 — 스냅숏은 이력을 볼 수 없다. 상태 전이는 쓰기 경로가 생기는 시점(서비스 계층)에 강제해야 하며, 그때까지 이 표본은 그 부채를 눈에 보이게 남겨 두는 자리다. 🔴 2026-08-29 실측 보강(T1-7 A단 ③): 전이의 «관측 가능한 결과»는 tests/data C-21이 잡는다 — approved 상태를 draft로 내리면 그 문서의 인용 가능 revision이 0건이 되고 C-21이 운다(net-liveness.sql L-21이 바로 그 주입으로 실측). 「전이를 막는다」와 「망가진 결과를 적발한다」는 다르므로 부채 자체는 존치한다.",
       "setup": [
         "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r1','DOC-SOP-9001',1,'1111111111111111111111111111111111111111111111111111111111111111','x','2026-01-01','approved','qa')"
       ],
