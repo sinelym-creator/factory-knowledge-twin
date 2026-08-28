@@ -20,7 +20,7 @@ if __package__ in (None, ""):                      # python data/generators/gene
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     __package__ = "data.generators"
 
-from .config import (EXPECTED_QUOTES, FORBIDDEN_IDS, GS, LOAD_ORDER, MANIFEST_NAME,
+from .config import (EXPECTED_QUOTES, FORBIDDEN_IDS, GS, GS_OWNER, LOAD_ORDER, MANIFEST_NAME,
                      OUT_DIR, RANDOM_SEED, REFERENCE_NOW, TARGET_COUNTS)
 from .documents import (MANUALS, MULTI_REVISION, build_documents, extract_sop_fields)
 from .emit import COLUMNS, write_load_sql, write_manifest, write_rows, write_stream
@@ -165,10 +165,24 @@ def self_check(tables: dict, counts: dict) -> list[str]:
             fails.append(f"인용 문장 부재: {rev_id} 에 「{quote}」가 없다 — {screen}")
 
     # GS-01 바인딩 ID 실재 (생성 단계 · DB 실측은 verify/gs01_binding.sql)
-    ids = {v for rows in tables.values() for r in rows for v in r.values() if isinstance(v, str)}
+    #
+    # 🔴 «소유 테이블»에서만 찾는다 — F-2 처방(evidence/t1-7-a-selfcheck-and-nets.md §2.4).
+    #    전 테이블 문자열을 한 집합에 붓던 옛 방식은, 소유 테이블에서 ID가 사라져도 그것을
+    #    참조하는 다른 테이블이 옛 문자열을 들고 있으면 통과했다. 「어딘가에 그 글자가 있다」와
+    #    「그 엔티티가 실재한다」는 다르다.
+    unmapped = sorted(set(GS) - set(GS_OWNER))
+    if unmapped:
+        fails.append(f"GS 소유 테이블 미정의: {unmapped} — config.GS_OWNER에 추가하라")
     for key, value in GS.items():
-        if value not in ids:
-            fails.append(f"GS 바인딩 ID 누락: {key} = {value}")
+        if key not in GS_OWNER:
+            continue                      # 위에서 이미 FAIL로 세었다 — 이중 계수하지 않는다
+        table, col = GS_OWNER[key]
+        if table not in tables:
+            fails.append(f"GS 소유 테이블 부재: {key} → {table} 테이블이 생성물에 없다")
+            continue
+        owned = {r[col] for r in tables[table] if col in r}
+        if value not in owned:
+            fails.append(f"GS 바인딩 ID 누락: {key} = {value} ({table}.{col}에 없다)")
 
     return fails
 
