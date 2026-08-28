@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 13 / 총 24 — 🔴 분모 15→24: Phase 1 분해 +9 등재 08-28 15:53 · 분모 정비이지 후퇴 아님)
+## 원장 (진행률 = ✅ 14 / 총 24 — 🔴 분모 15→24: Phase 1 분해 +9 등재 08-28 15:53 · 분모 정비이지 후퇴 아님)
 
 ### 부트스트랩 (완결)
 
@@ -59,7 +59,7 @@ size_limit: 8KB
 | T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | 대기 |
 | T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 | 대기 |
 | T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 대기 |
-| T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | 발주 |
+| T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
 | T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 | 대기 |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | 대기 |
 | T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 대기 |
