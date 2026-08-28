@@ -3,10 +3,10 @@ artifact: phase0-verification
 ticket: T0-9
 owner: 검증(리바이2)
 status: 판정 제출 — 최종 판정권은 오케
-version: 1.1.0
+version: 1.2.0
 verified_at: 2026-08-28
-verification_base: develop `c4aa7b6` (PR #7 merge · 판정 대상 8건 무변경 재확인)
-size_limit: 24KB
+verification_base: develop `baa332b` (§7 재검증) · 초판 판정 base `c4aa7b6`
+size_limit: 28KB
 ---
 
 # Phase 0 독립 검증 — T0-1~T0-8
@@ -250,6 +250,72 @@ size_limit: 24KB
 → **고치면 PASS**: ① 첫 진입 1회 «이 콘솔이 무엇인지 + 3분 동선» 안내(닫으면 세션 내 재노출 없음) + ② 각 화면 상단 **한 문장 상태 헤드라인**(= D-002가 승인한 «B안 흡수 요소 1»과 동일 장치 — **이미 승인된 것을 쓰면 된다**).
 
 > 🔴 F-11은 **A안 승인 시 함께 승인된 B요소를 T0-3이 아직 반영하지 않았다**는 뜻이기도 하다. D-002 결정(A안 + B요소 2개)과 현 wireframe 사이에 미반영 delta가 있다 — 「상태 헤드라인 문장」·「근거 상시 도크」 2개의 배치 위치가 T0-3에 없다.
+
+---
+
+## 7. 재검증 — 차단 4건 수정분 (base `baa332b` · PR #10 이후)
+
+> 발주: T0-4(F-6) · T0-5(F-1·F-2·F-3b·F-4) + 교차 ②. **구 재현 스크립트(`oneof-discrimination.check.js`)는 폐기했다** — `oneOf` 전제인데 구조가 철거됐다. **바뀐 구조를 옛 도구로 「통과」시키는 것이 최악의 false negative다.**
+
+### 7.1 새 검사 방법 — 양방향 결속 실측
+
+`tests/contract/event-binding.check.js` (의존성 0 · `node` 단독). **통과 케이스만으로는 결속이 증명되지 않는다** — 「틀린 조합이 실제로 거부되는가」가 결속의 정의다. 그래서 4축 21케이스를 넣었다.
+
+| 축 | 케이스 | 의도 |
+|---|---:|---|
+| ① 정상 8종 | 9 | 각 type의 올바른 payload가 **통과**하는가 |
+| ② 오배선 | 8 | type↔payload **불일치가 거부**되는가 (F-2 본체) |
+| ③ 신뢰 필드 | 3 | doc-chunk 조건부 required가 **작동**하는가 (F-4) |
+| ④ replay ⊂ live | 1 | 동일 payload가 `mode`만 바꿔 통과하는가 |
+
+**결과: 21/21 통과 · 실패 0.**
+
+### 7.2 항목별 재판정
+
+| ID | 재판정 | 실측 근거 |
+|---|---|---|
+| **F-6** | ✅ **해소** | `golden-scenario-spec.md` L39 — S5가 `EQ-CNC-204 →(HAS_COMPONENT)→ (베어링 부품) →(고장모드)→ FM-BRG-WEAR → SOP → SAF-LOTO-01`, **「4-hop · Component 경유」 명시**. §5 바인딩표·T0-6 §6·T0-3 §8과 일치 |
+| **F-1** | ✅ **해소** | `oneOf` **0건**(철거) · `allOf`+`if/then` **8종 전부**. 최소형 `step.started {step:"vector"}` **통과 확인** — 자기 스키마가 자기 이벤트를 거부하던 증상 소멸 |
+| **F-2** | ✅ **해소** | 오배선 8케이스 **전건 거부**: completed↔failed 교차 · started↔completed 전용필드 교차 · stopped에 failed payload · evidence에 started payload · 미정의 `stepId` · 미정의 stop `reason`. **양방향 확인** |
+| **F-3b** | ✅ **해소** | `type` enum 8종에 `run.stopped` 신설 · payload `reason` enum(`user\|timeout\|reset`) 필수 · REST L36에 「타임라인에 `run.stopped` 이벤트 발행」 명시 — **엔드포인트와 이벤트가 결속됨** |
+| **F-4** | ◻ **부분 해소** | 아래 §7.3 |
+
+### 7.3 🔴 F-4 잔여 — 화면 요구 5필드 중 3필드만 반영
+
+T0-3 L172가 ③ 문서 헤더에 요구하는 항목과 현 계약의 대조(E1):
+
+| 화면 요구 (T0-3 L172) | 계약 반영 | 판정 |
+|---|---|---|
+| `documentId@rN` | `revisionId` (REST L45·L47) | ✅ |
+| `content_sha256` | `contentHash` (REST L45·L47) | ✅ |
+| 색인 신선도(STALE) | `stale` (REST L45·L47) | ✅ |
+| **`approval_state`** | — | 🔴 **미반영** |
+| **`effective_from` / `effective_to`** | — | 🔴 **미반영** |
+
+**왜 이 2필드가 장식이 아닌가**: T0-6 §3.3이 **인용 가능 조건**을 `approval_state=approved` **및** `effective_from ≤ 조회시각 < effective_to`로 확정했다. 즉 이 2필드가 **«이 인용이 왜 유효한가»의 판단 근거 자체**다. `revisionId`·`hash`만으로는 화면이 「최신이다」는 말할 수 있어도 **「승인되었고 지금 유효하다」는 말할 수 없다.** 목적 3(근거로 얻는 AI 신뢰)의 핵심이 절반만 닿았다.
+
+→ **고치면 PASS**: `GET /evidence/{evidenceId}`·`GET /documents/{docId}` 응답 요지에 `approvalState`·`effectiveFrom`/`effectiveTo` 3필드 추가(계약 표 2줄 수정 · 신규 엔드포인트 불요).
+
+### 7.4 신규 관찰 2건
+
+**◻ N-1 — 보고와 스키마의 불일치(`stale`)**: 수정 보고는 「`revisionId`·`contentHash`·`stale` — doc-chunk면 **필수**」라 했으나, 스키마의 조건부 `required`는 `["evidenceId","kind","sourceId","revisionId","contentHash"]`로 **`stale`이 빠져 있다**(실측: `stale` 생략 시 **통과**). 
+→ 판단: **스키마 쪽을 보고에 맞추는 것을 권한다.** `stale`이 선택이면 화면은 「신선함」과 「평가 안 함」을 구분할 수 없고, baseline §8.3은 STALE **표기**를 요구한다. boolean 1개 추가라 비용이 0이다.
+
+**✅ N-2 — F-9의 원천이 확보됐다(칭찬으로 기록)**: `stepCompleted.elapsedMs`가 **필수**로 바뀌었고 description에 「TTAE 합산 표시(검증 F-9)의 원천」이라 명시됐다. 발주 범위 밖이었는데 선반영됐다 — F-9는 이제 **화면에 합산 1행을 그리는 일만** 남았다. 
+> 부수 기록: 본 검증의 초판 테스트는 `elapsedMs`를 **선택**으로 가정해 1건 FAIL이 났다. **계약이 옳고 내 케이스가 낡은 것**이어서 테스트를 정정했다(21/21). 도구가 아니라 계약을 정본으로 삼는다.
+
+**관찰(무해)**: `allOf`의 각 `if`가 `"required": ["type"]`을 두지 않았다. `type`이 envelope 필수라 실무상 안전하다 — 지적하지 않고 기록만 한다.
+
+### 7.5 재검증 후 판정
+
+| 항목 | 초판 | 재검증 |
+|---|---|---|
+| T0-4 (F-6) | 🔴 FAIL | ✅ **PASS** |
+| T0-5 (F-1·F-2·F-3b) | 🔴 FAIL | ✅ 해소 |
+| T0-5 (F-4) | 🔴 FAIL | ◻ **부분 해소 — 2필드 잔여** |
+| 교차 ② T0-5↔T0-3 | 🔴 FAIL | ◻ **부분** — 중지 종료신호 ✅ / 문서 헤더 3/5 |
+
+🔴 **T0-5 및 교차 ②는 아직 완전 PASS가 아니다.** 남은 것은 **계약 표 2줄**(§7.3)이며, 그 밖의 차단 요소는 없다. 「일부 축 통과를 합격이라 부르지 않는다」(baseline §32.1)에 따라 **부분 해소로 계수**한다 — 다만 **재설계 요소는 0**이고 수정 비용은 초판 4건 중 가장 작다.
 
 ---
 
