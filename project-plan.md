@@ -1,6 +1,6 @@
 # 프로젝트 플랜 — factory-knowledge-twin
 
-> **확정 계획 요약 단일본.** 정본 = `docs/baseline/poc-baseline-v0.2.md`(§21 개발 단계 · §33.4 14일 일정 · §12 P0/P1/P2) — 여기 재기술하지 않는다. 「지금 어디」 = checkpoint · 현황 = PROGRESS.
+> **확정 계획 요약 단일본.** 정본 = `docs/baseline/poc-baseline-v0.2.md`(§21 개발 단계 · §33 실행 계획 · §12 P0/P1/P2) — 여기 재기술하지 않는다. 「지금 어디」 = checkpoint · 현황 = PROGRESS.
 
 ## 0. 방향 (3줄)
 
@@ -8,23 +8,46 @@
 - 이중 실행 구조: Vercel Always-on Sandbox(노트북 OFF에도 동작) + 노트북 Live AI(FastAPI·LangGraph·pgvector·Neo4j).
 - 구현 속도보다 **검증·재현·release closure**가 Critical Path. 멀티에이전트 3좌석 + 독립 검증 Gate.
 
-## 1. 단계 (baseline §21 — Phase 상태만 여기서 추적)
+## 1. 일정 제약 (운영자 확정 2026-08-28)
 
-| Phase | 내용 | 상태 |
-|---|---|---|
-| — | 부트스트랩: 리포·SSOT·팀 구성 | ⏳ 진행 중(54차) |
-| 0 | 제품·UX 방향 확정(visual 3안·wireframe·storyboard) | 대기 |
-| 1 | SSOT·Ontology·Synthetic Data | 대기 |
-| 2 | Retrieval·Agent Backend | 대기 |
-| 3 | Always-on Sandbox UX | 대기 |
-| 4 | Live AI 연결(Tunnel·streaming·fallback) | 대기 |
-| 5 | 평가·보안·운영 완성(Gate 1~8) | 대기 |
-| 6 | 포트폴리오 패키징(영상·README·Release) | 대기 |
+- 🔴 **배포 시한 = 작업 개시 후 7일** — D7 종료 시점에 Public 배포(외부 접근 가능한 RC URL) 상태여야 한다.
+- D0 = 2026-08-28(팀 기동·플랜 확정) · D1 = 08-29 ~ D7 = **09-04(배포일)**.
+- baseline §33.4(14일표)는 원문 유지 — 운영 일정은 본 §2의 7일표가 기준(운영자 하명 근거). Feature Freeze = **D5 종료**(§33.1의 «Day 8» 대응 이동).
+- 범위 = **P0만**(§12.1). P1/P2는 P0 완료·독립 검증 후 운영자 승인(§12 원칙 유지).
 
-## 2. 팀 기동 선결 (운영자 몫 대기)
+## 2. 7일 일정표 (배포까지 · Exit Evidence = 발주 AC의 상위 기준)
 
-봇 앱 3 생성 · 봇명 확정 · 신규 좌석 slug·크리덴셜 계보 재가 · PoC 팀 채널 신설.
+| 일차 | 중심 목표 (baseline 대응) | Exit Evidence |
+|---:|---|---|
+| D0 | 플랜 확정 · Phase 0 발주 — product-brief·ux-direction 착수 | 플랜 재가 · 발주문 발신 |
+| D1 | Phase 0 완결: UX 방향 3안→1안 승인 · wireframe · Golden Scenario storyboard · contracts v0.1·ontology v0.1 동결 (Day 1) | storyboard·schema 승인 · §26 문서 1~6 골격 |
+| D2 | skeleton: Next.js·FastAPI boot · DB schema · synthetic seed · test harness (Day 2) | 각 service boot + contract test PASS |
+| D3 | data→index: synthetic docs · ingestion · pgvector · Neo4j projection · 3-전략 retrieval (Day 3~4 압축) | seed→index 재생성 · 동일 질문 전략별 raw result |
+| D4 | LangGraph E2E backend 기준선 + WebSocket streaming (Day 5~6 전반) | Golden Scenario backend PASS · 실제 event streaming |
+| D5 | P0 핵심 UX: Overview·Incident·Evidence·Work Order·Approval → 🔴 **Feature Freeze** (Day 6~7 압축) | Golden Scenario UI E2E PASS |
+| D6 | Replay Sandbox · session 격리 · reset · Gate smoke(1~5 축소판) (Day 8~10 압축) | 노트북 OFF E2E PASS · smoke evaluation report |
+| D7 | 🔴 **배포**: Vercel·Tunnel·fallback · 보안 필수 게이트(§16.3) · 외부 네트워크 검증 (Day 11~12 압축) | **Public RC URL + 외부 접근 E2E PASS** |
 
-## 3. 상시 금지
+## 3. 배포 후 트랙 (시한 외 · 별도 재가)
 
-baseline §33.6 Stop 조건 · 측정-주장 경계 위반 · Day 8 후 신규 기능 · secret/실데이터 커밋.
+정밀 Gate 1~8 전건(§32) · Full Benchmark·KPI Evidence(§34.8) · README 완성·데모 영상·Release checklist(§35) · NOTICE 등 §34.2 구조물. **배포 = RC이지 release closure가 아니다** — 측정-주장 경계(§0.2)에 따라 배포 시점 수치는 «잠정 목표»로만 표기.
+
+## 4. Phase 상태 (baseline §21 — 상태만 추적)
+
+| Phase | 내용 | 일차 매핑 | 상태 |
+|---|---|---|---|
+| — | 부트스트랩: 리포·SSOT·팀·Public 개설·CI | D0 | ✅ |
+| 0 | 제품·UX 방향 확정 | D0~D1 | ⏳ 발주 준비 |
+| 1 | SSOT·Ontology·Synthetic Data | D1~D3 | 대기 |
+| 2 | Retrieval·Agent Backend | D3~D4 | 대기 |
+| 3 | Always-on Sandbox UX | D5~D6 | 대기 |
+| 4 | Live AI 연결(Tunnel·streaming·fallback) | D7 | 대기 |
+| 5 | 평가·보안·운영(Gate 1~8 전건) | 배포 후 | 대기 |
+| 6 | 포트폴리오 패키징(영상·README·Release) | 배포 후 | 대기 |
+
+## 5. 실행 규율 (baseline 포인터)
+
+- 발주 단위 = 일차별 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
+- lane(§33.2→3좌석 매핑 = CLAUDE.md §3): 오케 = contracts·docs·통합 / 구현 = apps·services·data·ontology / 검증 = benchmarks·tests·evidence.
+- 매일 통합 주기(§33.5) 최소 2회 · Golden Scenario 회귀 = 최우선 복구(§33.1) · Stop 조건(§33.6) 발생 = 신규 기능 중단→운영자 회귀.
+- 순차 의존성(§33.3): Ontology→DB→Graph · Contract→Backend→Frontend · Live Golden Scenario→Replay Fixture→Sandbox.

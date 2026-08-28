@@ -6,14 +6,13 @@
 
 | Phase | 태스크 | 담당 |
 |---|---|---|
-| 부트스트랩 | GitHub Public 개설 + CI 위생 게이트 배선 | 오케스트레이터 |
+| — | 7일 작업 플랜(project-plan §1~2) 운영자 재가 대기 | 오케스트레이터 |
 
-## todo (오케 인수 완료 — 첫 발주 준비)
+## todo (플랜 재가 후 즉시)
 
 | Phase | 태스크 | 선결 |
 |---|---|---|
-| 0 | UX visual direction 3안 · wireframe · Golden Scenario storyboard | 첫 발주 |
-| 0 | baseline §26 후속 산출물 8종 착수 순서 확정 | 첫 발주 |
+| 0 | product-brief·ux-direction(3안)·storyboard·contracts v0.1·ontology v0.1 발주 | 플랜 재가 |
 
 ## blocked (운영자)
 
