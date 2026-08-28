@@ -43,7 +43,30 @@ function unsupportedKeywords(schema, path = '#') {
   return out;
 }
 
-function validate(schema, root, value, path = '') {
+/**
+ * 스키마가 «선언한» 속성 전부를 Map<속성 스키마 노드, 표시 경로>로 수집한다.
+ *
+ * 🔴 이름이 아니라 «노드»로 센다. `note`처럼 같은 이름이 여러 def에 있을 때
+ *    한 곳만 실행하고 전부 실행했다고 세면 그게 곧 거짓 초록이다.
+ *    (`if`/`then`은 판정 술어이지 데이터 선언이 아니므로 수집 대상이 아니다.)
+ */
+function collectDeclaredProperties(schema, path = '#', out = new Map(), seen = new Set()) {
+  if (!schema || typeof schema !== 'object' || seen.has(schema)) return out;
+  seen.add(schema);
+  if (schema.properties && typeof schema.properties === 'object') {
+    for (const [name, sub] of Object.entries(schema.properties)) {
+      out.set(sub, `${path}.${name}`);
+      collectDeclaredProperties(sub, `${path}.${name}`, out, seen);
+    }
+  }
+  if (schema.$defs && typeof schema.$defs === 'object') {
+    for (const [name, sub] of Object.entries(schema.$defs)) collectDeclaredProperties(sub, name, out, seen);
+  }
+  if (schema.items) collectDeclaredProperties(schema.items, `${path}[]`, out, seen);
+  return out;
+}
+
+function validate(schema, root, value, path = '', touched = null) {
   let sch = schema;
   if (sch && sch.$ref) sch = sch.$ref.split('/').slice(1).reduce((o, k) => o && o[k], root);
   if (!sch || typeof sch !== 'object') return [];
@@ -66,7 +89,7 @@ function validate(schema, root, value, path = '') {
 
   if (Array.isArray(value)) {
     if (typeof sch.minItems === 'number' && value.length < sch.minItems) errors.push(`${path}: minItems 위반`);
-    if (sch.items) value.forEach((item, i) => errors.push(...validate(sch.items, root, item, `${path}[${i}]`)));
+    if (sch.items) value.forEach((item, i) => errors.push(...validate(sch.items, root, item, `${path}[${i}]`, touched)));
   }
 
   if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -76,21 +99,25 @@ function validate(schema, root, value, path = '') {
       for (const k of Object.keys(value)) if (!(k in props)) errors.push(`${path}: 미허용 속성 «${k}»`);
     }
     for (const [k, sub] of Object.entries(props)) {
-      if (k in value) errors.push(...validate(sub, root, value[k], `${path}.${k}`));
+      if (k in value) {
+        if (touched) touched.add(sub);   // «실제로 이 속성으로 내려갔다»는 사실만 계수한다
+        errors.push(...validate(sub, root, value[k], `${path}.${k}`, touched));
+      }
     }
   }
 
   for (const sub of sch.allOf || []) {
     if (sub.if) {
+      // if는 판정 술어다 — 여기서의 진입은 커버리지로 계수하지 않는다(touched 미전달).
       if (validate(sub.if, root, value, path).length === 0 && sub.then) {
-        errors.push(...validate(sub.then, root, value, path));
+        errors.push(...validate(sub.then, root, value, path, touched));
       }
     } else {
-      errors.push(...validate(sub, root, value, path));
+      errors.push(...validate(sub, root, value, path, touched));
     }
   }
 
   return errors;
 }
 
-module.exports = { validate, unsupportedKeywords };
+module.exports = { validate, unsupportedKeywords, collectDeclaredProperties };

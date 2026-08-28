@@ -5,22 +5,27 @@
 //   node tests/contract/run.js --cases <파일|디렉터리>
 //   node tests/contract/run.js --schema <경로>        # 케이스 파일의 schema를 덮어씀
 //   node tests/contract/run.js --quiet                # 실패·요약만 출력
+//   node tests/contract/run.js --strict-coverage      # 미실행 스키마 속성이 있으면 exit 1
 //
 // exit code: 0 = 전건 PASS(자기 검증 포함) · 1 = 1건이라도 실패 · 2 = 실행 오류(경로·JSON 등)
+//
+// 커버리지는 기본 «경고»다 — 계약이 필드를 추가한 직후, 케이스를 붙이기 전에
+// CI가 죽는 것을 막기 위해서다. strict 전환 시점은 통합 담당이 정한다.
 
 const fs = require('fs');
 const path = require('path');
-const { validate, unsupportedKeywords } = require('./validator');
+const { validate, unsupportedKeywords, collectDeclaredProperties } = require('./validator');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const CASE_DIR = path.join(__dirname, 'cases');
 
 function parseArgs(argv) {
-  const a = { cases: null, schema: null, quiet: false };
+  const a = { cases: null, schema: null, quiet: false, strictCoverage: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--cases') a.cases = argv[++i];
     else if (argv[i] === '--schema') a.schema = argv[++i];
     else if (argv[i] === '--quiet') a.quiet = true;
+    else if (argv[i] === '--strict-coverage') a.strictCoverage = true;
     else die(`알 수 없는 인자: ${argv[i]}`);
   }
   return a;
@@ -43,9 +48,9 @@ function caseFiles(target) {
 }
 
 /** 케이스 1건 실행 → { ok, got, detail } */
-function runCase(schema, c, defaults) {
+function runCase(schema, c, defaults, touched = null) {
   const event = { ...defaults, ...c.event };
-  const errors = validate(schema, schema, event, '');
+  const errors = validate(schema, schema, event, '', touched);
   const got = errors.length === 0 ? 'accept' : 'reject';
   return { ok: got === c.expect, got, detail: errors[0] || '' };
 }
@@ -60,8 +65,14 @@ function runSuite(file, override, quiet) {
   const unknown = unsupportedKeywords(schema);
 
   const defaults = suite.envelopeDefaults || {};
-  const results = suite.cases.map(c => ({ c, r: runCase(schema, c, defaults) }));
+  const touched = new Set();
+  const results = suite.cases.map(c => ({ c, r: runCase(schema, c, defaults, touched) }));
   const failed = results.filter(x => !x.r.ok);
+
+  // 커버리지 — 케이스가 «한 번도 내려가 보지 않은» 속성 선언을 찾는다.
+  // 한 번도 실행되지 않는 필드는 타입이 바뀌어도 suite가 초록을 유지한다.
+  const declared = collectDeclaredProperties(schema);
+  const uncovered = [...declared.entries()].filter(([node]) => !touched.has(node)).map(([, path]) => path).sort();
 
   if (!quiet) {
     console.log(`\n■ ${suite.name}`);
@@ -82,7 +93,14 @@ function runSuite(file, override, quiet) {
     for (const u of unknown.slice(0, 5)) console.log(`     ${u}`);
   }
 
-  return { suite, schema, results, failed: failed.length, unknown: unknown.length };
+  if (uncovered.length) {
+    console.log(`  ◻ 커버리지: 선언 속성 ${declared.size} 중 ${uncovered.length}건이 «한 번도 실행되지 않았다» — 케이스를 붙이지 않으면 타입이 바뀌어도 초록이 유지된다`);
+    for (const u of uncovered) console.log(`     ${u}`);
+  } else if (!quiet) {
+    console.log(`  ✅ 커버리지: 선언 속성 ${declared.size}건 전부 실행됨`);
+  }
+
+  return { suite, schema, results, failed: failed.length, unknown: unknown.length, declared: declared.size, uncovered: uncovered.length };
 }
 
 // ── 자기 검증 ───────────────────────────────────────────────────────────────
@@ -117,10 +135,17 @@ function main() {
   const total = suites.reduce((n, s) => n + s.results.length, 0);
   const failed = suites.reduce((n, s) => n + s.failed, 0);
   const unknown = suites.reduce((n, s) => n + s.unknown, 0);
+  const declared = suites.reduce((n, s) => n + s.declared, 0);
+  const uncovered = suites.reduce((n, s) => n + s.uncovered, 0);
   const selfBroken = selfCheck(suites, args.quiet);
 
-  console.log(`\n결과: ${total - failed}/${total} 통과 · 실패 ${failed}건 · 자기 검증 ${selfBroken === 0 ? 'PASS' : 'FAIL(러너가 검사하지 않고 있다)'}${unknown ? ` · 미지원 키워드 ${unknown}건` : ''}`);
-  process.exit(failed === 0 && selfBroken === 0 && unknown === 0 ? 0 : 1);
+  const covTail = uncovered
+    ? ` · 커버리지 ${declared - uncovered}/${declared} ${args.strictCoverage ? '🔴 strict — 미실행 있으면 실패' : '(경고 모드)'}`
+    : ` · 커버리지 ${declared}/${declared}`;
+  console.log(`\n결과: ${total - failed}/${total} 통과 · 실패 ${failed}건 · 자기 검증 ${selfBroken === 0 ? 'PASS' : 'FAIL(러너가 검사하지 않고 있다)'}${unknown ? ` · 미지원 키워드 ${unknown}건` : ''}${covTail}`);
+
+  const coverageFails = args.strictCoverage && uncovered > 0;
+  process.exit(failed === 0 && selfBroken === 0 && unknown === 0 && !coverageFails ? 0 : 1);
 }
 
 main();

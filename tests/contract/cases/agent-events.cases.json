@@ -79,6 +79,13 @@
     { "group": "⑥ 선택 필드(커버리지)", "label": "run.failed fallback=replay", "expect": "accept",
       "event": { "type": "run.failed", "payload": { "code": "LIVE_OFFLINE", "message": "live 불가", "fallback": "replay" } } },
     { "group": "⑥ 선택 필드(커버리지)", "label": "미정의 fallback 값", "expect": "reject",
-      "event": { "type": "run.failed", "payload": { "code": "E", "message": "m", "fallback": "sandbox" } } }
+      "event": { "type": "run.failed", "payload": { "code": "E", "message": "m", "fallback": "sandbox" } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "step.started의 note", "expect": "accept",
+      "why": "노드 기준 커버리지가 잡아낸 미실행 3건 — 문자열 매칭으로는 «덮였다»고 잘못 세던 자리",
+      "event": { "type": "step.started", "payload": { "step": "graph", "note": "그래프 경로 추적 시작" } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "step.completed의 summary", "expect": "accept",
+      "event": { "type": "step.completed", "payload": { "step": "graph", "summary": "4-hop 경로 1건 확보", "elapsedMs": 340 } } },
+    { "group": "⑥ 선택 필드(커버리지)", "label": "run.stopped의 note", "expect": "accept",
+      "event": { "type": "run.stopped", "payload": { "reason": "timeout", "note": "live 응답 지연" } } }
   ]
 }
