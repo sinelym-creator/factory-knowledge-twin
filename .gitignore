@@ -1,0 +1,38 @@
+# secrets / credentials — never commit (baseline §34.6)
+.env
+.env.*
+*.pem
+*.key
+credentials*
+secrets*
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+*.egg-info/
+
+# node / next.js
+node_modules/
+.next/
+out/
+.vercel/
+
+# db volumes / model caches (baseline §34.6)
+volumes/
+*.dump
+models/
+.cache/
+
+# workspace scratch / 세션 내부 파일 (공개 비대상)
+.workspace/scratch/
+.claude/
+
+# os / editor
+.DS_Store
+Thumbs.db
