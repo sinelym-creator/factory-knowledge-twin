@@ -107,6 +107,41 @@ SELECT 'L-22b', '🔴 같은 주입에서 C-21은 몇 건을 잡는가 (0 = C-22
             THEN 'PASS' ELSE 'FAIL' END;
 ROLLBACK;
 
+-- --- L-31: STALE 판정이 «본문 변경»을 잡는가 (spec §3.3 좌변 · GS-01 S6) -----------
+-- 원장(index_build)에 FK가 없으므로 probe 행을 넣었다 지우는 것으로 완결된다.
+BEGIN;
+INSERT INTO index_build (build_id, revision_id, document_id, revision_no, source_sha256,
+  chunking_policy_version, embedding_model, embedding_dim, ontology_version, status, chunk_count)
+SELECT 'PROBE-L31', r.id, r.document_id, r.revision_no, repeat('a',64),
+       1, 'probe-model', 384, '0.1.0', 'success', 1
+  FROM document_revision r WHERE r.id = 'DOC-SAF-0029@r3';
+SELECT 'L-31', 'STALE 판정 생존 — 원장 sha ≠ 현행 sha 주입 시 STALE 건수', 1,
+       (SELECT count(*)::bigint FROM v_index_freshness
+         WHERE revision_id='DOC-SAF-0029@r3' AND freshness='STALE'),
+       CASE WHEN (SELECT count(*) FROM v_index_freshness
+                   WHERE revision_id='DOC-SAF-0029@r3' AND freshness='STALE') = 1
+            THEN 'PASS' ELSE 'FAIL' END;
+ROLLBACK;
+
+-- --- L-32: 🔴 known gap — ontology_version 불일치는 «아직» STALE로 잡히지 않는다 ---
+-- spec §3.3은 「ontology_version 불일치도 동일 처리」를 요구하지만, v_index_freshness는
+-- source_sha256만 비교한다(003 마이그레이션 실물). 기대값을 «현재 상태»로 고정해 둔다 —
+-- 처방이 착지해 잡히기 시작하면 여기가 FAIL로 울린다(표를 갱신하라는 신호).
+-- 🔴 처방 위치 = services/ai-api/db/migrations/** = 구현 좌석 scope. 검증 좌석은 못 닫는다.
+BEGIN;
+INSERT INTO index_build (build_id, revision_id, document_id, revision_no, source_sha256,
+  chunking_policy_version, embedding_model, embedding_dim, ontology_version, status, chunk_count)
+SELECT 'PROBE-L32', r.id, r.document_id, r.revision_no, r.content_sha256,
+       1, 'probe-model', 384, '0.0.1-WRONG', 'success', 1
+  FROM document_revision r WHERE r.id = 'DOC-SAF-0029@r3';
+SELECT 'L-32', '🔴 known gap — ontology 불일치 STALE 적발 건수(0 = 아직 안 잡는다)', 0,
+       (SELECT count(*)::bigint FROM v_index_freshness
+         WHERE revision_id='DOC-SAF-0029@r3' AND freshness='STALE'),
+       CASE WHEN (SELECT count(*) FROM v_index_freshness
+                   WHERE revision_id='DOC-SAF-0029@r3' AND freshness='STALE') = 0
+            THEN 'PASS' ELSE 'FAIL' END;
+ROLLBACK;
+
 -- --- L-0: 되감기 확인 — 주입 전후로 4 그물이 전부 초록으로 돌아왔는가 ----------
 SELECT 'L-0', '되감기 확인 — 주입 후 4 그물 합계 적발 건수(잔여물 0이면 0)', 0,
        ((SELECT count(*)::bigint FROM component
