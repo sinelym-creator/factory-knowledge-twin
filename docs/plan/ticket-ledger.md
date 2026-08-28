@@ -55,8 +55,8 @@ size_limit: 8KB
 | ID | 티켓 | 담당 | AC 요지 | 상태 |
 |---|---|---|---|---|
 | T1-1 | PG 스키마·마이그레이션(온톨로지 §4 분담표→DDL·pgvector) | 구현 | 스펙 1:1 대조·재실행 가능 | ✅ PASS(독립 검증 — 대조표 전건 일치·멱등 · senku2 · PR#30 · 검증 levi2 · PR#35) — 후속 소커밋 완료(002 CHECK 3줄·README C·D절 · PR#37) |
-| T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | 착지(senku2 2대 · PR#37) · 독립 검증 5축 — 재현·보존·D-8 PASS(levi2 · PR#41) · 🔴 F-1(MR ID 연도 13건) 수정 후 계수 |
-| T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | 부분 착지(senku2 2대 · PR#40 — 인용 9건 상시 자기 점검·◇충족표) · 잔여 3조각+F-1 수정(3대 진행) |
+| T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | 착지(senku2 · PR#37) · 검증 5축 PASS(levi2 · PR#41) · F-1 수정 착지(PR#44 · 자가 20/20) — 리바이2 재검 반전 확인 시 계수 |
+| T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | 완결 착지(senku2 2·3대 · PR#40·44 — 인용 9건 상시 자기 점검·◇충족표·매뉴얼 2본 실분량) · 독립 검증 대기 |
 | T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 | 대기 |
 | T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 대기 |
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
