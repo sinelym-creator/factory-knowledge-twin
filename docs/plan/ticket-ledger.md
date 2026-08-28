@@ -47,7 +47,7 @@ size_limit: 8KB
 
 | ID | 티켓 | 담당 | AC 요지 | 상태 |
 |---|---|---|---|---|
-| T0-10 | wireframe D-002 delta 보강(F-11·F-9) | 구현 | B요소 2개·첫 진입 안내·TTAE 표시 1행 | 발주 |
+| T0-10 | wireframe D-002 delta 보강(F-11·F-9) | 구현 | B요소 2개·첫 진입 안내·TTAE 표시 1행 | 착지(senku2 · PR#17) · 재검증 대기 |
 | T1-0 | 개발 환경 기반 실측·골격(게이트 무관) | 구현 | compose up·양 서비스 boot E1 · 기능 코드 0 | 발주 |
 
 ### Phase 1 — SSOT·Ontology·Synthetic Data + skeleton (S2~S3 · 게이트 통과 08-28 15:53 등재)
