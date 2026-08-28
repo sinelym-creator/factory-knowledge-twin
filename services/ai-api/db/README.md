@@ -75,10 +75,13 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔 새로 
 | revision 1부터 정수 증가·문서당 유일 | `revision_no >= 1` CHECK + `UNIQUE(document_id, revision_no)` |
 | `content_sha256` = 소문자 hex 64자 | `char(64)` + `~ '^[0-9a-f]{64}$'` CHECK |
 | `chunk_sha256` 동일 | `document_chunk.chunk_sha256` 동일 CHECK |
-| 상태 전이 draft→approved→superseded→retired | `approval_state` CHECK 4값 |
+| 상태 «값»은 draft·approved·superseded·retired 4종 | `approval_state` CHECK 4값 — 🔴 **값의 집합만 제약한다. 전이 방향(draft→approved→superseded→retired)은 DDL이 강제하지 않는다** — D절 G-3 참조 |
 | 인용 가능 = approved **및** effective 기간 내 | 두 칼럼 실재 + `ix_revision_effective` 인덱스 (판정 로직은 질의 계층 = S2) |
 | effective 기간 정합 | `effective_to > effective_from` CHECK |
 | 승인에는 승인자가 있어야 함 | `approval_state <> 'approved' OR approved_by IS NOT NULL` CHECK |
+| revision ID = `{document_id}@r{revision_no}` | `ck_revision_id_composition` CHECK (**002**) |
+| chunk ID = `{revision_id}#{NNN}` | `ck_chunk_id_composition` CHECK (**002**) |
+| superseded revision은 종료 시각을 갖는다 | `ck_superseded_has_effective_to` CHECK (**002**) |
 
 ## D. 스펙에 있으나 DDL에 «의도적으로» 없는 것
 
@@ -88,6 +91,22 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔 새로 
 | `ontology_version`·`ssot_manifest_hash`·index build 기록 | 색인 파이프라인 산출물 — **T1-4** 소관 |
 | Neo4j 투영 | **T1-5** 소관 (본 스키마가 그 원천) |
 | 인용 가능 여부 «판정» | 스키마는 사실만 담고 판정은 질의/서비스 계층에서 한다 |
+
+### D-1. 검증에서 열린 제약 구멍 — «막지 않는» 것이 결정이다
+
+검증 좌석이 실측으로 연 7건(`evidence/t1-1-schema-verification.md`) 중 3건은 002에서 CHECK로
+막았고(C절), 나머지 3건은 **스키마가 막지 않는 쪽으로 오케가 확정**했다. 비어 있는 것과
+**일부러 비워 둔 것**은 다르므로 여기에 적어 둔다.
+
+| # | 열린 것 | 왜 막지 않는가 | 어디서 다루는가 |
+|---|---|---|---|
+| **G-4b** | `component.id`·`sensor.id`의 설비 번호가 소속 설비와 달라도 INSERT된다 | 다른 테이블 값을 참조해야 해서 CHECK로 표현할 수 없다. 트리거를 걸면 seed 적재 경로가 무거워진다 | **T1-2 생성기가 ID를 소속에서 «파생»시켜 만든다**(구성이 어긋날 수 없다) + T1-7 무결성 검사 |
+| **G-2** | 유효 기간이 겹치는 `approved` revision 2건이 INSERT된다 | 이 제품의 가치는 데이터 불완전성을 **막는** 게 아니라 **검출해 보여주는** 것이다(SSOT 검증 화면). `EXCLUDE USING gist`로 막으면 보여줄 사례가 사라진다 | T1-7 무결성 검증 + 서비스 계층. 🔴 단 `Q-DIRECT-003`의 «정답 1건» 전제는 **seed 품질 조건**으로 T1-7 검사 축에 결속한다 |
+| **G-3** | `approved` → `draft` 역방향 전이 UPDATE가 통과된다 | 상태 기계를 DDL에 새기면 데이터 보정·마이그레이션이 막힌다. 전이 규칙은 쓰기 경로가 하나뿐인 서비스 계층에서 지키는 편이 싸다 | 서비스 계층(S2) + T1-7 |
+
+🔴 **원칙**: 스키마는 «같은 행 안에서 끝나는 자기모순»만 막는다. 행 사이·시간에 걸친 정합은
+질의·서비스·무결성 검사가 맡는다. 이 경계가 흐려지면 「데이터 문제를 보여주는 콘솔」이
+「데이터 문제를 애초에 못 넣는 DB」가 되어 제품이 시연할 것을 잃는다.
 
 ## E. 실측 로그 (E1 · 2026-08-28)
 
