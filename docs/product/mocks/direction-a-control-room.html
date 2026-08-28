@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>FKT — A안 Control Room (Factory Overview)</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111823; --panel-2:#0e1520; --line:#1e2a38;
+    --txt:#dbe4ef; --txt-dim:#7d8fa5; --txt-mute:#55657a;
+    --ok:#31c48d; --warn:#f0a742; --crit:#f0555c; --ai:#38bdf8;
+    --font:"Segoe UI",system-ui,sans-serif; --mono:"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;line-height:1.45}
+  .app{display:grid;grid-template-columns:56px 260px 1fr 360px;grid-template-rows:48px 40px 1fr;height:100vh}
+
+  /* top bar */
+  .top{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .brand{font-weight:700;letter-spacing:.4px}
+  .brand span{color:var(--ai)}
+  .nav{display:flex;gap:2px;margin-left:12px}
+  .nav a{padding:5px 11px;color:var(--txt-dim);text-decoration:none;border-radius:4px;font-size:12.5px}
+  .nav a.on{background:var(--panel-2);color:var(--txt);box-shadow:inset 0 -2px 0 var(--ai)}
+  .top .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .chip{display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);border-radius:4px;font-size:12px;color:var(--txt-dim);background:var(--panel-2)}
+  .chip.live{color:var(--ok);border-color:#1d4c3c}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .btn{padding:5px 12px;border:1px solid var(--line);background:var(--panel-2);color:var(--txt-dim);border-radius:4px;font-size:12px;cursor:pointer}
+  .btn.pri{background:#0f3b52;border-color:#18658c;color:#bfe9ff}
+
+  /* kpi strip */
+  .kpi{grid-column:1/-1;display:flex;align-items:center;gap:0;background:var(--panel-2);border-bottom:1px solid var(--line);padding:0 16px}
+  .kpi div{padding:0 18px;border-right:1px solid var(--line);font-size:12px;color:var(--txt-dim);height:100%;display:flex;align-items:center;gap:7px}
+  .kpi b{color:var(--txt);font-size:14px;font-family:var(--mono)}
+  .kpi .t{margin-left:auto;border:0;color:var(--txt-mute);font-family:var(--mono)}
+
+  /* rail */
+  .rail{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:4px}
+  .rail i{width:36px;height:36px;display:grid;place-items:center;border-radius:5px;color:var(--txt-mute);font-style:normal;font-size:16px}
+  .rail i.on{background:var(--panel-2);color:var(--ai)}
+
+  /* tree */
+  .tree{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:12px 0}
+  .tree h4{font-size:10.5px;letter-spacing:1.1px;color:var(--txt-mute);padding:0 14px 8px;text-transform:uppercase}
+  .tree .n{padding:5px 14px;color:var(--txt-dim);cursor:pointer;display:flex;gap:7px;align-items:center;font-family:var(--mono);font-size:12px}
+  .tree .n:hover{background:var(--panel-2)}
+  .tree .n.l2{padding-left:28px}
+  .tree .n.l3{padding-left:44px;font-size:11.5px}
+  .tree .n.sel{background:#132030;color:var(--txt);box-shadow:inset 2px 0 0 var(--ai)}
+
+  /* grid */
+  .main{overflow:auto;padding:14px}
+  .sec{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+  .sec h3{font-size:13px;font-weight:600}
+  .sec span{color:var(--txt-mute);font-size:11.5px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:11px 12px;position:relative}
+  .card.crit{border-color:#5b2327;background:linear-gradient(180deg,#1a1013,var(--panel))}
+  .card .id{font-family:var(--mono);font-size:12px;color:var(--txt);display:flex;align-items:center;gap:6px}
+  .card .cls{color:var(--txt-mute);font-size:11px;margin:2px 0 8px}
+  .card .st{font-size:11.5px;display:flex;align-items:center;gap:5px}
+  .st.ok{color:var(--ok)} .st.warn{color:var(--warn)} .st.crit{color:var(--crit)}
+  .spark{margin-top:9px;height:30px}
+  .card .metric{position:absolute;top:11px;right:12px;font-family:var(--mono);font-size:11px;color:var(--txt-mute)}
+
+  /* alarms */
+  .side{background:var(--panel);border-left:1px solid var(--line);overflow:auto;padding:14px}
+  .side h4{font-size:10.5px;letter-spacing:1.1px;color:var(--txt-mute);text-transform:uppercase;margin-bottom:9px}
+  .al{border:1px solid var(--line);border-left:3px solid var(--crit);border-radius:5px;padding:10px;margin-bottom:9px;background:var(--panel-2)}
+  .al .h{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--crit)}
+  .al .idl{font-family:var(--mono);font-size:12px;margin:5px 0 3px}
+  .al .m{color:var(--txt-dim);font-size:11.5px;font-family:var(--mono)}
+  .al.w{border-left-color:var(--warn)} .al.w .h{color:var(--warn)}
+  .go{width:100%;margin-top:9px;padding:7px;background:#0f3b52;border:1px solid #18658c;color:#bfe9ff;border-radius:4px;font-size:12px;cursor:pointer}
+  .scn{border:1px solid var(--line);border-radius:5px;padding:9px 10px;font-size:12px;color:var(--txt-dim);margin-bottom:7px}
+  .scn.on{border-color:#18658c;color:var(--txt);background:#0d1c26}
+  .note{color:var(--txt-mute);font-size:11px;margin-top:14px;padding-top:10px;border-top:1px dashed var(--line)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">▣ FKT <span>Factory Knowledge Twin</span></div>
+    <nav class="nav"><a class="on" href="#">Overview</a><a href="#">Incidents</a><a href="#">Compare</a></nav>
+    <div class="right">
+      <span class="chip live"><span class="dot"></span>LIVE</span>
+      <span class="chip">⬡ a3f1</span>
+      <button class="btn">⟲ Reset</button>
+    </div>
+  </header>
+
+  <div class="kpi">
+    <div>가동 라인 <b>3/3</b></div>
+    <div>활성 알람 <b style="color:var(--crit)">4</b></div>
+    <div>진행 Incident <b>2</b></div>
+    <div>승인 대기 WO <b>1</b></div>
+    <div class="t">last sync 12:04:31</div>
+  </div>
+
+  <div class="rail"><i class="on">▦</i><i>◈</i><i>🕸</i><i>📄</i><i>⚙</i></div>
+
+  <aside class="tree">
+    <h4>Plant hierarchy</h4>
+    <div class="n">▾ FAC-A <span style="color:var(--txt-mute)">Factory-A</span></div>
+    <div class="n l2">▾ LN-A-01</div>
+    <div class="n l3">EQ-CNC-201</div>
+    <div class="n l3">EQ-CNC-202</div>
+    <div class="n l3">EQ-CNV-203</div>
+    <div class="n l2 sel">▾ LN-A-02</div>
+    <div class="n l3">EQ-CNC-204 <span style="color:var(--crit)">■</span></div>
+    <div class="n l3">EQ-CNC-205</div>
+    <div class="n l3">EQ-RBT-206</div>
+    <div class="n l3">EQ-CNC-207</div>
+    <div class="n l2">▸ LN-A-03</div>
+  </aside>
+
+  <main class="main">
+    <div class="sec"><h3>LN-A-02 · 설비 상태</h3><span>4대 · 이상 1</span></div>
+    <div class="cards">
+      <div class="card crit">
+        <div class="id">EQ-CNC-204 <span style="color:var(--crit)">■</span></div>
+        <div class="cls">CNC 밀링 · MX-500</div>
+        <div class="st crit">■ 진동 임계 초과</div>
+        <div class="metric">7.8 mm/s</div>
+        <svg class="spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+          <line x1="0" y1="16" x2="200" y2="16" stroke="#4a3a20" stroke-dasharray="3 3"/>
+          <polyline points="0,26 30,25 60,24 90,22 120,19 145,15 165,9 185,4 200,3" fill="none" stroke="#f0555c" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <div class="card">
+        <div class="id">EQ-CNC-205 <span style="color:var(--ok)">●</span></div>
+        <div class="cls">CNC 밀링 · MX-500</div>
+        <div class="st ok">● 정상</div>
+        <div class="metric">2.1 mm/s</div>
+        <svg class="spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+          <polyline points="0,22 30,21 60,23 90,21 120,22 150,20 180,22 200,21" fill="none" stroke="#31c48d" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <div class="card">
+        <div class="id">EQ-RBT-206 <span style="color:var(--warn)">▲</span></div>
+        <div class="cls">이송 로봇 · R-220</div>
+        <div class="st warn">▲ 온도 주의</div>
+        <div class="metric">58 ℃</div>
+        <svg class="spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+          <polyline points="0,24 40,22 80,20 120,17 160,15 200,13" fill="none" stroke="#f0a742" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <div class="card">
+        <div class="id">EQ-CNC-207 <span style="color:var(--ok)">●</span></div>
+        <div class="cls">CNC 밀링 · MX-500</div>
+        <div class="st ok">● 정상</div>
+        <div class="metric">2.4 mm/s</div>
+        <svg class="spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+          <polyline points="0,21 30,22 60,20 90,22 120,21 150,23 180,21 200,22" fill="none" stroke="#31c48d" stroke-width="1.6"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:18px"><h3>LN-A-01</h3><span>3대 · 정상</span></div>
+    <div class="cards">
+      <div class="card"><div class="id">EQ-CNC-201 <span style="color:var(--ok)">●</span></div><div class="cls">CNC 밀링</div><div class="st ok">● 정상</div><svg class="spark" viewBox="0 0 200 30"><polyline points="0,22 50,21 100,22 150,21 200,22" fill="none" stroke="#31c48d" stroke-width="1.6"/></svg></div>
+      <div class="card"><div class="id">EQ-CNC-202 <span style="color:var(--ok)">●</span></div><div class="cls">CNC 밀링</div><div class="st ok">● 정상</div><svg class="spark" viewBox="0 0 200 30"><polyline points="0,21 50,22 100,21 150,22 200,21" fill="none" stroke="#31c48d" stroke-width="1.6"/></svg></div>
+      <div class="card"><div class="id">EQ-CNV-203 <span style="color:var(--ok)">●</span></div><div class="cls">컨베이어</div><div class="st ok">● 정상</div><svg class="spark" viewBox="0 0 200 30"><polyline points="0,22 50,22 100,21 150,22 200,22" fill="none" stroke="#31c48d" stroke-width="1.6"/></svg></div>
+    </div>
+  </main>
+
+  <aside class="side">
+    <h4>Active alarms · 4</h4>
+    <div class="al">
+      <div class="h"><span>■ 위험</span><span style="font-family:var(--mono);color:var(--txt-mute)">12:03</span></div>
+      <div class="idl">AL-20260826-0041</div>
+      <div class="m">EQ-CNC-204 · SN-204-VIB</div>
+      <div class="m" style="color:var(--crit)">임계 4.5 → 관측 7.8 mm/s</div>
+      <button class="go">▸ 조사 시작</button>
+    </div>
+    <div class="al w">
+      <div class="h"><span>▲ 주의</span><span style="font-family:var(--mono);color:var(--txt-mute)">11:47</span></div>
+      <div class="idl">AL-20260826-0039</div>
+      <div class="m">EQ-RBT-206 · SN-206-TEMP</div>
+    </div>
+    <div class="al w">
+      <div class="h"><span>▲ 주의</span><span style="font-family:var(--mono);color:var(--txt-mute)">09:12</span></div>
+      <div class="idl">AL-20260826-0036</div>
+      <div class="m">EQ-CNC-204 · SN-204-TEMP</div>
+    </div>
+
+    <h4 style="margin-top:18px">Approved scenarios</h4>
+    <div class="scn on">◉ GS-01 · 스핀들 진동 이상 조사</div>
+    <div class="scn">○ 품질 불량 증가 <span style="color:var(--txt-mute)">(P1)</span></div>
+    <div class="note">모든 데이터는 synthetic입니다. 실제 설비 제어는 수행하지 않습니다.</div>
+  </aside>
+</div>
+</body>
+</html>

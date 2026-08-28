@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>FKT — C안 Blueprint (Factory Overview)</title>
+<style>
+  :root{
+    --paper:#f5f3ed; --sheet:#fffefb; --grid:#e6e1d4; --rule:#d3cdbe;
+    --ink:#22282e; --ink-2:#5b6470; --ink-3:#8d9299;
+    --ok:#2f7a52; --warn:#b0761a; --crit:#b3352f; --link:#2f5d8f;
+    --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+    --sans:"Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:13.5px;line-height:1.5}
+  .app{display:grid;grid-template-columns:250px 1fr 340px;grid-template-rows:50px 1fr;height:100vh}
+
+  header{grid-column:1/-1;display:flex;align-items:center;gap:20px;padding:0 22px;background:var(--sheet);border-bottom:1px solid var(--rule)}
+  .brand{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.5px}
+  .brand span{color:var(--link)}
+  nav{display:flex;gap:3px;margin-left:10px}
+  nav a{padding:5px 12px;font-size:13px;color:var(--ink-2);text-decoration:none;border:1px solid transparent;border-radius:3px}
+  nav a.on{background:var(--paper);border-color:var(--rule);color:var(--ink)}
+  .right{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+  .badge{display:flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--paper)}
+  .badge.live{color:var(--ok);border-color:#bcd7c6}
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .btn{padding:4px 11px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer;color:var(--ink-2)}
+
+  aside.tree{background:var(--sheet);border-right:1px solid var(--rule);padding:16px 0;overflow:auto}
+  .cap{font-family:var(--mono);font-size:10.5px;letter-spacing:1px;color:var(--ink-3);padding:0 16px 9px;text-transform:uppercase}
+  .n{font-family:var(--mono);font-size:12.5px;padding:4px 16px;color:var(--ink-2);cursor:pointer}
+  .n:hover{background:var(--paper)}
+  .n.l2{padding-left:28px} .n.l3{padding-left:42px;font-size:12px}
+  .n.sel{background:var(--paper);color:var(--ink);box-shadow:inset 2px 0 0 var(--link)}
+  .legend{margin:18px 16px 0;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.9}
+
+  main{padding:20px 24px;overflow:auto;
+       background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+       background-size:22px 22px}
+  .sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:2px;padding:18px 20px}
+  .tt{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:16px}
+  .tt h1{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.4px}
+  .tt .rev{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .tt .sc{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+  .kpis{display:flex;gap:0;margin-bottom:18px;border:1px solid var(--rule)}
+  .kpis div{flex:1;padding:9px 12px;border-right:1px solid var(--rule);font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .kpis div:last-child{border:0}
+  .kpis b{display:block;font-size:17px;color:var(--ink);font-weight:600;margin-top:2px}
+
+  .cap2{font-family:var(--mono);font-size:10.5px;letter-spacing:1px;color:var(--ink-3);text-transform:uppercase;margin:22px 0 8px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  th{text-align:left;font-weight:500;color:var(--ink-3);border-bottom:1px solid var(--rule);padding:6px 8px;font-size:11px;letter-spacing:.4px}
+  td{padding:7px 8px;border-bottom:1px solid var(--grid);color:var(--ink-2)}
+  td.id{color:var(--ink)}
+  tr.hot td{background:#fdf3f2}
+  .s-ok{color:var(--ok)} .s-warn{color:var(--warn)} .s-crit{color:var(--crit);font-weight:600}
+
+  aside.side{background:var(--sheet);border-left:1px solid var(--rule);padding:18px;overflow:auto}
+  .alarm{border:1px solid var(--rule);border-top:3px solid var(--crit);padding:12px;margin-bottom:12px;background:var(--paper)}
+  .alarm .l{font-family:var(--mono);font-size:11px;color:var(--crit);letter-spacing:.5px}
+  .alarm .id2{font-family:var(--mono);font-size:13px;margin:6px 0 4px}
+  .alarm .m{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+  .cta{width:100%;margin-top:11px;padding:8px;background:var(--link);color:#fff;border:0;border-radius:3px;font-family:var(--mono);font-size:12.5px;cursor:pointer}
+  .scn{font-family:var(--mono);font-size:12px;padding:8px 10px;border:1px solid var(--rule);margin-bottom:7px;color:var(--ink-2)}
+  .scn.on{border-color:var(--link);color:var(--ink);background:#f2f6fb}
+  .fine{font-size:11.5px;color:var(--ink-3);margin-top:16px;padding-top:10px;border-top:1px dashed var(--rule);line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">FKT<span>/</span>Factory Knowledge Twin</div>
+    <nav><a class="on" href="#">overview</a><a href="#">incident</a><a href="#">compare</a></nav>
+    <div class="right">
+      <span class="badge live"><span class="dot"></span>LIVE</span>
+      <span class="badge">session a3f1</span>
+      <button class="btn">⟲ reset</button>
+    </div>
+  </header>
+
+  <aside class="tree">
+    <div class="cap">hierarchy</div>
+    <div class="n">▾ FAC-A</div>
+    <div class="n l2">▾ LN-A-01</div>
+    <div class="n l3">EQ-CNC-201</div>
+    <div class="n l3">EQ-CNC-202</div>
+    <div class="n l3">EQ-CNV-203</div>
+    <div class="n l2 sel">▾ LN-A-02</div>
+    <div class="n l3">EQ-CNC-204 ■</div>
+    <div class="n l3">EQ-CNC-205</div>
+    <div class="n l3">EQ-RBT-206</div>
+    <div class="n l3">EQ-CNC-207</div>
+    <div class="n l2">▸ LN-A-03</div>
+    <div class="legend">
+      ● normal<br>▲ warning<br>■ critical<br>── contains<br>┈┈ monitored_by
+    </div>
+  </aside>
+
+  <main>
+    <div class="sheet">
+      <div class="tt">
+        <h1>FAC-A / PLANT LAYOUT</h1>
+        <span class="sc">scale — logical</span>
+        <span class="rev">ontology v0.1 · 12:04:31</span>
+      </div>
+
+      <div class="kpis">
+        <div>lines active<b>3 / 3</b></div>
+        <div>active alarms<b style="color:var(--crit)">4</b></div>
+        <div>open incidents<b>2</b></div>
+        <div>pending work orders<b>1</b></div>
+      </div>
+
+      <svg viewBox="0 0 880 300" width="100%" height="300" font-family="Cascadia Mono, Consolas, monospace">
+        <!-- lines -->
+        <g stroke="#d3cdbe" fill="none">
+          <rect x="18" y="18" width="844" height="80" stroke-dasharray="3 3"/>
+          <rect x="18" y="112" width="844" height="80" stroke="#b3352f" stroke-dasharray="3 3"/>
+          <rect x="18" y="206" width="844" height="76" stroke-dasharray="3 3"/>
+        </g>
+        <text x="26" y="34" font-size="10" fill="#8d9299">LN-A-01</text>
+        <text x="26" y="128" font-size="10" fill="#b3352f">LN-A-02 · alarm</text>
+        <text x="26" y="222" font-size="10" fill="#8d9299">LN-A-03</text>
+
+        <!-- conveyor spine -->
+        <line x1="110" y1="58" x2="820" y2="58" stroke="#e6e1d4" stroke-width="8"/>
+        <line x1="110" y1="152" x2="820" y2="152" stroke="#e6e1d4" stroke-width="8"/>
+        <line x1="110" y1="244" x2="820" y2="244" stroke="#e6e1d4" stroke-width="8"/>
+
+        <!-- line 1 -->
+        <g>
+          <rect x="140" y="40" width="120" height="36" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="150" y="57" font-size="11" fill="#22282e">EQ-CNC-201</text><text x="150" y="70" font-size="9.5" fill="#2f7a52">● 2.2 mm/s</text>
+          <rect x="330" y="40" width="120" height="36" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="340" y="57" font-size="11" fill="#22282e">EQ-CNC-202</text><text x="340" y="70" font-size="9.5" fill="#2f7a52">● 2.0 mm/s</text>
+          <rect x="520" y="40" width="120" height="36" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="530" y="57" font-size="11" fill="#22282e">EQ-CNV-203</text><text x="530" y="70" font-size="9.5" fill="#2f7a52">● normal</text>
+        </g>
+
+        <!-- line 2 (hot) -->
+        <g>
+          <rect x="140" y="134" width="136" height="40" fill="#fdf3f2" stroke="#b3352f" stroke-width="2"/>
+          <text x="150" y="151" font-size="11.5" fill="#22282e" font-weight="600">EQ-CNC-204</text>
+          <text x="150" y="165" font-size="9.5" fill="#b3352f">■ 7.8 mm/s (limit 4.5)</text>
+          <!-- sensor leaders -->
+          <line x1="208" y1="134" x2="208" y2="112" stroke="#b3352f" stroke-dasharray="2 2"/>
+          <text x="214" y="110" font-size="9" fill="#b3352f">SN-204-VIB ■</text>
+          <line x1="256" y1="174" x2="256" y2="192" stroke="#b0761a" stroke-dasharray="2 2"/>
+          <text x="262" y="200" font-size="9" fill="#b0761a">SN-204-TEMP ▲</text>
+
+          <rect x="350" y="134" width="120" height="36" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="360" y="151" font-size="11" fill="#22282e">EQ-CNC-205</text><text x="360" y="164" font-size="9.5" fill="#2f7a52">● 2.1 mm/s</text>
+          <rect x="530" y="134" width="120" height="36" fill="#fffefb" stroke="#b0761a"/>
+          <text x="540" y="151" font-size="11" fill="#22282e">EQ-RBT-206</text><text x="540" y="164" font-size="9.5" fill="#b0761a">▲ 58 ℃</text>
+          <rect x="700" y="134" width="120" height="36" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="710" y="151" font-size="11" fill="#22282e">EQ-CNC-207</text><text x="710" y="164" font-size="9.5" fill="#2f7a52">● 2.4 mm/s</text>
+        </g>
+
+        <!-- line 3 -->
+        <g>
+          <rect x="140" y="228" width="120" height="34" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="150" y="244" font-size="11" fill="#22282e">EQ-PRS-301</text><text x="150" y="256" font-size="9.5" fill="#2f7a52">● normal</text>
+          <rect x="330" y="228" width="120" height="34" fill="#fffefb" stroke="#2f7a52"/>
+          <text x="340" y="244" font-size="11" fill="#22282e">EQ-CNC-302</text><text x="340" y="256" font-size="9.5" fill="#2f7a52">● normal</text>
+        </g>
+      </svg>
+
+      <div class="cap2">equipment index — LN-A-02</div>
+      <table>
+        <tr><th>equipment_id</th><th>class</th><th>model</th><th>sensor</th><th>value</th><th>status</th></tr>
+        <tr class="hot"><td class="id">EQ-CNC-204</td><td>CNC</td><td>MX-500</td><td>SN-204-VIB</td><td>7.8 mm/s</td><td class="s-crit">■ critical</td></tr>
+        <tr><td class="id">EQ-CNC-205</td><td>CNC</td><td>MX-500</td><td>SN-205-VIB</td><td>2.1 mm/s</td><td class="s-ok">● normal</td></tr>
+        <tr><td class="id">EQ-RBT-206</td><td>ROBOT</td><td>R-220</td><td>SN-206-TEMP</td><td>58 ℃</td><td class="s-warn">▲ warning</td></tr>
+        <tr><td class="id">EQ-CNC-207</td><td>CNC</td><td>MX-500</td><td>SN-207-VIB</td><td>2.4 mm/s</td><td class="s-ok">● normal</td></tr>
+      </table>
+    </div>
+  </main>
+
+  <aside class="side">
+    <div class="cap">active alarms · 4</div>
+    <div class="alarm">
+      <div class="l">■ CRITICAL · 12:03</div>
+      <div class="id2">AL-20260826-0041</div>
+      <div class="m">EQ-CNC-204 / SN-204-VIB</div>
+      <div class="m" style="color:var(--crit)">threshold 4.5 → observed 7.8</div>
+      <button class="cta">▸ start investigation</button>
+    </div>
+    <div class="alarm" style="border-top-color:var(--warn)">
+      <div class="l" style="color:var(--warn)">▲ WARNING · 11:47</div>
+      <div class="id2">AL-20260826-0039</div>
+      <div class="m">EQ-RBT-206 / SN-206-TEMP</div>
+    </div>
+
+    <div class="cap" style="margin-top:20px">approved scenarios</div>
+    <div class="scn on">◉ GS-01 spindle vibration</div>
+    <div class="scn">○ quality defect rise (P1)</div>
+
+    <div class="cap" style="margin-top:20px">ssot state</div>
+    <div style="font-family:var(--mono);font-size:11.5px;color:var(--ink-2);line-height:1.9">
+      documents 45 · revisions 60<br>
+      index build ✓ fresh<br>
+      ontology v0.1 · graph ✓ synced
+    </div>
+
+    <div class="fine">All data is synthetic. No real equipment control is performed. AI proposes; humans approve.</div>
+  </aside>
+</div>
+</body>
+</html>

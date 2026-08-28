@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>FKT — B안 Investigation Desk (Factory Overview)</title>
+<style>
+  :root{
+    --bg:#14120f; --surf:#1c1a16; --surf-2:#221f1a; --line:#2f2b24;
+    --txt:#ece7dd; --dim:#a49c8d; --mute:#6f6960;
+    --ok:#6bbf8a; --warn:#d9a441; --crit:#e2685f; --ai:#7fb3d5;
+    --serif:"Iowan Old Style","Georgia",serif;
+    --sans:"Segoe UI",system-ui,sans-serif; --mono:"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.6}
+  .wrap{max-width:1440px;margin:0 auto}
+
+  header{display:flex;align-items:center;gap:28px;padding:20px 40px;border-bottom:1px solid var(--line)}
+  .brand{font-family:var(--serif);font-size:19px;letter-spacing:.2px}
+  .brand em{font-style:normal;color:var(--warn)}
+  nav{display:flex;gap:26px;margin-left:14px}
+  nav a{color:var(--dim);text-decoration:none;font-size:14.5px;padding-bottom:3px}
+  nav a.on{color:var(--txt);border-bottom:2px solid var(--warn)}
+  .right{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:13px;color:var(--dim)}
+  .live{display:flex;align-items:center;gap:7px;color:var(--ok)}
+  .live .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+  .ghost{padding:7px 15px;border:1px solid var(--line);border-radius:20px;background:none;color:var(--dim);font-size:13px;cursor:pointer}
+
+  .body{display:grid;grid-template-columns:1fr 380px;gap:0}
+  main{padding:38px 40px 60px}
+  .lede{font-family:var(--serif);font-size:27px;line-height:1.4;max-width:760px;margin-bottom:6px}
+  .lede b{color:var(--crit);font-weight:600}
+  .sub{color:var(--dim);font-size:14px;margin-bottom:32px}
+  .sub span{font-family:var(--mono);color:var(--txt)}
+
+  .hero{border:1px solid var(--line);border-left:3px solid var(--crit);border-radius:8px;background:var(--surf);padding:26px 28px;margin-bottom:34px}
+  .hero .row{display:flex;align-items:flex-start;gap:34px}
+  .hero h2{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:.3px}
+  .hero .meta{color:var(--mute);font-size:13.5px;margin-top:3px}
+  .hero .val{margin-left:auto;text-align:right}
+  .hero .val b{font-family:var(--mono);font-size:32px;color:var(--crit);font-weight:500;display:block;line-height:1.1}
+  .hero .val span{font-size:12.5px;color:var(--mute)}
+  .chart{margin:22px 0 8px}
+  .clabel{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);font-family:var(--mono);margin-bottom:4px}
+  .story{color:var(--dim);font-size:14.5px;max-width:680px;margin-top:14px}
+  .story b{color:var(--txt);font-weight:500}
+  .act{margin-top:22px;display:flex;gap:12px;align-items:center}
+  .primary{padding:11px 24px;background:var(--warn);color:#221c10;border:0;border-radius:22px;font-size:14.5px;font-weight:600;cursor:pointer}
+  .link{color:var(--ai);font-size:13.5px;text-decoration:none;border-bottom:1px dotted}
+
+  h3.sect{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+  .list{border-top:1px solid var(--line)}
+  .item{display:flex;align-items:center;gap:16px;padding:13px 4px;border-bottom:1px solid var(--line)}
+  .item .st{width:15px;text-align:center}
+  .item .nm{font-family:var(--mono);font-size:14px;min-width:130px}
+  .item .cl{color:var(--mute);font-size:13px;flex:1}
+  .item .v{font-family:var(--mono);font-size:13px;color:var(--dim)}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .crit{color:var(--crit)}
+
+  aside{border-left:1px solid var(--line);padding:38px 30px;background:var(--surf-2);min-height:100vh}
+  aside h3{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mute);margin-bottom:16px}
+  .ev{padding:14px 0;border-bottom:1px solid var(--line)}
+  .ev .k{font-size:12px;color:var(--ai);margin-bottom:4px}
+  .ev .t{font-size:14px;line-height:1.5}
+  .ev .s{font-family:var(--mono);font-size:12px;color:var(--mute);margin-top:5px}
+  .quiet{color:var(--mute);font-size:13px;line-height:1.7;margin-top:22px}
+  .scn{padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .scn.on{color:var(--txt)} .scn.off{color:var(--mute)}
+  footer{padding:16px 40px;border-top:1px solid var(--line);color:var(--mute);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Factory Knowledge <em>Twin</em></div>
+    <nav><a class="on" href="#">현황</a><a href="#">조사</a><a href="#">검색 비교</a></nav>
+    <div class="right">
+      <span class="live"><span class="dot"></span>Live AI 연결됨</span>
+      <span>세션 a3f1</span>
+      <button class="ghost">처음으로 되돌리기</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <main>
+      <p class="lede">지금 <b>조립 2라인의 CNC 밀링 한 대</b>에서 스핀들 진동이 임계를 넘고 있습니다.</p>
+      <p class="sub">공장 <span>FAC-A</span> · 라인 3개 · 설비 12대 · 활성 알람 4건 · 마지막 확인 12:04:31</p>
+
+      <section class="hero">
+        <div class="row">
+          <div>
+            <h2>EQ-CNC-204</h2>
+            <div class="meta">CNC 밀링 MX-500 · LN-A-02 · 설치 2021-03 · 담당 정비 2팀</div>
+          </div>
+          <div class="val"><b>7.8</b><span>mm/s · 임계 4.5</span></div>
+        </div>
+
+        <div class="chart">
+          <div class="clabel"><span>진동 RMS · 최근 3주</span><span>+180%</span></div>
+          <svg viewBox="0 0 700 120" width="100%" height="120" preserveAspectRatio="none">
+            <line x1="0" y1="62" x2="700" y2="62" stroke="#4a3d24" stroke-dasharray="4 4"/>
+            <text x="4" y="56" fill="#6f6960" font-size="10" font-family="monospace">임계 4.5</text>
+            <polyline points="0,104 60,101 120,99 180,95 240,91 300,86 360,80 420,72 470,64 510,54 550,42 590,30 630,22 665,16 700,14"
+                      fill="none" stroke="#e2685f" stroke-width="2.2"/>
+            <circle cx="665" cy="16" r="4" fill="#e2685f"/>
+            <text x="600" y="110" fill="#6f6960" font-size="10" font-family="monospace">알람 12:03</text>
+          </svg>
+        </div>
+
+        <p class="story">진동은 <b>3주에 걸쳐 완만히 상승</b>했고 최근 24시간에 급등했습니다. 온도가 함께 오르고 있으며, 이 설비는 <b>18개월 전 같은 부위의 베어링을 교체</b>한 이력이 있습니다.</p>
+
+        <div class="act">
+          <button class="primary">AI 조사 시작</button>
+          <a class="link" href="#">먼저 센서 추세만 살펴보기</a>
+        </div>
+      </section>
+
+      <h3 class="sect">나머지 설비 — 이상 없음</h3>
+      <div class="list">
+        <div class="item"><span class="st warn">▲</span><span class="nm">EQ-RBT-206</span><span class="cl">이송 로봇 R-220 · LN-A-02</span><span class="v warn">58 ℃ 주의</span></div>
+        <div class="item"><span class="st ok">●</span><span class="nm">EQ-CNC-205</span><span class="cl">CNC 밀링 MX-500 · LN-A-02</span><span class="v">2.1 mm/s</span></div>
+        <div class="item"><span class="st ok">●</span><span class="nm">EQ-CNC-207</span><span class="cl">CNC 밀링 MX-500 · LN-A-02</span><span class="v">2.4 mm/s</span></div>
+        <div class="item"><span class="st ok">●</span><span class="nm">EQ-CNC-201</span><span class="cl">CNC 밀링 MX-500 · LN-A-01</span><span class="v">2.2 mm/s</span></div>
+        <div class="item"><span class="st ok">●</span><span class="nm">EQ-CNC-202</span><span class="cl">CNC 밀링 MX-500 · LN-A-01</span><span class="v">2.0 mm/s</span></div>
+        <div class="item"><span class="st ok">●</span><span class="nm">EQ-CNV-203</span><span class="cl">컨베이어 CV-80 · LN-A-01</span><span class="v">정상</span></div>
+      </div>
+    </main>
+
+    <aside>
+      <h3>이 설비에 붙어 있는 것</h3>
+      <div class="ev">
+        <div class="k">📄 문서</div>
+        <div class="t">스핀들 베어링 점검·교체 절차</div>
+        <div class="s">SOP-BRG-INSP-014 @r2 · 승인됨</div>
+      </div>
+      <div class="ev">
+        <div class="k">🛡 안전 규정</div>
+        <div class="t">정비 전 잠금·표시(LOTO)</div>
+        <div class="s">SAF-LOTO-01 · 필수</div>
+      </div>
+      <div class="ev">
+        <div class="k">🛠 정비 이력</div>
+        <div class="t">스핀들 베어링 교체</div>
+        <div class="s">MR-2025-0087 · 2025-02-11</div>
+      </div>
+      <div class="ev">
+        <div class="k">🕸 지식 그래프</div>
+        <div class="t">알려진 고장 모드 2건</div>
+        <div class="s">FM-BRG-WEAR · FM-TOOL-IMB</div>
+      </div>
+
+      <h3 style="margin-top:30px">준비된 시나리오</h3>
+      <div class="scn on">GS-01 · 스핀들 진동 이상 조사</div>
+      <div class="scn off">품질 불량 증가 (다음 단계)</div>
+
+      <p class="quiet">이 콘솔의 모든 데이터는 synthetic입니다. AI는 원인을 <b style="color:var(--txt);font-weight:500">제안</b>하고 작업지시서 <b style="color:var(--txt);font-weight:500">초안</b>까지만 만듭니다. 확정은 사람이 합니다.</p>
+    </aside>
+  </div>
+  <footer>synthetic data only · 실제 설비 제어 없음 · 근거 없는 문장은 표시하지 않습니다</footer>
+</div>
+</body>
+</html>
