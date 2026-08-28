@@ -88,6 +88,19 @@ pnpm install
 pnpm dev --port 3100
 ```
 
+## 4.1 DB 스키마 적용 (T1-1)
+
+compose 기동 후 **1명령**으로 적용한다. 재실행 멱등이라 몇 번 돌려도 안전하다.
+
+```powershell
+pwsh services/ai-api/db/migrate.ps1                      # 기본 embedding_dim=768
+pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원을 바꿔 새로 만들 때
+```
+
+- DDL 정본 = `services/ai-api/db/migrations/001_core_schema.sql`
+- **스펙 대조표**(T0-6 항목 ↔ DDL 위치 1:1) = `services/ai-api/db/README.md` — 검증 좌석은 이 표로 대조한다.
+- 🔴 임베딩 차원은 파라미터이며 기본 768은 **자리표시자**다. 모델 확정 시 신규 마이그레이션으로 교체한다(기존 칼럼은 `IF NOT EXISTS` 때문에 재적용으로 바뀌지 않는다).
+
 ## 5. 부팅 실측 결과 (E1 · 전부 이 머신에서 실행한 출력)
 
 | 대상 | 명령 | 결과 |
