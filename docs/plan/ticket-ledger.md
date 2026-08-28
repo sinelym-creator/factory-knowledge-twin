@@ -58,7 +58,7 @@ size_limit: 8KB
 | T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | ✅ PASS(senku2 구현 PR#37·44 · levi2 검증 5축 PR#41 + 재검 20/20 반전 PR#46 — F-1 수정 실측 종결) |
 | T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | ✅ PASS(senku2 2·3대 구현 PR#40·44 · levi2 3대 독립 검증 PR#52 — 인용 9/9·hash 60/60 재계산·◇ 5/5·상표 0 · 🔴 V-1 chunk 좌표 축 = T1-4 인수 조건 이월) |
 | T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 · chunk 정책 실측→오케 동결 게이트 | ✅ PASS(senku2 4~5대 구현 PR#53·54·56·61 — 게이트 ①~⑤ · AC 6항 E1 · levi2 4대 독립 검증 PR#63 — 재현성 «덤프 sha 동일» 2회·chunk 59 unique·V-1 4/4+양방향 7/7 «해소») — 🔴 이월 2건 = Q-4(ontology STALE 축)·Q-5(spec §4 pgvector 보유분 판정 이연) |
-| T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 대기 |
+| T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 티켓 준비 완료(tickets/T1-5.md · 08-29) — 센쿠2 6대 1착 발주 대기 |
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
 | T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | ✅ PASS(levi2 4대 — A단 PR#60: stale 6곳 정정·F-2 대체 분기(사정거리 2/20 실측·처방 회부)·G-2 그물 C-21/C-22+생존 6/6 · B단 PR#63: 재현성 PASS·index_build↔spec 8/9(⑨ 부분 — ontology 축 부재 «적발»·L-31/L-32 그물 고정)·V-1 해소·U-7 치환) |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | ✅ PASS(senku2 3대 구현 PR#48 · levi2 3대 독립 검증 PR#52 — 계약 표면 23/23 교차 대조·blocking 0(−9.36ms)·도메인 0 전수 실독·harness strict green) |
