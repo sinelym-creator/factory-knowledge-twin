@@ -1,3 +1,8 @@
+// 🔴 OBSOLETE — 이 검사기는 payload.oneOf 구조를 전제한다.
+// 스키마가 allOf/if-then 결속으로 전환되면서(F-1·F-2 수정) oneOf는 철거됐다.
+// 바뀐 구조를 옛 전제로 «통과»시키면 최악의 false negative가 된다 — 회귀 판정에 쓰지 마라.
+// 현행 검사기: tests/contract/event-binding.check.js (type↔payload 양방향 결속 실측)
+// 본 파일은 F-1이 실재했다는 «재현 이력»으로만 보존한다.
 // T0-5 agent-events 스키마의 payload.oneOf 판별 가능성 실측
 // 최소 검증기: required · additionalProperties:false · properties(enum/type/$ref-stepId)만 다룬다
 const fs = require('fs');
