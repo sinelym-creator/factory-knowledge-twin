@@ -8,6 +8,9 @@
 #    dev-environment §4.2 규칙대로 «서비스명»으로 부른다(migrate.ps1과 동일 방식).
 #
 # 🔴 «거부돼야 하는데 통과하는가»를 본다. 통과 케이스만 세면 제약은 증명되지 않는다.
+# 🔴 expect=accept 는 「막지 않는 것이 설계」인 축이다(대조군 · 오케가 비강제로 확정한 G-2·G-3).
+#    무엇이 대신 지키는지는 각 probe의 why에 적혀 있다 — 적혀 있지 않은 accept는 눈감기다.
+#    G-4b(옛 P-5·P-6)는 tests/data 로 이관했다(spec.relocated 참조).
 # 🔴 probe 1건 = 트랜잭션 1개(BEGIN … ROLLBACK). 준비 행까지 되감으므로
 #    대상 DB에 아무것도 남지 않는다 — 타 좌석 스택에서도 안전하다.
 # 🔴 구현 좌석이 이미 실측한 단일 칼럼 제약 7종은 표본에 없다.
@@ -62,8 +65,11 @@ foreach ($p in $spec.probes) {
   $got = if ($r.ok) { 'accept' } else { 'reject' }
   $ok = ($got -eq $p.expect)
   if (-not $ok) { $fail++ }
-  Write-Host ("  {0}  {1} {2}" -f $(if ($ok) { 'PASS' } else { 'FAIL' }), $p.id, $p.label) `
-    -ForegroundColor $(if ($ok) { 'Green' } else { 'Red' })
+  # 🔴 초록 두 종류를 화면에서 구분한다 — 「막았다」와 「막지 않는 것이 설계다」는 다른 사실이다.
+  #    구분하지 않으면 6/6이 「전부 막힌다」로 읽혀, 비강제 축이 조용히 잊힌다.
+  $mark = if (-not $ok) { 'FAIL' } elseif ($p.expect -eq 'accept') { 'PASS(비강제)' } else { 'PASS' }
+  Write-Host ("  {0,-12} {1} {2}" -f $mark, $p.id, $p.label) `
+    -ForegroundColor $(if (-not $ok) { 'Red' } elseif ($p.expect -eq 'accept') { 'DarkGreen' } else { 'Green' })
   if (-not $ok) {
     Write-Host ("        기대 {0} / 실제 {1}   [{2}]" -f $p.expect, $got, $p.gap) -ForegroundColor Red
     Write-Host ("        {0}" -f $p.why) -ForegroundColor DarkYellow
@@ -71,8 +77,14 @@ foreach ($p in $spec.probes) {
 }
 
 $total = $spec.probes.Count
+$byDesign = @($spec.probes | Where-Object { $_.expect -eq 'accept' }).Count
 Write-Host ""
 Write-Host ("결과: {0}/{1} 기대대로 · 어긋남 {2}건 · 판정불가 {3}건" -f ($total - $fail - $blocked), $total, $fail, $blocked) `
   -ForegroundColor $(if ($fail -eq 0 -and $blocked -eq 0) { 'Green' } else { 'Red' })
 Write-Host "  FAIL = 스키마가 막아야 할 것을 막지 않는다는 뜻이다(표본의 결함이 아니다)." -ForegroundColor DarkGray
+Write-Host ("  그중 {0}건은 expect=accept — 통과가 «설계»인 축이다(대조군 + 비강제 확정). 초록이 「전부 막힌다」는 뜻이 아니다." -f $byDesign) -ForegroundColor DarkGray
+if ($spec.relocated) {
+  Write-Host ("  이관 {0}건(표본 밖에서 검증): {1}" -f @($spec.relocated).Count,
+    (($spec.relocated | ForEach-Object { "$($_.id) → $($_.to)" }) -join ' · ')) -ForegroundColor DarkGray
+}
 exit $(if ($fail -eq 0 -and $blocked -eq 0) { 0 } else { 1 })
