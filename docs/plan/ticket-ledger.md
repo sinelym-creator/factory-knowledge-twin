@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 21 / 총 25 — 🔴 분모 24→25: T1-10 등재 08-28 16:24 — 🔴 분모 15→24: Phase 1 분해 +9 등재 08-28 15:53 · 분모 정비이지 후퇴 아님)
+## 원장 (진행률 = ✅ 23 / 총 25 — 🔴 분모 24→25: T1-10 등재 08-28 16:24 — 🔴 분모 15→24: Phase 1 분해 +9 등재 08-28 15:53 · 분모 정비이지 후퇴 아님)
 
 ### 부트스트랩 (완결)
 
@@ -57,10 +57,10 @@ size_limit: 8KB
 | T1-1 | PG 스키마·마이그레이션(온톨로지 §4 분담표→DDL·pgvector) | 구현 | 스펙 1:1 대조·재실행 가능 | ✅ PASS(독립 검증 — 대조표 전건 일치·멱등 · senku2 · PR#30 · 검증 levi2 · PR#35) — 후속 소커밋 완료(002 CHECK 3줄·README C·D절 · PR#37) |
 | T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | ✅ PASS(senku2 구현 PR#37·44 · levi2 검증 5축 PR#41 + 재검 20/20 반전 PR#46 — F-1 수정 실측 종결) |
 | T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | ✅ PASS(senku2 2·3대 구현 PR#40·44 · levi2 3대 독립 검증 PR#52 — 인용 9/9·hash 60/60 재계산·◇ 5/5·상표 0 · 🔴 V-1 chunk 좌표 축 = T1-4 인수 조건 이월) |
-| T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 · chunk 정책 실측→오케 동결 게이트 | 구현 완료 «접수»(게이트 ①~⑤ · senku2 4~5대 · PR#53·54·56·61 · AC 6항 E1 + 대조군 2건) — 🔴 계수는 독립 검증(T1-7 B단) PASS 후(§32.1) |
+| T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 · chunk 정책 실측→오케 동결 게이트 | ✅ PASS(senku2 4~5대 구현 PR#53·54·56·61 — 게이트 ①~⑤ · AC 6항 E1 · levi2 4대 독립 검증 PR#63 — 재현성 «덤프 sha 동일» 2회·chunk 59 unique·V-1 4/4+양방향 7/7 «해소») — 🔴 이월 2건 = Q-4(ontology STALE 축)·Q-5(spec §4 pgvector 보유분 판정 이연) |
 | T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 대기 |
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
-| T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | A단 완료(levi2 4대 · PR#60 — stale 6곳 정정 · F-2 대체 분기(사정거리 2/20 실측·처방 회부) · G-2 그물 C-21/C-22 신설+생존 6/6) · B단 진행(U-7 치환→재현성→index_build — V-1 축은 wireframes v0.4 착지 후 개시) |
+| T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | ✅ PASS(levi2 4대 — A단 PR#60: stale 6곳 정정·F-2 대체 분기(사정거리 2/20 실측·처방 회부)·G-2 그물 C-21/C-22+생존 6/6 · B단 PR#63: 재현성 PASS·index_build↔spec 8/9(⑨ 부분 — ontology 축 부재 «적발»·L-31/L-32 그물 고정)·V-1 해소·U-7 치환) |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | ✅ PASS(senku2 3대 구현 PR#48 · levi2 3대 독립 검증 PR#52 — 계약 표면 23/23 교차 대조·blocking 0(−9.36ms)·도메인 0 전수 실독·harness strict green) |
 | T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 대기 |
 | T1-10 | harness 커버리지 상시 경고(미실행 스키마 속성 검출) | 검증 | 계약 필드 추가 시 구멍 재발 방지 — 러너 경고+옵션 실패 | ✅ PASS(오케 판정 — 로컬 strict 37/37 exit 0 · levi2 · PR#25) |
@@ -72,3 +72,5 @@ size_limit: 8KB
 | Q-1 | F-2 처방: `data/generators/generate.py` self_check 바인딩을 «소유 테이블 대응표»로 전환(사정거리 2/20 → 20/20) + 착지 후 기대표 2곳 전환(검증 좌석 절차 성문분) | `evidence/t1-7-a-selfcheck-and-nets.md` §2.4(처방 전문 · levi2 4대) | T1-4 독립 검증 완주 후 구현 묶음 |
 | Q-2 | `ssot_manifest_hash`(스펙 §3.3) 산출 — 문서 집합 단위 산출물 · T1-4 색인 범위 밖 확정(오케 08-29) | 센쿠2 5대 판단 요청 ④(id 1543005746461933668) | Q-1 동반 발주 후보 |
 | Q-3 | `data/documents/README.md` 구 앵커 참조 정정(`#014`·`#009`·`#007` 1-based 시대 표기 — wireframes v0.4 바인딩으로 stale化) | wireframes v0.4 · 정오표 E-4·E-5 | Q-1 동반 발주 후보 |
+| Q-4 | ontology STALE 축 처방: `v_index_freshness`에 `ontology_version` 비교 추가(스펙 §3.3 「불일치도 동일 처리」 — 현 view는 sha만 비교 · 주입 실측 FRESH 오판) — 신규 마이그레이션(001~003 무수정) · 착지 시 L-32 known gap이 FAIL→그물 전환 | levi2 4대 B단 적발(evidence/t1-7-b · PR#63 · 대조군 실증) | Q-1 묶음 동반 |
+| Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
