@@ -6,7 +6,8 @@
 
 | Phase | 티켓 | 담당 |
 |---|---|---|
-| 1 | 구현 소조각 묶음 발주 준비 — Q-1(F-2 처방)·Q-2(manifest hash)·Q-3(README 앵커)·Q-4(ontology STALE 축) | 오케 → 구현 |
+| 1 | Q묶음(Q-1~Q-4) 독립 검증 + U-1 chunk 입도 evidence — 발주 ack 08-29 08:43 | 검증(리바이2 4대) |
+| 1 | T1-5 티켓 준비 완료 — 센쿠2 6대 교대 후 1착 발주(교대 = 총괄 집행 대기) | 오케 |
 
 ## todo
 
@@ -30,3 +31,4 @@
 | T1-8 착지 — 계약 표면 23/23·루프 점유 실측(검증 대기) | services/ai-api · PR#48 | 08-29 |
 | T1-3·T1-8 독립 검증 PASS — 완료 계수(원장 21/25) · chunk 정책 v1 동결(E-3) | evidence/ 2본 · PR#52·53 | 08-29 |
 | T1-4·T1-7 완결 — pgvector 색인 착지 + 독립 검증 PASS(원장 23/25) · wireframes v0.4 앵커 실값 바인딩 · V-1/V-2 해소 | PR#60~63 · evidence/t1-7-b | 08-29 |
+| Q-1~Q-4 구현 완료 접수 — F-2 처방(20/20)·ssot_manifest_hash(005)·README 앵커·ontology STALE 축(004) — 독립 검증 진행 중 | PR#66 | 08-29 |
