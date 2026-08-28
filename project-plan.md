@@ -41,7 +41,7 @@ size_limit: 10KB
 
 ## 3. 배포 후 트랙 (시한 외 · 별도 재가)
 
-정밀 Gate 1~8 전건(§32) · Full Benchmark·KPI Evidence(§34.8) · README 완성·데모 영상·Release checklist(§35) · NOTICE 등 §34.2 구조물. **배포 = RC이지 release closure가 아니다** — 측정-주장 경계(§0.2)에 따라 배포 시점 수치는 «잠정 목표»로만 표기.
+정밀 Gate 1~8 전건(§32) · Full Benchmark·KPI Evidence(§34.8) · README 완성·데모 영상·Release checklist(§35) · NOTICE 등 §34.2 구조물 · 🔴 **UX 폴리시 패스**(D-002 유보 조항: 색상·디자인 재작업 + 모션·애니메이션 — 기능 완료 후 집행 · 시인성·기능 포커스는 Phase 3 구현 AC에 선반영). **배포 = RC이지 release closure가 아니다** — 측정-주장 경계(§0.2)에 따라 배포 시점 수치는 «잠정 목표»로만 표기.
 
 ## 4. Phase 상태 (baseline §21 — 상태만 추적)
 
