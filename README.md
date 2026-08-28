@@ -1,9 +1,144 @@
 # Factory Knowledge Twin — AI Operations Console
 
-Portfolio-grade PoC: when factory equipment shows anomalies, an AI agent investigates equipment state, sensor trends, maintenance history, SOPs, safety rules, and a knowledge graph — then proposes root-cause candidates with cited evidence and drafts a work order for human approval.
+> **공장 설비에 이상이 생겼을 때, AI가 흩어진 지식을 한 번에 조사해 «근거가 붙은» 원인 후보와 조치안을 만들어 주는 운영 콘솔입니다.**
+> 판단과 승인은 언제나 사람이 합니다 — AI는 초안까지만 만듭니다.
 
-> **Status: bootstrap.** Baseline spec: [`docs/baseline/poc-baseline-v0.2.md`](docs/baseline/poc-baseline-v0.2.md) (Korean). Public release structure, demo links, KPI evidence, and license closure will follow the baseline §34.
+*When factory equipment misbehaves, an AI agent investigates sensor data, documents, and a knowledge graph — then returns root-cause candidates with cited evidence and drafts a work order for human approval.*
 
-- **Stack (planned):** Next.js on Vercel (always-on sandbox + deterministic replay) · FastAPI + LangGraph · PostgreSQL/pgvector · Neo4j · local embedding/reranker · Cloudflare Tunnel / Tailscale Funnel
-- **Safety boundary:** synthetic manufacturing data only · no real equipment control · human-in-the-loop approval · no Claude subscription exposed as a public API
-- **License:** Apache-2.0 (to be finalized at release per baseline §34.5)
+---
+
+## 🏭 어떤 문제를 풀려고 하나요?
+
+공장에서 설비 이상이 발생하면, 담당자는 **세 종류의 흩어진 지식**을 뒤져야 합니다.
+
+| | 어디에 있나 | 무엇이 문제인가 |
+|---|---|---|
+| 📊 **수치 데이터** | 센서 추세·알람·정비 기록 (모니터링 시스템) | 숫자만으로는 «왜»를 모른다 |
+| 📄 **문서** | 점검 절차서(SOP)·설비 매뉴얼·안전 규정 (문서함) | 어디 몇 페이지에 있는지 찾기 어렵다 |
+| 🕸 **관계 지식** | 「이 설비 모델은 어떤 고장이 잦고, 그 고장엔 어떤 절차·규정이 따르는가」 | 대부분 **베테랑의 머릿속**에만 있다 |
+
+세 곳을 오가며 답을 조립하는 동안 **설비는 멈춰 있습니다**. 그렇다고 AI에게 물어도, 근거 없는 요약이면 현장은 믿지 않습니다.
+
+**이 시스템의 답**: 세 지식을 하나로 연결해 두고, AI가 그 위를 **절차대로 조사**하게 한 뒤, 모든 결론에 **원문 인용과 관계 경로를 증거로 첨부**합니다.
+
+| 현장의 문제 | 이 시스템에서는 |
+|---|---|
+| ⏱ 원인 파악이 늦어 설비 정지가 길어진다 | 근거가 붙은 원인 후보를 **수 분 안에** 제시 |
+| 🗂 지식이 흩어져 신입은 못 찾는다 | 조직 지식 전체가 **질문 가능한 형태**로 연결 |
+| 🤖 AI의 답을 믿기 어렵다 | 모든 후보에 **문서 원문 + 그래프 경로** 첨부 — 믿으라가 아니라 «확인하라» |
+| ⚠️ 조치할 때 안전 규정을 빠뜨린다 | 작업지시 초안에 안전 규정이 **구조적으로 결합** (삭제 불가) |
+
+---
+
+## 🎬 화면에서 이렇게 보입니다 — 3분 시나리오
+
+1. **공장 전경** — 라인·설비 상태가 한눈에. CNC 밀링 설비 하나에 진동 알람이 떠 있습니다.
+2. **알람 클릭** — 3주간 완만히 오르다 최근 24시간 급등한 진동 그래프가 보입니다.
+3. **AI 조사 시작** — 에이전트가 조사 계획을 세우고 DB 조회 → 문서 검색 → 관계 추적을 **단계별로 실시간** 진행합니다. 과정이 전부 화면에 흐릅니다 — 블랙박스가 아닙니다.
+4. **근거 확인** — 원인 후보 «베어링 마모(유력)»·«공구 불균형». 각 후보에 그래프 경로 시각화와 매뉴얼 원문 인용(문장 강조)이 붙어 있습니다. 검색 방식 3가지(벡터/하이브리드/그래프)의 결과 차이도 비교해 볼 수 있습니다.
+5. **작업지시 승인** — AI가 만든 점검·교체 초안(안전 잠금 절차 포함)을 사람이 고치고 **승인 또는 반려**합니다.
+6. **리셋** — 원클릭으로 처음부터. 방문자마다 독립된 체험 공간이 주어집니다.
+
+> 💡 **노트북이 꺼져 있어도 데모는 돕니다** — 미리 기록된 조사 과정을 그대로 재생(replay)하는 상시 가동 Sandbox와, 로컬 AI 엔진이 켜졌을 때의 실시간(Live) 모드 **이중 구조**입니다.
+
+---
+
+## 🏗 아키텍처
+
+```mermaid
+flowchart TB
+    V[🧑‍💻 방문자 브라우저]
+
+    subgraph CLOUD["☁️ Vercel — 항상 켜져 있음"]
+        W[Next.js 웹 콘솔]
+        R[Replay 엔진<br/>기록된 조사 과정 재생]
+    end
+
+    subgraph LOCAL["💻 로컬 AI 엔진 — 켜져 있을 때 Live 모드"]
+        A[FastAPI<br/>비동기 API·실시간 스트리밍]
+        L[LangGraph 에이전트<br/>단계별 조사 워크플로우]
+        P[(PostgreSQL + pgvector<br/>수치 데이터 · 문서 벡터)]
+        N[(Neo4j<br/>지식그래프)]
+        E[로컬 임베딩·리랭커]
+    end
+
+    V -->|HTTPS| W
+    W --> R
+    W -.->|보안 터널 · Live 모드일 때만| A
+    A --> L
+    L --> P
+    L --> N
+    L --> E
+```
+
+- **Sandbox 모드(기본)**: 클라우드만으로 전체 시나리오 체험 — 항상 동작.
+- **Live 모드(옵션)**: 로컬 AI 엔진이 온라인이면 같은 화면이 실시간 조사로 전환. 끊기면 자동으로 Replay로 복귀합니다.
+
+---
+
+## 🔄 데이터 파이프라인
+
+모든 데이터는 **합성(synthetic) 제조 데이터**입니다 — 실제 공장 데이터가 아닙니다.
+
+```mermaid
+flowchart LR
+    G[합성 데이터 생성<br/>설비·센서·문서·이력] --> S[(정본 저장<br/>PostgreSQL)]
+    S --> C[문서 분할·임베딩] --> PV[(벡터 색인<br/>pgvector)]
+    S --> PR[그래프 투영] --> NG[(지식그래프<br/>Neo4j)]
+    S --> VAL{무결성 검증<br/>ID 유일성 · 문서 hash}
+    VAL --> F[Golden Scenario<br/>Replay 기록 생성]
+```
+
+정본(SSOT)은 한 곳 — 벡터 색인과 그래프는 언제든 **재생성 가능한 파생물**입니다. 문서가 바뀌면 어느 색인이 낡았는지 추적됩니다.
+
+---
+
+## 🤖 AI 조사 워크플로우
+
+```mermaid
+flowchart TB
+    T[🚨 알람 발생] --> PLAN[1 · 조사 계획 수립]
+    PLAN --> SQ[2 · 수치 조회<br/>알람·센서 통계·정비 이력]
+    SQ --> VS[3 · 문서 검색<br/>매뉴얼·SOP·유사 사례 인용]
+    VS --> GT[4 · 그래프 추적<br/>설비 → 고장모드 → 절차 → 안전 규정]
+    GT --> SYN[5 · 종합<br/>원인 후보 + 근거 묶음]
+    SYN --> WO[6 · 작업지시 초안<br/>절차 · 부품 · 안전 조치 포함]
+    WO --> H{7 · 사람의 판단}
+    H -->|승인| OK[✅ 확정 · 이력 기록]
+    H -->|반려| NG2[↩️ 반려 · 사유 기록]
+```
+
+- 각 단계는 **이벤트로 기록**되어 실시간 스트리밍되고, 그대로 재생(replay)할 수 있습니다.
+- 근거가 없는 결론은 내보내지 않습니다. 답할 수 없는 질문에는 **「근거 없음」이 정답**입니다.
+- 마지막 단계는 항상 사람입니다 — AI는 어떤 것도 자동 확정하지 않습니다.
+
+---
+
+## 🧰 기술 스택
+
+| 계층 | 기술 | 역할 |
+|---|---|---|
+| 프론트엔드 | **Next.js** (Vercel) | 운영 콘솔 UI · 상시 가동 Sandbox |
+| 백엔드 | **Python FastAPI** | 완전 비동기 API · WebSocket 실시간 스트리밍 |
+| AI 워크플로우 | **LangGraph** | 상태 기계 기반 조사 절차 · 단계별 감사 기록 |
+| 검색 | **pgvector + 하이브리드 + GraphRAG** | 문서 의미 검색 · 3전략 비교 |
+| 지식그래프 | **Neo4j** | 설비-고장모드-절차-규정 관계 추적 |
+| 데이터 | **PostgreSQL** | 단일 정본(SSOT) · 센서·이력·문서 레지스트리 |
+| 임베딩 | **로컬 모델** | 외부 API 비용 0 · 오프라인 동작 |
+
+---
+
+## 🛡 안전 경계
+
+- 모든 공장·센서·문서 데이터는 **합성 데이터**입니다. 실제 회사·고객·설비 정보가 없습니다.
+- **실제 설비를 제어하지 않습니다.** 작업지시와 승인은 모두 sandbox 안의 시뮬레이션입니다.
+- AI 판단은 **사람의 승인 없이 확정되지 않습니다**(human-in-the-loop).
+- 공개 서비스는 replay·로컬 모델로 동작하며, **Claude 구독을 공개 API로 노출하지 않습니다**.
+
+## 📌 현재 상태
+
+**설계 단계 완료 · 구현 진행 중.** 라이브 데모 링크, 측정된 성능 지표(KPI), 벤치마크 재현 방법은 배포 후 이 자리에 게시됩니다. 측정 전 수치는 어떤 것도 성능으로 주장하지 않습니다.
+
+## 📄 License
+
+[Apache-2.0](LICENSE)
