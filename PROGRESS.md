@@ -6,15 +6,15 @@
 
 | Phase | 티켓 | 담당 |
 |---|---|---|
-| 0 | T0-1 product-brief · T0-4 storyboard · T0-5 contracts · T0-7 architecture | 오케 |
-| 0 | T0-2 UX 3안 · T0-3 wireframe · T0-6 ontology(선착수) | 구현 |
-| 0 | T0-8 평가 질문 · T0-9 독립 검증(체크리스트 선행) | 검증 |
+| 1 | T1-2 seed 생성기(D-2·D-5 불완전성 보존) | 구현(2대) |
+| 1 | T1-0 ①compose 재현 · T1-1 스키마 검증 | 검증 |
 
 ## todo
 
 | Phase | 태스크 | 선결 |
 |---|---|---|
-| 1 | S2 티켓 등재(skeleton·seed·harness) | Phase 0 게이트(S1) |
+| 1 | T1-3 문서 셋 발주 | T1-2 진행 안정 |
+| 1 | T1-4~5·8~9 발주 | 앞선 완료 |
 
 ## blocked (운영자)
 

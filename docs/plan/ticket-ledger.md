@@ -55,7 +55,7 @@ size_limit: 8KB
 | ID | 티켓 | 담당 | AC 요지 | 상태 |
 |---|---|---|---|---|
 | T1-1 | PG 스키마·마이그레이션(온톨로지 §4 분담표→DDL·pgvector) | 구현 | 스펙 1:1 대조·재실행 가능 | 착지(senku2 · PR#30) · 검증 대기 |
-| T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | 발주 |
+| T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | 진행(senku2 2대) |
 | T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | 발주 |
 | T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 | 대기 |
 | T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 대기 |
