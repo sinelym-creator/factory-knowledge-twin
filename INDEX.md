@@ -23,13 +23,14 @@ size_limit: 4KB
 | `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) | 확정 시 |
 | `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
 | `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
+| `packages/ontology/` | 온톨로지 버전 정본(`ontology-version.json` — 스펙 §3.3 지정 경로 · T1-4 실재화) | 스펙 개정 동반 |
 | `apps/web-console/` | Next.js 웹 콘솔(Sandbox UI · App Router) | S2~ 구현 |
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
 | `services/indexer/` | 색인 파이프라인(동결 chunk 정책 정본 `FROZEN_POLICY`·probe 도구 2종 — T1-4) | S3 색인 진행 시 |
 | `infra/` | 로컬 인프라 보조(postgres init SQL 등) | 환경 변경 시 |
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
 | `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
-| `tests/data/` | seed 무결성 probe 20건 + 자기점검 mutation 시험 | seed 개정 동반 |
+| `tests/data/` | seed 무결성 probe 22건(C-21·C-22 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
 | `evidence/` | 독립 검증 보고(phase0-verification 등) | 검증 시 |
