@@ -1,7 +1,8 @@
 ---
 asset_class: ssot
 description: 확정 계획 요약 단일본 — 7일 배포 일정 · 운영 사이클
-status: provisional
+status: active
+approval: 2026-08-28 14:34 운영자 승인 — docs/decisions/001
 lifecycle: 변경 발생 «즉시» 갱신(살아있는 플랜) · 전략 변경 = 운영자 재가
 size_limit: 10KB
 ---
@@ -45,7 +46,7 @@ size_limit: 10KB
 | Phase | 내용 | 일차 매핑 | 상태 |
 |---|---|---|---|
 | — | 부트스트랩: 리포·SSOT·팀·Public 개설·CI | D0 | ✅ |
-| 0 | 제품·UX 방향 확정 | D0~D1 | ⏳ 발주 준비 |
+| 0 | 제품·UX 방향 확정 | D0~D1 | ⏳ 진행(발주 완료) |
 | 1 | SSOT·Ontology·Synthetic Data | D1~D3 | 대기 |
 | 2 | Retrieval·Agent Backend | D3~D4 | 대기 |
 | 3 | Always-on Sandbox UX | D5~D6 | 대기 |

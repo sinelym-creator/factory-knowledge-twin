@@ -4,15 +4,17 @@
 
 ## in progress
 
-| Phase | 태스크 | 담당 |
+| Phase | 티켓 | 담당 |
 |---|---|---|
-| — | 7일 작업 플랜(project-plan §1~2) 운영자 재가 대기 | 오케스트레이터 |
+| 0 | T0-1 product-brief · T0-4 storyboard · T0-5 contracts · T0-7 architecture | 오케 |
+| 0 | T0-2 UX 3안 · T0-3 wireframe · T0-6 ontology(선착수) | 구현 |
+| 0 | T0-8 평가 질문 · T0-9 독립 검증(체크리스트 선행) | 검증 |
 
-## todo (플랜 재가 후 즉시)
+## todo
 
 | Phase | 태스크 | 선결 |
 |---|---|---|
-| 0 | product-brief·ux-direction(3안)·storyboard·contracts v0.1·ontology v0.1 발주 | 플랜 재가 |
+| 1 | D2 티켓 등재(skeleton·seed·harness) | Phase 0 게이트 |
 
 ## blocked (운영자)
 
