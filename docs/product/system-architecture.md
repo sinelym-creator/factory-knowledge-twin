@@ -2,7 +2,7 @@
 asset_class: product
 description: 시스템 아키텍처 — 컨테이너·네트워크·데이터 흐름·신뢰 경계 (T0-7)
 status: draft
-lifecycle: D1 검수 후 active · 구조 변경 = 플랜 갱신 동반
+lifecycle: 검수 PASS 후 active · 구조 변경 = 플랜 갱신 동반
 size_limit: 8KB
 ---
 
@@ -69,7 +69,7 @@ size_limit: 8KB
 - **관측성**: structured logging(JSON·run_id correlation) · audit event = 정본 흐름과 동일 스키마 · health/readiness 분리 · 지표 노출 지점 예약.
 - **품질 게이트**: 위 원칙은 Phase 2 티켓 AC로 분해되어 독립 검증 대상이다 — «돌아간다»는 통과 기준이 아니다.
 
-## 6. D2 skeleton 착수 지시서 (이 문서가 주는 것)
+## 6. skeleton(S2) 착수 지시서 (이 문서가 주는 것)
 
 - 리포 구조: `apps/web-console/`(Next.js) · `services/ai-api/`(FastAPI) · `packages/contracts/` · `packages/ontology/` · `data/`(seed) · `benchmarks/` · `tests/` · `evidence/`.
 - docker compose: pg(pgvector)·neo4j·ai-api 3서비스 + `.env.example`(값 없는 키 목록만 — §34.6).
