@@ -1,0 +1,2 @@
+# 문서 원문은 개행을 LF로 고정한다 — 체크아웃 설정에 따라 CRLF가 되면 content_sha256이 플랫폼마다 달라진다
+data/documents/*.md text eol=lf

@@ -27,7 +27,7 @@ INCIDENTS = [
     ("INC-2024-003", "EQ-CNV-102", "컨베이어 벨트 슬립으로 이송 지연", 820, 819, "closed", "medium"),
     ("INC-2024-007", "EQ-PRS-310", "프레스 유압 누유", 690, 688, "closed", "high"),
     # 🔴 GS-01 「18개월 전 동일 설비 베어링 교체」의 상위 사건 — MR-2025-0087의 계보
-    ("INC-2025-019", "EQ-CNC-204", "스핀들 진동 상승 및 가공면 조도 악화", 548, 546, "closed", "high"),
+    ("INC-2025-019", "EQ-CNC-204", "스핀들 진동 상승 및 가공면 조도 악화", 563, 561, "closed", "high"),
     ("INC-2025-023", "EQ-ROB-206", "서보 위치 드리프트로 반복 정밀도 저하", 400, 398, "closed", "medium"),
     ("INC-2026-005", "EQ-CNC-207", "절삭유 공급 압력 저하", 150, 148, "closed", "medium"),
     ("INC-2026-008", "EQ-CNV-205", "롤러 고착에 의한 구동 전류 상승", 90, 88, "closed", "low"),
@@ -42,7 +42,7 @@ WORK_ORDERS = [
     ("WO-2024-0031", "INC-2024-003", "EQ-CNV-102", "컨베이어 벨트 장력 조정", "done", "approved", 819, "SOP-BELT-CHK-001"),
     ("WO-2024-0058", "INC-2024-007", "EQ-PRS-310", "유압 배관 누유 조치", "done", "approved", 689, "SOP-HYD-LEAK-011"),
     # 🔴 MR-2025-0087을 낳은 작업지시서 (eval D-8 — 정비이력↔WO↔Incident 연결)
-    ("WO-2025-0087", "INC-2025-019", "EQ-CNC-204", "스핀들 베어링 교체", "done", "approved", 547, "SOP-BRG-INSP-014"),
+    ("WO-2025-0087", "INC-2025-019", "EQ-CNC-204", "스핀들 베어링 교체", "done", "approved", 562, "SOP-BRG-INSP-014"),
     ("WO-2025-0102", "INC-2025-023", "EQ-ROB-206", "서보 원점 재교정", "done", "approved", 399, "SOP-SERV-CAL-005"),
     ("WO-2026-0041", "INC-2026-005", "EQ-CNC-207", "절삭유 공급 계통 점검", "done", "approved", 149, "SOP-COOL-SUP-016"),
     ("WO-2026-0069", "INC-2026-008", "EQ-CNV-205", "롤러 급유 및 고착 해소", "done", "approved", 89, "SOP-ROLL-LUB-003"),
@@ -70,7 +70,7 @@ MR_DOCUMENTED = [
     (85, "EQ-CNV-205", "inspect", 588, None, "FM-BELT-SLIP"),
     (86, "EQ-PRS-104", "inspect", 566, None, "FM-DIE-CRACK"),
     # 🔴 GS-01 「18개월 전 동일 설비 베어링 교체」 — Q-MULTIHOP-002의 정답 이력
-    (87, "EQ-CNC-204", "replace", 546, "WO-2025-0087", "FM-BRG-WEAR"),
+    (87, "EQ-CNC-204", "replace", 561, "WO-2025-0087", "FM-BRG-WEAR"),   # = 2025-02-11
     (88, "EQ-ROB-206", "calibrate", 398, "WO-2025-0102", "FM-SERVO-DRIFT"),
     (89, "EQ-CNC-207", "inspect", 370, None, "FM-COOLANT-LOSS"),
 ]
@@ -174,14 +174,13 @@ def build_events(rng, sensors, alarm_plan, gs_alarm, observed_of):
             #    r1(90분)을 쓰면 superseded revision을 근거로 삼은 셈이 된다.
             parts = [{"partNo": "BRG-6208-2RS", "qty": 1},
                      {"partNo": "GRS-EP2H-250", "qty": 1}]
+            # 🔴 안전 항목을 checklist에 넣지 않는다. 화면(wireframes ④)은 점검 항목과
+            #    「안전 조치(삭제 불가)」를 나눠 그리고, 후자는 SOP -REQUIRES-> SafetyRule에서
+            #    도출한다. checklist에 섞으면 사람이 안전 항목을 지울 수 있는 자리로 내려온다.
             checklist = [
-                "전원 차단·잠금·표지(LOTO) 적용 — SAF-LOTO-01",
-                "개인보호구 착용 확인 — SAF-PPE-01",
-                "스핀들 커버 분리 및 베어링부 육안 점검",
-                "진동·유격 계측 후 판정 기준 대조",
-                "베어링 교체 및 고온용 그리스 EP-2H 충전",
-                "교정 토크렌치로 규정 토크 체결",
-                "시운전 후 진동 RMS 재계측",
+                "스핀들 진동 RMS 재측정",
+                "베어링 유격·소음 육안 점검",
+                "베어링 교체(필요 시)",
             ]
             minutes = 120
             planned = REFERENCE_NOW + timedelta(days=1)

@@ -20,9 +20,9 @@ if __package__ in (None, ""):                      # python data/generators/gene
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     __package__ = "data.generators"
 
-from .config import (FORBIDDEN_IDS, GS, LOAD_ORDER, MANIFEST_NAME, OUT_DIR,
-                     RANDOM_SEED, REFERENCE_NOW, TARGET_COUNTS)
-from .documents import BRG_R1, BRG_R2, MANUALS, MULTI_REVISION, build_documents
+from .config import (EXPECTED_QUOTES, FORBIDDEN_IDS, GS, LOAD_ORDER, MANIFEST_NAME,
+                     OUT_DIR, RANDOM_SEED, REFERENCE_NOW, TARGET_COUNTS)
+from .documents import (MANUALS, MULTI_REVISION, build_documents, extract_sop_fields)
 from .emit import COLUMNS, write_load_sql, write_manifest, write_rows, write_stream
 from .events import build_alarm_plan, build_events
 from .structure import UNMAPPED_FAILURE_MODE, build_structure
@@ -115,12 +115,23 @@ def self_check(tables: dict, counts: dict) -> list[str]:
     if UNMAPPED_FAILURE_MODE not in eq_direct:
         fails.append(f"D-5 위반: {UNMAPPED_FAILURE_MODE}가 {GS['equipment']}에 R09로 붙어 있지 않다")
 
-    # 🔴 D-2 — DOC-SOP-0014의 r1·r2가 실제로 다른 값을 가져야 한다
-    if BRG_R1["minutes"] == BRG_R2["minutes"]:
-        fails.append("D-2 위반: r1·r2 예상 작업 시간이 같다")
-    if set(BRG_R1["tools"]) == set(BRG_R2["tools"]):
-        fails.append("D-2 위반: r1·r2 필요 공구 목록이 같다")
+    # 🔴 D-2 — DOC-SOP-0014의 r1·r2가 실제로 다른 값을 가져야 한다.
+    #    값은 이제 `data/documents/`의 파일 두 벌에서 «파싱해» 비교한다 — 코드 상수를 보면
+    #    파일이 바뀌어도 점검이 통과해 버린다.
     revs = [r for r in tables["document_revision"] if r["document_id"] == GS["sop_document"]]
+    by_no = {r["revision_no"]: r for r in revs}
+    if 1 in by_no and 2 in by_no:
+        f1 = extract_sop_fields(by_no[1]["body"])
+        f2 = extract_sop_fields(by_no[2]["body"])
+        if None in (f1["minutes"], f2["minutes"], f2["criterion_percent"]):
+            fails.append("SOP 절 구조 파싱 실패 — 절 제목이 wireframes 체계에서 벗어났다 "
+                         "(3.2 진단 기준 / 3.3 필요 부품 / 3.4 필요 공구 및 자재 / 4. 예상 작업 시간)")
+        if f1["minutes"] == f2["minutes"]:
+            fails.append("D-2 위반: r1·r2 예상 작업 시간이 같다")
+        if f1["tools"] == f2["tools"]:
+            fails.append("D-2 위반: r1·r2 필요 공구 목록이 같다")
+        if (f1["criterion_percent"], f1["criterion_days"]) ==            (f2["criterion_percent"], f2["criterion_days"]):
+            fails.append("D-2 위반: r1·r2 진단 기준이 같다")
     approved = [r for r in revs if r["approval_state"] == "approved"]
     if len(revs) != 2 or len(approved) != 1 or approved[0]["id"] != f"{GS['sop_document']}@r2":
         fails.append(f"D-2 위반: {GS['sop_document']} revision 구성이 r1(superseded)+r2(approved)가 아니다")
@@ -134,6 +145,14 @@ def self_check(tables: dict, counts: dict) -> list[str]:
     multi = {d for d, n in per_doc.items() if n >= 2}
     if multi != set(MULTI_REVISION):
         fails.append(f"revision 2개 이상 문서가 {len(multi)}건 (기대 {len(MULTI_REVISION)}건)")
+
+    # 🔴 T1-3 — 화면이 인용하는 문장이 본문에 «그 문구 그대로» 있는가
+    body_of = {r["id"]: r["body"] for r in tables["document_revision"]}
+    for rev_id, quote, screen in EXPECTED_QUOTES:
+        if rev_id not in body_of:
+            fails.append(f"인용 대상 revision 부재: {rev_id} ({screen})")
+        elif quote not in (body_of[rev_id] or ""):
+            fails.append(f"인용 문장 부재: {rev_id} 에 「{quote}」가 없다 — {screen}")
 
     # GS-01 바인딩 ID 실재 (생성 단계 · DB 실측은 verify/gs01_binding.sql)
     ids = {v for rows in tables.values() for r in rows for v in r.values() if isinstance(v, str)}
@@ -194,11 +213,20 @@ def main(argv=None) -> int:
                          label=f"{GS['sensor_vib']} 진동 RMS 추세 (노이즈 제외 · 21일)"))
         print()
         print("-- 의도적 불완전성 (평가셋 성립 조건) --")
-        print(f"  D-2  {GS['sop_document']}@r1 공구 {len(BRG_R1['tools'])}종 / "
-              f"{BRG_R1['minutes']}분  ↔  @r2 공구 {len(BRG_R2['tools'])}종 / {BRG_R2['minutes']}분")
+        rv = {r["revision_no"]: extract_sop_fields(r["body"])
+              for r in tables["document_revision"] if r["document_id"] == GS["sop_document"]}
+        print(f"  D-2  {GS['sop_document']}@r1 공구 {len(rv[1]['tools'])}종 / {rv[1]['minutes']}분 / "
+              f"기준 {rv[1]['criterion_percent']}%·{rv[1]['criterion_days']}일"
+              f"  ↔  @r2 공구 {len(rv[2]['tools'])}종 / {rv[2]['minutes']}분 / "
+              f"기준 {rv[2]['criterion_percent']}%·{rv[2]['criterion_days']}일")
         print(f"  D-5  SOP 미매핑 고장모드 = {UNMAPPED_FAILURE_MODE} (1건 · R09로 "
               f"{GS['equipment']}에 직결)")
         print(f"  Q-UNANS-002  {sorted(FORBIDDEN_IDS)} 미생성 확인")
+        print()
+        print(f"-- 화면 인용 문장 실재 ({len(EXPECTED_QUOTES)}건 · wireframes v0.3 대조) --")
+        for rev_id, quote, screen in EXPECTED_QUOTES:
+            head = quote if len(quote) <= 34 else quote[:33] + "…"
+            print(f"  ✓ {rev_id:<18} 「{head}」  {screen}")
     return 0
 
 

@@ -16,31 +16,45 @@
 
 🔴 Q-UNANS-001 보호: 어떤 문서 본문에도 «원가·단가·비용·금액»을 쓰지 않는다.
    「비용은 얼마인가」에 «근거 없음»이 정답이려면 데이터 어디에도 비용이 없어야 한다.
+
+🔴 T1-3 — GS-01이 «인용하는» 문서의 본문은 `data/documents/{revision_id}.md` 파일이 정본이다.
+   화면이 특정 문장을 그 문구 그대로 띄우므로(wireframes §3·§4·§5), 본문은 사람이 읽고
+   고칠 수 있는 자리에 있어야 한다. 코드 안 문자열이면 문구 대조도 저작권 검토도 어렵다.
+   파일이 없는 문서는 아래 템플릿으로 채운다 — 검색 모집단 역할의 배경 문서들이다.
 """
 
 from __future__ import annotations
 
 import hashlib
+import re
 from datetime import date, timedelta
 
-from .config import GS, REFERENCE_NOW
+from .config import DATA_DIR, GS, REFERENCE_NOW
 from .structure import SAFETY_RULES, SOPS
+
+DOCUMENT_DIR = DATA_DIR / "documents"
 
 # 다중 revision 문서 8건 (data-ontology-spec §5: 「revision 2개 이상인 문서 8건」).
 # 🔴 DOC-SOP-0014만 2개(r1·r2), 나머지 7건은 3개(r1·r2·r3) → 추가 15개 → 총 60 revision.
+# 🔴 DOC-MAN-0021은 «단일 revision»이어야 한다. T0-6 §6이 GS-01 S4의 기대 evidence를
+#    `DOC-MAN-0021@r1#014`로 못박았는데, revision을 늘리면 @r1이 superseded가 되어
+#    「인용 가능 = approved ∧ 기간 내」(§3.3)에 걸려 기대 evidence가 «인용 불가»가 된다.
+#    같은 이유로 DOC-MAN-0022도 단일 revision이다 — wireframes §5(전략 비교)가
+#    `DOC-MAN-0022#009`를 revision 없이 가리키므로, revision이 여럿이면 어느 판의
+#    9번 청크인지 화면이 말할 수 없게 된다. 다중 revision 8건은 배경 문서가 채운다.
 MULTI_REVISION = {
     "DOC-SOP-0014": 2,
     "DOC-SOP-0003": 3,
     "DOC-SOP-0009": 3,
-    "DOC-MAN-0021": 3,
     "DOC-MAN-0024": 3,
+    "DOC-MAN-0026": 3,
     "DOC-SAF-0029": 3,
     "DOC-SAF-0030": 3,
     "DOC-MRP-0083": 3,
 }
 
 MANUALS = [
-    (21, "HMX-520", "CNC 밀링 HMX-520 설비 매뉴얼"),      # 🔴 EQ-CNC-204 매뉴얼 (GS S4 인용 대상)
+    (21, "MX-500", "CNC 밀링 MX-500 설비 매뉴얼"),        # 🔴 EQ-CNC-204 매뉴얼 (본문 = data/documents 파일)
     (22, "BLT-1200", "컨베이어 BLT-1200 설비 매뉴얼"),
     (23, "AR-6120", "산업용 로봇 AR-6120 설비 매뉴얼"),
     (24, "HP-250T", "프레스 HP-250T 설비 매뉴얼"),
@@ -53,44 +67,68 @@ MANUALS = [
 # 정비 보고서 9건 ↔ MaintenanceRecord 번호 (MR-2025-00NN ↔ DOC-MRP-00NN)
 MAINT_REPORT_NOS = [81, 82, 83, 84, 85, 86, 87, 88, 89]
 
-# --- DOC-SOP-0014 두 revision의 «실제로 다른» 값 (D-2) --------------------------
-
-BRG_R1 = {
-    "tools": [
-        "베어링 풀러 세트",
-        "다이얼 게이지 (0.01 mm)",
-        "육각 렌치 세트 (4~14 mm)",
-        "베어링 그리스 EP-2 (200 g)",
-    ],
-    "minutes": 90,
-    "safety": ["SAF-LOTO-01"],
-    "note": "초판 — 상온 운전 조건 기준.",
-}
-
-BRG_R2 = {
-    "tools": [
-        "베어링 풀러 세트",
-        "다이얼 게이지 (0.01 mm)",
-        "육각 렌치 세트 (4~14 mm)",
-        "고온용 베어링 그리스 EP-2H (250 g)",          # 🔴 r1과 규격·용량이 다르다
-        "교정 토크렌치 (20~100 N·m · 교정 유효기간 내)",  # 🔴 r1에 없던 항목
-    ],
-    "minutes": 120,                                    # 🔴 r1 = 90분
-    "safety": ["SAF-LOTO-01", "SAF-PPE-01"],           # 🔴 r1은 LOTO만
-    "note": "개정 — 고속 가공 조건에서 그리스 열화가 확인되어 고온용으로 교체하고, "
-            "체결 토크 관리를 의무화했다. 토크렌치 교정 확인 단계가 추가되어 작업 시간이 늘었다.",
-}
-
+# 🔴 DOC-SOP-0014의 r1·r2 본문은 `data/documents/`의 파일이 정본이다(T1-3).
+#    D-2「두 revision의 값이 실제로 다르다」는 이제 코드 상수가 아니라 «파일 두 벌의 차이»이며,
+#    generate.py의 자기 점검이 extract_sop_fields()로 그 차이를 매 실행 확인한다.
+#    본문을 코드에도 복사해 두면 파일과 어긋날 때 어느 쪽이 정본인지 알 수 없게 된다.
 
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _load_body(revision_id: str) -> str | None:
+    """`data/documents/{revision_id}.md` 가 있으면 그 원문이 정본이다.
+
+    🔴 개행을 LF로 정규화한다. git 체크아웃이 CRLF로 내려주면 같은 문서가 플랫폼마다
+       다른 content_sha256을 갖게 되어 색인 신선도 판정(STALE)이 환경 차이로 흔들린다.
+       .gitattributes로도 고정했지만, 설정에 기대지 않고 여기서 한 번 더 못박는다.
+    """
+    path = DOCUMENT_DIR / f"{revision_id}.md"
+    if not path.exists():
+        return None
+    return path.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+
+def extract_sop_fields(body: str) -> dict:
+    """SOP 본문에서 «판정 대상 값»을 뽑는다 — 생성기 자기 점검과 검증이 같은 정의를 쓴다.
+
+    절 제목은 wireframes §3(문서 원문 탭)이 화면에 그리는 번호 체계를 따른다.
+    """
+    tools = re.findall(r"^- (.+)$", _section(body, "### 3.4 필요 공구 및 자재"), re.M)
+    parts = re.findall(r"^- (.+)$", _section(body, "### 3.3 필요 부품"), re.M)
+    minutes = re.search(r"^(\d+)분", _section(body, "## 4. 예상 작업 시간").strip())
+    criterion = re.search(r"기준치의 (\d+)%를 (\d+)일 이상 초과",
+                          _section(body, "### 3.2 진단 기준"))
+    return {
+        "tools": tools,
+        "parts": parts,
+        "minutes": int(minutes.group(1)) if minutes else None,
+        "criterion_percent": int(criterion.group(1)) if criterion else None,
+        "criterion_days": int(criterion.group(2)) if criterion else None,
+    }
+
+
+def _section(body: str, heading: str) -> str:
+    """heading 다음부터 같은 깊이 이상의 다음 heading 전까지."""
+    depth = len(heading) - len(heading.lstrip("#"))
+    start = body.find(heading)
+    if start < 0:
+        return ""
+    start += len(heading)
+    rest = body[start:]
+    nxt = re.search(rf"^#{{1,{depth}}} ", rest, re.M)
+    return rest[:nxt.start()] if nxt else rest
+
+
 def _sop_body(title: str, domain: str, spec: dict, rev_no: int) -> str:
-    """SOP 본문 — D-3이 요구한 절 구조. 절 제목은 revision이 달라도 고정(비교 가능해야 한다)."""
+    """SOP 본문 골격 — 절 번호는 wireframes §3이 화면에 그리는 체계를 따른다.
+
+    화면이 「절차 3.2·3.3 인용」으로 자리를 가리키므로 절 번호가 문서마다 흔들리면 안 된다.
+    """
+    parts = "\n".join(f"- {x}" for x in spec["parts"])
     tools = "\n".join(f"- {x}" for x in spec["tools"])
     safety = "\n".join(f"- {x}" for x in spec["safety"])
-    return f"""# {title} (r{rev_no})
+    return f"""# {title}
 
 ## 1. 목적
 {title} 작업의 표준 절차를 정하여 작업 품질과 안전을 확보한다.
@@ -98,37 +136,47 @@ def _sop_body(title: str, domain: str, spec: dict, rev_no: int) -> str:
 ## 2. 적용 범위
 {domain} 설비군의 정기·비정기 정비 작업에 적용한다.
 
-## 3. 안전 요구사항
+## 3. 절차
+
+### 3.1 안전 조치
 {safety}
 작업 개시 전 위 규정의 준수 여부를 확인자가 서명으로 확인한다.
 
-## 4. 필요 공구 및 자재
+### 3.2 진단 기준
+{spec["criterion"]}
+
+### 3.3 필요 부품
+{parts}
+
+### 3.4 필요 공구 및 자재
 {tools}
 
-## 5. 예상 작업 시간
-{spec['minutes']}분 (설비 정지 시간 포함)
-
-## 6. 절차 단계
-1. 설비 정지 및 안전 조치 적용
+### 3.5 작업
+1. 설비 정지 및 3.1 안전 조치 적용
 2. 커버 분리 및 대상부 육안 점검
-3. 계측 (진동·유격·온도)
-4. 판정 기준 대조 후 조치 결정
-5. 조치 수행 및 원상 복구
-6. 시운전 및 계측 재확인
+3. 계측 후 3.2 진단 기준과 대조
+4. 판정 결과에 따라 조치 수행
+5. 원상 복구 및 시운전
+6. 계측 재확인
 
-## 7. 완료 확인
-계측값이 판정 기준 이내이고 안전 조치가 해제되었음을 확인자가 기록한다.
+## 4. 예상 작업 시간
+{spec["minutes"]}분 (설비 정지 시간 포함)
 
-## 8. 개정 사유
-{spec['note']}
+## 5. 완료 확인
+계측값이 3.2 판정 기준 이내이고 안전 조치가 해제되었음을 확인자가 기록한다.
+
+## 6. 개정 사유
+{spec["note"]}
 """
 
 
 def _generic_sop_body(title: str, domain: str, rev_no: int, seq: int) -> str:
     spec = {
+        "parts": [f"{domain} 표준 소모품 세트"],
         "tools": ["표준 공구 세트", "점검 기록지", f"{domain} 전용 계측기"],
         "minutes": 30 + (seq % 5) * 15,
-        "safety": ["SAF-LOTO-01"],
+        "safety": ["SAF-LOTO-01 — 전원 차단 후 잠금·표시(LOTO) 시행"],
+        "criterion": "계측값이 설비 마스터에 등록된 주의 임계를 초과하면 조치 대상으로 판정한다.",
         "note": "정기 검토 개정." if rev_no > 1 else "초판.",
     }
     return _sop_body(title, domain, spec, rev_no)
@@ -136,8 +184,8 @@ def _generic_sop_body(title: str, domain: str, rev_no: int, seq: int) -> str:
 
 def _manual_body(model: str | None, title: str, rev_no: int) -> str:
     vib = ""
-    if model == "HMX-520":
-        # 🔴 GS-01 S4의 vector hit 대상 문장 — 「진동 진단」 절이 인용 강조 대상이다.
+    if model == "MX-500":
+        # GS 매뉴얼(DOC-MAN-0021)은 파일이 정본이라 이 분기는 도달하지 않는다 — 최후 수단으로만 남긴다.
         vib = """
 ## 4. 진동 진단
 스핀들 진동 RMS는 정상 운전 시 2.0~2.6 mm/s 범위를 유지한다.
@@ -264,8 +312,8 @@ def build_documents() -> tuple[list[dict], list[dict], dict[str, str]]:
         end: date | None = None
         for rev_no in range(n_rev, 0, -1):
             start = (REFERENCE_NOW.date() - timedelta(days=span_days * (n_rev - rev_no) + 56))
-            body = body_fn(rev_no)
             rev_id = f"{doc_id}@r{rev_no}"
+            body = _load_body(rev_id) or body_fn(rev_no)
             revisions.append({
                 "id": rev_id, "document_id": doc_id, "revision_no": rev_no,
                 "content_sha256": _sha256(body),
@@ -282,13 +330,8 @@ def build_documents() -> tuple[list[dict], list[dict], dict[str, str]]:
     # SOP 20건
     for sop_id, doc_no, title, domain, _fms in SOPS:
         doc_id = f"DOC-SOP-{doc_no:04d}"
-        if doc_id == GS["sop_document"]:
-            def body_fn(rev_no, _t=title, _d=domain):
-                # 🔴 D-2 — r1과 r2가 실제로 다른 값을 갖는다.
-                return _sop_body(_t, _d, BRG_R1 if rev_no == 1 else BRG_R2, rev_no)
-        else:
-            def body_fn(rev_no, _t=title, _d=domain, _s=doc_no):
-                return _generic_sop_body(_t, _d, rev_no, _s)
+        def body_fn(rev_no, _t=title, _d=domain, _s=doc_no):
+            return _generic_sop_body(_t, _d, rev_no, _s)
         add_doc(doc_id, "SOP", title, "maintenance_engineer", body_fn)
 
     # 매뉴얼 8건
@@ -315,5 +358,5 @@ def build_documents() -> tuple[list[dict], list[dict], dict[str, str]]:
     return documents, revisions, current
 
 
-__all__ = ["build_documents", "MULTI_REVISION", "MANUALS", "MAINT_REPORT_NOS",
-           "BRG_R1", "BRG_R2"]
+__all__ = ["build_documents", "extract_sop_fields", "MULTI_REVISION", "MANUALS",
+           "MAINT_REPORT_NOS", "DOCUMENT_DIR"]
