@@ -1,0 +1,14 @@
+# indexer 실측 의존 (T1-4 게이트 ①) — 버전은 Python 3.14 wheel 실측으로 고정한다.
+#
+# 무엇을 위해 들이는가:
+#   tokenizers   : chunk 경계를 «토큰 오프셋»으로 정확히 얻기 위해. 분할은 문자 좌표에서
+#                  일어나지만 예산은 토큰이라, 둘의 대응이 없으면 크기가 추정으로 떨어진다.
+#   transformers : `Tokenizer.from_pretrained`가 참조하는 모델 설정(max_length·truncation)을
+#                  같은 소스에서 받기 위해. 모델 가중치는 받지 않는다.
+#   tiktoken     : 대조 계수기. 토크나이저가 바뀌면 chunk 좌표가 얼마나 흔들리는지를 보이는
+#                  용도이지, 임베딩 후보가 아니다.
+#
+# 🔴 임베딩 런타임(sentence-transformers·fastembed)은 여기 없다 — 게이트 ③ 택일 후에 넣는다.
+tokenizers==0.23.1
+transformers==5.16.1
+tiktoken==0.14.0
