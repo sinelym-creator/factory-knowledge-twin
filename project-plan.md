@@ -67,6 +67,7 @@ size_limit: 10KB
 - 발주 단위 = 티켓 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
 - **확정 기록** = `docs/decisions/NNN-*.md` — 수정 대신 새 번호(구본 superseded 표기) · 기록 6요소: 결정 1줄 · **결정의 범위(기각안 포함)** · 근거 상신 요지 · **승인 원문 무수정 인용**(해석은 별줄) · 승인 id · 일시 · 비확정 논의를 확정처럼 인용 금지 · 상신 시 결정 대기 항목마다 권장 1줄 병기.
 - **누락 방지 장치**: 신규 파일 = 생성 커밋에서 루트 `INDEX.md` 등재(미등록 0 = 검출기) · 문서별 frontmatter `size_limit` = 비대 검출기(초과 = 회전·다이어트) · PROGRESS done 10행 초과 = CHANGELOG 회전 · 재개점(checkpoint)은 백지 재작성(이력 축적 금지 — 이력은 CHANGELOG·회고 몫).
+- 🔴 **git 작업 구조(08-28 공유 index 사고 후 확정)**: 좌석별 worktree(`../fkt-{seat}` · `lane/{seat}` 브랜치)에서 작업·커밋 — 주 체크아웃 = 오케 전용. 통합 = 보고 후 오케가 develop merge. 전 좌석 `add -A`·`commit -a`·`--amend`·`reset`·force 금지, 경로 지정 add만.
 - lane(§33.2→3좌석 매핑 = CLAUDE.md §3): 오케 = contracts·docs·통합 / 구현 = apps·services·data·ontology / 검증 = benchmarks·tests·evidence.
 - 매일 통합 주기(§33.5) 최소 2회 · Golden Scenario 회귀 = 최우선 복구(§33.1) · Stop 조건(§33.6) 발생 = 신규 기능 중단→운영자 회귀.
 - 순차 의존성(§33.3): Ontology→DB→Graph · Contract→Backend→Frontend · Live Golden Scenario→Replay Fixture→Sandbox.
