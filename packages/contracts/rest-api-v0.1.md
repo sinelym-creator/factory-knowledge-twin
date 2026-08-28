@@ -22,7 +22,7 @@ size_limit: 8KB
 | 메서드 경로 | 응답 요지 | 화면 |
 |---|---|---|
 | GET `/plants` | 공장 목록 `[{ plantId, name, lineCount, alarmCount }]` | Overview |
-| GET `/plants/{plantId}/overview` | 라인·설비 상태 트리 + 활성 알람 `[{ equipmentId, status, activeAlarms }]` | Overview |
+| GET `/plants/{plantId}/overview` | 라인·설비 상태 트리 + 활성 알람 `[{ equipmentId, status, activeAlarms }]` + `kpi: { lineActive, alarmCount, openIncidents, pendingWorkOrders }` (G4) | Overview |
 | GET `/equipment/{equipmentId}` | 설비 상세: 속성·상태·센서 목록·최근 알람·정비 이력 요약 | Incident |
 | GET `/equipment/{equipmentId}/sensors/{sensorId}/series?window=24h\|3w` | 시계열 `[{ ts, value }]` + threshold | 추세 chart |
 
@@ -31,8 +31,11 @@ size_limit: 8KB
 | 메서드 경로 | 요청 | 응답 요지 | 화면 |
 |---|---|---|---|
 | GET `/scenarios` | — | 승인된 시나리오 목록(allowlist — GS-01 등) | 시나리오 선택 |
-| POST `/scenarios/{scenarioId}/runs` | `{ sessionId, mode: "live"\|"replay" }` | `{ runId, mode }` — live 불가 시 `mode:"replay"`로 강등 응답 | 조사 시작 |
-| GET `/runs/{runId}` | — | `{ status, candidates[], workOrderDraftId?, events[]? }` — 완주 후 결과 스냅샷 | Evidence |
+| POST `/scenarios/{scenarioId}/runs` | `{ sessionId, mode: "live"\|"replay" }` | `{ runId, incidentId, mode }` — live 불가 시 `mode:"replay"`로 강등 응답 | 조사 시작 |
+| GET `/incidents/{incidentId}` | — | incident 표제: 제목·상태·대상 설비·연결 알람·runId (G1) | Incident 라우트 |
+| POST `/runs/{runId}/stop` | — | `{ status: "stopped" }` — §12.1 «실행·중지·재설정»의 중지 (G2) | 조사 중지 |
+| GET `/runs/{runId}` | — | `{ status, candidates[], workOrderDraftId? }` — 완주 후 결과 스냅샷 | Evidence |
+| GET `/runs/{runId}/events` | — | 전체 이벤트 배열(agent-events 스키마 · seq 순) — replay 되감기 정본 (G3) | 되감기 |
 | WS `/ws/runs/{runId}` | — | agent-events 스키마 스트림 | 진행 표시 |
 
 ## 근거·그래프 (Evidence)
