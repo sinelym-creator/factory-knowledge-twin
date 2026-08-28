@@ -20,6 +20,9 @@ jobs:
           test -f LICENSE
           test -f docs/baseline/poc-baseline-v0.2.md
 
+      - name: contract tests (packages/contracts ↔ tests/contract)
+        run: node tests/contract/run.js --quiet
+
       - name: public boundary scan (baseline §34.6)
         run: |
           set -e
