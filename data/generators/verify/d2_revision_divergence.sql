@@ -7,7 +7,7 @@
 -- PASS 조건
 --   ① r1·r2 두 행이 나온다 · content_sha256이 서로 다르다
 --   ② 예상 작업 시간이 서로 다르다 (90분 ↔ 120분)
---   ③ 필요 공구 개수가 서로 다르다 (4종 ↔ 5종)
+--   ③ 필요 공구 개수가 서로 다르다 (4종 ↔ 5종) · 진단 기준이 서로 다르다 (200%·5일 ↔ 150%·3일)
 --   ④ 지금 인용 가능한 revision이 @r2 «1건뿐»이다 (@r1은 superseded · effective_to 기입)
 
 \echo '== D-2 ① revision 구성과 본문 차이 =='
@@ -17,10 +17,10 @@ SELECT
   r.effective_from,
   r.effective_to,
   left(r.content_sha256, 12) || '...'                                   AS content_sha256,
-  substring(r.body from '## 5\. 예상 작업 시간\n([^\n]+)')               AS est_time,
+  substring(r.body from '## 4\. 예상 작업 시간\n+([^\n]+)')               AS est_time,
   array_length(
     string_to_array(
-      trim(both E'\n' from (regexp_match(r.body, '## 4\. 필요 공구 및 자재\n((?:- [^\n]+\n)+)'))[1]),
+      trim(both E'\n' from (regexp_match(r.body, '### 3\.4 필요 공구 및 자재\n+((?:- [^\n]+\n)+)'))[1]),
       E'\n'), 1)                                                        AS tool_count
 FROM document_revision r
 WHERE r.document_id = 'DOC-SOP-0014'
@@ -31,10 +31,12 @@ ORDER BY r.revision_no;
 SELECT
   count(*)                                              AS revision_count,
   count(DISTINCT content_sha256) = 2                    AS sha256_differs,
-  count(DISTINCT substring(body from '## 5\. 예상 작업 시간\n([^\n]+)')) = 2
+  count(DISTINCT substring(body from '## 4\. 예상 작업 시간\n+([^\n]+)')) = 2
                                                         AS est_time_differs,
-  count(DISTINCT (regexp_match(body, '## 4\. 필요 공구 및 자재\n((?:- [^\n]+\n)+)'))[1]) = 2
-                                                        AS tools_differ
+  count(DISTINCT (regexp_match(body, '### 3\.4 필요 공구 및 자재\n+((?:- [^\n]+\n)+)'))[1]) = 2
+                                                        AS tools_differ,
+  count(DISTINCT substring(body from '(기준치의 [0-9]+%를 [0-9]+일 이상 초과)')) = 2
+                                                        AS criterion_differs
 FROM document_revision
 WHERE document_id = 'DOC-SOP-0014';
 
