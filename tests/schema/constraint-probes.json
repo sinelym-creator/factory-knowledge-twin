@@ -1,0 +1,86 @@
+{
+  "name": "T1-1 스키마 제약 재현 표본 — «거부돼야 하는데 통과하는가»",
+  "target": "services/ai-api/db/migrations/001_core_schema.sql",
+  "note": "구현 좌석이 이미 실측한 단일 칼럼 제약 7종(ID 패턴·NOT NULL·PK 중복·FK·status CHECK·승인자 누락·sha256 형식)은 넣지 않았다. 자기 실측의 복창은 검증이 아니다. 여기 있는 것은 그가 시험하지 않은 방향 — «칼럼 사이의 정합»이다.",
+  "isolation": "probe 1건 = 트랜잭션 1개(BEGIN … ROLLBACK). 준비 행까지 전부 되감기므로 대상 DB에 아무것도 남지 않는다 — 타 좌석 스택에서도 안전하게 돌릴 수 있다.",
+  "commonSetup": [
+    "INSERT INTO factory (id,name,site_code) VALUES ('FAC-P','probe','P')",
+    "INSERT INTO production_line (id,factory_id,name,line_no) VALUES ('LN-P-01','FAC-P','probe',1)",
+    "INSERT INTO equipment (id,line_id,name,equipment_class,model,installed_on) VALUES ('EQ-CNC-901','LN-P-01','probe','CNC','m','2026-01-01')",
+    "INSERT INTO equipment (id,line_id,name,equipment_class,model,installed_on) VALUES ('EQ-CNC-902','LN-P-01','probe','CNC','m','2026-01-01')",
+    "INSERT INTO document (id,doc_type,title,owner_role,current_revision_no) VALUES ('DOC-SOP-9001','SOP','probe','qa',1)",
+    "INSERT INTO document (id,doc_type,title,owner_role,current_revision_no) VALUES ('DOC-MAN-9002','MANUAL','probe','qa',1)"
+  ],
+  "probes": [
+    {
+      "id": "P-1",
+      "expect": "reject",
+      "gap": "G-4 ID 구성요소 정합",
+      "label": "revision id가 자신의 document_id·revision_no와 어긋남",
+      "why": "스펙 §3.1: id = {document_id}@r{N}. 패턴만 검사하므로 «다른 문서의 revision id»를 붙여도 통과한다 — 인용 추적이 조용히 어긋난다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-0014@r2','DOC-MAN-9002',7,'0000000000000000000000000000000000000000000000000000000000000000','x','2026-01-01','approved','qa')"
+    },
+    {
+      "id": "P-2",
+      "expect": "reject",
+      "gap": "G-1 superseded 종료시각",
+      "label": "superseded인데 effective_to가 비어 있음",
+      "why": "스펙 §3.3: 새 revision 승인 시 «직전 revision은 superseded + effective_to 기입». 종료 시각이 없으면 «언제까지 유효했는가»를 답할 수 없다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r1','DOC-SOP-9001',1,'1111111111111111111111111111111111111111111111111111111111111111','x','2026-01-01','superseded','qa')"
+    },
+    {
+      "id": "P-3",
+      "expect": "reject",
+      "gap": "G-2 동시 유효 revision",
+      "label": "같은 문서에 유효 기간이 겹치는 approved revision 2건",
+      "why": "인용 가능 = approved AND 기간 내. 겹치면 «지금 인용할 revision»이 2개가 되어 판정 자체가 불가능하다 — T0-8 Q-DIRECT-003의 «정답 1건» 전제가 깨진다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,effective_to,approval_state,approved_by) VALUES ('DOC-SOP-9001@r2','DOC-SOP-9001',2,'2222222222222222222222222222222222222222222222222222222222222222','x','2026-01-01','2027-01-01','approved','qa'), ('DOC-SOP-9001@r3','DOC-SOP-9001',3,'3333333333333333333333333333333333333333333333333333333333333333','x','2026-06-01','2027-06-01','approved','qa')"
+    },
+    {
+      "id": "P-4",
+      "expect": "reject",
+      "gap": "G-3 전이 방향",
+      "label": "approved → draft 역방향 전이",
+      "why": "스펙 §3.3: 상태 전이 «역방향 없음». 값 CHECK는 전이를 막지 못한다 — 승인된 문서를 초안으로 되돌리면 감사 이력이 무너진다.",
+      "setup": [
+        "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r1','DOC-SOP-9001',1,'1111111111111111111111111111111111111111111111111111111111111111','x','2026-01-01','approved','qa')"
+      ],
+      "sql": "UPDATE document_revision SET approval_state='draft' WHERE id='DOC-SOP-9001@r1'"
+    },
+    {
+      "id": "P-5",
+      "expect": "reject",
+      "gap": "G-4 ID 구성요소 정합",
+      "label": "component id의 설비 번호가 소속 설비와 다름",
+      "why": "스펙 §3.1: CP-{EQ_NUM}-{CLASS3}-{NN}. EQ-CNC-902 소속인데 id는 901을 가리켜도 통과한다 — ID로 설비를 추정하는 코드가 전부 틀린 답을 낸다.",
+      "sql": "INSERT INTO component (id,equipment_id,name,component_class,installed_on) VALUES ('CP-901-BRG-01','EQ-CNC-902','probe','BRG','2026-01-01')"
+    },
+    {
+      "id": "P-6",
+      "expect": "reject",
+      "gap": "G-4 ID 구성요소 정합",
+      "label": "sensor id의 설비 번호가 소속 설비와 다름",
+      "why": "P-5와 같은 계열(SN-{EQ_NUM}-{MEAS}). GS-01 경로가 센서→설비를 ID로 읽는다.",
+      "sql": "INSERT INTO sensor (id,equipment_id,measurement_type,unit,sampling_hz) VALUES ('SN-901-VIB','EQ-CNC-902','VIB','mm/s',1)"
+    },
+    {
+      "id": "P-7",
+      "expect": "reject",
+      "gap": "G-4 ID 구성요소 정합",
+      "label": "chunk id의 revision이 소속 revision과 다름",
+      "why": "스펙 §3.1: {revision_id}#{NNN}. 인용 chunk가 다른 revision을 가리키면 citation validity가 근본에서 깨진다.",
+      "setup": [
+        "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r2','DOC-SOP-9001',2,'2222222222222222222222222222222222222222222222222222222222222222','x','2026-01-01','approved','qa')"
+      ],
+      "sql": "INSERT INTO document_chunk (id,revision_id,chunk_index,text,token_count,chunk_sha256) VALUES ('DOC-MAN-0021@r1#001','DOC-SOP-9001@r2',1,'t',10,'4444444444444444444444444444444444444444444444444444444444444444')"
+    },
+    {
+      "id": "P-8",
+      "expect": "accept",
+      "gap": "대조군",
+      "label": "정상 revision 1건은 통과해야 한다",
+      "why": "reject만 있는 표본은 «전부 막는 스키마»와 «올바른 스키마»를 구분하지 못한다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-MAN-9002@r1','DOC-MAN-9002',1,'5555555555555555555555555555555555555555555555555555555555555555','x','2026-01-01','approved','qa')"
+    }
+  ]
+}

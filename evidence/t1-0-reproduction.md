@@ -3,11 +3,11 @@ artifact: t1-0-reproduction
 ticket: T1-0 재현 검증
 owner: 검증(리바이2)
 status: 판정 제출 — 최종 판정권은 오케
-version: 1.0.0
+version: 1.2.0
 verified_at: 2026-08-28
-verification_base: develop `5877e7d`
+verification_base: develop `5877e7d` → §6 재개 `52d4455`(D-1·D-2 반영분)
 target: docs/product/dev-environment.md (T1-0)
-size_limit: 12KB
+size_limit: 16KB
 ---
 
 # T1-0 재현 검증 — `dev-environment.md` 절차만으로 서는가
@@ -125,3 +125,68 @@ docker exec fkt-neo4j cypher-shell -u neo4j -p <비밀번호> 'RETURN 1 AS ok'
 **총평**: `dev-environment.md`는 **재현 가능한 문서**다. 버전·바이트 수까지 실측으로 적어 둔 덕에 대조 판정이 성립했고, 함정 2건을 적어 둔 것이 실제로 재현자의 시간을 아꼈다. 결함은 **D-1(운영 규율 공백) · D-2(검증 명령 불완전)** 2건이며 **둘 다 문서 1~2줄로 닫힌다.**
 
 🔴 **①의 «clean 상태 compose up»은 여전히 미검증이다.** 스택을 내릴 수 있는 시점에 1회 실행해야 완결된다 — 그 시점 판단은 통합 담당 몫이다. **미검증을 통과로 계수하지 않는다.**
+
+---
+
+## 6. ① 재현 재개 — **PASS** (base `52d4455` · D-1·D-2 반영 후)
+
+D-1(구조 격리)·D-2(전체 명령 기입)가 착지해 **미검증으로 남겼던 ①을 닫는다.**
+
+### 6.1 방법 — 문서 §4.2 그대로
+
+`COMPOSE_PROJECT_NAME`·포트 3개·`VOLUME_ROOT` 5개 env를 §4.2에 적힌 값 그대로 설정하고 `docker compose up -d`. **타 좌석 스택을 내리지 않고** 별도 스택이 떴다 — 이것이 D-1 처방의 목적이었다.
+
+### 6.2 §5 전 행 대조 (E1 · 문서의 «전체 명령»을 복사해 실행)
+
+| # | 문서 §5 주장 | 실측 | 판정 |
+|---|---|---|---|
+| 1 | `docker compose up -d` → 2 컨테이너 | `fkt-levi2-postgres-1`·`fkt-levi2-neo4j-1` 생성 · exit 0 | ✅ |
+| 2 | 두 서비스 healthy | 둘 다 **healthy** | ✅ |
+| 3 | `vector 0.8.2` | **`vector 0.8.2`** | ✅ |
+| 4 | `ok / 1` | **`ok` / `1`** | ✅ |
+| 5 | migrate exit 0 · 재실행 오류 0 | 1차 **exit 0** · 2차 **exit 0**(`schema_migration` 1행 유지) | ✅ |
+| 6 | 테이블 26 | **26** | ✅ |
+
+**D-2 해소 확인**: §5의 명령이 `docker compose exec -T postgres psql -U fkt -d fkt …` 전체 형태로 바뀌어 **복사해 붙이면 그대로 돈다.** 초판에서 지적한 「자격을 compose 파일에서 캐내야 한다」가 사라졌다.
+
+### 6.3 🔴 내가 낸 오판 1건 (자진 기록)
+
+첫 시도에서 두 컨테이너가 `unhealthy`로 보여 **문서 결함을 의심했다.** 원인은 문서가 아니라 **내 대기 루프**였다 — PowerShell에서 `'unhealthy' -match 'healthy'`가 **참**이라 healthy 판정이 즉시 성립해 초기화가 끝나기 전에 검증으로 넘어갔다.
+
+- 제대로 기다리자 두 서비스 모두 healthy가 됐고 §5 전 행이 일치했다.
+- **교훈**: 부분 문자열 매칭으로 상태를 판정하지 않는다. `-like '*(healthy)*'`처럼 **부정형을 배제하는 형태**로 쓴다.
+- 🔴 **이 오판을 보고 전에 잡았기에 「문서 결함」 오보를 내지 않았다.** 나쁜 결과일수록 독립 재현 후 판정한다는 규율이 실제로 작동한 사례로 남긴다.
+
+### 6.4 🔴 D-3 (신규 · 공개 경계) — §4.2 절차가 만든 볼륨이 **gitignore에 걸리지 않는다**
+
+문서 §4.2는 좌석별 격리를 위해 `VOLUME_ROOT='./.volumes-levi2'`를 **설정하라고 지시한다.** 그대로 따랐더니:
+
+```
+.gitignore  43행:  .volumes/            ← 기본 경로만 무시한다
+git check-ignore .volumes-levi2   →  exit 1 (무시 대상 아님)
+git status                        →  ?? .volumes-levi2/        (미추적·미무시)
+git add --dry-run .volumes-levi2/ →  add '.volumes-levi2/neo4j/data/databases/neo4j/neostore'
+                                     add '.volumes-levi2/neo4j/data/databases/neo4j/database_lock'  …
+```
+
+🔴 **즉 문서가 시킨 대로 하면 «커밋 가능한 DB 파일 더미»가 워크트리에 생긴다.** 리포는 **PUBLIC**이고 baseline §34.6은 볼륨 커밋을 금지한다. `git add -A`가 금지된 것이 지금 이 사고를 막고 있을 뿐이며, **규율 하나에 의존하는 상태**다.
+
+- 심각도 🔴 — 실수 1회로 공개 리포에 DB가 올라간다. 되돌려도 이력에 남는다.
+- **가설이 아니다** — 위 `--dry-run` 출력이 실제 이 워크트리의 실측이다.
+
+→ **고치면 PASS**: `.gitignore`에 **`.volumes*/`** 1줄(또는 `.volumes-*/`). 기존 `.volumes/`도 포함하므로 43행을 대체해도 된다.
+→ 🔴 **내 lane이 아니라 손대지 않았다**(`.gitignore` = 리포 루트). 처방만 올린다. **D-1 처방의 후속 누락**이므로 D-1과 함께 닫는 것이 맞다.
+
+### 6.5 T1-0 최종 판정
+
+| 대상 | 초판 | 재개 후 |
+|---|---|---|
+| ① compose 기동 | ⚠️ 미실행 | ✅ **PASS** |
+| ② FastAPI | ✅ PASS | 유지 |
+| ③ Next.js | ✅ PASS | 유지 |
+| D-1 | ◻ 지적 | ✅ **해소**(구조 격리 — 병렬 기동 실증) |
+| D-2 | 🔴 지적 | ✅ **해소**(전체 명령 기입) |
+
+| **D-3**(신규) | — | 🔴 **미해소** — `.gitignore` 1줄 |
+
+**T1-0 재현 = ✅ 완결**(①②③ 전건 PASS · 미검증 0건). **단 D-3은 공개 경계 사안이라 별건으로 열어 둔다** — 재현 판정과 공개 안전은 다른 축이다.
