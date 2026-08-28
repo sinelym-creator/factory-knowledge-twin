@@ -78,6 +78,21 @@ MR_DOCUMENTED = [
 ACTIONS = ["inspect", "replace", "lubricate", "calibrate", "repair"]
 
 
+def mr_id_of(no: int, days_before: int) -> str:
+    """MaintenanceRecord ID — 연도는 «실제 수행일»에서 도출한다.
+
+    🔴 F-1. 연도를 상수로 박으면 days를 조정하는 순간 ID가 거짓말을 한다. 이 프로젝트는 ID를
+       읽어 시점을 판단하므로(스펙 §3.2 규칙3 「문자열 정렬 = 생성 순 정렬」), 연도가 어긋난
+       ID는 조사자를 조용히 오독으로 데려간다. 정비 보고서 문서도 같은 함수를 쓴다 —
+       문서가 부르는 이름과 실제 기록의 ID가 갈라지면 문서가 없는 기록을 가리킨다.
+    """
+    return f"MR-{(REFERENCE_NOW - timedelta(days=days_before)).year}-{no:04d}"
+
+
+# 정비 보고서 문서(DOC-MRP-00NN)가 서술하는 정비 기록 ID. documents.py가 제목·본문에 쓴다.
+MR_DOCUMENTED_ID = {no: mr_id_of(no, days) for no, _e, _a, days, _w, _f in MR_DOCUMENTED}
+
+
 def build_alarm_plan(sensors: list[dict], rng: random.Random) -> list[dict]:
     """알람 발생 계획 — 어느 센서에서 언제 임계를 넘을지 «먼저» 정한다.
 
@@ -204,7 +219,7 @@ def build_events(rng, sensors, alarm_plan, gs_alarm, observed_of):
 
     # --- MaintenanceRecord ----------------------------------------------------
     for no, eq_id, action, days, wo_id, fm_id in MR_DOCUMENTED:
-        mr_id = f"MR-2025-{no:04d}"
+        mr_id = mr_id_of(no, days)
         note = ("스핀들 베어링 마모로 베어링 교체. 교체 후 진동 RMS 2.1 mm/s로 회복. "
                 "그리스 재충전 및 시운전 완료." if no == 87 else
                 f"{action} 작업 수행 후 정상 동작 확인.")
@@ -221,18 +236,30 @@ def build_events(rng, sensors, alarm_plan, gs_alarm, observed_of):
 
     # 문서 없는 나머지 31건 — 유사 이력 vector 검색의 모집단(T0-6 §5)
     eq_ids = [e["id"] for e in _equipment_ids_from(sensors)]
+    # 🔴 F-1. 간격은 «그룹 내 순번»으로 벌린다. 번호 n을 그대로 곱하면 대역이 다른 그룹
+    #    (2025 = 90~98)에서 기준일을 넘겨 days가 음수가 되고, 그 음수를 하한으로 뭉개면 9건이
+    #    기준 시각 직전 하루에 몰린 채 ID만 「2025년」이라 말한다. 여기서 year는 «의도»이고,
+    #    날짜가 그 의도를 실현했는지는 generate.py 자기 점검이 ID와 대조해 확인한다.
+    #    2025 그룹은 문서 있는 마지막 건(0089 · 370일 전)보다 뒤에 놓아 번호 순서를 시간 순서와
+    #    맞춘다 — 같은 해 안에서 번호가 역행하면 규칙3이 다시 어긋난다.
+    #    2024 그룹은 문서 있는 첫 건(0081 · 812일 전)보다 «앞»에 놓는다 — 같은 해에서 번호가
+    #    작은 쪽이 더 나중이면 규칙3이 또 어긋난다.
+    span = {"2024": (880, 7), "2025": (365, 15), "2026": (120, 7)}
     filler = ([("2024", n) for n in range(1, 11)]
               + [("2025", n) for n in range(90, 99)]
               + [("2026", n) for n in range(1, 13)])
+    seq: dict[str, int] = {}
     for year, n in filler:
+        i = seq[year] = seq.get(year, -1) + 1
+        base, step = span[year]
+        days = base - i * step
         mr_id = f"MR-{year}-{n:04d}"
         eq_id = eq_ids[(n * 5 + int(year)) % len(eq_ids)]
         action = ACTIONS[(n + int(year)) % len(ACTIONS)]
-        days = {"2024": 700, "2025": 380, "2026": 120}[year] - n * 7
         t["maintenance_record"].append({
             "id": mr_id, "equipment_id": eq_id, "work_order_id": None,
             "action_type": action,
-            "performed_at": (REFERENCE_NOW - timedelta(days=max(days, 3))).isoformat(),
+            "performed_at": (REFERENCE_NOW - timedelta(days=days)).isoformat(),
             "duration_min": 20 + (n % 7) * 12,
             "result": "completed" if n % 11 else "partial",
             "note": f"{action} 정기 작업. 계측값 판정 기준 이내.",
