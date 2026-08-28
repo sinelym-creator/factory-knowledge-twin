@@ -123,6 +123,41 @@ GS-01 S4·S7 기대 인용 9건이 18개 후보안 전부에서 파손 0이다(�
 512는 `e5-small`(max 512)과 `bge-m3`(max 8192) **양 후보에서 생존**한다 — 그래서 이 동결은
 게이트 ③(임베딩 택일)에 종속되지 않고, ③보다 먼저 닫을 수 있었다.
 
+## 게이트 ③ — 임베딩 런타임 실측 (E1 · 2026-08-29)
+
+```powershell
+services\indexer\.venv\Scripts\python.exe -m pip install sentence-transformers fastembed
+$env:PYTHONUTF8 = '1'
+services\indexer\.venv\Scripts\python.exe services\indexer\probe_embedding.py
+```
+
+입력은 **동결 정책으로 자른 실제 chunk 21건**이다. 합성 문자열로 재면 한국어 토큰 길이가
+빠져 시간이 낙관적으로 나온다.
+
+| | `sentence-transformers` / `multilingual-e5-small` | `fastembed` / `paraphrase-multilingual-MiniLM-L12-v2` |
+|---|---|---|
+| 차원 | 384 | 384 |
+| `max_seq_length` | 512 | 🔴 **128** |
+| 실 chunk 최대 토큰 / 초과 | **484 / 0건** | 담을 수 없어 대조 불가 |
+| 모델 크기 | ~471MB | 0.22GB |
+| 첫 로드(다운로드 포함) | 36.26s | 21.42s |
+| 재로드(캐시) | 7.67s | 1.58s |
+| 21 chunk 임베딩 | 1.462s (69.6 ms/건) | 2.979s (141.8 ms/건) |
+| 900 chunk 외삽 | 62.6s | 127.7s |
+
+**택일 권고: `sentence-transformers` + `intfloat/multilingual-e5-small`.**
+
+- `fastembed`의 다국어 지원 목록은 3종뿐이고, 그중 512를 담는 것은 `multilingual-e5-large`
+  (1024dim · 2.24GB)뿐이다. `paraphrase` 계열(max 128)은 동결 정책과 구조적으로 충돌한다 —
+  fastembed를 택하면 2.24GB·1024dim을 강제당한다.
+- 속도도 ST가 2배 빠르다. ⚠ 다만 표본이 21건이고 fastembed 첫 배치에 ONNX 세션 워밍업이
+  섞였을 수 있다 — **이 수치는 택일을 뒤집을 근거로는 약하다**고 적어 둔다. 주근거는 상한이다.
+
+### 🔴 동결의 재확인
+
+임베더의 실 토크나이저로 잰 chunk 최대 토큰이 **484**(초과 0건)다. 게이트 ① 실측 483에
+특수 토큰 1이 붙은 값으로, 두 계측이 독립적으로 맞물린다. **512 동결은 잘림 없이 성립한다.**
+
 ## 없는 것과 그 이유
 
 | 없는 것 | 이유 |
