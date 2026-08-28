@@ -21,14 +21,14 @@ from .config import GS, REFERENCE_NOW, WINDOW_START
 
 EQUIPMENT_LAYOUT = [
     # (equipment_id, line_no, class, model, 설치 경과 개월, criticality, 센서 수)
-    ("EQ-CNC-101", 1, "CNC", "HMX-520", 74, "high", 3),
+    ("EQ-CNC-101", 1, "CNC", "MX-500", 74, "high", 3),
     ("EQ-CNV-102", 1, "CONVEYOR", "BLT-1200", 96, "medium", 3),
     ("EQ-ROB-103", 1, "ROBOT", "AR-6120", 58, "medium", 2),
     ("EQ-PRS-104", 1, "PRESS", "HP-250T", 110, "high", 2),
-    ("EQ-CNC-204", 2, "CNC", "HMX-520", 62, "high", 3),   # 🔴 GS-01 주인공
+    ("EQ-CNC-204", 2, "CNC", "MX-500", 65, "high", 3),    # 🔴 GS-01 주인공 · 설치 2021-03(wireframes ②)
     ("EQ-CNV-205", 2, "CONVEYOR", "BLT-1200", 84, "medium", 3),
     ("EQ-ROB-206", 2, "ROBOT", "AR-6120", 41, "medium", 2),
-    ("EQ-CNC-207", 2, "CNC", "HMX-520", 47, "high", 3),   # 🔴 유사 설비 비교 대상
+    ("EQ-CNC-207", 2, "CNC", "MX-500", 47, "high", 3),   # 🔴 유사 설비 비교 대상
     ("EQ-CNV-308", 3, "CONVEYOR", "BLT-900", 66, "low", 3),
     ("EQ-ROB-309", 3, "ROBOT", "AR-4080", 35, "medium", 2),
     ("EQ-PRS-310", 3, "PRESS", "HP-160T", 128, "high", 2),
