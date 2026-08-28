@@ -67,7 +67,9 @@ size_limit: 10KB
 - 발주 단위 = 티켓 · 발주문에 AC(Target/Actual/PASS·FAIL 분리)·필요 컨텍스트 동봉 · 판정 = 오케.
 - **확정 기록** = `docs/decisions/NNN-*.md` — 수정 대신 새 번호(구본 superseded 표기) · 기록 6요소: 결정 1줄 · **결정의 범위(기각안 포함)** · 근거 상신 요지 · **승인 원문 무수정 인용**(해석은 별줄) · 승인 id · 일시 · 비확정 논의를 확정처럼 인용 금지 · 상신 시 결정 대기 항목마다 권장 1줄 병기.
 - **누락 방지 장치**: 신규 파일 = 생성 커밋에서 루트 `INDEX.md` 등재(미등록 0 = 검출기) · 문서별 frontmatter `size_limit` = 비대 검출기(초과 = 회전·다이어트) · PROGRESS done 10행 초과 = CHANGELOG 회전 · 재개점(checkpoint)은 백지 재작성(이력 축적 금지 — 이력은 CHANGELOG·회고 몫).
-- 🔴 **git 작업 구조(08-28 공유 index 사고 후 확정)**: 좌석별 worktree(`../fkt-{seat}` · `lane/{seat}` 브랜치)에서 작업·커밋 — 주 체크아웃 = 오케 전용. 통합 = 보고 후 오케가 develop merge. 전 좌석 `add -A`·`commit -a`·`--amend`·`reset`·force 금지, 경로 지정 add만.
+- 🔴 **git 작업 구조(08-28 공유 index 사고 후 · 운영자 확정 14:54 · 교육 표준 반영)**: 좌석별 worktree(`../fkt-{seat}` · `lane/{seat}` 브랜치)에서 작업·커밋 — 주 체크아웃 = 오케 전용. **통합 = lane push → PR(1티켓 1PR) → 오케 리뷰·서버 측 merge commit → 완료 PR의 worktree·브랜치 즉시 정리.** 🔴 develop 직접 push는 **전 좌석 소거**(오케 포함) — 로컬 develop = pull-only. non-ff 거부 = 「정본 경로 밖 커밋」 신호: force 금지 → 원격 실물 확인 → 뒤처짐이면 ff-pull · 고아 커밋이면 브랜치로 빼 PR. `add -A`·`commit -a`·`--amend`·`reset` 금지, 경로 지정 add만.
+- 🔴 **원장 귀속 표준**: 원장 행에 담당 slug + 근거(PR#·sha·보고 id) 병기 · 귀속 분쟁 정본 = 보고 원문 message id · 원장 정정은 owner 단독 write + **정정 사실 append**(조용한 덮어쓰기 금지 — 정정 정본 = git log).
+- 🔴 **신 팀 기동 전 점검 6축(08-28 사고 후 신설)**: ① git 격리(좌석별 worktree·주 체크아웃 오케 전용 — `git worktree list`+좌석 cwd 실측) ② 크리덴셜 계보(공유/독립 명시) ③ 수신 범위(좌석별 access) ④ 네임스페이스(기억·홈 격리) ⑤ SSOT writer 단일 지정 ⑥ 스폰 맵(모델·역할·cwd). 팀 확장·재기동 시 전 축 실측 후 기동.
 - lane(§33.2→3좌석 매핑 = CLAUDE.md §3): 오케 = contracts·docs·통합 / 구현 = apps·services·data·ontology / 검증 = benchmarks·tests·evidence.
 - 매일 통합 주기(§33.5) 최소 2회 · Golden Scenario 회귀 = 최우선 복구(§33.1) · Stop 조건(§33.6) 발생 = 신규 기능 중단→운영자 회귀.
 - 순차 의존성(§33.3): Ontology→DB→Graph · Contract→Backend→Frontend · Live Golden Scenario→Replay Fixture→Sandbox.
