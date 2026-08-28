@@ -46,8 +46,8 @@ size_limit: 10KB
 | Phase | 내용 | 순서 매핑 | 상태 |
 |---|---|---|---|
 | — | 부트스트랩: 리포·SSOT·팀·Public 개설·CI | 완결 | ✅ |
-| 0 | 제품·UX 방향 확정 | S1 | ⏳ 검증 관문(T0-9)만 잔여 |
-| 1 | SSOT·Ontology·Synthetic Data | S2~S3 | 대기 |
+| 0 | 제품·UX 방향 확정 | S1 | ✅ (T0-9 완결 · contracts/ontology 동결) |
+| 1 | SSOT·Ontology·Synthetic Data | S2~S3 | ⏳ 진행 중 — 원장 19/25 · S3(색인) 진입 |
 | 2 | Retrieval·Agent Backend | S3~S4 | 대기 |
 | 3 | Always-on Sandbox UX | S5~S6 | 대기 |
 | 4 | Live AI 연결(Tunnel·streaming·fallback) | S7 | 대기 |
