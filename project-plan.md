@@ -17,27 +17,25 @@ size_limit: 10KB
 - 이중 실행 구조: Vercel Always-on Sandbox(노트북 OFF에도 동작) + 노트북 Live AI(FastAPI·LangGraph·pgvector·Neo4j).
 - 구현 속도보다 **검증·재현·release closure**가 Critical Path. 멀티에이전트 3좌석 + 독립 검증 Gate.
 
-## 1. 일정 제약 (운영자 확정 2026-08-28)
+## 1. 기한 제약 (운영자 확정 2026-08-28)
 
-- 🔴 **배포 기한 = 작업 개시 후 «최대» 7일** — 7일은 상한이지 목표가 아니다(운영자 08-28: 「더 빠르게 완성해도 좋다」). 각 일차 Exit 조기 달성 시 다음 일차를 즉시 당겨 착수한다.
-- 🔴 **일차 라벨 = 순서·상한이지 대기 사유가 아니다**(운영자 확정 08-28 14:43: 「날짜에 맞춰 작업하라는 의미가 아니다」) — 진행 가능한 작업은 날짜와 무관하게 «지금» 계속 진행한다. 동결·검증·전환도 조건 충족 즉시 실행.
-- D0 = 2026-08-28(팀 기동·플랜 확정) · D1 = 08-29 ~ D7 = **09-04(배포 상한일)**.
-- baseline §33.4(14일표)는 원문 유지 — 운영 일정은 본 §2의 7일표가 기준(운영자 하명 근거). Feature Freeze = **D5 종료**(§33.1의 «Day 8» 대응 이동).
+- 🔴 **유일한 날짜 제약 = 배포 상한: 작업 개시(08-28) 후 «최대» 7일 = 09-04.** 상한이지 목표가 아니다(「더 빠르게 완성해도 좋다」).
+- 🔴 **일정을 날짜로 배정하지 않는다**(운영자 확정 08-28 15:19) — 작업은 §2의 «선행 조건 순서»로만 관리한다. 진행 가능한 작업은 «지금» 진행하고, 동결·검증·전환은 조건 충족 즉시 실행한다.
+- baseline §33.4(14일표)는 원문 유지 — 운영 순서는 본 §2가 기준(운영자 하명 근거). Feature Freeze = **S5 종료 시점**(§33.1의 «Day 8» 대응).
 - 범위 = **P0만**(§12.1). P1/P2는 P0 완료·독립 검증 후 운영자 승인(§12 원칙 유지).
 - 🔴 **품질 기준(운영자 확정 08-28 15:06)**: PoC는 «내용 범위가 작은 것»이지 품질이 낮은 게 아니다 — Python 백엔드는 비동기·분산처리 **전문가 수준 구조·확장성**, 실무 투입에 손색없게. 단 당장 수만~수십만 건 처리 규모는 아니므로 «구조의 확장 경계 보존»이 기준이지 조기 스케일링이 아니다. 구체 원칙 = system-architecture §7(Phase 2 AC 결속).
 
-## 2. 7일 일정표 (배포까지 · Exit Evidence = 발주 AC의 상위 기준)
+## 2. 작업 순서 (선행 조건 기반 — 날짜 배정 없음 · Exit 충족 «즉시» 다음 단계 · Exit Evidence = 발주 AC의 상위 기준)
 
-| 일차 | 중심 목표 (baseline 대응) | Exit Evidence |
-|---:|---|---|
-| D0 | 플랜 확정 · Phase 0 발주 — product-brief·ux-direction 착수 | 플랜 재가 · 발주문 발신 |
-| D1 | Phase 0 완결: UX 방향 3안→1안 승인 · wireframe · Golden Scenario storyboard · contracts v0.1·ontology v0.1 동결 (Day 1) | storyboard·schema 승인 · §26 문서 1~6 골격 |
-| D2 | skeleton: Next.js·FastAPI boot · DB schema · synthetic seed · test harness (Day 2) | 각 service boot + contract test PASS |
-| D3 | data→index: synthetic docs · ingestion · pgvector · Neo4j projection · 3-전략 retrieval (Day 3~4 압축) | seed→index 재생성 · 동일 질문 전략별 raw result |
-| D4 | LangGraph E2E backend 기준선 + WebSocket streaming (Day 5~6 전반) | Golden Scenario backend PASS · 실제 event streaming |
-| D5 | P0 핵심 UX: Overview·Incident·Evidence·Work Order·Approval → 🔴 **Feature Freeze** (Day 6~7 압축) | Golden Scenario UI E2E PASS |
-| D6 | Replay Sandbox · session 격리 · reset · Gate smoke(1~5 축소판) (Day 8~10 압축) | 노트북 OFF E2E PASS · smoke evaluation report |
-| D7 | 🔴 **배포**: Vercel·Tunnel·fallback · 보안 필수 게이트(§16.3) · 외부 네트워크 검증 (Day 11~12 압축) | **Public RC URL + 외부 접근 E2E PASS** |
+| # | 단계 | 선행 | Exit Evidence |
+|---|---|---|---|
+| S1 | Phase 0 마감: UX 승인·산출물 8종·독립 검증·contracts/ontology 동결 | — | T0-9 PASS · D-002 ✅ · 동결 선언 |
+| S2 | skeleton: Next.js·FastAPI boot · DB schema · synthetic seed · test harness | S1 동결 | 각 service boot + contract test PASS |
+| S3 | data→index: synthetic docs · ingestion · pgvector · Neo4j projection · 3-전략 retrieval | S2 | seed→index 재생성 · 동일 질문 전략별 raw result |
+| S4 | agent backend: LangGraph E2E 기준선 + WebSocket streaming | S3 | Golden Scenario backend PASS · 실제 event streaming |
+| S5 | P0 핵심 UX: Overview·Incident·Evidence·Work Order·Approval → 🔴 **Feature Freeze** | S2(셸 병행 가능) · S4(실데이터 연결) | Golden Scenario UI E2E PASS |
+| S6 | Replay Sandbox · session 격리 · reset · Gate smoke(1~5 축소판) | S5 | 노트북 OFF E2E PASS · smoke evaluation report |
+| S7 | 🔴 **배포**: Vercel·Tunnel·fallback · 보안 필수 게이트(§16.3) · 외부 네트워크 검증 | S6 | **Public RC URL + 외부 접근 E2E PASS** |
 
 ## 3. 배포 후 트랙 (시한 외 · 별도 재가)
 
@@ -45,14 +43,14 @@ size_limit: 10KB
 
 ## 4. Phase 상태 (baseline §21 — 상태만 추적)
 
-| Phase | 내용 | 일차 매핑 | 상태 |
+| Phase | 내용 | 순서 매핑 | 상태 |
 |---|---|---|---|
-| — | 부트스트랩: 리포·SSOT·팀·Public 개설·CI | D0 | ✅ |
-| 0 | 제품·UX 방향 확정 | D0~D1 | ⏳ 진행(발주 완료) |
-| 1 | SSOT·Ontology·Synthetic Data | D1~D3 | 대기 |
-| 2 | Retrieval·Agent Backend | D3~D4 | 대기 |
-| 3 | Always-on Sandbox UX | D5~D6 | 대기 |
-| 4 | Live AI 연결(Tunnel·streaming·fallback) | D7 | 대기 |
+| — | 부트스트랩: 리포·SSOT·팀·Public 개설·CI | 완결 | ✅ |
+| 0 | 제품·UX 방향 확정 | S1 | ⏳ 검증 관문(T0-9)만 잔여 |
+| 1 | SSOT·Ontology·Synthetic Data | S2~S3 | 대기 |
+| 2 | Retrieval·Agent Backend | S3~S4 | 대기 |
+| 3 | Always-on Sandbox UX | S5~S6 | 대기 |
+| 4 | Live AI 연결(Tunnel·streaming·fallback) | S7 | 대기 |
 | 5 | 평가·보안·운영(Gate 1~8 전건) | 배포 후 | 대기 |
 | 6 | 포트폴리오 패키징(영상·README·Release) | 배포 후 | 대기 |
 

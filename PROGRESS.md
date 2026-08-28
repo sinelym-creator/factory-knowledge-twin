@@ -14,7 +14,7 @@
 
 | Phase | 태스크 | 선결 |
 |---|---|---|
-| 1 | D2 티켓 등재(skeleton·seed·harness) | Phase 0 게이트 |
+| 1 | S2 티켓 등재(skeleton·seed·harness) | Phase 0 게이트(S1) |
 
 ## blocked (운영자)
 
