@@ -53,13 +53,13 @@ size_limit: 12KB
 | **3100** | free | ✅ Next.js dev |
 | 8000 | free | ✅ FastAPI |
 
-전부 `.env`로 덮어쓸 수 있다(`docker-compose.yml`의 `${VAR:-기본값}`).
+전부 `.env`(또는 셸 env)로 덮어쓸 수 있다 — `docker-compose.yml`은 `${VAR:-기본값}` 형태로 `COMPOSE_PROJECT_NAME` · `POSTGRES_PORT` · `NEO4J_HTTP_PORT` · `NEO4J_BOLT_PORT` · `VOLUME_ROOT` · DB 계정 3종을 전부 파라미터로 받는다(D-1 구조 격리 · §4.2).
 
 ## 3. 구성 파일
 
 | 파일 | 내용 |
 |---|---|
-| `docker-compose.yml` | postgres(+pgvector)·neo4j 2서비스 · healthcheck · 볼륨 = `./.volumes/**`(gitignore) |
+| `docker-compose.yml` | postgres(+pgvector)·neo4j 2서비스 · healthcheck · 볼륨 = `${VOLUME_ROOT:-./.volumes}/**`(gitignore) · 🔴 `container_name` 고정 없음(D-1) — 이름은 `name: ${COMPOSE_PROJECT_NAME:-fkt}`에서 파생 |
 | `infra/postgres/init/01-extensions.sql` | 최초 기동 시 `CREATE EXTENSION IF NOT EXISTS vector` 1회 |
 | `.env.example` | 🔴 **키 목록만 · 값 0** (baseline §34.6) — 키마다 1줄 설명 |
 | `.gitignore` | `.volumes/` · `.env` · `.venv/` · `__pycache__/` 추가 |
@@ -101,15 +101,42 @@ pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원을 바꿔 새�
 - **스펙 대조표**(T0-6 항목 ↔ DDL 위치 1:1) = `services/ai-api/db/README.md` — 검증 좌석은 이 표로 대조한다.
 - 🔴 임베딩 차원은 파라미터이며 기본 768은 **자리표시자**다. 모델 확정 시 신규 마이그레이션으로 교체한다(기존 칼럼은 `IF NOT EXISTS` 때문에 재적용으로 바뀌지 않는다).
 
+## 4.2 좌석별 병렬 스택 (D-1 구조 격리)
+
+`container_name`을 고정하지 않으므로 **프로젝트명·포트·볼륨 경로만 달리 주면 여러 좌석의 스택이 동시에** 뜬다. 검증 좌석이 구현 좌석의 스택을 끄지 않고 재현할 수 있다.
+
+```powershell
+$env:COMPOSE_PROJECT_NAME = 'fkt-levi2'      # 컨테이너 이름 접두 → fkt-levi2-postgres-1
+$env:POSTGRES_PORT        = '5534'
+$env:NEO4J_HTTP_PORT      = '7574'
+$env:NEO4J_BOLT_PORT      = '7587'
+$env:VOLUME_ROOT          = './.volumes-levi2'   # 🔴 같은 워크트리에서 띄울 때 «반드시» 분리
+docker compose up -d
+```
+
+🔴 **`VOLUME_ROOT`를 빠뜨리면 두 스택이 같은 bind mount를 물어 데이터가 손상된다.** 서로 다른 워크트리에서 띄우면 경로가 이미 달라 자동으로 분리된다.
+
+🔴 **컨테이너를 이름으로 지목하지 않는다** — 이름은 프로젝트명에 따라 바뀐다. 항상 **서비스명**으로 부른다:
+`docker compose exec postgres ...` / `docker compose exec neo4j ...` (`migrate.ps1`도 이 방식이다).
+
 ## 5. 부팅 실측 결과 (E1 · 전부 이 머신에서 실행한 출력)
 
-| 대상 | 명령 | 결과 |
-|---|---|---|
-| compose | `docker compose up -d` | `fkt-postgres` **Up (healthy)** · `fkt-neo4j` **Up (healthy)** |
-| pgvector | `psql -tAc "select extname\|\|' '\|\|extversion from pg_extension where extname='vector'"` | **`vector 0.8.2`** |
-| Neo4j | `cypher-shell 'RETURN 1 AS ok'` | **`ok / 1`** |
-| ai-api | `uvicorn app.main:app --port 8000` → `GET /health` | **HTTP 200** · `{"ok":true,"version":"0.0.1"}` · `GET /openapi.json` **200** |
-| web-console | `next dev --port 3100` → `GET /` | **HTTP 200** · 15,428 bytes · Ready 5.5s |
+> 🔴 **명령은 축약 없이 그대로 적는다**(D-2) — 재현자가 복사해 붙이면 같은 결과가 나와야 한다.
+> 전제: 리포 루트에서 실행 · `docker compose up -d` 완료 상태.
+
+| # | 대상 | 실행한 전체 명령 | 결과 |
+|---|---|---|---|
+| 1 | compose | `docker compose up -d` | `fkt-postgres-1` **Up (healthy)** · `fkt-neo4j-1` **Up (healthy)** |
+| 2 | 상태 확인 | `docker compose ps --format 'table {{.Name}}	{{.Service}}	{{.Status}}'` | 두 서비스 healthy |
+| 3 | pgvector | `docker compose exec -T postgres psql -U fkt -d fkt -tAc "select extname\|\|' '\|\|extversion from pg_extension where extname='vector'"` | **`vector 0.8.2`** |
+| 4 | Neo4j | `docker compose exec -T neo4j cypher-shell -u neo4j -p fkt_local_dev 'RETURN 1 AS ok'` | **`ok / 1`** |
+| 5 | 스키마 적용 | `pwsh services/ai-api/db/migrate.ps1` | exit 0 · `schema_migration` 1행 (**3회 연속 재실행 오류 0**) |
+| 6 | 테이블 수 | `docker compose exec -T postgres psql -U fkt -d fkt -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'"` | **26** |
+| 7 | ai-api | `cd services/ai-api; python -m venv .venv; .venv\Scripts\python.exe -m pip install -r requirements.txt; .venv\Scripts\python.exe -m uvicorn app.main:app --port 8000` → 다른 창에서 `Invoke-WebRequest http://localhost:8000/health -UseBasicParsing` | **HTTP 200** · `{"ok":true,"version":"0.0.1"}` · `/openapi.json` **200** |
+| 8 | web-console | `cd apps/web-console; pnpm install; node node_modules/next/dist/bin/next dev --port 3100` → `Invoke-WebRequest http://localhost:3100 -UseBasicParsing` | **HTTP 200** · 15,428 bytes · Ready 5.5s |
+| 9 | 병렬 격리(D-1) | 위 §4.2 env 5개 설정 후 `docker compose up -d` | `fkt-probe-postgres-1`(5534)·`fkt-probe-neo4j-1`(7574/7587)이 기본 스택과 **동시 기동** — 포트·이름 충돌 0 |
+
+🔴 **7번의 `pnpm dev`·`next dev`를 `Start-Process`로 띄울 때 주의**: `pnpm`은 `.cmd` 셸 스크립트라 `Start-Process -FilePath 'pnpm'`이 「올바른 Win32 응용 프로그램이 아닙니다」로 실패한다. `node node_modules/next/dist/bin/next` 를 직접 부르거나 `cmd /c` 를 거쳐야 한다.
 
 ## 6. 이 환경에서 걸린 함정 2건 (재현자에게 그대로 필요)
 
