@@ -39,8 +39,8 @@ models/
 .DS_Store
 Thumbs.db
 
-# T1-0 — 로컬 인프라 볼륨(리포 미포함)
-.volumes/
+# T1-0 — 로컬 인프라 볼륨(리포 미포함) · D-1 VOLUME_ROOT 파라미터화 대응(D-3): 변형 경로 전부 차단
+.volumes*/
 
 # T1-0 — python venv
 .venv/

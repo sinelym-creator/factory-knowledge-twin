@@ -271,3 +271,9 @@ Factory ─1:N─ ProductionLine ─1:N─ Equipment ─1:N─ Component
 | Q2 | chunk 크기 400~600 token 확정 | T0-8 평가 문항·retrieval 실측 후 `chunking_policy_version=1`로 동결 |
 | Q3 | `semantic_id` URI 스킴을 공개 도메인으로 바꿀지 | GitHub Public 개설 시 운영자 판단(현행 `urn:fkt:` 로컬 스킴 무해) |
 | Q4 | 보조 시나리오 2종(품질 불량·에너지)의 추가 entity 필요 여부 | P1 — 현 16종으로 커버 가능한지 Phase 2에서 재검토 |
+
+## 정오표 (v0.1 동결 본문 무수정 · append only)
+
+| # | 위치 | 정정 | 근거 |
+|---|---|---|---|
+| E-1 | R15 속성 `confidence` | 구현·계약 정본 = `confidence_note`(contracts v0.1 동결·DDL 일치). R15의 `confidence` 표기는 초기 명명 — 이후 문서·구현은 `confidence_note`를 따른다 | T1-1 스키마 검증(evidence/t1-1-schema-verification.md) · 2026-08-28 |
