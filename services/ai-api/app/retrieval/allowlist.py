@@ -81,3 +81,18 @@ _BY_NORMALIZED: dict[str, str] = {normalize(v): k for k, v in APPROVED_QUESTIONS
 def resolve(question: str) -> str | None:
     """승인 질문이면 그 문항 ID를, 아니면 None."""
     return _BY_NORMALIZED.get(normalize(question))
+
+
+def canonical(qid: str) -> str:
+    """그 문항의 «표준 표기» — 검색은 언제나 이것 하나로 돈다.
+
+    🔴 왜 필요한가(V-1 계보): `normalize()` 가 「백틱을 지운 평문은 같은 질문」이라고
+       승인하는데, 그 두 표기를 그대로 하류로 흘리면 **같다고 승인해 놓고 다르게 검색**한다.
+       앵커 추출은 경계 조건으로 맞출 수 있지만, vector 축은 질의 «문자열 자체»가 임베딩
+       입력이라 백틱 하나에도 순위가 흔들린다. 그래서 승인 시점에 표준 표기 하나로 모은다 —
+       마크업을 지운 정본이 그것이다.
+
+    🔴 이것은 «조용한 폴백»이 아니다. 목록 밖 질문은 여전히 400으로 거부되고(`resolve`
+       가 None), 여기서 바뀌는 것은 이미 「같은 질문」으로 판정된 것의 표기뿐이다.
+    """
+    return normalize(APPROVED_QUESTIONS[qid])

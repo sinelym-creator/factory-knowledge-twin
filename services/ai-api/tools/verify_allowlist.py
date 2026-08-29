@@ -1,4 +1,4 @@
-"""승인 질문 allowlist ↔ 정본 대조 (T2-1).
+"""승인 질문 allowlist 검사 — ① 정본 대조 ② 표기별 앵커 대조 (T2-1 · V-1 정정으로 축 추가).
 
     python -m tools.verify_allowlist        # 불일치 시 exit 1
 
@@ -21,7 +21,12 @@ REPO_ROOT = SERVICE_DIR.parents[1]
 SOURCE = REPO_ROOT / "benchmarks" / "datasets" / "eval-questions-draft.md"
 
 # 정본 §2 문항 상세의 「질문」 행. 바로 앞의 `### Q-…` 제목이 그 문항의 ID다.
-_HEADING = re.compile(r"^###\s+(Q-[A-Z]+-\d+)")
+#
+# 🔴 뒤 경계를 «ID를 이룰 수 있는 문자가 이어지지 않는다»로 잠근다(V-3 · V-1과 같은 병).
+#    없으면 정본이 `### Q-SAFETY-002x` 로 개정돼도 이 도구는 `Q-SAFETY-002` 로 읽어 «일치»를
+#    말한다 — **낡음을 잡는 도구가 낡음에 뚫려 있는** 꼴이다. 제목 뒤에는 `〔C-4로 재설계〕`
+#    같은 주석이 붙으므로 `$` 로 잠글 수는 없고, 문자집합 경계라야 한다.
+_HEADING = re.compile(r"^###\s+(Q-[A-Z]+-\d+)(?![0-9A-Za-z-])")
 _QUESTION = re.compile(r"^\|\s*\*\*질문\*\*\s*\|\s*(.+?)\s*\|\s*$")
 
 
@@ -46,6 +51,7 @@ def main() -> int:
             stream.reconfigure(encoding="utf-8", errors="replace")
 
     sys.path.insert(0, str(SERVICE_DIR))
+    from app.retrieval import anchors  # noqa: PLC0415
     from app.retrieval.allowlist import APPROVED_QUESTIONS, normalize  # noqa: PLC0415
 
     expected = source_questions()
@@ -67,11 +73,30 @@ def main() -> int:
     for qid in APPROVED_QUESTIONS.keys() - expected.keys():
         problems.append(f"  ✗ {qid} — allowlist 에 있으나 정본에 없다(삭제된 문항?)")
 
+    # --- 축 2: 표기가 달라도 같은 앵커가 나오는가 (V-1 재발 그물) ----------------------
+    #
+    # 🔴 왜 여기서 재는가: `normalize()` 가 「백틱·강조를 지운 평문은 같은 질문」이라고
+    #    승인한다. 승인해 놓고 그 표기로는 한 번도 재지 않으면, 「`EQ-CNC-204`의」가 조사
+    #    때문에 `EQ-CNC` 로 잘려도 아무도 모른다 — 잘린 ID는 실재하지 않아 조회가 0행이
+    #    되고 화면에는 「근거 없음」으로만 보인다(V-1 · 정정 전 실측 8/10 갈림).
+    #    잡은 자리를 그물로 남긴다: **승인한 모든 표기로 재는 것**이 그 그물이다.
+    print("\n표기 대조 (정본 표기 ↔ 평문 표기 · 앵커 추출)")
+    for qid, text in sorted(APPROVED_QUESTIONS.items()):
+        as_written = anchors.extract(text)
+        as_plain = anchors.extract(normalize(text))
+        if as_written == as_plain:
+            print(f"  ✓ {qid}  {as_written}")
+        else:
+            problems.append(
+                f"  ✗ {qid} — 표기에 따라 앵커가 갈린다\n"
+                f"      정본 표기: {as_written}\n      평문 표기: {as_plain}"
+            )
+
     if problems:
         print("\n" + "\n".join(problems))
-        print(f"\nFAIL: 불일치 {len(problems)}건 — allowlist 를 정본에 맞춰 고쳐라")
+        print(f"\nFAIL: 불일치 {len(problems)}건")
         return 1
-    print(f"\nPASS: {len(expected)}문 전건 일치")
+    print(f"\nPASS: {len(expected)}문 정본 일치 · 표기 대조 전건 일치")
     return 0
 
 
