@@ -42,7 +42,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
       </button>
 
       {asking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
           <div className="w-full max-w-sm rounded border border-edge bg-panel p-4" role="dialog" aria-modal>
             <p className="text-sm">이 세션을 처음 상태로 되돌릴까요?</p>
             <p className="mt-1 text-xs text-muted">

@@ -29,7 +29,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen">
         {/* 좌측 아이콘 레일 — 화면이 늘어나도 내비가 자리를 먹지 않는다(A안 §②) */}
         <nav
-          className="flex w-[--spacing-rail] shrink-0 flex-col items-center gap-1 border-r border-edge bg-panel py-3"
+          className="flex w-(--spacing-rail) shrink-0 flex-col items-center gap-1 border-r border-edge bg-panel py-3"
           aria-label="주요 화면"
         >
           <span className="mb-3 text-ai" aria-hidden>
@@ -50,7 +50,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header
-            className="flex h-[--spacing-appbar] shrink-0 items-center gap-4 border-b border-edge bg-panel px-4"
+            className="flex h-(--spacing-appbar) shrink-0 items-center gap-4 border-b border-edge bg-panel px-4"
             data-testid="app-bar"
           >
             <span className="text-sm font-semibold">Factory Knowledge Twin</span>
