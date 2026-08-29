@@ -232,6 +232,54 @@ def start_run() -> str:
     return run_id
 
 
+def settle(run_id: str) -> str:
+    """🔴 run 이 끝나기를 기다린다 — 실행 «중»의 타임라인은 당연히 안 닫혀 있다.
+
+    처음 이 드릴은 run 생성 직후 이벤트를 읽어 `S-05`(타임라인이 닫힌다)에 red 를 냈다.
+    대상의 결함이 아니라 **내가 너무 일찍 본 것**이었다. 빨강도 그 주어를 물어야 한다.
+    """
+    import time as _time
+
+    deadline = _time.time() + 180
+    status = "running"
+    while _time.time() < deadline:
+        code, snap = request("GET", f"/api/runs/{run_id}")
+        if code != 200 or not isinstance(snap, dict):
+            raise DrillError(f"/runs/{run_id} 가 {code} 를 냈다")
+        status = str(snap.get("status"))
+        if status != "running":
+            return status
+        _time.sleep(1)
+    raise DrillError("run 이 제한 시간 안에 끝나지 않았다 — 측정 불가")
+
+
+def ws_events(run_id: str, expect: int) -> list[dict] | None:
+    """WS 로 같은 run 을 받아 본다. 🔴 두 원천이 갈리면 «본 타임라인»과 «되감기»가 다른 조사가 된다.
+
+    라이브러리가 없거나 WS 가 열려 있지 않으면 None — 그때는 이 행을 «못 쟀다»로 적는다.
+    """
+    try:
+        import asyncio
+
+        import websockets
+    except Exception:                               # noqa: BLE001
+        return None
+
+    async def drain() -> list[dict]:
+        url = API_BASE.replace("http://", "ws://").replace("https://", "wss://")
+        out: list[dict] = []
+        async with websockets.connect(f"{url}/api/ws/runs/{run_id}", open_timeout=10) as socket:
+            while len(out) < expect:
+                raw = await asyncio.wait_for(socket.recv(), timeout=15)
+                out.append(json.loads(raw))
+        return out
+
+    try:
+        return asyncio.run(drain())
+    except Exception:                               # noqa: BLE001 - 못 받은 것은 결과가 아니다
+        return None
+
+
 def fetch_events(run_id: str) -> list[dict]:
     status, body = request("GET", f"/api/runs/{run_id}/events")
     if status == 501:
@@ -287,6 +335,14 @@ def judge(validator: Validator, events: list[dict]) -> int:
     framed = bool(opened and closed)
     bad += 0 if framed else 1
     print(f"  {'PASS' if framed else 'FAIL'}  S-05 타임라인이 열리고 닫힌다 — 처음 {types[0]} · 끝 {types[-1]}")
+
+    streamed = ws_events(str(events[0].get("runId")), len(events))
+    if streamed is None:
+        print("  ----  S-06 WS 스트림 ≡ /events — 🔴 못 쟀다(WS 를 받지 못했다). 초록으로 세지 않는다")
+    else:
+        same = [(e.get("seq"), e.get("type")) for e in streamed] == [(e.get("seq"), e.get("type")) for e in events]
+        bad += 0 if same else 1
+        print(f"  {'PASS' if same else 'FAIL'}  S-06 WS 스트림 ≡ /events — WS {len(streamed)}건 · REST {len(events)}건")
     return bad
 
 
@@ -308,7 +364,8 @@ def main() -> int:
         return 0
 
     run_id = start_run()
-    print(f"\n  run     {run_id}")
+    status = settle(run_id)
+    print(f"\n  run     {run_id} · status={status}")
     bad = judge(validator, fetch_events(run_id))
     print(f"\n결과: 어긋남 {bad}건")
     return 1 if bad else 0
