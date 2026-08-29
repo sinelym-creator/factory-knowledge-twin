@@ -20,7 +20,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from ..errors import DependencyUnavailable
+from ..errors import DEPENDENCY_ERRORS, DependencyUnavailable
 from ..probes import Resources
 from ..schemas import CompareRequest, CompareResult
 from . import allowlist, graphrag, hybrid, vector
@@ -33,21 +33,10 @@ log = logging.getLogger("fkt.retrieval")
 _SESSION_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 
 # 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
-#    드라이버가 던지는 것을 여기서 붙잡지 않으면 전역 500(`internal_error`)이 되어, 화면은
-#    잠시 후 다시 시도하면 될 일을 «서비스 결함»으로 읽는다.
-_DEPENDENCY_ERRORS: tuple[type[BaseException], ...] = (OSError, ConnectionError)
-try:                                                  # pragma: no cover - 설치 환경에 따라 다름
-    import asyncpg
-
-    _DEPENDENCY_ERRORS += (asyncpg.PostgresError,)
-except Exception:                                     # noqa: BLE001
-    pass
-try:                                                  # pragma: no cover
-    from neo4j.exceptions import DriverError, Neo4jError
-
-    _DEPENDENCY_ERRORS += (DriverError, Neo4jError)
-except Exception:                                     # noqa: BLE001
-    pass
+#    목록의 정의는 `app/errors.py` 한 곳이다 — 전에는 이 파일이 자기 목록을 갖고 있었고,
+#    나중에 열린 읽기 라우트에는 같은 변환이 없어 같은 단절이 500 으로 나갔다(V-7).
+#    여기서는 이름만 빌려 온다: 목록이 자라면 세 라우트가 함께 자란다.
+_DEPENDENCY_ERRORS = DEPENDENCY_ERRORS
 
 
 def _dependency_of(strategy: str) -> str:

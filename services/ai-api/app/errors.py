@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -56,6 +58,61 @@ class DependencyUnavailable(StarletteHTTPException):
         )
 
 
+# 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
+#    이 목록과 아래 `dependency_guard` 가 **그 변환의 유일한 정의**다(V-7 정정 · 「1곳 수렴」).
+#    전에는 compare 만 자기 안에 이 목록을 갖고 있었고, 나중에 열린 읽기 라우트에는 그 자리가
+#    없어 같은 단절이 500(`internal_error`)으로 나갔다 — 한 사건에 두 판정이 나온 것이다.
+#    새 라우트가 열릴 때 «변환을 잊는» 것이 결함의 형태였으므로, 잊을 수 있는 자리를 없앤다.
+DEPENDENCY_ERRORS: tuple[type[BaseException], ...] = (OSError, ConnectionError)
+try:                                                  # pragma: no cover - 설치 환경에 따라 다름
+    import asyncpg
+
+    DEPENDENCY_ERRORS += (asyncpg.PostgresError,)
+except Exception:                                     # noqa: BLE001
+    pass
+try:                                                  # pragma: no cover
+    from neo4j.exceptions import DriverError, Neo4jError
+
+    DEPENDENCY_ERRORS += (DriverError, Neo4jError)
+except Exception:                                     # noqa: BLE001
+    pass
+
+
+@asynccontextmanager
+async def dependency_guard(which: str) -> AsyncIterator[None]:
+    """블록 안에서 난 «의존 단절»을 503 `dependency_unavailable` 로 바꾼다.
+
+    🔴 예외 «내용»은 로그에만 남긴다. 드라이버 메시지에는 호스트·포트·계정이 섞여 나올 수
+       있고 이 서비스는 인증 없는 공개 Sandbox 다(`DependencyUnavailable` 성문과 같은 이유).
+
+    🔴 여기서 잡는 것은 **의존 예외뿐**이다. 그 밖의 예외는 그대로 위로 흘려 전역 500 이
+       되게 둔다 — 우리 코드의 결함을 「잠시 후 다시 시도하라」로 접으면 그 결함은 영영
+       발견되지 않는다.
+    """
+    try:
+        yield
+    except DEPENDENCY_ERRORS as exc:
+        log.warning("%s 단절 — %s", which, exc.__class__.__name__)
+        raise DependencyUnavailable(which) from exc
+
+
+class CitationIntegrityBroken(RuntimeError):
+    """인용 좌표를 원문에서 되찾지 못했다 — 색인↔원문 정합이 깨졌다.
+
+    🔴 **호출자 잘못이 아니다**(오케 판정 08-30). 요청 좌표는 옳고, chunk 텍스트가 그
+       revision 의 body 안에 없다는 뜻이다. 400 으로 접으면 서버의 정합 문제를 호출자 탓으로
+       돌리게 되고, 200 + 무강조로 접으면 「사유 없는 200」 — 조용한 null 의 상위형이 된다.
+
+    🔴 이 벽이 필요한 이유는 **배지가 이 파열을 못 보기 때문이다**(검증 실측 I-05): 신선도는
+       `source_sha256 ↔ content_sha256` 축만 보므로 chunk 수준 drift 에는 `FRESH` 라고
+       답한다. 배지가 조용한 자리에서는 응답 자체가 말해야 한다.
+
+    🔴 이 예외는 **어느 라우트에서 나오든** 아래 `install_error_handlers` 가 같은 코드로
+       바꾼다. 라우트마다 잡기로 하면 새 인용 소비처가 생길 때 «잡기를 잊는» 자리가 다시
+       생긴다 — V-7 이 바로 그 형태의 결함이었다(잊을 자리를 없앤다).
+    """
+
+
 class NotImplementedRoute(StarletteHTTPException):
     """계약에 있으나 아직 구현이 없는 라우트."""
 
@@ -86,6 +143,26 @@ def install_error_handlers(app: FastAPI) -> None:
             status_code=exc.status_code,
             content=ErrorResponse(error=body).model_dump(),
             headers=getattr(exc, "headers", None),
+        )
+
+    @app.exception_handler(CitationIntegrityBroken)
+    async def _citation_integrity(_: Request, exc: CitationIntegrityBroken) -> JSONResponse:
+        """인용 정합 파열 — 계약 오류 형상 그대로 5xx + 구분 코드(오케 판정 08-30).
+
+        🔴 상세(어느 revision·어느 chunk)는 **로그에만**. 인증 없는 공개 Sandbox 라 응답에
+           내부 식별자를 실으면 그대로 밖으로 나간다(§34.6 · V-2 규율).
+        🔴 `internal_error` 와 코드를 나누는 이유: 화면·모니터가 「우리 코드가 터졌다」와
+           「인용 자산이 어긋났다」를 다르게 다뤄야 한다. 후자는 재색인이 처방이다.
+        """
+        log.error("인용 정합 파열 — 강조 좌표를 되찾지 못했다: %s", exc)
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(
+                error=ErrorBody(
+                    code="citation_integrity_broken",
+                    message="인용 좌표를 원문에서 되찾지 못했다 — 색인과 원문이 어긋나 있다",
+                )
+            ).model_dump(),
         )
 
     @app.exception_handler(Exception)

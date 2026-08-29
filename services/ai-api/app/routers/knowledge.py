@@ -1,4 +1,15 @@
-"""계약 v0.1 §근거·그래프(Evidence) · §검색 전략 비교."""
+"""계약 v0.1 §근거·그래프(Evidence) · §검색 전략 비교.
+
+🔴 **의존 단절은 세 라우트가 «한 코드»로 말한다**(V-7 정정). 변환의 정의는 `app/errors.py`
+   의 `dependency_guard` 한 곳이고, 여기서는 그것을 두르기만 한다 — compare 만 자기 안에
+   변환을 갖고 있던 탓에 뒤늦게 열린 읽기 라우트가 같은 단절을 500 으로 말했다.
+   한 사건에 두 판정이 나오면 하나는 반드시 거짓이다.
+
+🔴 **인용 정합 파열도 여기서 잡지 않는다** — `CitationIntegrityBroken` 은 앱 전역 핸들러가
+   받아 `/evidence` 와 `/documents` 에 «같은» (status, code) 를 준다(V-6 ③ 확장 정정).
+   라우트마다 잡기로 하면 새 인용 소비처가 생길 때 잡기를 잊는 자리가 다시 생긴다 —
+   V-7 이 정확히 그 형태였다.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +17,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute
+from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
 from ..reading import documents as document_reader
 from ..reading import evidence as evidence_reader
 from ..retrieval.service import compare
@@ -43,7 +54,8 @@ async def evidence(evidenceId: str, request: Request) -> EvidenceResponse:
     evidenceId 를 만들지 않는다).
     """
     pool = _pool(request)
-    found = await evidence_reader.fetch(pool, evidenceId)
+    async with dependency_guard("postgres"):
+        found = await evidence_reader.fetch(pool, evidenceId)
     if found is None:
         raise _not_found("evidence", evidenceId)
     return found
@@ -74,13 +86,25 @@ async def document_preview(
     """
     pool = _pool(request)
     try:
-        found = await document_reader.fetch(pool, docId, highlight)
+        async with dependency_guard("postgres"):
+            found = await document_reader.fetch(pool, docId, highlight)
     except document_reader.HighlightMismatch as exc:
         raise HTTPException(
             status_code=400,
             detail={
                 "code": "highlight_mismatch",
                 "message": f"highlight={highlight} 는 문서 {docId} 의 chunk 가 아니다",
+            },
+        ) from exc
+    except document_reader.HighlightNotFound as exc:
+        # 🔴 `highlight_mismatch` 와 **다른 코드**다. 「이 문서의 것이 아니다」와 「이 문서의
+        #    것이지만 그 좌표가 없다」는 화면이 다르게 말해야 하는 다른 사건이고, 무엇보다
+        #    기존 코드를 넓히면 형식 위반·타 문서 케이스의 판정이 함께 흐려진다.
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "highlight_not_found",
+                "message": f"highlight={highlight} 의 chunk 가 실재하지 않는다 — {exc.detail}",
             },
         ) from exc
     if found is None:
