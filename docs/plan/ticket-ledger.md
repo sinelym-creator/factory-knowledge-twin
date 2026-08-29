@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 25 / 총 25 — 🔴 **Phase 1 완결 08-29 19:05** · 분모 이력: 24→25 T1-10 등재 · 15→24 Phase 1 분해)
+## 원장 (진행률 = ✅ 25 / 총 31 — 🔴 **Phase 2 진입 재가 08-30 00:04**(폐하 직보 `1543275173661245560`) · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 25→31 T2-1~T2-6 등재(진입 게이트 선행 선언 08-30) · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
 
 ### 부트스트랩 (완결)
 
@@ -65,16 +65,16 @@ size_limit: 8KB
 | T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | ✅ PASS(구현 PR#81 · 검증 PR#90 결함 2+검사기 1 적발 · 정정 PR#93 · 재검 PR#95 — 🔴 판정문 「그물 4행 빨강 전환 확인 후 해소 계수 · svg 5건 기준선 회귀 0 · PASS의 뜻 = 37행+17주입+22스캔+22드릴 범위에서 0건」 · P-04 «둘 다 참, 다른 표본» 처방 착지 — 관측 출처 표기 정정: senku2 측정 DB = fkt-senku2-q3의 fkt) |
 | T1-10 | harness 커버리지 상시 경고(미실행 스키마 속성 검출) | 검증 | 계약 필드 추가 시 구멍 재발 방지 — 러너 경고+옵션 실패 | ✅ PASS(오케 판정 — 로컬 strict 37/37 exit 0 · levi2 · PR#25) |
 
-### Phase 2 분해안 (준비 완료 · 🔴 분모 «밖» — Phase 2 진입 게이트 때 「분모 25→31」 선행 선언과 함께 등재 · baseline §21 Phase 2 정본 대조 08-29)
+### Phase 2 — Retrieval·Agent Backend (S4~ · 🔴 진입 재가 08-30 00:04 — 「분모 25→31」 선언과 함께 등재 · 분해안 = baseline §21 정본 대조 08-29 그대로)
 
-| 예정 ID | 티켓 | 담당 | 요지 (AC는 발주 시 티켓으로) | 의존 |
-|---|---|---|---|---|
-| T2-1 | retrieval 3전략 API(vector·hybrid·graphrag) — `/retrieval/compare` 501 해제 계열 | 구현 | pgvector 검색 경로 + 구조화 결합 + Neo4j traversal · 동일 질문 3전략 실행이 완료 증거 | T1-4 ✅ · graph 축은 T1-5 |
-| T2-2 | 문서·evidence 읽기 API — `/documents`(highlight)·`/evidence` 501 해제 + STALE 배지 데이터(`v_index_freshness`) | 구현 | 인용 강조 offset · revision/hash 표면 — evidence ID ↔ source 문장 일치가 완료 증거 | T1-4 ✅ |
-| T2-3 | LangGraph 조사 워크플로우 — plan 5단계(structured→vector→graph→synthesize→draft_work_order) · GS-01 대본 결속 | 구현 | step 이벤트 산출(agent-events 스키마) · 🔴 Claude 구독 공개 API 노출 금지(§15.2) — Live 게이트웨이 전 로컬 실행 경계 | T2-1 · T1-5 |
-| T2-4 | structured audit event + replay fixture 녹화(seq 기준) | 구현 | 조사 실행 스트림 기록 — Phase 3 replay engine·Phase 4 fallback의 원천 | T2-3 |
-| T2-5 | WO 초안 생성·승인 API — CRUD·approve/reject·🔴 안전 조치 서버측 삭제 불가(R12 REQUIRES 강제) + 승인 이력 테이블·`approval_state` 전이 규칙 확정(Q-11 결속 — 스펙 §4 「승인 이력」 실체화) | 구현 | 화면 ④의 「지울 수 없는 항목」을 UI가 아니라 서버가 강제 | CRUD 선행 가능 · 초안 생성은 T2-3 |
-| T2-6 | Phase 2 독립 검증 — GS integration · 3전략 동일 질문 실측 · evidence↔원문 일치 · 계약 준수 | 검증 | baseline §21 Phase 2 완료 증거 4종 전건 + Gate 결속 | T2-1~T2-5 |
+| ID | 티켓 | 담당 | 요지 (AC 전문 = 티켓 파일) | 의존 | 상태 |
+|---|---|---|---|---|---|
+| T2-1 | retrieval 3전략 API(vector·hybrid·graphrag) — `/retrieval/compare` 501 해제 계열 | 구현 | pgvector 검색 경로 + 구조화 결합 + Neo4j traversal · 동일 질문 3전략 실행이 완료 증거 | T1-4 ✅ · graph 축은 T1-5 ✅ | 🔶 발주 08-30(센쿠2 9대 · `tickets/T2-1.md`) |
+| T2-2 | 문서·evidence 읽기 API — `/documents`(highlight)·`/evidence` 501 해제 + STALE 배지 데이터(`v_index_freshness`) | 구현 | 인용 강조 offset · revision/hash 표면 — evidence ID ↔ source 문장 일치가 완료 증거 | T1-4 ✅ | 등재(미발주) |
+| T2-3 | LangGraph 조사 워크플로우 — plan 5단계(structured→vector→graph→synthesize→draft_work_order) · GS-01 대본 결속 | 구현 | step 이벤트 산출(agent-events 스키마) · 🔴 Claude 구독 공개 API 노출 금지(§15.2) — Live 게이트웨이 전 로컬 실행 경계 | T2-1 · T1-5 ✅ | 등재(미발주 · Q-9 재바인딩 결속) |
+| T2-4 | structured audit event + replay fixture 녹화(seq 기준) | 구현 | 조사 실행 스트림 기록 — Phase 3 replay engine·Phase 4 fallback의 원천 | T2-3 | 등재(미발주) |
+| T2-5 | WO 초안 생성·승인 API — CRUD·approve/reject·🔴 안전 조치 서버측 삭제 불가(R12 REQUIRES 강제) + 승인 이력 테이블·`approval_state` 전이 규칙 확정(Q-11 결속 — 스펙 §4 「승인 이력」 실체화) | 구현 | 화면 ④의 「지울 수 없는 항목」을 UI가 아니라 서버가 강제 | CRUD 선행 가능 · 초안 생성은 T2-3 | 등재(미발주) |
+| T2-6 | Phase 2 독립 검증 — GS integration · 3전략 동일 질문 실측 · evidence↔원문 일치 · 계약 준수 | 검증 | baseline §21 Phase 2 완료 증거 4종 전건 + Gate 결속 | T2-1~T2-5 | 등재(미발주 · 검증 준비 소조각은 발주문로 선행) |
 
 ### 구현 대기열 (소조각 · 미발주 — 원장 분모 밖 · 발주 시 티켓 생성, 티켓化 안 되면 발주문 소조각)
 
