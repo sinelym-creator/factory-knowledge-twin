@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     pg_pool_min: int = 1
     pg_pool_max: int = 4
 
+    # replay fixture 디렉터리(T2-4). 미설정이면 리포 상대 `data/replay` 다 —
+    # 🔴 코드 기본값에 이 머신의 절대경로를 박지 않는다(커밋되면 그 자체가 공개 경계 위반).
+    #    바꿀 수 있게 두는 이유는 「fixture 부재」 상태를 시험에서 실제로 만들기 위함이다.
+    replay_fixture_dir: str | None = None
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

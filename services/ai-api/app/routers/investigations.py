@@ -8,13 +8,19 @@ T2-3 에서 runs 표면 5건이 열렸다(오케 판정 J-1): 생성 · 스냅�
    (오케 판정 J-1 (b)). 두 곳이 같은 낱말을 쓰는 것은 계약 문구의 충돌이며 v0.2 재론 대상으로
    회부했다 — 구현이 임의로 뜻을 바꾸지 않는다.
 
-🔴 `mode="replay"` 요청은 **아직 501 이다**. 되감을 fixture 가 없는데 replay 라고 답하면
-   그것은 「없는 것을 있다고 말하는」 것이다. fixture 축은 T2-4 다.
+🔴 `mode="replay"` 요청은 **커밋된 fixture 를 재생한다**(T2-4). 재생본은 «새 조사가 아니다» —
+   envelope `mode:"replay"` 로 자신을 밝히고, `ts` 는 녹화 시각 그대로다. 재생할 녹화본이
+   없는 시나리오는 여전히 **501 이다**(사유 코드 `replay_fixture_missing`): 없는 것을 있다고
+   말하느니 「없다」고 답한다.
+
+🔴 **재생은 DB·그래프에 닿지 않는다.** 그것이 fixture 축의 값어치다 — 의존이 죽어도 이 경로는
+   돈다(Phase 4 fallback 의 원천). 그래서 replay 분기는 의존 확인보다 «앞»에 있다.
 """
 
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
@@ -22,10 +28,13 @@ from pydantic import BaseModel
 
 from .. import session_id
 from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
-from ..investigation import binding, runner
+from ..investigation import binding, replay, runner
 from ..investigation.store import RunRecord, RunStore
 from ..reading import scenarios as scenario_reader
 from ..schemas import AgentEvent, RunCreated, RunStopped, ScenarioSummary
+from ..settings import get_settings
+
+log = logging.getLogger("fkt.routers.investigation")
 
 router = APIRouter(tags=["investigation"])
 
@@ -84,9 +93,28 @@ async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunC
         raise _error(404, "not_found", f"승인된 시나리오가 아니다: {scenarioId}")
 
     if body.mode == "replay":
-        raise NotImplementedRoute(
-            "POST /scenarios/{scenarioId}/runs (mode=replay)", "replay fixture 축(T2-4)"
+        try:
+            events = replay.load(get_settings().replay_fixture_dir, scenarioId)
+        except replay.FixtureMissing as exc:
+            # 🔴 501 을 유지한다 — 「구현이 있으나 이 시나리오의 녹화본이 없다」도 결국
+            #    «답할 수 없다»이고, 사유 코드로 그 차이를 말한다(오케 판정 J-F).
+            log.info("replay fixture 부재 — %s", exc)
+            raise _error(
+                501,
+                "replay_fixture_missing",
+                f"{scenarioId} 의 replay fixture 가 없다 — 재생할 녹화본이 존재하지 않는다",
+            ) from exc
+        except replay.FixtureBroken as exc:
+            # 🔴 호출자 잘못이 아니다(서버 자산의 문제) — 그래서 5xx 이고, 상세는 로그에만
+            #    남긴다. 파일명·경로가 응답에 실리면 인증 없는 공개 Sandbox 밖으로 나간다.
+            log.error("replay fixture 형상이 깨졌다: %s", exc)
+            raise _error(
+                500, "replay_fixture_broken", "replay fixture 를 읽을 수 없다"
+            ) from exc
+        record = replay.start(
+            _store(request), session_id=body.sessionId, anchor=anchor, events=events
         )
+        return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
     resources = _resources(request)
     if resources.pg_pool is None:
