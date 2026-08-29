@@ -105,25 +105,21 @@ test.describe("세션 가드", () => {
   });
 
   /* ────────────────────────────────────────────────────────────────────────────
-   * 🔴 결함 V-1 — 가드 matcher 의 `.*\.svg` 제외 규칙이 «라우트»까지 비껴간다.
+   * V-1 회귀 그물 — 「.svg 로 끝나는 id 는 가드를 비껴간다」가 다시 살아나지 않게.
    *
-   * proxy.ts config.matcher = "/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg).*)"
-   * 마지막 절이 «경로 어디에든» .svg 로 끝나면 제외한다. 정적 자산을 빼려던 규칙인데,
-   * 동적 세그먼트(`[incidentId]` 등)는 .svg 로 끝나는 id 를 그대로 받는다 → 가드가 돌지 않는다.
+   * 있었던 일(develop 8bca478): matcher 마지막 절이 `.*\.svg` 였다. 「.svg 면 정적 자산」이라는
+   * 뜻으로 적혔지만 그 부정 전방탐색은 «경로 어디서든» 걸린다 — 동적 세그먼트가 .svg 로 끝나는
+   * id 를 그대로 받으므로 세 라우트가 세션 없이 200 으로 열렸다.
+   * 고쳐진 것(e3ca284): `[^/]+\.svg$` — «최상위 세그먼트 하나»로 한정.
    *
-   * 실측(대조군 포함): /incidents/x.svg → 200 · /incidents/x.png → 307 · /incidents/xsvg → 307
-   *   확장자 한 글자 차이로 갈린다 = 원인이 이 절 하나임이 분리된다.
-   * 사정거리: 동적 라우트 3종(incidents·evidence·work-orders). /compare·/overview 는 404 로 막힌다.
-   *
-   * 🔴 test.fail() 로 둔 이유: 지금 «틀렸다»를 초록으로 덮지 않으면서, 고쳐지는 순간
-   *    「예상된 실패인데 통과했다」로 이 스펙이 빨강이 되게 하려는 것이다. 처방이 착지하면
-   *    이 행이 울어서 알린다 — 조용히 통과하고 표시가 사라지는 그물은 전환을 못 가르친다.
+   * 🔴 이 세 행은 처방 착지 때 실제로 «빨강»을 냈다(test.fail 로 걸어 두었고, 「예상된 실패인데
+   *    통과했다」로 4행이 울었다). 전환을 눈으로 본 뒤에 표시를 걷고 평범한 초록으로 바꿨다 —
+   *    조용히 초록이 된 그물은 무엇이 바뀌었는지 아무것도 가르치지 못한다.
    * ──────────────────────────────────────────────────────────────────────────── */
   for (const bypass of ["/incidents/x.svg", "/evidence/x.svg", "/work-orders/x.svg"]) {
-    test(`🔴 V-1 ${bypass} — 세션 없이 열린다(§6 「모든 라우트」 위반)`, async ({ page }) => {
-      test.fail(true, "가드 matcher 의 .svg 제외 규칙이 동적 라우트까지 비껴간다 — 처방 착지 시 이 행이 빨강으로 알린다");
+    test(`V-1 회귀 ${bypass} — .svg id 도 가드를 «지난다»(§6 「모든 라우트」)`, async ({ page }) => {
       await page.goto(bypass);
-      await expect(page).toHaveURL(/\/overview$/); // 정본이 요구하는 결과
+      await expect(page).toHaveURL(/\/overview$/);
       await expect(page.getByTestId("session-chip")).toBeVisible();
     });
   }
@@ -132,6 +128,25 @@ test.describe("세션 가드", () => {
     await page.goto("/incidents/x.png");
     await expect(page).toHaveURL(/\/overview$/);
     await expect(page.getByTestId("session-chip")).toBeVisible();
+  });
+
+  test("🔴 V-1 처방의 «회귀 위험» — 최상위 정적 svg 는 가드에 걸리지 않는다", async ({ request }) => {
+    // 🔴 이게 처방의 유일한 회귀 위험이었다. matcher 를 좁히다 정적 자산까지 끌어들이면
+    //    public/ 의 파일이 307 로 튄다 — 처방 «전» 기준선(5건 200 image/svg+xml)을 잡아 둔 이유다.
+    for (const f of ["/file.svg", "/globe.svg", "/next.svg", "/vercel.svg", "/window.svg"]) {
+      const res = await request.get(f, { maxRedirects: 0 });
+      expect(res.status(), `${f} 상태`).toBe(200);
+      expect(res.headers()["content-type"], `${f} 타입`).toContain("image/svg+xml");
+    }
+  });
+
+  test("🔵 V-1 처방이 «기대는 전제» — 중첩 자산은 가드에 걸린다(성문된 한계 · 실패 방향 확인)", async ({ page }) => {
+    // 처방은 public/ 이 «평면»이라는 전제 위에 선다(현 public/ = svg 5개 · 전부 최상위).
+    // 🔴 전제가 깨지면 자산이 «눈에 보이게» 깨지지, 가드에 «조용히» 구멍이 나지 않는다.
+    //    잊었을 때의 실패 방향을 그렇게 둔 것이 처방의 값이라, 그 방향을 여기서 못박는다.
+    //    public/img/logo.svg 같은 자산을 두게 되면 이 행이 먼저 운다.
+    await page.goto("/img/logo.svg");
+    await expect(page).toHaveURL(/\/overview$/);
   });
 });
 

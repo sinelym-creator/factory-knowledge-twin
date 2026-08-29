@@ -41,6 +41,25 @@ test.describe("세션 리셋", () => {
     expect(calls, "모달 단계에서 이미 요청이 나갔다 = 확인이 확인이 아니다").toEqual([]);
   });
 
+  test("R-3 회귀 — 모달 스크림이 토큰 계층을 «지난다»(하드코딩 색값 아님)", async ({ page }) => {
+    // 있었던 일: 스크림만 `bg-black/60` 으로 토큰 계층 «밖»에 있었다. AC 「하드코딩 최소」는
+    // 만족했지만, UX 폴리시 패스가 @theme 만 훑으면 이 한 곳이 빠진다.
+    // 고쳐진 것: --color-scrim 토큰 + `bg-scrim`.
+    // 🔴 값을 고정하지 않는다 — 색은 D-002 유보분이다. 재는 것은 「토큰을 지나는가」뿐이다.
+    await enter(page);
+    await page.getByTestId("reset-button").click();
+    const scrim = page.locator(".fixed.inset-0").first();
+    await expect(scrim).toBeVisible();
+    const [bg, token] = await scrim.evaluate((e) => [
+      getComputedStyle(e).backgroundColor,
+      getComputedStyle(document.documentElement).getPropertyValue("--color-scrim").trim(),
+    ]);
+    expect(token, "--color-scrim 토큰이 브라우저에 없다").not.toBe("");
+    // 적용된 배경이 «투명하지 않다» = 선언이 유효했다(V-2 처럼 무효 선언이면 버려진다)
+    expect(bg).not.toBe("rgba(0, 0, 0, 0)");
+    expect(bg).toMatch(/^rgba?\(/);
+  });
+
   test("취소 → 모달만 닫히고 아무 일도 없다", async ({ page }) => {
     await enter(page);
     const calls: string[] = [];

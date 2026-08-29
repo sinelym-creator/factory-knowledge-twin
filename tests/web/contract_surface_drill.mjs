@@ -55,6 +55,22 @@ const prepend = (rel, text) => (dir) => {
   writeFileSync(p, text + "\n" + readFileSync(p, "utf8"));
 };
 
+/**
+ * 🔴 치환이 «안 맞으면 던진다».
+ *
+ *    D-14~16을 처음 쓸 때 앵커 한 줄이 정정 이전 코드였다 — 치환은 조용히 아무것도 안 하고,
+ *    검사기는 멀쩡히 돌아 PASS를 냈다. 그 PASS는 「불변식이 안 잡는다」가 아니라
+ *    「내가 아무것도 주입하지 않았다」였다. 주입이 틀리면 그 축은 «검사가 없는 것»과 같다(5대).
+ *    그래서 대상 문자열이 없으면 결과가 아니라 «고장»으로 죽는다.
+ */
+const mutate = (rel, from, to) => (dir) => {
+  const p = join(dir, rel);
+  const before = readFileSync(p, "utf8");
+  const after = before.replace(from, to);
+  if (after === before) throw new Error(`🔴 주입 불가: ${rel} 에서 앵커를 못 찾았다 → ${String(from).slice(0, 60)}`);
+  writeFileSync(p, after);
+};
+
 // expect = 「검사기가 마땅히 내야 할 판정」. 내 기대이지 구현의 약속이 아니다 —
 // 갈리면 그 자리에서 «어느 쪽이 옳은가»를 따로 논한다.
 const CASES = [
@@ -96,8 +112,7 @@ const CASES = [
 
   { id: "D-12", expect: "FAIL", why: "허용 목록 자체를 넓힘 — 검사기를 «고쳐서» 초록을 만드는 경로가 열려 있는가",
     apply: (dir) => {
-      const p = join(dir, "scripts", "contract-surface.mjs");
-      writeFileSync(p, readFileSync(p, "utf8").replace("const ALLOWED = [", "const ALLOWED = [\n  /^\/api\/.*$/,"));
+      mutate("scripts/contract-surface.mjs", "const ALLOWED = [", "const ALLOWED = [\n  /^\/api\/.*$/,")(dir);
       append("components/placeholder.tsx", 'const DRILL_PATH = "/api/agents/run";')(dir);
     } },
 
@@ -111,6 +126,33 @@ const CASES = [
       }
       prepend("proxy.ts", 'export const drill = () => fetch("/api/live/status");')(dir);
     } },
+
+  /* ── 정정(e3ca284) 이후 추가 — 🔴 «신설된 불변식 자체 검사»를 대조군에 넣는다.
+   *    남이 새로 만든 도구도 도구다. 「고쳤다」는 보고는 그 검사가 우는 것을 본 뒤에 계수한다. ── */
+  { id: "D-14", expect: "FAIL", why: "🔴 FETCH 에 /g 를 «되돌린다» — 신설 불변식 검사가 D-13 재발을 스스로 잡는가",
+    apply: mutate("scripts/contract-surface.mjs", "const FETCH = /\\bfetch\\s*\\(/;", "const FETCH = /\\bfetch\\s*\\(/g;") },
+
+  { id: "D-15", expect: "FAIL", why: "EXT 에 /g — 불변식 목록의 «두 번째» 항목도 실제로 감시되는가",
+    apply: mutate("scripts/contract-surface.mjs", "const EXT = /\\.(ts|tsx|mjs|js)$/;", "const EXT = /\\.(ts|tsx|mjs|js)$/g;") },
+
+  // 🔴 판정 축이 «둘»인 자리다 — 「울었는가」와 「무엇이 울렸는가」.
+  //    실측: FAIL 이 나지만 스캔 칸이 «비지 않는다»(15파일). 불변식이 먼저 죽였으면 D-14·15처럼
+  //    스캔 전에 exit 해 「-」가 찍힌다. 즉 불변식은 AXIOS 를 «못 보고 통과»했고, 하류의
+  //    「fetch 는 contract.ts 한 곳」 검사가 흩어진 호출부를 잡은 것이다.
+  //    → 불변식의 감시 목록도 손으로 적은 목록이다(ROOTS·EXT 와 같은 축, 한 층 위).
+  //      결함은 아니다(오케가 사정거리 확장을 금지했고 그 판단이 옳다). 다만 「불변식이 재발을
+  //      막는다」를 인용할 때 «목록에 있는 두 개에 대해»라는 단서가 함께 가야 한다.
+  { id: "D-16", expect: "FAIL", why: "불변식 «목록 밖» 새 정규식(/g + .test()) — 🔴 FAIL 은 나지만 스캔이 돌았다 = 불변식이 아니라 하류 검사가 잡았다",
+    apply: (dir) => {
+      mutate("scripts/contract-surface.mjs",
+        "const FETCH = /\\bfetch\\s*\\(/;",
+        "const FETCH = /\\bfetch\\s*\\(/;\nconst AXIOS = /\\baxios\\b/g; // 감시 목록에 없는 새 축")(dir);
+      mutate("scripts/contract-surface.mjs",
+        "const callsFetch = FETCH.test(src);",
+        "const callsFetch = FETCH.test(src) || AXIOS.test(src);")(dir);
+      append("components/placeholder.tsx", 'export const drill = () => axios.get("/api/live/status");')(dir);
+      append("app/overview/page.tsx", 'export const drill2 = () => axios.get("/api/sessions");')(dir);
+    } },
 ];
 
 const rows = [];
@@ -120,6 +162,11 @@ for (const c of CASES) {
     c.apply(dir);
     const r = run(dir);
     rows.push({ ...c, ...r, agree: r.verdict === c.expect });
+  } catch (e) {
+    // 🔴 주입이 죽은 것을 «결과»로 세지 않는다. 앵커가 낡으면 그건 검사기에 대한 판정이 아니라
+    //    내 드릴의 고장이다 — 초록도 빨강도 아닌 세 번째 칸으로 낸다.
+    rows.push({ ...c, verdict: "주입고장", exit: null, files: null, kinds: null, agree: false,
+                out: e instanceof Error ? e.message : String(e) });
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
