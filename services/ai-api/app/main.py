@@ -21,6 +21,8 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 
 from .errors import install_error_handlers
+from .investigation.guards import enforce_no_telemetry
+from .investigation.store import RunStore
 from .probes import close_resources, open_resources
 from .routers import factory, investigations, knowledge, ops, sessions, work_orders
 from .settings import get_settings
@@ -38,6 +40,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
        재시작 루프에 빠지고, 원인을 물어볼 /health 조차 사라진다(probes 모듈 머리말).
     """
     settings = get_settings()
+
+    # 🔴 텔레메트리 차단을 «부팅에서 다시 강제하고 확인»한다(오케 승인 J-5). langgraph import
+    #    시점에 이미 한 번 걸렸지만(investigation/workflow.py), 그 사이 누가 환경을 바꿨을
+    #    가능성을 배제하지 않는다 — 확인이 실패하면 여기서 부팅이 멈춘다. 열린 채로 도는
+    #    것보다 안 뜨는 편이 낫다: 나간 데이터는 회수되지 않는다.
+    forced = enforce_no_telemetry()
+    if forced:
+        log.warning("부팅 시 egress guard 가 환경을 바꿨다: %s", sorted(forced))
+
+    # run·이벤트·WO 초안 저장소 — 프로세스 안 · 세션 스코프 · SSOT 쓰기 0(오케 판정 J-3).
+    app.state.run_store = RunStore()
+
     app.state.resources = await open_resources(settings)
     notes = app.state.resources.notes
     if notes:
@@ -45,6 +59,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        # 🔴 돌고 있는 조사를 먼저 접는다. 남겨 두면 의존이 닫힌 뒤 질의가 나가 「닫힌 풀에
+        #    쓴다」는 애먼 예외가 종료 로그를 덮는다.
+        for record in tuple(app.state.run_store._runs.values()):   # noqa: SLF001 — 종료 경로
+            if record.task is not None and not record.task.done():
+                record.task.cancel()
         await close_resources(app.state.resources)
 
 

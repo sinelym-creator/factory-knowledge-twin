@@ -63,16 +63,36 @@ async def evidence(evidenceId: str, request: Request) -> EvidenceResponse:
 
 @router.get("/graph/paths", responses=NOT_IMPLEMENTED)
 async def graph_paths(
+    request: Request,
     from_: str | None = Query(default=None, alias="from"),
     to: str | None = None,
     byRun: str | None = None,
-) -> None:
-    """그래프 경로(노드·엣지·라벨).
+) -> list[dict[str, Any]]:
+    """그래프 경로(노드·엣지·라벨) — `byRun` 축 해제(T2-3 · 원장 Q-18 판정분).
 
     🔴 계약은 «고정 template 조회만» 허용한다. 임의 Cypher 를 받는 파라미터는 계약에
        존재하지 않으며, 추가 시도는 Stop 조건이다(계약 README 원칙3 · baseline §16.2).
+
+    🔴 **여기서 그래프를 다시 걷지 않는다.** 조사가 실제로 밟은 경로를 그대로 낸다 — 다시
+       걸으면 「화면이 보는 경로」와 「조사가 근거로 삼은 경로」가 갈릴 수 있고, 그 갈림은
+       근거를 눌러 본 사람에게만 보인다. 이벤트의 `graph-path` evidenceId 가 이 응답의
+       항목과 1:1로 맺힌다 — 그 결선이 이 라우트의 존재 이유다.
+
+    `from`·`to` 축은 **아직 501 이다**: T2-3 이 만드는 소비처가 `byRun` 뿐이라, 지금 열면
+    쓰는 화면 없이 그래프 조회 표면만 넓어진다(공개 경계는 좁을수록 낫다). 소비처가 생기는
+    티켓에서 같은 관계 화이트리스트로 연다.
     """
-    raise NotImplementedRoute("GET /graph/paths", "그래프 조회 계층(고정 template)")
+    if byRun is None:
+        raise NotImplementedRoute(
+            "GET /graph/paths?from=&to=", "이 축의 소비 화면(T2-3 은 byRun 만 쓴다)"
+        )
+    record = request.app.state.run_store.get(byRun)
+    if record is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "not_found", "message": f"run {byRun} 를 찾을 수 없다"},
+        )
+    return record.graphPaths
 
 
 @router.get("/documents/{docId}", response_model=DocumentPreview)

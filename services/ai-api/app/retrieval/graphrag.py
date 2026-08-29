@@ -71,6 +71,56 @@ async def search(driver: Any, question: str, top_k: int = TOP_K) -> list[Compare
     return _pick(found_hits, top_k)
 
 
+async def traverse(driver: Any, question: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
+    """`search` 와 **같은 경로**를 구조화된 형태로 돌려준다 (T2-3 조사 graph 단계 · Q-18 해제분).
+
+    왜 따로 두는가: 계약의 compare 응답에는 경로를 담을 필드가 없어 `search` 는 경로를
+    `excerpt` 문자열로 접어 넣는다. 조사 워크플로우는 그 경로를 `GET /graph/paths?byRun` 으로
+    **다시 펴서** 내야 하므로 접히기 전 형태가 필요하다.
+
+    🔴 **새 검색 경로가 아니다.** Cypher 상수·앵커 추출·종단 라벨·선별 규칙(`_pick`)이 전부
+       `search` 와 같은 것이다 — 같은 질의의 같은 결과를 «덜 접어서» 돌려줄 뿐이라, 조사가
+       고른 종단과 전략비교 화면이 고른 종단이 어긋날 수 없다. `search` 는 손대지 않았으므로
+       `/retrieval/compare` 응답은 바이트 그대로다.
+    """
+    found = anchor_mod.extract(question)
+    if not found:
+        return []
+
+    found_hits: list[tuple[str, CompareHit]] = []
+    paths_by_target: dict[str, dict[str, Any]] = {}
+    async with driver.session() as session:
+        for anchor in found:
+            result = await session.run(
+                _PATH_CYPHER,
+                anchor=anchor,
+                targets=list(TARGET_LABELS),
+                per_label=top_k,
+            )
+            async for record in result:
+                label, hit = _to_hit(record)
+                found_hits.append((label, hit))
+                # 같은 종단에 여러 앵커가 닿으면 «먼저 온 짧은 경로»를 남긴다 — `_pick` 의
+                # 중복 제거와 같은 규칙이라 선별 결과와 경로가 어긋나지 않는다.
+                paths_by_target.setdefault(
+                    hit.evidenceId,
+                    {
+                        "label": label,
+                        "hops": int(record["hops"]),
+                        "nodes": list(record["ids"]),
+                        "edges": [
+                            {"from": a, "type": rel, "to": b}
+                            for a, rel, b in zip(record["ids"], record["rels"], record["ids"][1:])
+                        ],
+                    },
+                )
+
+    return [
+        {"targetId": hit.evidenceId, "score": hit.score, **paths_by_target[hit.evidenceId]}
+        for hit in _pick(found_hits, top_k)
+    ]
+
+
 def _pick(found_hits: list[tuple[str, CompareHit]], top_k: int) -> list[CompareHit]:
     """🔴 «가까운 순»으로만 자르지 않는다 — 종단 종류를 먼저 채운다.
 
