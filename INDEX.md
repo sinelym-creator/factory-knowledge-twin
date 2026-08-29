@@ -23,7 +23,7 @@ size_limit: 4KB
 | `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) | 확정 시 |
 | `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
 | `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
-| `packages/ontology/` | 온톨로지 버전 정본(`ontology-version.json` — 스펙 §3.3 지정 경로 · T1-4 실재화) | 스펙 개정 동반 |
+| `packages/ontology/` | 온톨로지·투영 버전 정본(`ontology-version.json` §3.3 · `projection-version.json` SemVer+manifest 지문 — T1-4·T1-5) | 스펙·manifest 개정 동반 |
 | `apps/web-console/` | Next.js 웹 콘솔(Sandbox UI · App Router) | S2~ 구현 |
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
 | `services/indexer/` | 색인 파이프라인(동결 chunk 정책 정본 `FROZEN_POLICY`·probe 도구 2종 — T1-4) | S3 색인 진행 시 |
