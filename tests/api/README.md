@@ -21,6 +21,7 @@ python tests/api/anchor_extraction_probe.py
 python tests/api/error_shape_drill.py           # 도달 가능한 오류 경로만
 python tests/api/error_shape_drill.py --cut-neo4j   # + 런타임 의존 단절(자기 스택 한정)
 python tests/api/citation_roundtrip_drill.py
+python tests/api/citation_roundtrip_drill.py --inject-drift   # + 정합 파열 주입(쓴다 · 원복 포함)
 python tests/api/scenario_allowlist_drill.py
 python tests/api/freshness_badge_drill.py       # 배지 매핑 상태표만(쓰기 없음)
 python tests/api/freshness_badge_drill.py --inject-stale   # + 실주입 왕복(쓴다 · 원복 포함)
@@ -32,9 +33,10 @@ python tests/api/injection_surface_drill.py     # 적대 입력 10종 × 문 3
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
 · `FKT_PG_CONTAINER`(기본 `fkt-levi2-postgres-1`).
 
-🔴 **쓰는 자산 3종**은 전부 기본 꺼짐이고 자기 스택에만 겨눈다 —
+🔴 **쓰는 자산 4종**은 전부 기본 꺼짐이고 자기 스택에만 겨눈다 —
 `error_shape_drill --cut-neo4j`(컨테이너 정지·재기동) · `dependency_code_drill --cut-postgres`(같음)
-· `freshness_badge_drill --inject-stale`(`index_build` 한 행의 `source_sha256` 한 칸 · 원값 복원).
+· `freshness_badge_drill --inject-stale`(`index_build` 한 행의 `source_sha256` 한 칸 · 원값 복원)
+· `citation_roundtrip_drill --inject-drift`(`document_chunk` 한 행의 `text` 한 칸 · 원값 복원).
 셋 다 되감기 실측을 «마지막 행»으로 둔다 — 되돌아왔다는 것까지가 측정이다.
 `injection_surface_drill` 은 파괴적 payload 를 «던지되» 그것이 통과하면 그게 결함이므로,
 마지막 행에서 코퍼스 크기가 그대로인지를 세어 대상 생존을 실측한다.

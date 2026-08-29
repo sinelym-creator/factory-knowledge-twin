@@ -63,6 +63,35 @@
 `400 highlight_mismatch` 로 **옳게** 거절한다. 거절 경로가 살아 있는데 이 두 입력만 통과한다 —
 「거절을 안 만들었다」가 아니라 「조건이 실재를 안 본다」는 뜻이다.
 
+#### V-6 의 «세 번째 경로» — 좌표는 옳은데 본문에서 못 찾는다 (주입 실증 · E1)
+
+`locate()` 가 `None` 을 내는 길은 셋이고, 위 표의 둘은 그중 둘일 뿐이다.
+
+| 길 | 조건 | 입력으로 재현 |
+|---|---|---|
+| ① | chunk 가 «없는 revision» 좌표 | 가능(C-08) |
+| ② | 있는 revision · «범위 밖 index» | 가능(C-07) |
+| ③ | chunk 는 **있는데** 그 텍스트가 revision body 에서 발견되지 않는다 | **불가** — 현 데이터 59/59 가 유일 매칭 |
+
+③ 은 입력으로 못 만들지만 **상태로는 만들 수 있다**(오케 승인 08-30 · `--inject-drift`).
+색인 산출물 `document_chunk.text` 한 칸을 원문과 어긋나게 두면 그것이 ③ 의 정의 그 자체다 —
+`document_revision.body`·`content_sha256`·`index_build`·임베딩·그래프는 무접촉.
+
+| 시점 | `/documents?highlight={그 chunk}` | `v_index_freshness` | 무접촉 대조군 |
+|---|---|---|---|
+| 주입 전 | `200` · 강조 있음 | `FRESH` | 강조 있음 |
+| 주입 후 | **`200` · `highlight:null`** — 사유 없음 | **`FRESH`**(변하지 않는다) | 강조 유지 |
+| 되감기 | `200` · 강조 복귀 · 원문 일치 | — | — |
+
+🔴 **덤으로 잡힌 사실 하나(오케 지시로 병기).** 이 파열 중에도 `freshness` 는 `FRESH` 로 남는다 —
+신선도는 `source_sha256 ↔ content_sha256` 축만 보므로 **chunk 수준의 drift 를 보지 못한다**.
+즉 배지가 조용한 그 자리에서 인용이 깨진다. ③ 을 「5xx 로 울린다」로 판정한 이유가 여기 있다
+(오케 08-30) — 배지가 못 잡는 파열이라 응답 자체가 말해야 한다.
+
+부수 관측(판정 회부): 같은 상태에서 `GET /evidence/{그 chunk}` 도 `200` · `highlight:null` 이다.
+같은 `locate()` 를 쓰므로 같은 계열이며, 계약이 doc-chunk 에 「원문 + 강조 offset」을 약속한 이상
+같은 판정을 받아야 한다고 본다 — 판정은 오케 몫이라 여기서는 관측으로만 적는다.
+
 ### V-7 — 같은 사건(의존 단절)을 라우트마다 «다른 코드»로 말한다
 
 **실측.** postgres 컨테이너 정지 중, 같은 프로세스의 세 라우트:
@@ -151,7 +180,7 @@ Evidence 뷰만 없는 장애를 보고하게 된다.
 
 | 자산 | 신설/증설 | 이번 결과 |
 |---|---|---|
-| `citation_roundtrip_drill.py` | 신설 | 왕복 38 green · 대조군 **2 red**(V-6) |
+| `citation_roundtrip_drill.py` | 신설 | 왕복 38 green · 대조군 **2 red**(V-6 ①②) · 주입 **3 red**(V-6 ③) |
 | `scenario_allowlist_drill.py` | 신설 | **전건 green**(집합 1 + 관문 10 + 대조군 6) |
 | `freshness_badge_drill.py` | 신설 | **전건 green**(상태표 7 + 주입 왕복 6) |
 | `dependency_code_drill.py` | 신설 | 기준선 4 green · 단절 **3 red**(V-7) |
@@ -159,10 +188,10 @@ Evidence 뷰만 없는 장애를 보고하게 된다.
 | `error_shape_drill.py` | 증설 E-07·E-08·E-09 | **11/11 green** |
 | `anchor_boundary_drill.py` · `anchor_extraction_probe.py` | 회귀 | 10/10 · 16/16 green |
 
-검사 행 계수(자기 검증·되감기 포함): **32 → 160** — 16(경계 probe) + 10(표기 변형) + 11(오류 형상)
-+ 47(왕복 38 + 대조군 9) + 17(시나리오 1+10+6) + 13(배지 7+6) + 15(의존 코드) + 31(적대 입력 30 + 생존 1).
+검사 행 계수(자기 검증·되감기 포함): **32 → 168** — 16(경계 probe) + 10(표기 변형) + 11(오류 형상)
++ 55(왕복 38 + 대조군 9 + 주입 8) + 17(시나리오 1+10+6) + 13(배지 7+6) + 15(의존 코드) + 31(적대 입력 30 + 생존 1).
 
-🔴 red 5행은 **일부러 남긴다**. 정정이 그 빨강을 초록으로 바꾸는 것이 재검의 판정 근거다 —
+🔴 red **8행**은 일부러 남긴다. 정정이 그 빨강을 초록으로 바꾸는 것이 재검의 판정 근거다 —
 T2-1 에서 V-1~V-4 가 그렇게 뒤집혔다.
 
 ### 축⑥ 보안 경계 — **PASS** (발주 축 밖 · 검증 좌석 scope · 오케 승인 08-30)
@@ -222,7 +251,7 @@ $env:FKT_NEO4J_URI='bolt://127.0.0.1:7587'; $env:FKT_NEO4J_USER='neo4j'; $env:FK
 python tests/api/anchor_extraction_probe.py
 python tests/api/anchor_boundary_drill.py
 python tests/api/error_shape_drill.py --cut-neo4j
-python tests/api/citation_roundtrip_drill.py
+python tests/api/citation_roundtrip_drill.py --inject-drift
 python tests/api/scenario_allowlist_drill.py
 python tests/api/freshness_badge_drill.py --inject-stale
 python tests/api/dependency_code_drill.py --cut-postgres

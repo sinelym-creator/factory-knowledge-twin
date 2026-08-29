@@ -16,18 +16,26 @@
 🔴 구현을 import 하지 않는다. HTTP 표면만 상대한다(1대 계보 F-3). 질문도 구현의 allowlist 가
    아니라 정본(`benchmarks/datasets/eval-questions-draft.md`)에서 매 실행 내 파서로 뽑는다.
 
+🔴 `--inject-drift` 는 **쓴다**(오케 승인 08-30). 자기 스택의 `document_chunk` 한 행에서
+   `text` 한 칸을 원문과 어긋나게 만들어 「좌표는 옳은데 본문에서 못 찾는」 상태(③)를 세우고,
+   원값으로 되돌린다. `document_revision.body`·`content_sha256`·`index_build`·임베딩·그래프는
+   무접촉이다. 기본은 꺼져 있고, 타 좌석 스택에 겨누지 않는다.
+
 전제: ai-api 기동 · 색인·그래프 적재 완료.
 
-    python tests/api/citation_roundtrip_drill.py
+    python tests/api/citation_roundtrip_drill.py                 # 읽기만
+    python tests/api/citation_roundtrip_drill.py --inject-drift  # + 정합 파열 주입(원복 포함)
 
 exit: 0 = 전건 기대대로 · 1 = 어긋남 1건 이상 · 2 = 실행 오류(그물이 죽었거나 대상이 없다)
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -39,6 +47,9 @@ SOURCE = REPO / "benchmarks" / "datasets" / "eval-questions-draft.md"
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
 SESSION_ID = "levi2-roundtrip-drill"
 STRATEGIES = ["vector", "hybrid", "graphrag"]
+PG_CONTAINER = os.environ.get("FKT_PG_CONTAINER", "fkt-levi2-postgres-1")
+PG_USER = os.environ.get("FKT_PG_USER", "fkt")
+PG_DB = os.environ.get("FKT_PG_DB", "fkt")
 
 _HEADING = re.compile(r"^###\s+(Q-[A-Z]+-\d+)\b", re.M)
 _QUESTION = re.compile(r"^\|\s*\*\*질문\*\*\s*\|\s*(.+?)\s*\|\s*$", re.M)
@@ -245,10 +256,110 @@ def controls(sample_chunk: str, other_doc_id: str) -> int:
     return bad
 
 
+def psql(sql: str) -> str:
+    out = subprocess.run(
+        ["docker", "exec", PG_CONTAINER, "psql", "-U", PG_USER, "-d", PG_DB, "-t", "-A", "-c", sql],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if out.returncode != 0:
+        raise DrillError(f"psql 실패: {(out.stderr or '').strip()[:200]}")
+    return (out.stdout or "").strip()
+
+
+def integrity_drift(target: str, control: str) -> int:
+    """🔴 ③ — 좌표는 옳은데 «본문에서 못 찾는» 경우. 조용한 null 로 넘어가지 않는가.
+
+    입력으로는 못 만든다(현 데이터 59/59 가 본문에서 유일하게 발견된다). 만들 수 있는 것은
+    «상태»다 — 색인 산출물(`document_chunk.text`) 한 칸을 원문과 어긋나게 두면 그게 ③ 의
+    정의 그 자체다. `document_revision.body`·`content_sha256`·`index_build`·임베딩·그래프는
+    건드리지 않는다.
+
+    판정(오케 08-30): ①② 요청 좌표 오류 = 400 · **③ 정합 파열 = 5xx + 구분 코드**.
+    요청자 잘못이 아니고, 계약이 약속한 인용 강조를 지킬 수 없는 응답에 200 을 주지 않는다.
+    """
+    original = psql(f"SELECT text FROM document_chunk WHERE id = '{target}'")
+    if not original:
+        raise DrillError(f"{target} 의 chunk 텍스트가 비어 있다 — 주입 대상이 못 된다")
+    revision = target.rsplit("#", 1)[0]
+    doc = CHUNK_ID.match(target).group("doc")
+    hl = f"/api/documents/{doc}?highlight={urllib.parse.quote(target, safe='')}"
+    ctl_doc = CHUNK_ID.match(control).group("doc")
+    ctl_hl = f"/api/documents/{ctl_doc}?highlight={urllib.parse.quote(control, safe='')}"
+
+    print(f"  대상    document_chunk[{target}].text ({len(original)}자)")
+    print("  원값    🔴 저장했다 — 실패해도 이 값으로 되돌린다")
+
+    before_status, before_body = get(hl)
+    if before_status != 200 or not (before_body or {}).get("highlight"):
+        raise DrillError("주입 «전»에 이미 강조가 없다 — 전이를 잴 수 없다")
+    fresh_before = psql(f"SELECT freshness FROM v_index_freshness WHERE revision_id = '{revision}'")
+    print(f"  주입 전  /documents 강조 있음 · freshness={fresh_before}")
+
+    bad = 0
+    try:
+        psql(
+            "UPDATE document_chunk SET text = text || '⟪levi2-drift-probe⟫' "
+            f"WHERE id = '{target}'"
+        )
+        status, body = get(hl)
+        code = (body or {}).get("error", {}).get("code") if isinstance(body, dict) else None
+        raw = json.dumps(body, ensure_ascii=False)
+        leaked = any(m in raw.lower() for m in ("traceback", "site-packages", "asyncpg", "/usr/"))
+
+        checks = [
+            ("조용한 200 이 아니다", status != 200),
+            ("5xx 로 운다(오케 판정 ③)", 500 <= status < 600),
+            ("구분 코드다(일반 internal_error 아님)", bool(code) and code != "internal_error"),
+            ("내부 경로·traceback 비노출", not leaked),
+        ]
+        print(f"  주입 후  /documents → {status} {code or (body or {}).get('highlight')}")
+        for index, (name, ok) in enumerate(checks, start=1):
+            bad += 0 if ok else 1
+            print(f"  {'PASS' if ok else 'FAIL'}  I-0{index} {name}")
+
+        # 🔴 덤(오케 지시) — sha 축은 무접촉이라 freshness 는 FRESH 로 남는다.
+        #    「신선도가 chunk 수준 drift 를 못 본다」가 ③ 판정이 존재하는 이유다.
+        fresh_during = psql(
+            f"SELECT freshness FROM v_index_freshness WHERE revision_id = '{revision}'"
+        )
+        blind = fresh_during == "FRESH"
+        bad += 0 if blind else 1
+        print(f"  {'PASS' if blind else 'FAIL'}  I-05 freshness 는 이 drift 를 못 본다 — {fresh_during}"
+              " (배지만으로는 잡히지 않는 파열이라 ③ 이 필요하다)")
+
+        ev_status, ev_body = get(evidence_path(target))
+        ev_code = (ev_body or {}).get("error", {}).get("code") if isinstance(ev_body, dict) else None
+        print(f"  관측(판정 아님)  /evidence/{target} → {ev_status} "
+              f"{ev_code or ('강조=' + str((ev_body or {}).get('highlight')))}")
+
+        ctl_status, ctl_body = get(ctl_hl)
+        intact = ctl_status == 200 and bool((ctl_body or {}).get("highlight"))
+        bad += 0 if intact else 1
+        print(f"  {'PASS' if intact else 'FAIL'}  I-06 무접촉 대조군은 강조를 유지한다 — {control} {ctl_status}")
+    finally:
+        psql(
+            "UPDATE document_chunk SET text = replace(text, '⟪levi2-drift-probe⟫', '') "
+            f"WHERE id = '{target}'"
+        )
+        back = psql(f"SELECT text FROM document_chunk WHERE id = '{target}'")
+        status, body = get(hl)
+        rewound = back == original and status == 200 and bool((body or {}).get("highlight"))
+        bad += 0 if rewound else 1
+        print(f"  {'PASS' if rewound else 'FAIL'}  I-0 되감기 — 원문 일치 {back == original} · 강조 복귀 {status}")
+    return bad
+
+
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--inject-drift", action="store_true",
+                        help="색인↔원문 정합 파열 주입(쓴다 · 원복 포함)")
+    args = parser.parse_args()
 
     questions = source_questions()
     print(f"정본      : {SOURCE.relative_to(REPO)}")
@@ -282,6 +393,18 @@ def main() -> int:
     other = next((CHUNK_ID.match(i).group("doc") for i in sorted(chunk_ids)
                   if CHUNK_ID.match(i).group("doc") != sample_doc), "")
     bad += controls(sample, other or sample_doc)
+
+    if args.inject_drift:
+        print("\n  ── ③ 정합 파열 — 좌표는 옳은데 본문에서 못 찾을 때(주입 · 원복한다)")
+        target = sorted(chunk_ids)[0]
+        control = next(
+            (i for i in sorted(chunk_ids)
+             if CHUNK_ID.match(i).group("doc") != CHUNK_ID.match(target).group("doc")),
+            None,
+        )
+        if control is None:
+            raise DrillError("무접촉 대조군으로 쓸 타 문서 chunk 가 없다")
+        bad += integrity_drift(target, control)
 
     print(f"\n결과: 어긋남 {bad}건")
     return 1 if bad else 0
