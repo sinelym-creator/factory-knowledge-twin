@@ -343,8 +343,24 @@ percent-encoding 해야 한다 — `DOC-SOP-0014%40r2%23001`. 실패가 조용�
 🔴 **이것은 SQL 계층 실증이지 HTTP 왕복이 아니다.** 커밋하지 않으므로 다른 세션에서는
 그 상태를 볼 수 없고, 그래서 API 표면까지의 낡음 대조군은 독립 스택을 가진 검증 좌석의 몫이다.
 
-**한계 — boolean 하나에 다섯 상태를 실을 수 없다.** 뷰는 `FRESH`·`STALE`·`SKIPPED`·
-`NOT_INDEXED`·`ONTOLOGY_UNVERIFIED`·`BUILD_FAILED` 를 가르지만 계약의 `stale` 은 boolean 이다.
-그래서 **`STALE` 만 true** 로 좁혔고, 나머지는 전부 false 가 된다 — 「색인이 없다」와 「색인이
-최신이다」가 같은 값이 되는 자리다. 실측 시점에는 chunk 를 가진 revision 이 전부 `FRESH` 라
-이 압축이 겉으로 드러나지 않는다(뷰 60행 · 배지 대상 45건 전부 FRESH · 뷰에 없는 revision 0).
+| 대조군 2행 — `ontology_registry` 를 비워 «버전 확인 불가»를 만든다 | `freshness` | 배지 `stale` |
+|---|---|---|
+| 주입 전 | `FRESH` | `false` |
+| 주입 후 (같은 트랜잭션) | **`ONTOLOGY_UNVERIFIED`** | **`true`** |
+| `ROLLBACK` 후 | `FRESH` | `false` (registry 원값 동일 확인) |
+
+**boolean 하나가 답하는 질문은 「신선한가」가 아니라 「신선이 «실증»됐는가」다.** 뷰는 여섯
+상태를 가르는데(`FRESH`·`STALE`·`SKIPPED`·`NOT_INDEXED`·`ONTOLOGY_UNVERIFIED`·`BUILD_FAILED`)
+계약의 `stale` 은 boolean 이다. 그 압축을 「`STALE` 만 true」로 하면 **`ONTOLOGY_UNVERIFIED`
+가 false 로 나간다** — 「온톨로지 버전을 확인하지 못했다」를 「신선하다」로 말하는 것이고,
+그것이 Phase 1이 Q-6로 잡은 «조용한 FRESH 단정» 병의 API 층 재발이다(오케 판정 08-30).
+
+그래서 **`FRESH` 만 false** 다. 뷰에 새 상태가 생겨도 자동으로 true 가 되고, 값이 없는
+경우(`None`)도 true 다 — 「모른다」는 「신선하다」가 아니다. `SKIPPED`·`NOT_INDEXED` 는 chunk
+를 만들지 않아 doc-chunk 응답에 도달하지 않는데, 🔴 그 «믿음»은 주석으로 두지 않고 **가드가
+실행 시점에 확인**한다(도달하면 로그 경고 · 그 경우에도 배지는 true 라 답은 안전하다).
+
+**남는 한계**: 이 boolean 은 «왜» 신선이 실증되지 않았는지 말하지 못한다. 6상태 노출은
+계약 개정 사안이라 **Q-22 로 등재**됐다(v0.2 재론). 실측 시점에는 chunk 를 가진 revision 45건이
+전부 `FRESH` 라 이 압축이 겉으로 드러나지 않는다(뷰 60행 · 뷰에 없는 revision 0) — 데이터가
+가려 주고 있을 뿐이다.

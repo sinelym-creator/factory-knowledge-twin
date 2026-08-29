@@ -17,12 +17,15 @@ chunk ID 조성은 T0-6 §3.1이 정하고 DB 제약(`ck_chunk_id_composition`)�
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import Any
 
 from ..ontology_tables import NOISE_COLUMNS, table_of
 from ..schemas import EvidenceRecord, EvidenceResponse, Highlight
 from .offsets import locate
+
+log = logging.getLogger("fkt.reading")
 
 # T0-6 §3.1 — DocumentChunk = `{revision_id}#{NNN}`, revision = `{document_id}@r{N}`.
 CHUNK_ID_RE = re.compile(r"^(?P<revision>(?P<document>DOC-[A-Z]{3,4}-\d{4})@r\d+)#(?P<index>\d{3})$")
@@ -43,16 +46,31 @@ _SIBLING_SQL = """
 """
 
 
-def is_stale(freshness: str | None) -> bool:
-    """계약의 `stale` 은 boolean 하나다 — 「색인이 원문보다 낡았다」만 싣는다.
+PROVEN_FRESH = "FRESH"
+# doc-chunk 응답에 «도달할 수 없다»고 보는 상태 — chunk 가 있어야 이 응답이 나오는데, 이
+# 둘은 chunk 를 만들지 않는다(skipped = 색인 대상에서 빠짐 · 색인 기록 없음 = 빌드 자체 없음).
+# 🔴 그 «믿음»을 주석으로만 두지 않고 아래 가드가 실행 시점에 확인한다.
+UNREACHABLE_FOR_CHUNK = frozenset({"SKIPPED", "NOT_INDEXED"})
 
-    🔴 실은 `v_index_freshness` 가 다섯 상태를 가른다(`FRESH`·`STALE`·`SKIPPED`·
-       `NOT_INDEXED`·`ONTOLOGY_UNVERIFIED`·`BUILD_FAILED`). boolean 하나에 그 다섯을
-       욱여넣으면 「색인이 없다」와 「색인이 낡았다」가 같은 값이 되어, 화면은 서로 다른
-       사건을 같은 배지로 그린다. 그래서 여기서는 **`STALE` 만 true** 로 좁히고, 나머지
-       상태가 응답에 실리지 않는다는 한계를 그대로 남긴다(T2-2 완료 보고 · 배지 설계 소견).
+
+def is_stale(freshness: str | None) -> bool:
+    """계약의 `stale` — 🔴 묻는 것은 「신선한가」가 아니라 **「신선이 «실증»됐는가」**다.
+
+    `v_index_freshness` 는 여섯 상태를 가르는데(`FRESH`·`STALE`·`SKIPPED`·`NOT_INDEXED`·
+    `ONTOLOGY_UNVERIFIED`·`BUILD_FAILED`) 계약의 `stale` 은 boolean 하나다. 그 압축을
+    「`STALE` 만 true」로 하면 **`ONTOLOGY_UNVERIFIED` 가 false 로 나간다** — 「온톨로지
+    버전을 확인하지 못했다」를 「신선하다」로 말하는 것이고, 그것이 Phase 1이 Q-6로 잡은
+    «조용한 FRESH 단정» 병의 API 층 재발이다(오케 판정 08-30).
+
+    그래서 **`FRESH` 만 false** 다. 지정된 세 상태(`STALE`·`ONTOLOGY_UNVERIFIED`·
+    `BUILD_FAILED`)를 포함하면서, 뷰에 **새 상태가 생겨도 자동으로 true** 가 된다 —
+    모르는 값을 false 로 흘리지 않는 쪽이 이 배지의 옳은 실패 방향이다. 값이 아예 없는
+    경우(`None`)도 같다: 「모른다」는 「신선하다」가 아니다.
+
+    🔴 남는 한계는 그대로 성문한다 — 이 boolean 은 «왜» 신선이 실증되지 않았는지 말하지
+       못한다. 6상태 노출은 계약 개정 사안이라 Q-22 로 등재됐다(v0.2 재론).
     """
-    return freshness == "STALE"
+    return freshness != PROVEN_FRESH
 
 
 async def fetch(pool: Any, evidence_id: str) -> EvidenceResponse | None:
@@ -71,13 +89,23 @@ async def _doc_chunk(pool: Any, evidence_id: str) -> EvidenceResponse | None:
             return None
         siblings = await conn.fetch(_SIBLING_SQL, row["revision_id"])
 
+    freshness = row["freshness"]
+    if freshness in UNREACHABLE_FOR_CHUNK:
+        # 🔴 「도달 불가」는 믿음이지 보증이 아니다. 믿음이 깨지면 조용히 지나가지 말고
+        #    로그로 드러낸다 — 이 상태에서도 배지는 true(신선 미실증)라 답은 안전하다.
+        log.warning(
+            "도달 불가로 본 색인 상태가 doc-chunk 응답에 나타났다: %s freshness=%s",
+            evidence_id,
+            freshness,
+        )
+
     span = locate(row["body"] or "", [r["text"] for r in siblings], int(row["chunk_index"]))
     return EvidenceResponse(
         evidenceId=evidence_id,
         kind="doc-chunk",
         revisionId=row["revision_id"],
         contentHash=row["content_sha256"],
-        stale=is_stale(row["freshness"]),
+        stale=is_stale(freshness),
         approvalState=row["approval_state"],
         effectiveFrom=row["effective_from"],
         effectiveTo=row["effective_to"],
