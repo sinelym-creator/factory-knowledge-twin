@@ -45,3 +45,6 @@ Thumbs.db
 # T1-0 — python venv
 .venv/
 __pycache__/
+
+# tests/graph/graph_verify.py 가 GRAPH_DUMP_DIR 미지정 시 cwd 에 떨구는 덤프(러너는 임시 폴더를 준다)
+graph-dump.txt

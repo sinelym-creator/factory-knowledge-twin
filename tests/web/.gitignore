@@ -1,0 +1,5 @@
+# playwright 실행 산출물 — 실패 시에만 남는 trace·스크린샷
+test-results/
+playwright-report/
+# token_layer_probe 의 임시 컴파일 폴더(정상 종료 시 스스로 지운다)
+.probe-*/
