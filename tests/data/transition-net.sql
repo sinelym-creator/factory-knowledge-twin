@@ -6,26 +6,31 @@
 --    아니다 — 전이 중 어떤 것은 흔적을 남기고 어떤 것은 남기지 않는다. 이 파일은 그 경계를
 --    쌍별로 «계수»한다. 계수되지 않은 부채는 부채가 아니라 무지다.
 --
--- 🔴 성문 (스펙 docs/product/data-ontology-spec.md §3.3 정본 1줄):
+-- 🔴 성문 (스펙 docs/product/data-ontology-spec.md §3.3 + 정오표 **E-7**):
 --      「상태 전이 = draft → approved → superseded → retired (역방향 없음).
 --        새 revision 승인 시 직전 revision은 superseded + effective_to 기입」
---    4상태 16쌍이 3갈래로 갈린다 (자기전이 4쌍 = 전이 아님 · 12쌍이 대상):
---      합법 «전진 인접» 3쌍  D→A · A→S · S→R
---      위반 «역방향»    6쌍  A→D · S→D · S→A · R→D · R→A · R→S   ← 명문 금지
---      🔴 미정의 «건너뜀» 3쌍 D→S · D→R · A→R
---         스펙은 «역방향»만 금지했고 건너뜀에는 침묵한다. 좌석이 스펙에 없는 판정을
---         만들지 않는다 — 계수만 하고 판정은 INFO로 비운다(오케 회부 대상).
+--      E-7(오케 해석 확정 2026-08-29): 합법 전이 = **인접 전진 3쌍뿐**. 스펙이 침묵했던
+--      «건너뜀» 3쌍(D→S · D→R · A→R)도 **위반**이다(사슬 = 단일 경로 · superseded 정의가
+--      「새 revision 승인 시」 전제 · retired 도달도 사슬 경유).
+--    → 12쌍(자기전이 4쌍 제외)이 **2갈래**로 갈린다. 미정의 칸은 이제 없다.
+--      합법 3쌍  D→A · A→S · S→R
+--      위반 9쌍  역방향 6(A→D · S→D · S→A · R→D · R→A · R→S)
+--                + 건너뜀 3(D→S · D→R · A→R)
 --
 -- 🔴 무엇을 관측하는가 (한 쌍 = 한 조각의 대조):
---      ① 설정만 한 상태(전이 «전») 그물 계수  ② 전이 주입 «후» 그물 계수  → 증분이 전이의 몫
---      전이 그물 = C-23·C-24·C-25·C-26·C-27 (tests/data/seed-integrity.sql 상시분)
---      기존 그물 = C-21·C-22               (G-2 · 전이의 «결과»를 잡는 것)
+--      ① 설정만 한 상태(전이 «전») 계수 → ② 전이 주입 «후» 계수
+--      «증분» = 이 전이가 «새로» 울린 것 (귀속)   «절대» = 이 쓰기 후 누군가 우는가 (운용)
+--      🔴 두 값을 함께 낸다. 설정 자체가 이미 위반 상태일 수 있어(예: 최상위 retired는
+--         E-7 아래 도달 불가) 증분만으로는 「아무도 안 운다」와 구별되지 않기 때문이다.
+--         **미탐지 판정은 «절대 0»으로만 내린다.**
+--      전이 그물 = C-23·C-24·C-25·C-26·C-27·C-28 (tests/data/seed-integrity.sql 상시분)
+--      기존 그물 = C-21·C-22                     (G-2 · 전이의 «결과»를 잡는 것)
 --    두 계수를 나란히 두는 것이 이 파일의 «대조군»이다 — 새 그물이 기존 그물을 되풀이하는지,
 --    아니면 기존 그물이 못 보던 것을 보는지가 두 열로 갈린다. 되풀이면 신설할 이유가 없다.
 --
--- 🔴 변형 2종 (역방향 6쌍에만 적용 · 이것이 사정거리를 가르는 축이다):
+-- 🔴 변형 2종 (위반 9쌍에 적용 · 이것이 사정거리를 가르는 축이다):
 --      «흔적 보존» 상태 열만 되돌린다 — 서비스 계층 없는 raw UPDATE. G-3이 지목한 그 쓰기다.
---      «흔적 삭제» 목적 상태와 앞뒤가 맞게 approved_by·effective_to까지 함께 고친다.
+--      «흔적 삭제» 목적 상태와 앞뒤가 맞게 approved_by·effective_to까지 함께 고친다(위조).
 --                  스냅숏이 원리적으로 구별할 수 있는 한계가 여기서 드러난다.
 --
 -- 🔴 이 파일은 «쓴다». 전체가 BEGIN … ROLLBACK 1개 안에 있고, 쌍 1건 = plpgsql 하위 블록
@@ -45,27 +50,31 @@ CREATE TEMP TABLE _tn(ord int, cid text, what text, expected text, actual text, 
   ON COMMIT DROP;
 
 -- 🔴 그물 계수를 이 파일 «한 곳»에만 적는다 — 파일 안에서 두 번 쓰면 그 둘이 갈린다.
---    seed-integrity.sql의 C-21~C-27과는 여전히 «따로» 조립한 것이다(파일 간 include 경로가
+--    seed-integrity.sql의 C-21~C-28과는 여전히 «따로» 조립한 것이다(파일 간 include 경로가
 --    없다). 그 별도 조립의 기준선 정합은 아래 T-B가 실측한다.
 CREATE FUNCTION pg_temp.f_nets(OUT n_new bigint, OUT n_old bigint) AS $f$
   SELECT
-    -- 전이 그물 C-23·C-24·C-25·C-26·C-27
+    -- 전이 그물 C-23·C-24·C-25·C-26·C-27·C-28
       (SELECT count(*) FROM document_revision
-        WHERE approval_state='superseded' AND approved_by IS NULL)                     -- C-23
+        WHERE approval_state IN ('superseded','retired') AND approved_by IS NULL)        -- C-23
     + (SELECT count(*) FROM document_revision
-        WHERE approval_state='retired' AND effective_to IS NULL)                       -- C-24
+        WHERE approval_state='retired' AND effective_to IS NULL)                         -- C-24
     + (SELECT count(*) FROM document_revision
         WHERE approval_state='draft'
-          AND (approved_by IS NOT NULL OR effective_to IS NOT NULL))                   -- C-25
-    + (SELECT count(*) FROM document_revision hi                                       -- C-26
+          AND (approved_by IS NOT NULL OR effective_to IS NOT NULL))                     -- C-25
+    + (SELECT count(*) FROM document_revision hi                                         -- C-26
         JOIN document_revision lo
           ON lo.document_id = hi.document_id AND lo.revision_no = hi.revision_no - 1
         WHERE hi.approval_state IN ('approved','superseded','retired')
           AND lo.approval_state NOT IN ('superseded','retired'))
-    + (SELECT count(*) FROM document_revision s                                        -- C-27
+    + (SELECT count(*) FROM document_revision s                                          -- C-27
         WHERE s.approval_state='superseded' AND NOT EXISTS (
           SELECT 1 FROM document_revision h
-          WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no)),
+          WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no))
+    + (SELECT count(*) FROM document_revision t                                          -- C-28
+        WHERE t.approval_state='retired' AND NOT EXISTS (
+          SELECT 1 FROM document_revision h
+          WHERE h.document_id=t.document_id AND h.revision_no > t.revision_no)),
     -- 기존 그물 C-21·C-22 (G-2)
       (SELECT count(*) FROM document d WHERE 1 <> (
           SELECT count(*) FROM document_revision r
@@ -84,8 +93,8 @@ DO $do$
 DECLARE
   c        record;
   s_new    bigint; s_old bigint;   -- 설정 직후(전이 전)
-  a_new    bigint; a_old bigint;   -- 전이 주입 직후
-  d_new    bigint; d_old bigint;   -- 증분 = 전이의 몫
+  a_new    bigint; a_old bigint;   -- 전이 주입 직후(절대)
+  d_new    bigint; d_old bigint;   -- 증분 = 전이가 «새로» 울린 것
   rejected boolean; errc text;
 BEGIN
   -- 대상 2행: DOC-SAF-0029@r2(중간 · 위에 r3이 있다) · @r3(최상위 · 위가 없다)
@@ -94,7 +103,7 @@ BEGIN
   FOR c IN
     SELECT * FROM (VALUES
       -- ord, cid, 무엇을, 대상, ── 설정(from) ──, ── 주입(to) ──, 기대
-      --   기대: 정수 = 전이 그물 증분 · 'REJECT' = DB가 거부해야 함 · 'INFO' = 판정 없음
+      --   기대: 정수 = 전이 그물 «증분» · 'REJECT' = DB가 거부해야 함
 
       -- ── 합법 3쌍 · «완전» 전이 ────────────────────────────────────────────────
       ( 1,'T-L1','합법 D→A «완전»(승인자 기입) — 조용해야 한다',
@@ -125,7 +134,7 @@ BEGIN
            'DOC-SAF-0029@r2', 'superseded', 'maintenance_manager', '2026-07-01',
                               'retired',    'maintenance_manager', NULL,              '1'),
 
-      -- ── 위반 6쌍 × «흔적 보존»(상태 열만 되돌림) ─────────────────────────────
+      -- ── 위반 «역방향» 6쌍 × «흔적 보존» ──────────────────────────────────────
       (11,'T-R1','위반 A→D «흔적 보존» — 승인 흔적이 남는다',
            'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
                               'draft',      'maintenance_manager', NULL,              '1'),
@@ -141,17 +150,19 @@ BEGIN
       (15,'T-R5','위반 R→A «흔적 보존» — 승계 미이행으로 드러난다',
            'DOC-SAF-0029@r2', 'retired',    'maintenance_manager', '2026-07-01',
                               'approved',   'maintenance_manager', '2026-07-01',      '1'),
-      -- 🔴 known gap ①. 중간 revision의 R→S는 잔여열도 배치도 바뀌지 않는다 — 스냅숏에
-      --    남는 차이가 «없다». 그물이 못 잡는 것이 아니라 볼 것이 없는 것이다. 0으로 고정한다.
-      (16,'T-R6','🔴 known gap 위반 R→S(중간 revision) «흔적 보존» — 관측 가능한 차이 없음',
+      -- 🔴 known gap. 중간 revision의 R→S는 잔여열도 배치도 바뀌지 않는다 — 스냅숏에
+      --    남는 차이가 «없다». 그물이 못 잡는 것이 아니라 볼 것이 없는 것이다(절대 0).
+      (16,'T-R6','🔴 known gap 위반 R→S(중간) «흔적 보존» — 절대 0(관측 가능한 차이 없음)',
            'DOC-SAF-0029@r2', 'retired',    'maintenance_manager', '2026-07-01',
                               'superseded', 'maintenance_manager', '2026-07-01',      '0'),
-      -- 🔴 같은 R→S인데 «최상위»에서는 잡힌다 — superseded는 승계자를 함축하기 때문이다.
-      (17,'T-R7','위반 R→S(최상위 revision) — 승계자 없는 승계로 드러난다',
+      -- 🔴 같은 R→S인데 «최상위»에서는 전후 모두 운다. 다만 설정(최상위 retired) 자체가
+      --    E-7 아래 도달 불가한 위반 상태(C-28)라 «증분»은 0이고 «절대»가 1이다 —
+      --    미탐지가 아니다. 증분만 보면 놓치는 자리가 여기다.
+      (17,'T-R7','위반 R→S(최상위) — 증분 0이나 절대 1(설정 자체가 이미 C-28 위반)',
            'DOC-SAF-0029@r3', 'retired',    'maintenance_manager', '2026-08-01',
-                              'superseded', 'maintenance_manager', '2026-08-01',      '1'),
+                              'superseded', 'maintenance_manager', '2026-08-01',      '0'),
 
-      -- ── 위반 6쌍 × «흔적 삭제»(목적 상태와 앞뒤 맞춤) ────────────────────────
+      -- ── 위반 «역방향» 6쌍 × «흔적 삭제» ──────────────────────────────────────
       -- 🔴 흔적을 지우면 C-25는 침묵한다. 그때 무엇이 남는가가 이 묶음의 질문이다.
       (21,'T-W1','위반 A→D «흔적 삭제» — 전이 그물은 침묵(기존 C-21이 덮는다)',
            'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
@@ -168,33 +179,45 @@ BEGIN
       (25,'T-W5','위반 R→A «흔적 삭제» — 승계 미이행으로 잡힌다',
            'DOC-SAF-0029@r2', 'retired',    'maintenance_manager', '2026-07-01',
                               'approved',   'maintenance_manager', NULL,              '1'),
-      -- 🔴 known gap ②. ①과 같은 이유다 — 두 상태의 잔여열 요건이 동일하다.
-      (26,'T-W6','🔴 known gap 위반 R→S(중간 revision) «흔적 삭제» — 관측 가능한 차이 없음',
+      -- 🔴 known gap(위와 같은 이유 — 두 상태의 잔여열 요건이 동일하다).
+      (26,'T-W6','🔴 known gap 위반 R→S(중간) «흔적 삭제» — 절대 0(관측 가능한 차이 없음)',
            'DOC-SAF-0029@r2', 'retired',    'maintenance_manager', '2026-07-01',
                               'superseded', 'maintenance_manager', '2026-07-01',      '0'),
 
-      -- ── 미정의 «건너뜀» 3쌍 → 판정하지 않는다. 계수만 남긴다 ──────────────────
-      -- 🔴 D→S는 승인자 없이 물러난 행을 만든다(C-23이 운다). 그러나 이 전이가 «위반인지»는
-      --    스펙이 말한 적이 없다 — 그물이 우는 것과 그것이 위반인 것은 다른 문장이다.
-      (31,'T-U1','미정의 D→S(스펙 침묵) — 계수만',
+      -- ── 위반 «건너뜀» 3쌍 × 2변형 (E-7로 위반 확정 · 2026-08-29 편입) ─────────
+      -- 🔴 이 6행은 E-7 «전»에 INFO(판정 없음)로 비워 두었던 3칸의 후신이다. 스펙이
+      --    침묵할 때 좌석이 판정을 만들지 않았고, 오케가 확정한 뒤 판정으로 옮겼다.
+      --    «보존» = 승인을 지나지 않은 사실이 그대로 남는다(승인자 없음).
+      --    «삭제» = 사슬을 지나온 것처럼 승인자·기간을 채워 넣는다(위조).
+      (31,'T-S1','위반 D→S «흔적 보존»(승인자 없음) — C-23·C-27이 잡는가',
            'DOC-SAF-0029@r3', 'draft',      NULL,                  NULL,
-                              'superseded', NULL,                  '2026-08-01',      'INFO'),
-      (32,'T-U2','미정의 D→R(스펙 침묵) — 계수만',
+                              'superseded', NULL,                  '2026-08-01',      '2'),
+      (32,'T-S2','위반 D→S «흔적 삭제»(승인 위조) — 승계자 없는 승계로 잡는가',
            'DOC-SAF-0029@r3', 'draft',      NULL,                  NULL,
-                              'retired',    'maintenance_manager', '2026-08-01',      'INFO'),
-      (33,'T-U3','미정의 A→R(스펙 침묵) — 계수만',
+                              'superseded', 'maintenance_manager', '2026-08-01',      '1'),
+      (33,'T-S3','위반 D→R «흔적 보존» — C-23·C-24·C-28이 잡는가',
+           'DOC-SAF-0029@r3', 'draft',      NULL,                  NULL,
+                              'retired',    NULL,                  NULL,              '3'),
+      -- 🔴 이 행이 C-28을 신설한 이유다. E-7 «전» 계수에서 유일하게 «절대 0»으로 샜다.
+      (34,'T-S4','위반 D→R «흔적 삭제»(승인·기간 위조) — C-28이 잡는가',
+           'DOC-SAF-0029@r3', 'draft',      NULL,                  NULL,
+                              'retired',    'maintenance_manager', '2026-08-01',      '1'),
+      (35,'T-S5','위반 A→R «흔적 보존»(기간 미기입) — C-24·C-28이 잡는가',
            'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
-                              'retired',    'maintenance_manager', '2026-08-01',      'INFO')
+                              'retired',    'maintenance_manager', NULL,              '2'),
+      (36,'T-S6','위반 A→R «흔적 삭제» — C-28이 잡는가',
+           'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
+                              'retired',    'maintenance_manager', '2026-08-01',      '1')
     ) AS t(ord, cid, what, tgt, f_state, f_by, f_to, i_state, i_by, i_to, expected)
     ORDER BY ord
   LOOP
     rejected := true; errc := NULL;
-    d_new := NULL; d_old := NULL;
+    d_new := NULL; d_old := NULL; a_new := NULL; a_old := NULL;
 
     BEGIN
       -- ① 설정 — from 상태와 잔여열을 «앞뒤 맞게» 세운다.
       --    설정 자체가 그물을 울릴 수 있으므로(예: r3을 draft로 두면 C-21이 운다)
-      --    반드시 설정 «후»를 기준선으로 잡는다. 증분만이 전이의 몫이다.
+      --    반드시 설정 «후»를 기준선으로 잡는다. 증분만이 전이가 «새로» 울린 몫이다.
       UPDATE document_revision
          SET approval_state = c.f_state,
              approved_by    = c.f_by,
@@ -227,11 +250,10 @@ BEGIN
     INSERT INTO _tn VALUES (
       c.ord, c.cid, c.what, c.expected,
       CASE WHEN rejected THEN format('DB 거부(SQLSTATE %s)', COALESCE(errc,'?'))
-           ELSE format('전이 그물 %s%s · 기존 그물 %s%s',
-                       CASE WHEN d_new >= 0 THEN '+' ELSE '' END, d_new,
-                       CASE WHEN d_old >= 0 THEN '+' ELSE '' END, d_old) END,
+           ELSE format('전이 그물 %s%s(절대 %s) · 기존 그물 %s%s(절대 %s)',
+                       CASE WHEN d_new >= 0 THEN '+' ELSE '' END, d_new, a_new,
+                       CASE WHEN d_old >= 0 THEN '+' ELSE '' END, d_old, a_old) END,
       CASE
-        WHEN c.expected = 'INFO'   THEN 'INFO'
         WHEN c.expected = 'REJECT' THEN CASE WHEN rejected THEN 'PASS' ELSE 'FAIL' END
         WHEN rejected              THEN 'FAIL'
         WHEN d_new = c.expected::bigint THEN 'PASS'
