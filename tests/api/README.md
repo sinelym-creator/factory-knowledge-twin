@@ -1,0 +1,60 @@
+# tests/api — ai-api 표면 검증 자산 (검증 좌석)
+
+T2-1 독립 검증에서 세운 3종. 판정 근거는 `evidence/t2-1-retrieval-verification.md`.
+
+| 자산 | 무엇을 재는가 | 대상 | 서버 |
+|---|---|---|---|
+| `anchor_boundary_drill.py` | 승인된 «같은 질문»의 표기 변형이 **같은 hits** 를 내는가 | HTTP 표면 | 필요 |
+| `anchor_extraction_probe.py` | 앵커 **경계 불변식** — ID 뒤에 무엇이 붙어도 잘리지 않는가 | `app.retrieval.anchors` | 불요 |
+| `error_shape_drill.py` | 오류가 **언제나** 계약 형상(`{error:{code,message}}` JSON)인가 | HTTP 표면 | 필요 |
+
+```
+python tests/api/anchor_boundary_drill.py       # 리포 루트에서
+python tests/api/anchor_extraction_probe.py
+python tests/api/error_shape_drill.py           # 도달 가능한 오류 경로만
+python tests/api/error_shape_drill.py --cut-neo4j   # + 런타임 의존 단절(자기 스택 한정)
+```
+
+환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`).
+
+## 세 가지 규율
+
+**① 정본에서 다시 뽑는다.** 질문은 구현의 `allowlist.py` 가 아니라
+`benchmarks/datasets/eval-questions-draft.md` 에서 매 실행 **내 파서로** 뽑는다. 구현의 목록을
+입력으로 쓰면 「같은 목록끼리 맞다」만 확인하게 된다.
+
+**② 그물이 «빨강을 낼 수 있는지» 먼저 증명한다.** 세 자산 모두 본 시험 앞에 자기 검증을 둔다 —
+`anchor_boundary_drill` 은 서로 다른 두 승인 질문이 실제로 다르게 보이는지, `error_shape_drill` 은
+계약 이탈 표본 3종을 실제로 걸러내는지, `anchor_extraction_probe` 는 **정정 전 정규식을 다시 만들어
+자기 표에 걸어** 본다(옛 결함을 못 잡는 표는 약한 표다). 자기 검증이 실패하면 exit **2** —
+결과가 아니라 «측정 불가»다.
+
+**③ 빈 결과를 초록으로 읽지 않는다.** 🔴 실제로 한 번 물렸다: neo4j 재기동 직후 아직 질의를 받지
+못하는 창에서 전 문항 graphrag 가 0건이었고, 변형끼리는 «전부 일치»라 그물이 초록이었다.
+`anchor_boundary_drill` 은 이제 기준 표기의 vector hits 가 0이면 exit 2 로 죽고, 총 hits 를
+«생존 신호»로 출력한다. **빈 결과끼리의 일치는 일치가 아니다.**
+
+## 🔴 두 앵커 자산이 «따로» 있는 이유
+
+V-1 정정은 두 겹이다 — ⓐ `anchors._ID_RE` 의 경계를 문자집합으로 잠갔고, ⓑ `service.compare` 가
+승인 즉시 `allowlist.canonical(qid)` 로 표준 표기 하나로 모은다.
+
+ⓑ 가 있는 한 HTTP 로는 어떤 표기를 보내도 하류가 같은 문자열을 본다. 그래서
+**`anchor_boundary_drill` 의 초록은 이제 「경계가 옳다」가 아니라 「표기가 모인다」를 뜻한다** —
+누군가 ⓐ 를 되돌려도 그 그물은 초록으로 남는다. 초록이 «무엇의» 초록인지 갈리는 자리라서,
+ⓐ 를 직접 재는 `anchor_extraction_probe` 를 따로 세웠다.
+
+그 대가로 probe 는 대상 모듈을 import 한다(도구가 대상에 결합하면 대상이 바뀔 때 함께 죽는다).
+경계 불변식이 그 함수 안에만 살아 있어 밖에서 관측할 표면이 없기 때문이며, 결합 범위를 순수 함수
+하나로 좁히고 임포트가 깨지면 그 자체를 실행 오류로 죽인다.
+
+## 판정 규칙
+
+| exit | 뜻 |
+|---:|---|
+| 0 | 전건 기대대로 |
+| 1 | 어긋남 1건 이상 — 대상의 결함이다 |
+| 2 | **실행 오류** — 그물이 죽었거나 대상이 서 있지 않다. 「초록도 빨강도 아니다」 |
+
+`error_shape_drill --cut-neo4j` 는 **쓴다** — 컨테이너를 정지했다 되돌리고, 마지막 `E-0` 가
+되감기(health `healthy` + compare 200)를 실측한다. 기본은 꺼져 있고, 타 좌석 스택에 겨누지 않는다.
