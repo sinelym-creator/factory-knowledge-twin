@@ -155,10 +155,13 @@ MUTATIONS = [
     ("금지 ID 출현(EQ-CNC-999)", m_forbidden_id, True, "금지 ID 출현"),
     ("규모 위반(sensor 1건 누락)", m_scale, True, "규모 불일치"),
     ("GS 바인딩 ID 변조(부품 · 규모 유지)", m_binding_id, True, "GS 바인딩 ID 누락"),
-    # 🔴 F-2 (evidence/t1-2-seed-verification.md) — 자기 점검의 바인딩 검사는 «전 테이블 문자열 집합»에
-    #    ID가 있는지만 본다. equipment 행의 id를 바꿔도 sensor·alarm 등이 옛 문자열을 들고 있어 통과한다.
-    #    처방: GS 키별로 «그 entity 테이블의 id 칼럼»에서 찾도록 좁힌다. (적재 시 FK로는 걸리므로 심각도 낮음)
-    ("GS 바인딩 ID 변조(설비 · 규모 유지)", m_binding_equipment, False, None),
+    # 🔴 F-2 «닫힘»(2026-08-29 · 검증 좌석 독립 확인). 옛 상태: 바인딩 검사가 «전 테이블 문자열 집합»에
+    #    ID가 있는지만 봐서, equipment 행의 id를 바꿔도 sensor·alarm이 옛 문자열을 들고 있어 통과했다.
+    #    처방 착지 = `config.GS_OWNER`(GS 키 → 소유 테이블·칼럼)로 좁힘. 그 뒤 20키 전건 감지를
+    #    `probe_binding_scope.py`로 재현하고 이 행을 known gap → 정상 기대로 전환했다.
+    #    🔴 사유를 «키까지» 못박는다 — 부품 행과 같은 「GS 바인딩 ID 누락」만 보면 어느 키가
+    #       잡혔는지 구분되지 않아, 설비 축이 죽어도 초록으로 보인다.
+    ("GS 바인딩 ID 변조(설비 · 규모 유지)", m_binding_equipment, True, "GS 바인딩 ID 누락: equipment"),
 ]
 
 
@@ -204,7 +207,7 @@ def main() -> int:
             print("        이 축은 아직 시험되지 않았다. 다른 검사에 걸리지 않는 주입으로 좁혀라.")
         elif detected == expect_caught:
             mark = "PASS" if detected else "PASS(known gap)"
-            note = (hit or fails[0]) if detected else "미감지 — 알려진 구멍(F-2)으로 고정돼 있다"
+            note = (hit or fails[0]) if detected else "미감지 — 알려진 구멍으로 «표에 고정»돼 있다"
             print(f"  {mark:<15} {name}")
             print(f"        → {note}")
         else:
