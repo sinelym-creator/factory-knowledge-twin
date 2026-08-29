@@ -62,7 +62,7 @@ size_limit: 8KB
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
 | T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | ✅ PASS(levi2 4대 — A단 PR#60: stale 6곳 정정·F-2 대체 분기(사정거리 2/20 실측·처방 회부)·G-2 그물 C-21/C-22+생존 6/6 · B단 PR#63: 재현성 PASS·index_build↔spec 8/9(⑨ 부분 — ontology 축 부재 «적발»·L-31/L-32 그물 고정)·V-1 해소·U-7 치환) |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | ✅ PASS(senku2 3대 구현 PR#48 · levi2 3대 독립 검증 PR#52 — 계약 표면 23/23 교차 대조·blocking 0(−9.36ms)·도메인 0 전수 실독·harness strict green) |
-| T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 구현 완료 «접수»(senku2 6대 · PR#81 — AC 6항 E1 · 4상태 배지·pending 세션 정직·세션 가드 단일화(proxy) · Tailwind 4.3.3 · 계약 밖 0 · 검사기 contract-surface.mjs 신설) — 계수는 독립 검증(E2E — 「재지 않은 것」 명시 이월분 포함) PASS 후(§32.1) |
+| T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 구현 접수(PR#81) · 검증 완료(levi2 6대 · PR#90 — AC 6/6 «충족»이나 🔴 결함 2건: V-1 세션 가드 .svg 우회 · V-2 spacing 토큰 무효 선언 + 검사기 D-13 · 「AC 문장이 정본보다 짧았다」 · 「계약 밖 0」 주장은 독립 재측정 참) — 🔴 정정 발주(senku2 7대 · 15:52) → 재검 PASS 후 계수 |
 | T1-10 | harness 커버리지 상시 경고(미실행 스키마 속성 검출) | 검증 | 계약 필드 추가 시 구멍 재발 방지 — 러너 경고+옵션 실패 | ✅ PASS(오케 판정 — 로컬 strict 37/37 exit 0 · levi2 · PR#25) |
 
 ### Phase 2 분해안 (준비 완료 · 🔴 분모 «밖» — Phase 2 진입 게이트 때 「분모 25→31」 선행 선언과 함께 등재 · baseline §21 Phase 2 정본 대조 08-29)
@@ -95,4 +95,5 @@ size_limit: 8KB
 | Q-13 | 덤프 «형식» 정본 없음 — 구현·검증 덤프가 각자 뜬다(각자 재현성만 보므로 현재 무해 E3) → 교차 검증 필요 시점에 정본화 | levi2 회부 ②(PR#85) | 필요 시점 오케 판정 |
 | Q-14 | `index_build.graph_projection_version` 채움(indexer 연동) | levi2 회부 ③(PR#85) | ✅ 불요 종결(오케 판정 — 006 «전» 관점의 회부였고 B안 확정이 답: 열 = NULL이 참(색인 경로 비관측) · 짝 판정 = view. COMMENT 성문분이 정본) |
 | Q-15 | 그래프 «낡음» 축 부재 → 원장 데이터 지문 + 짝 판정 상태 | levi2 회부 ④(PR#85) | ✅ 구현 완료 접수(008 · PR#88 — 처방 이탈 3건 전건 승인: 2열(지문+사정거리)·2상태(STALE/UNVERIFIED)·🔴 사정거리 = «투영이 읽는 열»(23테이블 78열 — 경보 사정거리 = 해소 범위 원칙) · 대조군 8종 · 🔴 착지 여파 = 재투영 전 기존 행 UNVERIFIED(설계) — 검증 재검 몫) |
+| Q-16 | 🔴 정본 내부 긴장 — wireframes §6 「모든 라우트 세션 가드」 ↔ §3 「Evidence 딥링크는 세션 밖에서도 열람만 가능」. 현행 = 가드 정본 유지(딥링크는 /로 · 쿼리 소실 — «지금의 뜻»으로 검증 스펙 고정) → 세션 밖 «읽기 전용 열람» 경로 설계는 Phase 3 evidence 뷰 티켓 결속 | levi2 6대 R-1(PR#90) | Phase 3 T3-x 발주 시 오케 설계 |
 | Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
