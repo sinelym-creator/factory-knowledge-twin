@@ -58,7 +58,7 @@ size_limit: 8KB
 | T1-2 | synthetic seed 생성기 | 구현 | GS-01 무대 전량 + 🔴 D-2·D-5 의도적 불완전성 보존 | ✅ PASS(senku2 구현 PR#37·44 · levi2 검증 5축 PR#41 + 재검 20/20 반전 PR#46 — F-1 수정 실측 종결) |
 | T1-3 | synthetic 문서 셋(SOP·매뉴얼·안전규정) | 구현 | revision·hash·approval_state·effective 기간 실체 | ✅ PASS(senku2 2·3대 구현 PR#40·44 · levi2 3대 독립 검증 PR#52 — 인용 9/9·hash 60/60 재계산·◇ 5/5·상표 0 · 🔴 V-1 chunk 좌표 축 = T1-4 인수 조건 이월) |
 | T1-4 | ingestion·chunk·임베딩·pgvector 색인 | 구현 | seed→색인 재생성 멱등 · chunk 정책 실측→오케 동결 게이트 | ✅ PASS(senku2 4~5대 구현 PR#53·54·56·61 — 게이트 ①~⑤ · AC 6항 E1 · levi2 4대 독립 검증 PR#63 — 재현성 «덤프 sha 동일» 2회·chunk 59 unique·V-1 4/4+양방향 7/7 «해소») — 🔴 이월 2건 = Q-4(ontology STALE 축)·Q-5(spec §4 pgvector 보유분 판정 이연) |
-| T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 티켓 준비 완료(tickets/T1-5.md · 08-29) — 센쿠2 6대 1착 발주 대기 |
+| T1-5 | Neo4j projection | 구현 | R03·R07·R08·R11·R12 포함 · GS-01 4-hop 경로 실체 | 구현 완료 «접수»(게이트 ①~⑤ · senku2 6대 · PR#73 — 노드 309·관계 448 · 멱등 3회 바이트 동일 · 값 전량 대조 신설 · S5 그래프 축 완결) · 🔴 006(graph_build 원장·투영 버전 — B안 승인) 진행 — 계수는 독립 검증 PASS 후(§32.1) |
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
 | T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | ✅ PASS(levi2 4대 — A단 PR#60: stale 6곳 정정·F-2 대체 분기(사정거리 2/20 실측·처방 회부)·G-2 그물 C-21/C-22+생존 6/6 · B단 PR#63: 재현성 PASS·index_build↔spec 8/9(⑨ 부분 — ontology 축 부재 «적발»·L-31/L-32 그물 고정)·V-1 해소·U-7 치환) |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | ✅ PASS(senku2 3대 구현 PR#48 · levi2 3대 독립 검증 PR#52 — 계약 표면 23/23 교차 대조·blocking 0(−9.36ms)·도메인 0 전수 실독·harness strict green) |
@@ -87,4 +87,5 @@ size_limit: 8KB
 | Q-6 | 거울 공란 시 «판정 안 함»이 FRESH로 표시 — freshness에 `ONTOLOGY_UNVERIFIED` 상태 신설 또는 읽기 경로 FAIL(빌드 경로는 이미 멈춤 — 심각도 낮음 E3 · L-34가 현재 동작 고정 · 착지 시 L-34가 울려 알림) | levi2 PR#68 ⓑ 잔여(상태 ⑤/⑥ 대조 실측) | T1-5 후 소조각 묶음 |
 | Q-7 | `migrate.ps1` 헤더 `embedding_dim=768` 표기 stale(실제 최종 상태 384 · 경미) | levi2 회부 ③ | Q-6 동반 |
 | Q-8 | `v_ssot_manifest` 정렬의 collation 의존 — 바이트 순서 고정(`COLLATE "C"`) 명시 검토. 현 ID 체계(DOC-AAA-NNNN 단일 모양)에선 동일함 실측 — ID 체계 확장 시 지문이 DB 설정에 좌우된다 | levi2 회부 ②(E3 · LC_ALL=C 독립 조립 대조) | Q-6 동반 |
+| Q-9 | 「2순위 후보」 3자 정합 — seed 실물 rank2 = FM-SPDL-OVERHEAT ↔ 화면(wireframes ②)·대본은 FM-TOOL-IMB. «측정 후 바인딩» 계열(V-1 선례): T2-3(조사 워크플로우) 착지 시 실물 후보로 화면·대본 재바인딩 · 스펙 문구 혼선은 정오표 E-6 성문 | senku2 6대 회부 ①(FM-TOOL-IMB = 어떤 incident에도 진단 없음 실측 · D-5 정합) | T2-3 착지 시 오케 패스 |
 | Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
