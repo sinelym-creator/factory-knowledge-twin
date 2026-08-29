@@ -34,6 +34,7 @@ size_limit: 4KB
 | `tests/graph/` | 그래프 투영 독립 검증(스펙 독립 파싱 `graph_verify` 18축 · 끊김/변조 드릴 `graph_drill` 22축 · 러너 — T1-5 검증) | 투영 개정 동반 |
 | `tests/web/` | 셸 E2E 검증(playwright 4스펙 · 검사기 드릴 17주입 · 독립 표면 스캔 `surface_scan` · 토큰 프로브 · 라우트 매트릭스 — T1-9 검증) | 셸 개정 동반 |
 | `tests/api/` | retrieval API 독립 그물(앵커 경계 드릴 — 표기 변형 교차·생존 신호 exit 2 · 경계 직접 probe · 계약 오류 형상 드릴 — T2-1 검증) | retrieval 개정 동반 |
+| `data/replay/` | replay fixture(재생 자산 · 🔴 seed 원천 아님 — README 성문 · JSONL·무가공·LF 고정 — T2-4) | fixture 재녹화 시 |
 | `tests/data/` | seed 무결성 probe 28건(C-21~C-28 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 27판정·증분/절대 이축 — G-3·E-7) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
