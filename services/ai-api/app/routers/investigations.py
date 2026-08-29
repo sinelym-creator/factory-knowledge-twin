@@ -8,7 +8,8 @@ from fastapi import APIRouter, WebSocket
 from pydantic import BaseModel
 
 from ..errors import NOT_IMPLEMENTED, NotImplementedRoute
-from ..schemas import AgentEvent, RunCreated, RunStopped
+from ..reading import scenarios as scenario_reader
+from ..schemas import AgentEvent, RunCreated, RunStopped, ScenarioSummary
 
 router = APIRouter(tags=["investigation"])
 
@@ -24,10 +25,15 @@ class RunRequest(BaseModel):
     mode: Literal["live", "replay"]
 
 
-@router.get("/scenarios", responses=NOT_IMPLEMENTED)
-async def list_scenarios() -> None:
-    """승인된 시나리오 목록(allowlist — GS-01 등). 항목 형상은 계약이 정하지 않았다."""
-    raise NotImplementedRoute("GET /scenarios", "시나리오 allowlist 저장소 + 계약의 항목 형상 확정")
+@router.get("/scenarios", response_model=list[ScenarioSummary])
+async def list_scenarios() -> list[ScenarioSummary]:
+    """승인된 시나리오 목록 — `[{ scenarioId, title, questions }]` (계약 v0.1.1 append).
+
+    🔴 `questions` 의 원천은 compare 가 쓰는 바로 그 allowlist 다(`app/reading/scenarios.py`
+       성문). 저장소를 따로 두지 않는 이유는 두 목록이 갈라지는 순간 화면이 «여기서 받은
+       질문»을 compare 에 보냈다가 거절당하기 때문이다.
+    """
+    return scenario_reader.list_scenarios()
 
 
 @router.post("/scenarios/{scenarioId}/runs", response_model=RunCreated, responses=NOT_IMPLEMENTED)

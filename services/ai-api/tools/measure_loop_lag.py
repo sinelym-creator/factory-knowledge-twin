@@ -24,6 +24,7 @@ import argparse
 import asyncio
 import statistics
 import sys
+import urllib.parse
 import time
 from pathlib import Path
 
@@ -64,7 +65,7 @@ def _summary(lags: list[float]) -> tuple[float, float, float]:
 
 
 async def run(duration: float, concurrency: int, blocking_demo: bool, retrieval: bool,
-              strategies: list[str]) -> int:
+              strategies: list[str], reading: str | None = None) -> int:
     import httpx
 
     from app.main import create_app
@@ -85,6 +86,10 @@ async def run(duration: float, concurrency: int, blocking_demo: bool, retrieval:
     payload = None
     if blocking_demo:
         target = "/api/__blocking_demo"
+    elif reading:
+        # T2-2: 읽기 표면(`/evidence`)도 위험이 있는 경로다 — 원문 대조로 offset 을 산출하므로
+        # revision 당 chunk 를 훑는다. 그 순회가 루프를 잡지 않는지 여기서 본다.
+        target = f"/api/evidence/{urllib.parse.quote(reading, safe='')}"
     elif retrieval:
         from app.retrieval.allowlist import APPROVED_QUESTIONS   # noqa: PLC0415
 
@@ -167,6 +172,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="대조군 — 루프를 막는 핸들러를 임시로 붙여 같은 측정을 돌린다")
     ap.add_argument("--retrieval", action="store_true",
                     help="부하 대상을 POST /api/retrieval/compare 로 (T2-1 질의 임베딩 경로)")
+    ap.add_argument("--reading", metavar="EVIDENCE_ID",
+                    help="부하 대상을 GET /api/evidence/{id} 로 (T2-2 읽기 경로)")
     ap.add_argument("--strategies", default="vector,hybrid,graphrag",
                     help="--retrieval 부하가 요청할 전략(쉼표 구분) — 축을 갈라 원인을 좁힐 때 쓴다")
     args = ap.parse_args(argv)
@@ -174,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
     return asyncio.run(run(args.duration, args.concurrency, args.blocking_demo, args.retrieval,
-                          [x for x in args.strategies.split(",") if x]))
+                          [x for x in args.strategies.split(",") if x], args.reading))
 
 
 if __name__ == "__main__":

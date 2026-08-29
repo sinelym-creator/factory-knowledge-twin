@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..ontology_tables import NOISE_COLUMNS, TABLE_BY_PREFIX
 from ..schemas import CompareHit
 from . import anchors as anchor_mod
 from .embedding import embed_query
@@ -26,21 +27,9 @@ from .vector import search as vector_search
 
 RRF_K = 60
 
-# entity prefix → (테이블, 사람이 읽을 때 뜻이 없는 칼럼). 🔴 이 dict 밖의 테이블은 조회되지 않는다.
-_DIRECT: dict[str, str] = {
-    "EQ": "equipment",
-    "SN": "sensor",
-    "AL": "alarm",
-    "INC": "incident",
-    "WO": "work_order",
-    "MR": "maintenance_record",
-    "FM": "failure_mode",
-    "SOP": "sop",
-    "SAF": "safety_rule",
-    "DOC": "document",
-    "LN": "production_line",
-    "FAC": "factory",
-}
+# entity prefix → 테이블. 🔴 정본은 `app/ontology_tables.py` 한 곳이다 — `/evidence` 의
+# kind=record 도 같은 목록을 본다(T2-2에서 공용화 · 두 벌이면 한쪽만 자란다).
+_DIRECT = TABLE_BY_PREFIX
 # 앵커에서 «한 걸음»만 넓히는 고정 template. 여러 걸음은 graphrag 전략의 몫이다.
 # 🔴 세 번째 값은 정렬이다. 알람 ID는 `AL-{YYYYMMDD}-{NNNN}`(T0-6 §3.1)이라 오름차순 =
 #    «오래된 것부터»가 된다 — 조사에서 먼저 봐야 할 것은 최근 알람이므로 내림차순으로 받는다.
@@ -49,7 +38,7 @@ _EXPAND: dict[str, list[tuple[str, str, str]]] = {
     "EQ": [("sensor", "equipment_id", "ASC"), ("alarm", "equipment_id", "DESC")],
     "SN": [("alarm", "sensor_id", "DESC")],
 }
-_NOISE = {"created_at", "semantic_id"}
+_NOISE = NOISE_COLUMNS
 
 # 앵커 문자열이 본문에 그대로 나오는 chunk — 벡터가 놓치는 «정확한 ID 언급»을 집는다.
 _MENTION_SQL = f"""

@@ -279,3 +279,88 @@ GS-01 축 질문(`Q-MULTIHOP-001`)을 3전략으로 1회:
 |---|---|---|
 | 정본 그대로 | 10문 인식 | 10문 인식 |
 | `Q-SAFETY-002x` 로 개정한 사본 | **10문 인식(낡음 못 잡음)** | 9문 · 불일치로 FAIL |
+
+
+## 문서·evidence 읽기 — /scenarios · /evidence · /documents (T2-2)
+
+retrieval(T2-1)이 «무엇을 인용할지 찾는» 쪽이라면 이쪽은 «그 인용을 펴 보이는» 쪽이다.
+응답 형상의 정본은 계약 `rest-api-v0.1.md` 의 **「v0.1.1 응답 형상 append」** 절이다 —
+계약이 서술로만 두었던 자리를 오케가 성문했고, 구현은 여기서 필드를 새로 짓지 않는다.
+
+### 왕복이 이 티켓의 완료 증거 (E1 · 2026-08-30)
+
+`GET /scenarios` 가 준 질문 → `POST /retrieval/compare` → 그 응답의 `evidenceId` →
+`GET /evidence/{id}` → `GET /documents/{docId}?highlight={chunkId}` 까지 한 줄로 이었다.
+
+| 축 | 실측 |
+|---|---|
+| compare 가 낸 evidenceId 전건 조회 | **11/11 → 200** (doc-chunk 5 · record 6) |
+| `원문[start:end] == evidence.text` | **doc-chunk 5/5 True** |
+| `/scenarios` 질문을 그대로 compare 에 | 400 없이 통과(단일 정본이 성립한다는 뜻) |
+
+🔴 **왕복이 결함을 하나 잡았다.** `CP`(Component)가 테이블 화이트리스트에서 빠져 있어,
+graphrag 가 종단으로 낸 `CP-204-BRG-01` 을 `/evidence` 가 404 로 답했다 — **자기가 낸
+근거를 자기가 펴지 못하는** 상태였고, T2-1 안에서는 드러나지 않았다(hybrid 도 부품 레코드를
+집지 못했다). 「찾는 쪽」과 「펴는 쪽」을 이어 봐야 보이는 종류의 구멍이다.
+
+### 인용 좌표 (`highlight`)
+
+`document_chunk` 에 offset 열이 없어 **원문 대조로 산출**한다. 착수 전 실측(chunk 59건):
+본문에서 그대로 발견 59/59 · 본문 안 등장 횟수 정확히 1회 59/59 · 인접 chunk 간격 gap 0.
+
+그럼에도 `body.find()` 한 방으로 끝내지 않고 **앞에서부터 순차**로 찾는다 — 「1회만 등장」은
+동결 정책이 `overlap_ratio=0` 이라서 참이고, overlap 이 켜지면 같은 문장이 두 chunk 에 들어가
+단순 `find` 는 뒤 chunk 좌표를 조용히 틀리게 만든다. 좌표를 못 찾으면 `highlight: null` 이며,
+🔴 0 이나 전체 범위 같은 그럴듯한 값을 지어내지 않는다(엉뚱한 문장을 강조하는 거짓은 오류
+없이 살아남는다).
+
+**문장이 chunk 경계에 걸리는 경우** — 현 데이터 **0건**이다(chunk 59건 전부 절 제목에서
+시작). 동결 정책 `section_sentence/512` 가 문장 경계를 지키기 때문이며, 발생 조건은
+**한 문장이 512 token 예산을 넘길 때**다: 그때 `chunking._split_greedy` 가 더 쪼갤 계층을
+소진하고 `split_fixed` 로 내려가 문장 중간에서 자른다. 그 경우 `highlight` 는 **그 chunk
+구간만** 가리킨다 — 문장 전체가 아니라 인용된 조각의 좌표다.
+
+### 🔴 chunk ID 와 URL — `#` 는 인코딩해야 한다
+
+chunk ID 는 `{document_id}@r{N}#{NNN}`(T0-6 §3.1)이고 **`#` 는 URL 의 fragment 구분자**다.
+`GET /api/evidence/DOC-SOP-0014@r2#001` 을 그대로 보내면 서버에는 `DOC-SOP-0014@r2` 까지만
+닿아 **404** 가 난다(실제로 첫 왕복 실측이 여기서 걸렸다). 소비자는 경로 세그먼트를
+percent-encoding 해야 한다 — `DOC-SOP-0014%40r2%23001`. 실패가 조용하지 않고 404 로 드러나는
+것은 다행이지만, 화면을 붙일 때 같은 함정에 빠지기 쉬운 자리다.
+
+### STALE 배지 — 「지문이 있다」와 「낡으면 운다」는 다르다
+
+배지는 `v_index_freshness` 에서 온다. 낡음을 실제로 만들어 봐야 «운다»를 말할 수 있는데,
+자기 스택은 읽기 전용이므로 **단일 트랜잭션 안에서 변조 → 배지 산출 경로 조회 → `ROLLBACK`**
+으로 쟀다(오케 승인 «안 A» · 영구 쓰기 0).
+
+| 대조군 (E1 · `index_build.source_sha256` 1행 · 커밋 없음) | `freshness` | 배지 `stale` |
+|---|---|---|
+| 주입 전 | `FRESH` | `false` |
+| 주입 후 (같은 트랜잭션) | **`STALE`** (사유 `SOURCE_SHA`) | **`true`** |
+| `ROLLBACK` 후 | `FRESH` | `false` (sha 원값 동일 확인) |
+
+🔴 **이것은 SQL 계층 실증이지 HTTP 왕복이 아니다.** 커밋하지 않으므로 다른 세션에서는
+그 상태를 볼 수 없고, 그래서 API 표면까지의 낡음 대조군은 독립 스택을 가진 검증 좌석의 몫이다.
+
+| 대조군 2행 — `ontology_registry` 를 비워 «버전 확인 불가»를 만든다 | `freshness` | 배지 `stale` |
+|---|---|---|
+| 주입 전 | `FRESH` | `false` |
+| 주입 후 (같은 트랜잭션) | **`ONTOLOGY_UNVERIFIED`** | **`true`** |
+| `ROLLBACK` 후 | `FRESH` | `false` (registry 원값 동일 확인) |
+
+**boolean 하나가 답하는 질문은 「신선한가」가 아니라 「신선이 «실증»됐는가」다.** 뷰는 여섯
+상태를 가르는데(`FRESH`·`STALE`·`SKIPPED`·`NOT_INDEXED`·`ONTOLOGY_UNVERIFIED`·`BUILD_FAILED`)
+계약의 `stale` 은 boolean 이다. 그 압축을 「`STALE` 만 true」로 하면 **`ONTOLOGY_UNVERIFIED`
+가 false 로 나간다** — 「온톨로지 버전을 확인하지 못했다」를 「신선하다」로 말하는 것이고,
+그것이 Phase 1이 Q-6로 잡은 «조용한 FRESH 단정» 병의 API 층 재발이다(오케 판정 08-30).
+
+그래서 **`FRESH` 만 false** 다. 뷰에 새 상태가 생겨도 자동으로 true 가 되고, 값이 없는
+경우(`None`)도 true 다 — 「모른다」는 「신선하다」가 아니다. `SKIPPED`·`NOT_INDEXED` 는 chunk
+를 만들지 않아 doc-chunk 응답에 도달하지 않는데, 🔴 그 «믿음»은 주석으로 두지 않고 **가드가
+실행 시점에 확인**한다(도달하면 로그 경고 · 그 경우에도 배지는 true 라 답은 안전하다).
+
+**남는 한계**: 이 boolean 은 «왜» 신선이 실증되지 않았는지 말하지 못한다. 6상태 노출은
+계약 개정 사안이라 **Q-22 로 등재**됐다(v0.2 재론). 실측 시점에는 chunk 를 가진 revision 45건이
+전부 `FRESH` 라 이 압축이 겉으로 드러나지 않는다(뷰 60행 · 뷰에 없는 revision 0) — 데이터가
+가려 주고 있을 뿐이다.
