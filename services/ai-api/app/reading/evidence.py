@@ -23,7 +23,7 @@ from typing import Any
 
 from ..ontology_tables import NOISE_COLUMNS, table_of
 from ..schemas import EvidenceRecord, EvidenceResponse, Highlight
-from .offsets import locate
+from .offsets import locate_cited
 
 log = logging.getLogger("fkt.reading")
 
@@ -99,7 +99,18 @@ async def _doc_chunk(pool: Any, evidence_id: str) -> EvidenceResponse | None:
             freshness,
         )
 
-    span = locate(row["body"] or "", [r["text"] for r in siblings], int(row["chunk_index"]))
+    # 🔴 `/documents` 와 **같은 벽**을 지난다(오케 판정 08-30). 계약 v0.1.1 이 doc-chunk 에
+    #    약속한 것이 「원문 + 강조 offset」이므로, 좌표를 되찾지 못한 응답은 계약을 지키지
+    #    못한 것이다 — 여기서 200 + 무강조로 접으면 그것이 바로 조용한 null 의 상위형이다.
+    #    ①② (없는 revision · 범위 밖 index)는 이 경로에 없다: chunk 행을 id 로 집어 왔으므로
+    #    실재가 보장되고, `chunk_index` 도 그 행에서 온다. 남는 갈래는 ③ 정합 파열뿐이다.
+    span = locate_cited(
+        row["body"] or "",
+        [r["text"] for r in siblings],
+        int(row["chunk_index"]),
+        chunk_id=evidence_id,
+        revision_id=row["revision_id"],
+    )
     return EvidenceResponse(
         evidenceId=evidence_id,
         kind="doc-chunk",
@@ -110,7 +121,7 @@ async def _doc_chunk(pool: Any, evidence_id: str) -> EvidenceResponse | None:
         effectiveFrom=row["effective_from"],
         effectiveTo=row["effective_to"],
         text=row["text"],
-        highlight=Highlight(start=span.start, end=span.end) if span else None,
+        highlight=Highlight(start=span.start, end=span.end),
     )
 
 

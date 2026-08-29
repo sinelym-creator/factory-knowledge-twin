@@ -21,7 +21,7 @@ from typing import Any
 
 from ..schemas import DocumentHighlight, DocumentPreview
 from .evidence import CHUNK_ID_RE, is_stale
-from .offsets import locate
+from .offsets import locate_cited
 
 _REVISION_SQL = """
     SELECT d.id AS document_id, d.title,
@@ -59,19 +59,6 @@ class HighlightNotFound(ValueError):
         self.chunk_id = chunk_id
         self.reason = reason
         self.detail = detail
-
-
-class CitationIntegrityBroken(RuntimeError):
-    """chunk 는 실재하는데 원문에서 그 자리를 되찾지 못했다 — **호출자 잘못이 아니다**.
-
-    🔴 400 으로 접지 않는다(오케 판정 08-30): 요청 좌표는 옳다. chunk 텍스트가 revision
-       body 안에 없다는 뜻이고, 그것은 **색인↔원문 정합이 깨졌다**는 신호다 — 울려야 할
-       사건이다. 200 + 무강조로 접으면 「사유 없는 200」이 되어 조용한 null 의 상위형이 된다.
-
-    🔴 현 데이터로는 재현되지 않는다(chunk 59/59 가 body 에서 유일하게 발견 — T2-2 게이트1
-       실측). 재색인·본문 개정이 이 경로를 연다. 재현할 수 없다고 없는 경로는 아니므로,
-       그물이 못 만드는 자리를 코드가 대신 막아 둔다(검증 좌석 권고 · 판정 채택).
-    """
 
 
 async def fetch(pool: Any, document_id: str, highlight: str | None) -> DocumentPreview | None:
@@ -116,11 +103,14 @@ async def fetch(pool: Any, document_id: str, highlight: str | None) -> DocumentP
                 "index_out_of_range",
                 f"chunk_index 가 범위 밖이다(이 revision 의 chunk 는 0~{len(chunks) - 1})",
             )
-        span = locate(row["body"] or "", [c["text"] for c in chunks], target)
-        if span is None:
-            raise CitationIntegrityBroken(
-                f"{highlight}: chunk 텍스트를 revision {row['revision_id']} body 에서 찾지 못했다"
-            )
+        # ③은 여기서 «가르지» 않는다 — `locate_cited` 가 인용 소비처 전부를 대신 막는다.
+        span = locate_cited(
+            row["body"] or "",
+            [c["text"] for c in chunks],
+            target,
+            chunk_id=highlight,
+            revision_id=row["revision_id"],
+        )
 
     return DocumentPreview(
         documentId=row["document_id"],

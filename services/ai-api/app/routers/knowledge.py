@@ -4,11 +4,15 @@
    의 `dependency_guard` 한 곳이고, 여기서는 그것을 두르기만 한다 — compare 만 자기 안에
    변환을 갖고 있던 탓에 뒤늦게 열린 읽기 라우트가 같은 단절을 500 으로 말했다.
    한 사건에 두 판정이 나오면 하나는 반드시 거짓이다.
+
+🔴 **인용 정합 파열도 여기서 잡지 않는다** — `CitationIntegrityBroken` 은 앱 전역 핸들러가
+   받아 `/evidence` 와 `/documents` 에 «같은» (status, code) 를 준다(V-6 ③ 확장 정정).
+   라우트마다 잡기로 하면 새 인용 소비처가 생길 때 잡기를 잊는 자리가 다시 생긴다 —
+   V-7 이 정확히 그 형태였다.
 """
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -18,8 +22,6 @@ from ..reading import documents as document_reader
 from ..reading import evidence as evidence_reader
 from ..retrieval.service import compare
 from ..schemas import CompareRequest, CompareResult, DocumentPreview, EvidenceResponse
-
-log = logging.getLogger("fkt.knowledge")
 
 router = APIRouter(tags=["knowledge"])
 
@@ -103,18 +105,6 @@ async def document_preview(
             detail={
                 "code": "highlight_not_found",
                 "message": f"highlight={highlight} 의 chunk 가 실재하지 않는다 — {exc.detail}",
-            },
-        ) from exc
-    except document_reader.CitationIntegrityBroken as exc:
-        # 🔴 색인↔원문 정합 파열 — 호출자가 고칠 수 없으므로 4xx 로 접지 않는다(판정 08-30).
-        #    상세(어느 revision·어느 chunk)는 **로그에만** 남긴다: 인증 없는 공개 Sandbox 라
-        #    내부 식별자를 응답에 실으면 그대로 밖으로 나간다(V-2 규율 그대로).
-        log.error("인용 정합 파열 — 강조 좌표를 되찾지 못했다: %s", exc)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "code": "citation_integrity_broken",
-                "message": "인용 좌표를 원문에서 되찾지 못했다 — 색인과 원문이 어긋나 있다",
             },
         ) from exc
     if found is None:
