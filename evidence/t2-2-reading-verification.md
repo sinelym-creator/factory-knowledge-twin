@@ -147,6 +147,24 @@ Evidence 뷰만 없는 장애를 보고하게 된다.
 
 §2 V-7. 되감기(재기동 → 4라우트 200)까지 실측했다.
 
+### 축⑤ tests/api 모집단 — **3종 → 8종** (표면이 자란 만큼 표도 자랐다)
+
+| 자산 | 신설/증설 | 이번 결과 |
+|---|---|---|
+| `citation_roundtrip_drill.py` | 신설 | 왕복 38 green · 대조군 **2 red**(V-6) |
+| `scenario_allowlist_drill.py` | 신설 | **전건 green**(집합 1 + 관문 10 + 대조군 6) |
+| `freshness_badge_drill.py` | 신설 | **전건 green**(상태표 7 + 주입 왕복 6) |
+| `dependency_code_drill.py` | 신설 | 기준선 4 green · 단절 **3 red**(V-7) |
+| `injection_surface_drill.py` | 신설(보안) | **전건 green**(적대 입력 30 + 대상 생존 1) |
+| `error_shape_drill.py` | 증설 E-07·E-08·E-09 | **11/11 green** |
+| `anchor_boundary_drill.py` · `anchor_extraction_probe.py` | 회귀 | 10/10 · 16/16 green |
+
+검사 행 계수(자기 검증·되감기 포함): **32 → 160** — 16(경계 probe) + 10(표기 변형) + 11(오류 형상)
++ 47(왕복 38 + 대조군 9) + 17(시나리오 1+10+6) + 13(배지 7+6) + 15(의존 코드) + 31(적대 입력 30 + 생존 1).
+
+🔴 red 5행은 **일부러 남긴다**. 정정이 그 빨강을 초록으로 바꾸는 것이 재검의 판정 근거다 —
+T2-1 에서 V-1~V-4 가 그렇게 뒤집혔다.
+
 ### 축⑥ 보안 경계 — **PASS** (발주 축 밖 · 검증 좌석 scope · 오케 승인 08-30)
 
 T2-2 는 «문자열로 테이블·행을 고르는» 코드 근처에 문을 셋 냈다 — `/evidence/{id}` ·
@@ -167,24 +185,6 @@ T2-2 는 «문자열로 테이블·행을 고르는» 코드 근처에 문을 �
 내 누출 표지에 걸렸다. 판정 전에 내 입력을 지우고(`residue()`), 자기 검증에 「반사된 payload 는
 누출이 아니다」 행을 세워 못박았다. **초록만 주어를 묻는 것이 아니라 빨강도 주어를 물어야 한다.**
 
-### 축⑤ tests/api 모집단 — **3종 → 8종** (표면이 자란 만큼 표도 자랐다)
-
-| 자산 | 신설/증설 | 이번 결과 |
-|---|---|---|
-| `citation_roundtrip_drill.py` | 신설 | 왕복 38 green · 대조군 **2 red**(V-6) |
-| `scenario_allowlist_drill.py` | 신설 | **전건 green**(집합 1 + 관문 10 + 대조군 6) |
-| `freshness_badge_drill.py` | 신설 | **전건 green**(상태표 7 + 주입 왕복 6) |
-| `dependency_code_drill.py` | 신설 | 기준선 4 green · 단절 **3 red**(V-7) |
-| `injection_surface_drill.py` | 신설(보안) | **전건 green**(적대 입력 30 + 대상 생존 1) |
-| `error_shape_drill.py` | 증설 E-07·E-08·E-09 | **11/11 green** |
-| `anchor_boundary_drill.py` · `anchor_extraction_probe.py` | 회귀 | 10/10 · 16/16 green |
-
-검사 행 계수(자기 검증·되감기 포함): **32 → 160** — 16(경계 probe) + 10(표기 변형) + 11(오류 형상)
-+ 47(왕복 38 + 대조군 9) + 17(시나리오 1+10+6) + 13(배지 7+6) + 15(의존 코드) + 31(적대 입력 30 + 생존 1).
-
-🔴 red 5행은 **일부러 남긴다**. 정정이 그 빨강을 초록으로 바꾸는 것이 재검의 판정 근거다 —
-T2-1 에서 V-1~V-4 가 그렇게 뒤집혔다.
-
 ## 4. 소견 (E3 — 결함으로 계수하지 않는다)
 
 **소견① — `/evidence.highlight` 의 좌표 참조계가 응답 안에 없다.** 좌표는 «원문»(revision body)
@@ -197,15 +197,15 @@ Q-22 로 등재돼 있다. 이번 측정이 더한 사실 하나: `NOT_INDEXED`(
 `STALE`(색인이 낡음)이 화면에서 **같은 배지**가 된다 — 전자는 「아직 안 만들었다」, 후자는
 「만들었는데 뒤처졌다」로 운영 대응이 다르다.
 
+**소견③ — `record` 의 `stale=false` 상수는 «다른 주장»이다.** doc-chunk 의 `false` 는 「색인
+신선이 실증됐다」이고 record 의 `false` 는 「그 개념이 없다」다. `kind` 가 응답에 있으므로 화면이
+갈라 그릴 수 있으나, 갈라 그리지 않으면 SSOT 직독 근거에 색인 배지를 붙이게 된다.
+
 **소견④ (원장 Q-23 등재 · 오케 판정 08-30) — 오류 `message` 가 요청 문자열을 되비친다(30건 중 28건).** 적대 입력 30종은 전부
 계약 형상 4xx 로 막혔고 내부 누출도 0이며 코퍼스도 그대로였다(축⑤ `injection_surface_drill`).
 다만 message 는 요청한 ID 를 그대로 실어 보낸다 — 4KB payload 와 유니코드 방향 제어문자까지
 되비친다. 응답이 JSON 이고 화면이 React 라 실행 위험은 없어 결함으로 세지 않되, 공개 Sandbox
 에서 되비치는 길이·문자에 상한을 두는 편이 위생적이다.
-
-**소견③ — `record` 의 `stale=false` 상수는 «다른 주장»이다.** doc-chunk 의 `false` 는 「색인
-신선이 실증됐다」이고 record 의 `false` 는 「그 개념이 없다」다. `kind` 가 응답에 있으므로 화면이
-갈라 그릴 수 있으나, 갈라 그리지 않으면 SSOT 직독 근거에 색인 배지를 붙이게 된다.
 
 ## 5. 재현 명령
 
@@ -218,7 +218,7 @@ $env:FKT_POSTGRES_DSN='postgresql://fkt:***@127.0.0.1:5534/fkt'
 $env:FKT_NEO4J_URI='bolt://127.0.0.1:7587'; $env:FKT_NEO4J_USER='neo4j'; $env:FKT_NEO4J_PASSWORD='***'
 .venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 --host 127.0.0.1
 
-# 자산 7회 (리포 루트에서 · exit 0 = 기대대로 · 1 = 어긋남 · 2 = 측정 불가)
+# 자산 8회 (리포 루트에서 · exit 0 = 기대대로 · 1 = 어긋남 · 2 = 측정 불가)
 python tests/api/anchor_extraction_probe.py
 python tests/api/anchor_boundary_drill.py
 python tests/api/error_shape_drill.py --cut-neo4j
