@@ -47,5 +47,16 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   // 🔴 `/api/*`는 가드 대상이 아니다 — 계약 호출은 rewrite로 ai-api에 그대로 나간다.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg).*)"],
+  //
+  // 🔴 마지막 절이 `.*\.svg`였다(V-1 · levi2 실측). 「.svg로 끝나면 정적 자산」이라는 뜻으로
+  //    적었는데, 이 부정 전방탐색은 «경로 어디서든» 걸린다 — 동적 세그먼트가 `.svg`로 끝나는
+  //    id를 그대로 받으므로 `/incidents/x.svg`가 세션 없이 200으로 열렸다(3라우트 실측).
+  //    확장자 한 글자로 갈렸다: `.png`·`.ico`·`xsvg`는 전부 가드가 돌았다.
+  //
+  //    `[^/]+\.svg$`로 «최상위 세그먼트 하나»에 한정한다. public/의 파일은 URL 경로가 곧
+  //    파일 경로라 최상위 파일은 세그먼트가 하나다(현 public/ = svg 5개 · 전부 평면).
+  // 🔴 이 절이 기대는 전제 = public/이 평면이라는 것. 나중에 `public/img/logo.svg`처럼
+  //    중첩 자산을 두면 그 자산은 가드에 걸려 `/`로 튄다 — 이미지가 «눈에 보이게» 깨진다.
+  //    잊었을 때 자산이 깨지는 쪽이지, 가드에 구멍이 나는 쪽이 아니다. 실패 방향을 그렇게 둔다.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|[^/]+\\.svg$).*)"],
 };

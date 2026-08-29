@@ -21,6 +21,10 @@
   --color-warn: #f0a742;    /* 주의 */
   --color-danger: #f0555c;  /* 위험 */
   --color-ai: #38bdf8;      /* AI·evidence·graph path — 상태색과 계열 분리(§10) */
+  /* 모달 스크림 — 🔴 토큰 계층 «밖»에 남아 있던 유일한 색값이었다(R-3 · levi2 실측).
+     bg-black/60은 하드코딩 최소라는 AC는 만족하지만, 폴리시 패스에서 @theme만 훑으면
+     이 한 곳이 빠진다. 「고칠 곳이 이 블록 하나」라는 규칙에 예외를 두지 않는다. */
+  --color-scrim: rgb(0 0 0 / 0.6);
 
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
