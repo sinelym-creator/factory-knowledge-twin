@@ -202,6 +202,42 @@ def projected() -> tuple[RelSpec, ...]:
     return tuple(r for r in RELATIONS if r.projected)
 
 
+_FROM = re.compile(r"\bFROM\s+([a-z_][a-z0-9_]*)", re.IGNORECASE)
+_IDENT = re.compile(r"^[a-z_][a-z0-9_]*$")
+
+
+def _select_columns(sql: str) -> list[str]:
+    """관계 질의의 select 항목에서 «PG 열 이름»만 뽑는다(`col AS alias` / `col`)."""
+    head = sql.split(" FROM ")[0].strip()
+    if head.upper().startswith("SELECT "):
+        head = head[len("SELECT "):]
+    return [item.strip().split()[0] for item in head.split(",") if item.strip()]
+
+
+def source_scope() -> dict[str, list[str]]:
+    """투영이 «실제로 읽는» (테이블 → 열) — 데이터 지문(008)의 사정거리.
+
+    🔴 목록을 따로 적어 두지 않는다. 적어 두면 관계를 하나 더할 때 목록을 잊고, 잊은
+       원천은 바뀌어도 지문이 울지 않는다 — 낡음을 잡으려고 만든 축에 사각이 생긴다.
+       그래서 «투영이 실제로 실행하는 질의»에서 도출한다. 도출이 성립하는 전제(관계 질의
+       1건 = FROM 1개 · select 항목은 맨 열 이름)는 selfcheck가 매번 확인한다.
+
+    🔴 테이블 전체가 아니라 «읽는 열»까지 좁히는 이유: 낡음은 「재투영하면 그래프가
+       달라지는가」와 같은 뜻이어야 한다. 투영하지 않는 열(equipment.status 등)이 바뀌었을
+       때도 울면, 그 열이 수시로 갱신되는 운영 경로에서 짝 판정이 영구 적색이 된다.
+       항상 빨간 신호는 곧 아무도 안 보는 신호가 된다.
+    """
+    scope: dict[str, set[str]] = {}
+    for n in NODES:
+        scope.setdefault(n.table, set()).update(pg for _, pg in n.props)
+    for r in projected():
+        tables = _FROM.findall(r.sql or "")
+        if len(tables) != 1:
+            continue  # 도출 전제가 깨진 경우 — selfcheck가 이름을 대며 잡는다
+        scope.setdefault(tables[0], set()).update(_select_columns(r.sql or ""))
+    return {t: sorted(cols) for t, cols in sorted(scope.items())}
+
+
 def node(label: str) -> NodeSpec:
     for n in NODES:
         if n.label == label:
@@ -280,6 +316,24 @@ def selfcheck() -> list[str]:
         r = next((x for x in RELATIONS if x.code == code), None)
         if r is None or not r.projected:
             errs.append(f"회귀 최소 대상 {code}가 투영 대상이 아니다")
+
+    # 🔴 source_scope() 도출의 전제를 여기서 지킨다(Q-15). 관계 질의에 JOIN이나 계산식이
+    #    들어오면 도출이 «조용히» 원천 하나를 빠뜨리고, 그 원천의 변화는 낡음 지문에 잡히지
+    #    않는다. 사각은 생긴 다음에는 보이지 않으므로, 생기는 순간을 투영 전에 말하게 한다.
+    for r in projected():
+        found = _FROM.findall(r.sql or "")
+        if len(found) != 1:
+            errs.append(
+                f"{r.code}: 원천 질의의 FROM이 {len(found)}개다(1개여야 한다) — "
+                "source_scope() 도출이 깨져 데이터 지문에 사각이 생긴다"
+            )
+            continue
+        bad = [c for c in _select_columns(r.sql or "") if not _IDENT.match(c)]
+        if bad:
+            errs.append(
+                f"{r.code}: select 항목이 맨 열 이름이 아니다 {bad} — "
+                "source_scope() 도출이 깨져 데이터 지문에 사각이 생긴다"
+            )
     return errs
 
 

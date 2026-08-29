@@ -90,11 +90,20 @@ COMMENT로 이유를 성문했다(「관측하지 않은 것을 적지 않는다
 ### 3.3 짝 판정은 조회 시점에 — `v_graph_index_pairing`
 
 ```
-PAIRED · NO_PROJECTION · PROJECTION_FAILED · ONTOLOGY_MISMATCH · INDEX_BUILD_INCONSISTENT
+PAIRED · NO_PROJECTION · PROJECTION_FAILED · ONTOLOGY_MISMATCH
+      · GRAPH_STALE · GRAPH_UNVERIFIED · INDEX_BUILD_INCONSISTENT      ← 낡음 2종 = 008(Q-15)
 ```
 
 - 비교 대상 = **가장 최근 투영 하나**. 그래프는 통째로 재생성되는 단일 현재 상태라, 색인 행마다
   다른 투영이 짝일 수 없다.
+- 🔴 **낡음(008)** — `graph_build.source_data_sha256`(빌드 당시 데이터 지문) ↔
+  `graph_source_digest(source_scope)`(조회 시점 재계산). 어긋나면 `GRAPH_STALE`,
+  원장에 지문이 없으면(008 이전 빌드) `GRAPH_UNVERIFIED`. 둘 다 **재투영 1회로 해소**된다.
+  - 지문의 사정거리 = **투영이 읽는 열만**(`manifest.source_scope()` · 노드 속성 + 관계 질의
+    select 항목). 그래프에 올리지 않는 열이 바뀐 것은 낡음이 아니다 — 재투영해도 그래프가
+    달라지지 않는 변화까지 울리면 운영 중 짝 판정이 영구 적색이 되고, 그러면 아무도 안 본다.
+  - `manifest_sha256`이 「**규칙**이 바뀌었는가」, `source_data_sha256`이 「**데이터**가
+    바뀌었는가」다. 한 열로 합치면 「재투영하면 되는가 / 스펙을 다시 봐야 하는가」가 갈리지 않는다.
 - 🔴 투영 기록이 없으면 `PAIRED`가 아니라 `NO_PROJECTION`이다. 비교 대상이 없는 것을 「맞음」으로
   답하면 설정 누락이 정상으로 둔갑한다(004 거울 공란 규율 · Q-6이 남긴 교훈).
 - 🔴 한 색인 빌드 안에서 `ontology_version`이 갈리면 짝 판정보다 먼저 그 모순을 말한다
