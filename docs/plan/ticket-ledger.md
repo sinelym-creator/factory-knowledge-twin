@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 27 / 총 31 — 🔴 **T2-2 완결 08-30 03:17**(재검 PASS · PR#114) · T2-1 완결 08-30 01:41(PR#108) · Phase 2 진입 재가 08-30 00:04(폐하 직보 `1543275173661245560`) · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 25→31 T2-1~T2-6 등재(진입 게이트 선행 선언 08-30) · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
+## 원장 (진행률 = ✅ 28 / 총 31 — 🔴 **T2-3 완결 08-30 04:30**(검증 PASS 결함 0 · PR#121) · T2-2 완결 03:17(PR#114) · T2-1 완결 01:41(PR#108) · Phase 2 진입 재가 00:04(폐하 직보 `1543275173661245560`) · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 25→31 T2-1~T2-6 등재 · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
 
 ### 부트스트랩 (완결)
 
@@ -71,7 +71,7 @@ size_limit: 8KB
 |---|---|---|---|---|---|
 | T2-1 | retrieval 3전략 API(vector·hybrid·graphrag) — `/retrieval/compare` 501 해제 계열 | 구현 | pgvector 검색 경로 + 구조화 결합 + Neo4j traversal · 동일 질문 3전략 실행이 완료 증거 | T1-4 ✅ · graph 축은 T1-5 ✅ | ✅ PASS 08-30(구현 PR#100+정정 PR#106 · 검증 1차 불합격→재검 PASS PR#108 — 결함 계보: 구현 자기 적발 2(graphrag 종단 상한·hybrid 이웃 랭킹) + 검증 적발 V-1(조사 앵커 절단)·V-2(오류 형상 이탈)·V-3(검사기 제목 경계)·V-4(임베딩 원문 입력 — canonical로 닫힘·nobold 0건 확정)·V-5(CP 화이트리스트 누락 — T2-2 왕복 적발·PR#107 정정) · E-8 성문 · AC③ 해석 = ⓑ GS-01 계열 전체 충족(티켓 append) · 검증 그물 3종 신설 tests/api) |
 | T2-2 | 문서·evidence 읽기 API — `/documents`(highlight)·`/evidence` 501 해제 + STALE 배지 데이터(`v_index_freshness`) + `/scenarios`(Q-18 귀속) | 구현 | 인용 강조 offset · revision/hash 표면 — evidence ID ↔ source 문장 일치가 완료 증거 · Q-20 울음 자리 | T1-4 ✅ · evidenceId 실물은 T2-1 | ✅ PASS 08-30(구현 PR#107+정정 PR#112·#113 · 검증 1차 불합격→재검 PASS PR#114 — 결함 계보: V-6(ghost chunk 조용한 200 — ①②③ 세 갈래 · ③ = 500 citation_integrity_broken 판정 · I-05 「sha 신선도는 chunk drift를 못 본다」 실증이 근거)·V-7(의존 단절 코드 분열 — dependency_guard 1곳 수렴 「잊을 자리 자체를 없앴다」) · 축③ STALE 표면 도달 실증(Q-20 닫음) · 보안 축 30건 4xx·대상 생존 실증 · tests/api 8종 172항) |
-| T2-3 | LangGraph 조사 워크플로우 — plan 5단계(structured→vector→graph→synthesize→draft_work_order) · GS-01 대본 결속 | 구현 | step 이벤트 산출(agent-events 스키마) · 🔴 Claude 구독 공개 API 노출 금지(§15.2) — Live 게이트웨이 전 로컬 실행 경계 | T2-1 ✅ · T1-5 ✅ | 🔶 구현 착지 08-30(PR#118 — runs 표면 5+graph/paths+live/status · GS-01 완주 실물 52행 · egress 가드 생존 실증 · 후보 규칙 A 채택 = Q-9 재바인딩 불요 방향(검증 후 종결) · mode 낱말 = 계약 v0.1.3 성문 PR#119) · **독립 검증 중**(리바이2 8대 · 대상 3b21a3f · 계획 v0.2 축 8) |
+| T2-3 | LangGraph 조사 워크플로우 — plan 5단계(structured→vector→graph→synthesize→draft_work_order) · GS-01 대본 결속 | 구현 | step 이벤트 산출(agent-events 스키마) · 🔴 Claude 구독 공개 API 노출 금지(§15.2) — Live 게이트웨이 전 로컬 실행 경계 | T2-1 ✅ · T1-5 ✅ | ✅ PASS 08-30(구현 PR#118 · 검증 PR#121 — 🔴 결함 0 · 축 8 판정 행 176 · «못 잰 열» 성문 = 합성 게이트 도달(online=true) 열 → 데모 리허설 결속 · egress 가드 독립 재현 · SSOT 쓰기 0 실측 · mode 축 v0.1.3 전건 참 · 검증 소견 3(graph/paths 해제 단위 · runs 세션 축 = Q-25 · blocking 초록의 주어) · 계약 성문 = v0.1.2·v0.1.3 · Q-9 종결 근거 확보) |
 | T2-4 | structured audit event + replay fixture 녹화(seq 기준) | 구현 | 조사 실행 스트림 기록 — Phase 3 replay engine·Phase 4 fallback의 원천 | T2-3 | 등재(미발주) |
 | T2-5 | WO 초안 생성·승인 API — CRUD·approve/reject·🔴 안전 조치 서버측 삭제 불가(R12 REQUIRES 강제) + 승인 이력 테이블·`approval_state` 전이 규칙 확정(Q-11 결속 — 스펙 §4 「승인 이력」 실체화) | 구현 | 화면 ④의 「지울 수 없는 항목」을 UI가 아니라 서버가 강제 | CRUD 선행 가능 · 초안 생성은 T2-3 | 등재(미발주) |
 | T2-6 | Phase 2 독립 검증 — GS integration · 3전략 동일 질문 실측 · evidence↔원문 일치 · 계약 준수 | 검증 | baseline §21 Phase 2 완료 증거 4종 전건 + Gate 결속 | T2-1~T2-5 | 등재(미발주 · 검증 준비 소조각은 발주문로 선행) |
@@ -87,7 +87,7 @@ size_limit: 8KB
 | Q-6 | freshness `ONTOLOGY_UNVERIFIED` 신설 + 읽기 경로 FAIL | levi2 PR#68 ⓑ 잔여 | ✅ 구현 완료 접수(007 · PR#83 — «둘 다» 집행 · 아는 불일치 우선 순서 · 🔴 L-34 전환 = 검증 몫 잔여) |
 | Q-7 | `migrate.ps1` 헤더 dim 표기 stale | levi2 회부 ③ | ✅ 종결(PR#83 — 자리표시자/최종 병기 배너) |
 | Q-8 | `v_ssot_manifest` 정렬 collation 의존 | levi2 회부 ②(E3) | ✅ 구현 완료 접수(007 `COLLATE "C"` — 현 데이터 지문 불변 실측 · 갈림 우선 실증) |
-| Q-9 | 「2순위 후보」 3자 정합 — seed 실물 rank2 = FM-SPDL-OVERHEAT ↔ 화면(wireframes ②)·대본은 FM-TOOL-IMB. «측정 후 바인딩» 계열(V-1 선례): T2-3(조사 워크플로우) 착지 시 실물 후보로 화면·대본 재바인딩 · 스펙 문구 혼선은 정오표 E-6 성문 | senku2 6대 회부 ①(FM-TOOL-IMB = 어떤 incident에도 진단 없음 실측 · D-5 정합) | T2-3 착지 시 오케 패스 |
+| Q-9 | 「2순위 후보」 3자 정합 — seed 실물 rank2 = FM-SPDL-OVERHEAT ↔ 화면(wireframes ②)·대본은 FM-TOOL-IMB | senku2 6대 회부 ① · T2-3 실물 확정(검증 PASS PR#121) | ✅ 종결(08-30 오케 판정 — **재바인딩 불요**: 후보 생성 규칙 = A «울린 센서가 지시하는 고장»(failure_mode_indicator) 채택 → 실물 rank2 = FM-TOOL-IMB로 화면·대본과 일치(검증 실측 · confidenceNote까지 D-5 정합). E-6의 「seed rank2 = SPDL-OVERHEAT」는 R15 «진단 이력» 축 — «후보 생성» 축과 다른 축이라는 구분이 정합의 답. 개수 일치는 채택 결과지 근거 아님 병기) |
 | Q-10 | G-1 CHECK 확장 — retired 잔여열 요건 | levi2 5대 회부 ②(PR#75 · T-I3 실측) | ✅ 구현 완료 접수(007 `ck_retired_keeps_effective_to` — 대리 축 approved_by · 정당 경로 통과 · 기존 축 생존 확인) |
 | Q-11 | work_order 승인 축 — 스펙 §4 「전체 행 + 승인 이력」 vs 스키마 = 현재 상태 1열·이력 테이블 없음 + `approval_state` 전이 규칙 스펙 부재 → 🔴 T2-5(WO API) 티켓에 «승인 이력 테이블 + 전이 규칙 확정(오케)» 편입 | levi2 5대 회부 ③(PR#75) | T2-5 발주 시 결속 |
 | Q-12 | E-7의 대가 — 최상위 revision은 retired 불가(retired ⇒ superseded 경유 ⇒ 승계자 필요) = «문서 전체 폐기 revision 경로 없음». 현 PoC 범위 밖 «수용»(GS·평가에 폐기 시나리오 없음 · seed retired 0행 · 레지스트리 축 `document.status='retired'`는 별개). 폐기 시나리오 필요 시 §3.3 개정으로 개방 — 그때 C-28이 FAIL로 알린다 | levi2 5대 대가 계수(PR#79 · E-7 집행분) | §3.3 개정 시 재론 |
@@ -105,3 +105,5 @@ size_limit: 8KB
 | Q-22 | 배지 `stale` = 계약상 boolean 1개 vs 신선도 뷰 6상태 — 현행 확정 = 보수 매핑 `stale=(freshness!="FRESH")`(모르는 값을 false로 흘리지 않음 · 도달 불가 상태 가드 성문) + 세 층 분리(의존 단절 = 오류 코드 · 색인 상태 = 배지 · 인용 가능 = approvalState/effective). 6상태 enum «노출»은 계약 개정 사안 | senku2 9대 T2-2 소견 + levi2 소견② + 오케 판정(08-30) | 계약 v0.2 재론 |
 | Q-23 | 오류 message가 요청 문자열 반사(28/30 · 4KB·방향 제어문자 포함) — 결함 아님(JSON+React · 실행 위험 0) · 공개 Sandbox 위생: 반사 길이·문자 상한 | levi2 8대 보안 축 소견④(08-30) | T2 후반 하드닝 조각 |
 | Q-24 | `DEPENDENCY_ERRORS`가 `asyncpg.PostgresError` 광포착 — 진짜 SQL 결함도 503 dependency_unavailable로 접힘. 좁힘(연결 계열만 503 · 나머지 500) 별건 | senku2 10대 fix 소견(08-30) | T2 후반 하드닝 조각 |
+| Q-25 | `GET /runs/{runId}`에 세션 축 부재 — runId 아는 쪽은 누구나 읽는다(난수라 실질 위험 낮음 · 결함 아님). 세션 격리를 «주장하게 될 때» 전에 계약 확정 필요 | levi2 8대 T2-3 검증 소견②(08-30) | Phase 3 sessions 실체화와 결속 |
+| Q-26 | `/graph/paths` 해제 «단위» 성문 — 계약 표가 `?from&to`와 `?byRun`을 한 행에 적어 단위(라우트 vs 질의 형태)가 미성문. 판정(08-30) = **단위 = 질의 형태**: byRun 해제 완료로 계수 · from&to는 소비처(Phase 3 그래프 화면) 생기는 시점 재판정 — 사유 단 501 유지가 참 | levi2 8대 T2-3 검증 소견①(08-30) · 오케 판정 | Phase 3 그래프 화면 발주 시 |
