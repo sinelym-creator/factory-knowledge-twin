@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
 
+from ..investigation.synthesize import live_gateway_available
 from ..probes import Resources
 from ..schemas import HealthResponse, LiveStatus
 
@@ -39,8 +40,16 @@ async def health(request: Request) -> HealthResponse:
 async def live_status() -> LiveStatus:
     """Live/Replay 배지·fallback 판단 — 계약 `{ online, checkedAt }`.
 
-    🔴 골격에서는 `online=false` 가 «참»이다. live 조사를 돌릴 run-orchestrator 가 아직
-       없으므로 live 로 갈 수 있다고 답하면 화면이 갈 수 없는 길로 간다. 이 값이 true 가
-       되는 것은 실행 경로가 붙는 티켓의 결과여야 한다.
+    🔴 **`online` = 「로컬 합성 게이트웨이에 닿을 수 있는가」**(오케 판정 J-1 (b) · T2-3).
+       조사 «실행»이 가능한가가 아니다 — 실행은 T2-3 이 붙였고 공개 배포에서도 돈다.
+       공개 배포에 없는 것은 Claude 합성 축뿐이고, 그것이 바로 이 배지가 가리켜야 할 축이다
+       (baseline §15.2: 구독은 공개 API 로 나가지 않는다).
+
+    🔴 그러므로 공개 Sandbox 에서 `online=false` 는 **결함이 아니라 참**이다. 여기서 true 를
+       주면 화면은 갈 수 없는 길을 권한다.
+
+    🔴 이 낱말은 계약 안에서 `mode:"live"`(= 이벤트의 «출처»가 fixture 가 아님 · README
+       원칙1)와 충돌한다. 두 축이 한 낱말을 쓰고 있어 v0.2 재론으로 회부했다 — 구현이
+       임의로 한쪽 뜻을 바꾸지 않는다.
     """
-    return LiveStatus(online=False, checkedAt=datetime.now(timezone.utc))
+    return LiveStatus(online=live_gateway_available(), checkedAt=datetime.now(timezone.utc))

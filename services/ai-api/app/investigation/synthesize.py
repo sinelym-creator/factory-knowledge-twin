@@ -196,3 +196,30 @@ def live_gateway_available() -> bool:
     🔴 공개 Sandbox 에서 `false` 는 결함이 아니라 «참»이다(오케 판정 J-1 (b)).
     """
     return bool(os.environ.get(LIVE_GATE_ENV))
+
+
+class LiveSynthesisUnavailable(RuntimeError):
+    """게이트는 켜졌는데 로컬 합성 구현이 없다 — 조용히 결정적 축으로 내려가지 않는다."""
+
+
+def resolve_synthesizer() -> str:
+    """이번 run 의 합성 축 이름을 정한다. **여기가 유일한 분기점이다.**
+
+    🔴 게이트 env 가 없으면 live 구현 모듈을 **import 조차 하지 않는다**. 「호출하지 않는다」와
+       「불러오지도 않는다」는 다르다 — 후자여야 공개 배포의 프로세스 안에 Claude 로 가는
+       코드가 **존재하지 않는다**고 말할 수 있다(baseline §15.2 · 오케 승인 J-5).
+       이 함수가 `"deterministic"` 을 돌려주는 것이 곧 그 사실의 관측 지점이다.
+
+    🔴 게이트가 켜졌는데 구현이 없으면 **운다**. 조용히 결정적 축으로 내려가면 운영자는
+       Claude 가 참여한 줄 알고 결과를 읽는다 — 「켰다고 생각했는데 안 켜진」 것이 제일 나쁘다.
+       (로컬 합성 구현 자체는 T2-3 범위 밖이다 — 운영자 게이트 리허설 시점에 붙는다.)
+    """
+    if not live_gateway_available():
+        return "deterministic"
+    try:
+        from . import live_synthesis                       # noqa: F401, PLC0415 — 게이트 뒤에서만
+    except ImportError as exc:
+        raise LiveSynthesisUnavailable(
+            f"{LIVE_GATE_ENV} 가 켜졌으나 로컬 합성 구현이 없다 — 게이트를 끄거나 구현을 붙여라"
+        ) from exc
+    return "live"

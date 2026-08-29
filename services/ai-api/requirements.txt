@@ -29,3 +29,21 @@ neo4j==5.27.0
 #      Phase 4 에서 «임베딩만 떼어낸 경량 경로»를 재론할 값어치가 있다(T2-1 완료 보고 병기).
 sentence-transformers==6.0.0
 torch==2.13.0
+
+# T2-3 추가 — LangGraph 조사 워크플로우(오케 승인 J-6):
+#   langgraph : 5단계 plan(structured→vector→graph→synthesize→draft_work_order)의 실행기.
+#               전이 의존 21건이 함께 들어오고 그중 네이티브가 7건이다.
+#
+#   🔴 네이티브 7건(orjson·ormsgpack·xxhash·zstandard·uuid_utils·charset-normalizer, 그리고
+#      아래 websockets)은 이 개발 머신의 앱 제어 정책(WinError 4551) 대상이 «아니다» — 버리는
+#      venv 에 먼저 설치해 import 로 실측했다(08-30 · 전건 OK). 그 벽은 scipy/sklearn/torch
+#      계열의 사실이지 신규 네이티브 일반의 사실이 아니다.
+#
+#   🔴 **websockets 가 17.1 → 16.1.1 로 «내려간다»**: langgraph-sdk 가 `websockets<17` 을
+#      못박는다. uvicorn[standard]==0.34.0 은 `websockets>=10.4` 라 충족되고, 강등 후
+#      WS 경로를 실측했다(close code 4501 정상 · contract_surface PASS). 「최신이라서」가
+#      아니라 「해결기가 고른 유일한 값이라서」 이 값이다 — 올리면 langgraph 가 깨진다.
+#
+#   🔴 langsmith 텔레메트리는 `app/investigation/guards.py` 가 부팅에서 «강제로» 끈다.
+#      의존이 들어온 것과 데이터가 나가는 것은 다른 문제라, 끄는 것을 문서가 아니라 코드가 한다.
+langgraph==1.2.11

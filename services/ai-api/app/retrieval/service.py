@@ -14,12 +14,12 @@
 from __future__ import annotations
 
 import logging
-import re
 import time
 from typing import Any
 
 from fastapi import HTTPException
 
+from .. import session_id
 from ..errors import DEPENDENCY_ERRORS, DependencyUnavailable
 from ..probes import Resources
 from ..schemas import CompareRequest, CompareResult
@@ -30,7 +30,9 @@ from .embedding import MODEL_ID, EmbeddingMismatch, embed_query, ensure_ready
 # 🔴 「형식이 맞다」는 「그 세션이 있다」가 아니다. 이 티켓은 격리를 «주장하지 않는다».
 log = logging.getLogger("fkt.retrieval")
 
-_SESSION_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+# 규칙 정의는 `app/session_id.py` 한 곳이다 — 조사 실행(T2-3)도 같은 것을 본다.
+# 두 곳에 적으면 화면이 한쪽에서 통과한 키로 다른 쪽에서 거절당한다.
+_SESSION_RE = session_id.SESSION_ID_RE
 
 # 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
 #    목록의 정의는 `app/errors.py` 한 곳이다 — 전에는 이 파일이 자기 목록을 갖고 있었고,
