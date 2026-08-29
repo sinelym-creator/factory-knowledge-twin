@@ -258,6 +258,48 @@ def report(ses, cur) -> int:
         if seg < 1:
             fails += 1
 
+    # --- 9. 원장·짝 판정 (006 · §8.3 ⑦) -------------------------------------------
+    print("[9] graph_build 원장 ↔ 현행 manifest · 색인과의 짝(v_graph_index_pairing)")
+    cur.execute(
+        "SELECT build_id, projection_version, manifest_sha256, ontology_version, "
+        "  node_count, relationship_count, status FROM graph_build "
+        "ORDER BY built_at DESC, build_id DESC LIMIT 1"
+    )
+    row = cur.fetchone()
+    if row is None:
+        print("    🔴 FAIL graph_build 0행 — 그래프는 있는데 «무엇이 만들었는지»가 원장에 없다")
+        fails += 1
+    else:
+        bid, pver, msha, onto, nn, nr, status = row
+        print(f"    {pver} · ontology {onto} · 노드 {nn} · 관계 {nr} · {status} (build_id={bid[:8]}…)")
+        # 🔴 원장의 지문이 «지금 코드»의 지문과 다르면, DB에 있는 그래프는 다른 규칙으로 만든
+        #    것이다. 이 축이 없으면 manifest를 고친 뒤 재투영을 잊어도 전부 초록으로 보인다.
+        if msha != M.fingerprint():
+            print(f"    🔴 FAIL 원장 지문 {msha[:16]}… ≠ 현행 manifest {M.fingerprint()[:16]}… "
+                  "— 재투영이 필요하다")
+            fails += 1
+        if (nn, nr) != (n_node, n_rel):
+            print(f"    🔴 FAIL 원장이 적은 수({nn}·{nr}) ≠ 실물({n_node}·{n_rel})")
+            fails += 1
+    cur.execute("SELECT pairing, count(*) FROM v_graph_index_pairing GROUP BY 1 ORDER BY 1")
+    pair = dict(cur.fetchall())
+    if not pair:
+        # 🔴 색인 빌드가 없으면 짝은 «판정하지 않는다». 비교 대상이 없는 것을 「맞음」으로
+        #    답하면 설정 누락이 정상으로 둔갑한다(004 거울 공란 규율).
+        print("    index_build 0행 — 짝은 판정하지 않는다(색인 빌드 전)")
+    else:
+        print(f"    짝 판정: {pair}")
+        bad = {k: v for k, v in pair.items() if k != "PAIRED"}
+        if bad:
+            cur.execute(
+                "SELECT index_build_id, index_ontology_version, graph_ontology_version, pairing "
+                "FROM v_graph_index_pairing WHERE pairing <> 'PAIRED' ORDER BY index_built_at LIMIT 5"
+            )
+            for ib, io, go, pg in cur.fetchall():
+                print(f"    🔴 {ib[:8]}… 색인 ontology {io} · 그래프 {go} → {pg}")
+            print(f"    🔴 FAIL 짝이 맞지 않는 색인 빌드 {sum(bad.values())}건")
+            fails += 1
+
     verdict = "PASS" if fails == 0 else f"FAIL {fails}건"
     print(f"== 투영 판정: {verdict}")
     return 1 if fails else 0

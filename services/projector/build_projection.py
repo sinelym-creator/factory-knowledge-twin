@@ -14,22 +14,33 @@
    ③ 지름길 관계 — 4-hop은 저장된 4개 관계에서 질의가 만든다. 유일한 예외 R07은 스펙이
       「역정규화(1-hop 단축용)」이라고 명시한 관계다.
 
-🔴 투영 버전 기록(§8.3 ⑦)은 이 파일이 «하지 않는다» — 제안 → 오케 판정 → 적용 순서다
-   (README §3). 지문은 찍기만 하고 어디에도 쓰지 않는다.
+🔴 투영 버전 기록(§8.3 ⑦ · 오케 판정 2026-08-29 B안): 이 빌드는 자기 실행을 `graph_build`
+   원장에 1행 남긴다. `index_build.graph_projection_version`은 «건드리지 않는다» — 색인
+   빌드는 그래프를 관측하지 않기 때문이고, 짝 판정은 `v_graph_index_pairing`이 낸다.
+
+🔴 두 개의 정지 조건(둘 다 「설정이 어긋난 채로 만들어진 파생물」을 막는다):
+   ① manifest 지문 ≠ packages/ontology/projection-version.json  → 멈춘다
+   ② ontology 정본 파일 ≠ DB 거울(ontology_registry)            → 멈춘다 (004 선례)
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import manifest as M  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[2]
+ONTOLOGY_VERSION_FILE = ROOT / "packages" / "ontology" / "ontology-version.json"
+PROJECTION_VERSION_FILE = ROOT / "packages" / "ontology" / "projection-version.json"
 
 
 # --- 접속 -----------------------------------------------------------------------
@@ -76,9 +87,9 @@ def canon(v):
 
 
 def preflight(cur) -> None:
-    cur.execute("SELECT 1 FROM schema_migration WHERE filename = '001_core_schema.sql'")
+    cur.execute("SELECT 1 FROM schema_migration WHERE filename = '006_graph_projection.sql'")
     if cur.fetchone() is None:
-        raise SystemExit("001_core_schema.sql 미적용 — 먼저 `pwsh services/ai-api/db/migrate.ps1`")
+        raise SystemExit("006_graph_projection.sql 미적용 — 먼저 `pwsh services/ai-api/db/migrate.ps1`")
     errs = M.selfcheck() + M.check_spec()
     if errs:
         for e in errs:
@@ -87,6 +98,47 @@ def preflight(cur) -> None:
     cur.execute("SELECT count(*) FROM equipment")
     if cur.fetchone()[0] == 0:
         raise SystemExit("equipment 0행 — 먼저 `pwsh data/seed.ps1`")
+
+
+def projection_version() -> tuple[str, str]:
+    """투영 규칙의 정본을 읽고, manifest 지문과 «대조»한다.
+
+    🔴 SemVer만 두면 사람이 올리는 것을 잊는다 — 규칙이 바뀌었는데 버전은 그대로다.
+       지문은 내용에서 파생되므로 잊을 수 없다. 둘을 함께 두고 어긋나면 여기서 멈춘다:
+       잊을 수 있는 축을 잊을 수 없는 축이 지킨다(004 ontology 거울과 같은 형상).
+    """
+    if not PROJECTION_VERSION_FILE.exists():
+        raise SystemExit(f"투영 정본 없음: {PROJECTION_VERSION_FILE}")
+    doc = json.loads(PROJECTION_VERSION_FILE.read_text(encoding="utf-8"))
+    fp = M.fingerprint()
+    if doc["manifest_sha256"] != fp:
+        raise SystemExit(
+            f"🔴 manifest 지문 불일치: 정본 {doc['manifest_sha256'][:16]}… ≠ 실물 {fp[:16]}…\n"
+            "   manifest.py를 고쳤다면 projection-version.json의 버전과 지문을 함께 올려라 "
+            "— 규칙이 바뀌었는데 버전이 그대로면 원장이 거짓을 말한다."
+        )
+    return f"{doc['projection_version']}+{fp[:8]}", fp
+
+
+def ontology_version(cur) -> str:
+    """정본 파일과 DB 거울이 같은 값을 말하는지 «본다»(build_index.py와 같은 규율).
+
+    어긋난 채로 만들면 원장에 정본 값이 박히고, 판정은 거울과 비교해 어긋남을 낸다 —
+    원인은 설정인데 증상은 데이터 쪽에 나타난다.
+    """
+    if not ONTOLOGY_VERSION_FILE.exists():
+        raise SystemExit(f"ontology 정본 없음: {ONTOLOGY_VERSION_FILE} (스펙 §3.3)")
+    canon_v = json.loads(ONTOLOGY_VERSION_FILE.read_text(encoding="utf-8"))["ontology_version"]
+    cur.execute("SELECT ontology_version FROM ontology_registry")
+    row = cur.fetchone()
+    if row is None:
+        raise SystemExit("ontology_registry 0행 — 004가 넣는 기준 행이 지워졌다")
+    if row[0] != canon_v:
+        raise SystemExit(
+            f"🔴 ontology_version 불일치: 정본 파일 {canon_v} ≠ DB 거울 {row[0]}. "
+            "거울을 올리는 «신규 마이그레이션»이 필요하다(004 선례)."
+        )
+    return canon_v
 
 
 # --- 본체 -----------------------------------------------------------------------
@@ -140,25 +192,10 @@ def ensure_constraints(session) -> None:
         )
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--dsn", default=None, help="libpq DSN (기본: 환경변수)")
-    ap.add_argument("--neo4j-uri", default=None, help="bolt URI (기본: 환경변수)")
-    args = ap.parse_args()
-
-    import psycopg
+def project(uri, auth, db, nodes, rels) -> tuple[int, int, int]:
     from neo4j import GraphDatabase
 
-    t0 = time.perf_counter()
-    with psycopg.connect(dsn_from_env(args.dsn)) as conn, conn.cursor() as cur:
-        preflight(cur)
-        nodes = fetch_nodes(cur)
-        rels = fetch_rels(cur)
-    read_s = time.perf_counter() - t0
-
-    uri, auth, db = neo4j_params(args.neo4j_uri)
     n_nodes = n_rels = 0
-    t1 = time.perf_counter()
     with GraphDatabase.driver(uri, auth=auth) as drv:
         drv.verify_connectivity()
         with drv.session(database=db) as ses:
@@ -201,7 +238,51 @@ def main() -> int:
                         f"PG {len(rows)}행 → 관계 {created}개 — 끝점 노드를 못 찾았다"
                     )
                 n_rels += created
-    build_s = time.perf_counter() - t1
+    return n_nodes, n_rels, deleted
+
+
+LEDGER_SQL = (
+    "INSERT INTO graph_build (build_id, projection_version, manifest_sha256, ontology_version, "
+    " node_count, relationship_count, status, error) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dsn", default=None, help="libpq DSN (기본: 환경변수)")
+    ap.add_argument("--neo4j-uri", default=None, help="bolt URI (기본: 환경변수)")
+    ap.add_argument("--build-id", default=None, help="빌드 식별자(기본: uuid4)")
+    args = ap.parse_args()
+
+    import psycopg
+
+    build_id = args.build_id or uuid.uuid4().hex
+    uri, auth, db = neo4j_params(args.neo4j_uri)
+
+    t0 = time.perf_counter()
+    with psycopg.connect(dsn_from_env(args.dsn)) as conn, conn.cursor() as cur:
+        preflight(cur)
+        proj_ver, fp = projection_version()
+        onto = ontology_version(cur)
+        nodes = fetch_nodes(cur)
+        rels = fetch_rels(cur)
+        read_s = time.perf_counter() - t0
+
+        t1 = time.perf_counter()
+        try:
+            n_nodes, n_rels, deleted = project(uri, auth, db, nodes, rels)
+        except BaseException as exc:
+            # 🔴 실패도 원장에 남는다. 남기지 않으면 「그래프가 왜 반쪽인가」에 아무도 답하지
+            #    못한다 — index_build가 skipped를 사유와 함께 남기는 것과 같은 이유다.
+            cur.execute(LEDGER_SQL, (build_id, proj_ver, fp, onto, 0, 0, "failed",
+                                     f"{type(exc).__name__}: {exc}"[:2000]))
+            conn.commit()
+            print(f"🔴 투영 실패 — graph_build에 failed 1행 기록(build_id={build_id})")
+            raise
+        build_s = time.perf_counter() - t1
+
+        cur.execute(LEDGER_SQL, (build_id, proj_ver, fp, onto, n_nodes, n_rels, "success", None))
+        conn.commit()
 
     print(f"== 투영: 노드 {n_nodes} · 관계 {n_rels} (라벨 {len(M.NODES)} · 관계형 {len(M.projected())})")
     print(f"   삭제 후 재생성 — 지운 노드 {deleted} · PG 읽기 {read_s:.2f}s · 적재 {build_s:.2f}s")
@@ -209,8 +290,8 @@ def main() -> int:
         print(f"   {spec.label:18s} {len(nodes[spec.label]):5d}")
     for rel in M.projected():
         print(f"   {rel.code} {rel.start}-[:{rel.rel_type}]->{rel.end:18s} {len(rels[rel.code]):5d}")
-    # 🔴 지문은 «찍기만» 한다 — 어디에도 쓰지 않는다(§8.3 ⑦ 기록 방식은 판정 대기 · README §3)
-    print(f"   manifest 지문 {M.fingerprint()} (기록 안 함 — 판정 대기)")
+    print(f"   원장 graph_build 1행 — build_id={build_id} · {proj_ver} · ontology {onto}")
+    print(f"   manifest 지문 {fp}")
     return 0
 
 

@@ -59,64 +59,53 @@ services\projector\.venv\Scripts\python.exe services\projector\verify_projection
 
 ---
 
-## 3. 🔻 게이트 ④ 제안 — 투영 버전 기록 (**판정 대기 · 미적용**)
+## 3. 투영 버전 기록 (§8.3 ⑦) — 오케 판정 **B안 승인** · 006으로 적용됨
 
-> 🔴 이 절은 **제안**이다. 오케스트레이터 판정 전에는 아무것도 적용하지 않는다(티켓 §게이트 4).
-> 현재 코드는 지문을 **찍기만** 하고 어디에도 기록하지 않는다.
+> 판정 2026-08-29: 「§8.3은 «열»이 아니라 «답»을 요구한 것」으로 확정. 기록값 `0.1.0+687448cb` 승인.
 
-### 3.1 무엇이 문제인가
+### 3.1 두 축을 갈랐다
 
-`index_build.graph_projection_version`이 NULL이다. 003 주석이 그 이유를 적어 뒀다 —
-「투영이 없는데 있다고 적으면 원장이 거짓을 말한다」. 이제 투영이 실재하므로 그 열의 주인이
-생겼다. 그런데 **무엇을 «투영 버전»이라 부를 것인가**가 먼저다.
-
-두 축이 섞여 있다.
-
-| 축 | 무엇 | 바뀌는 때 |
+| 축 | 무엇 | 어디에 |
 |---|---|---|
-| ① 규칙 | 「무엇을 투영하는가」 = manifest | 스펙 §2.1·§4가 바뀔 때 |
-| ② 실행 | 「언제 무엇으로 만들었는가」 | 투영을 돌릴 때마다 |
+| ① 규칙 | 「무엇을 투영하는가」 = manifest | `packages/ontology/projection-version.json` (정본) |
+| ② 실행 | 「언제 무엇으로 만들었는가」 | `graph_build` 원장 (006 · append-only) |
 
-§8.3 ⑦의 열 이름은 *version*이고, 그 항목이 답해야 하는 질문은 「이 색인은 어떤 그래프 투영
-**규칙**과 짝인가」다 — 즉 ①이다. ②는 원장의 몫이다.
-
-### 3.2 정본 위치 제안 — 잊을 수 있는 축을 잊을 수 없는 축이 지킨다
-
-```
-packages/ontology/projection-version.json   ← 신설 제안
+```json
 { "projection_version": "0.1.0",
   "manifest_sha256": "687448cb00f0bc1e8087861bafc012a7dc90113560d2b49a005963b56ec6d06a" }
 ```
 
-- **SemVer만 두면** 사람이 올리는 것을 잊는다 — 규칙이 바뀌었는데 버전이 그대로다.
-- **지문만 두면** 잊을 수 없지만(내용에서 파생된다) 사람이 「무엇이 바뀌었는지」 읽지 못한다.
-- 그래서 **둘 다** 두고, `manifest.fingerprint()` ≠ 파일의 `manifest_sha256`이면 **빌드를 멈춘다**.
-  ontology-version.json ↔ `ontology_registry` 거울(004)과 같은 형상이며, 004 선례대로
-  「거울이 어긋나면 멈춘다」를 그대로 따른다.
-- 기록 문자열 후보 = `0.1.0+687448cb` (SemVer + 지문 8자). `index_build`의 해당 열은 text다.
+🔴 **SemVer만 두면 사람이 올리는 것을 잊는다**(규칙은 바뀌었는데 버전은 그대로). **지문만 두면**
+잊을 수 없지만 사람이 무엇이 바뀌었는지 읽지 못한다. 둘을 함께 두고 `manifest.fingerprint()`와
+파일의 `manifest_sha256`이 어긋나면 **빌드가 멈춘다** — 잊을 수 있는 축을 잊을 수 없는 축이
+지킨다(004 ontology 거울 「어긋나면 멈춘다」와 같은 형상). 원장 기록값 = `{SemVer}+{지문 8자}`.
 
-### 3.3 어디에 적을 것인가 — 3안
+### 3.2 `index_build.graph_projection_version`은 **NULL로 남는다**
 
-| 안 | 내용 | 판단 |
-|---|---|---|
-| A | `build_index.py`가 새 빌드부터 `index_build.graph_projection_version`을 채운다 | 🔴 **함정**: 색인 빌드는 그래프를 «보지 않는다». 파일 값만 읽어 적으면 투영이 없거나 낡았어도 원장이 「있었다」고 말한다 — 003이 피한 바로 그 거짓이다. 실재를 확인하려면 indexer가 Neo4j에 접속해야 하고, 색인 경로에 새 의존이 생긴다 |
-| B | `graph_build` 원장 신설(index_build와 같은 append-only 형상) · `index_build` 열은 계속 NULL. 「색인↔투영 짝」은 **조회 시점 view**가 잇는다 | ✅ **권고**. 각 원장은 «자기가 관측한 사실»만 적는다. 짝 맞춤은 판정이므로 저장하지 않고 파생시킨다 — ⑨(drift·stale)를 열이 아니라 view로 둔 003의 선택과 같은 논리 |
-| C | B + indexer가 파일 값을 적되 실재 확인은 view가 한다 | 절충안. 열이 채워져 보기는 좋으나, 「적힌 값」과 「실재」가 갈라진 상태가 원장에 남는다 |
+색인 빌드는 그래프를 **보지 않는다**. 파일에 적힌 값을 옮겨 적으면 투영이 없거나 낡았어도
+원장이 「있었다」고 말한다 — 003이 자리표시자를 거부한 것과 같은 거짓이다. 006이 그 열에
+COMMENT로 이유를 성문했다(「관측하지 않은 것을 적지 않는다 · 짝 판정은 view가 낸다 ·
+기존 행 소급 갱신 금지」).
 
-**권고 = B.** 🔴 다만 B는 §8.3 ⑦을 **열이 아니라 파생으로** 충족한다는 뜻이므로,
-「9항목이 열로 있어야 하는가, 답할 수 있으면 되는가」는 오케 판정 영역이다.
-
-`graph_build` 원장 형상 초안(판정 후 신규 마이그레이션 006으로):
+### 3.3 짝 판정은 조회 시점에 — `v_graph_index_pairing`
 
 ```
-graph_build(build_id, projection_version, manifest_sha256, ontology_version,
-            node_count, relationship_count, built_at, status, error)
-  · append-only · 🔴 노드/관계에 FK 없음(원장은 대상보다 오래 산다 — 003 선례)
-  · 판정(짝 맞음·낡음)은 저장하지 않는다 → v_graph_index_pairing (view)로 파생
+PAIRED · NO_PROJECTION · PROJECTION_FAILED · ONTOLOGY_MISMATCH · INDEX_BUILD_INCONSISTENT
 ```
 
-🔴 **적용 금지 범위 재확인**: `index_build` 기존 행 소급 갱신 금지(append-only) ·
-indexer 연동은 판정 후 **별도 소조각**(티켓 §범위 밖).
+- 비교 대상 = **가장 최근 투영 하나**. 그래프는 통째로 재생성되는 단일 현재 상태라, 색인 행마다
+  다른 투영이 짝일 수 없다.
+- 🔴 투영 기록이 없으면 `PAIRED`가 아니라 `NO_PROJECTION`이다. 비교 대상이 없는 것을 「맞음」으로
+  답하면 설정 누락이 정상으로 둔갑한다(004 거울 공란 규율 · Q-6이 남긴 교훈).
+- 🔴 한 색인 빌드 안에서 `ontology_version`이 갈리면 짝 판정보다 먼저 그 모순을 말한다
+  (`INDEX_BUILD_INCONSISTENT`) — 뭉개면 어느 쪽이 참인지 모른 채 짝이 맞다고 답하게 된다.
+
+### 3.4 원장이 «모순 행»을 막는다 (index_build 선례)
+
+- 실패한 투영이 노드를 남겼다고 말할 수 없다 · 실패에는 사유가 있어야 한다.
+- `projection_version`은 `{SemVer}+{지문 8자}` 형식만 받는다 — SemVer만 적어 넣을 수 없다.
+- 🔴 노드·관계에 FK 없음: 원장은 자기가 기술하는 대상보다 오래 산다(003 선례). 대상이 다른
+  저장소에 있어 FK를 걸 «수»도 없으므로, 형식(CHECK)으로 못박는다.
 
 ---
 
@@ -155,6 +144,10 @@ indexer 연동은 판정 후 **별도 소조각**(티켓 §범위 밖).
 | S5 ⓒ | 경쟁 후보 `FM-TOOL-IMB` R09 직결 실재 — 🔴 「2순위」는 그래프가 아니라 R15가 갖는 값이고, 실물 rank 2 = `FM-SPDL-OVERHEAT`다(보고 회부분) |
 | P4 | 라벨 14종 전수 = manifest와 동일 · `SensorReading`·`DocumentChunk` 부재 |
 | 끊김 실증 | R03·R08·R11·R12 전건 — 끊으면 경로 1 → 0, 롤백 후 복구 · 드릴 후 덤프 diff 0 |
+| 원장(006) | `graph_build` 1행/실행 · `0.1.0+687448cb` · ontology 0.1.0 · 노드 309 · 관계 448 |
+| 짝 판정 | 투영 «전» `NO_PROJECTION` → 투영 «후» `PAIRED`(색인 build 1건 · indexed_revisions 45) |
+| 마이그레이션 | 착지 DB 재실행 = 전건 skip exit 0 · 신규 DB 001~006 순차 exit 0 · 신규 DB 재실행 exit 0 |
+| 색인 실물 | chunk 59 / revision 45(skipped 15) — 짝 판정을 «실물로» 재려고 색인을 한 번 돌렸다 |
 
 **대조군**(이 검사들이 «실패를 낼 수 있는가»):
 
@@ -164,3 +157,9 @@ indexer 연동은 판정 후 **별도 소조각**(티켓 §범위 밖).
 | R11 관계 1건 삭제 | verify [1] 계수 · [4] 값 대조 · [5] 경로 · [8] 회귀 구간 — 4축 동시 FAIL |
 | manifest R05 투영 플래그 반전 / R11 도착 라벨 변조 / R12 행 삭제 | `--check-spec` 3축 전건 FAIL |
 | 변조 상태에서 재투영 | 덤프가 정본 sha로 복귀 — 파생물은 다시 만들면 원상 복구된다 |
+| manifest를 고치고 «재투영을 잊음» | 빌드 = 지문 가드로 **정지**(exit 1) · verify [3] 속성 키 · [4] 값 · [9] 원장 지문 — 3축 FAIL |
+| `graph_build`에 ontology 0.2.0 투영 주입(롤백) | view `ONTOLOGY_MISMATCH` |
+| 실패한 투영 주입(롤백) | view `PROJECTION_FAILED` |
+| 모순 행(실패인데 노드 5) · 버전 형식 위반(`0.1.0`) | 스키마 CHECK가 INSERT를 거부 |
+
+🔴 드릴은 전부 **롤백**했다 — 원장에 남은 행은 실제 투영 실행분뿐이다(append-only를 드릴이 더럽히지 않는다).
