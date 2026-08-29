@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 25 / 총 31 — 🔴 **Phase 2 진입 재가 08-30 00:04**(폐하 직보 `1543275173661245560`) · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 25→31 T2-1~T2-6 등재(진입 게이트 선행 선언 08-30) · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
+## 원장 (진행률 = ✅ 26 / 총 31 — 🔴 **T2-1 완결 08-30 01:41**(재검 PASS · PR#108) · Phase 2 진입 재가 08-30 00:04(폐하 직보 `1543275173661245560`) · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 25→31 T2-1~T2-6 등재(진입 게이트 선행 선언 08-30) · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
 
 ### 부트스트랩 (완결)
 
@@ -69,8 +69,8 @@ size_limit: 8KB
 
 | ID | 티켓 | 담당 | 요지 (AC 전문 = 티켓 파일) | 의존 | 상태 |
 |---|---|---|---|---|---|
-| T2-1 | retrieval 3전략 API(vector·hybrid·graphrag) — `/retrieval/compare` 501 해제 계열 | 구현 | pgvector 검색 경로 + 구조화 결합 + Neo4j traversal · 동일 질문 3전략 실행이 완료 증거 | T1-4 ✅ · graph 축은 T1-5 ✅ | 🔶 구현 착지 08-30(PR#100 · 3전략 실물 · 결함 2건 자기 적발 — graphrag 종단 종류별 상한·hybrid 이웃 종류별 RRF · 판정 4건 회신) · **독립 검증 중**(리바이2 7대 · 대상 4bc3290) |
-| T2-2 | 문서·evidence 읽기 API — `/documents`(highlight)·`/evidence` 501 해제 + STALE 배지 데이터(`v_index_freshness`) + `/scenarios`(Q-18 귀속) | 구현 | 인용 강조 offset · revision/hash 표면 — evidence ID ↔ source 문장 일치가 완료 증거 · Q-20 울음 자리 | T1-4 ✅ · evidenceId 실물은 T2-1 | 🔶 발주 08-30(센쿠2 9대 · `tickets/T2-2.md` · T2-1 검증과 병렬) |
+| T2-1 | retrieval 3전략 API(vector·hybrid·graphrag) — `/retrieval/compare` 501 해제 계열 | 구현 | pgvector 검색 경로 + 구조화 결합 + Neo4j traversal · 동일 질문 3전략 실행이 완료 증거 | T1-4 ✅ · graph 축은 T1-5 ✅ | ✅ PASS 08-30(구현 PR#100+정정 PR#106 · 검증 1차 불합격→재검 PASS PR#108 — 결함 계보: 구현 자기 적발 2(graphrag 종단 상한·hybrid 이웃 랭킹) + 검증 적발 V-1(조사 앵커 절단)·V-2(오류 형상 이탈)·V-3(검사기 제목 경계)·V-4(임베딩 원문 입력 — canonical로 닫힘·nobold 0건 확정)·V-5(CP 화이트리스트 누락 — T2-2 왕복 적발·PR#107 정정) · E-8 성문 · AC③ 해석 = ⓑ GS-01 계열 전체 충족(티켓 append) · 검증 그물 3종 신설 tests/api) |
+| T2-2 | 문서·evidence 읽기 API — `/documents`(highlight)·`/evidence` 501 해제 + STALE 배지 데이터(`v_index_freshness`) + `/scenarios`(Q-18 귀속) | 구현 | 인용 강조 offset · revision/hash 표면 — evidence ID ↔ source 문장 일치가 완료 증거 · Q-20 울음 자리 | T1-4 ✅ · evidenceId 실물은 T2-1 | 🔶 구현 완료 보고 08-30(PR#107 병합 대기 — 왕복 11/11 · STALE 안 A · 배지 보수 매핑 `stale=(freshness!=FRESH)` 정정 포함 · V-5 동반 정정) · 독립 검증 = 검증 후임 발주 예정 |
 | T2-3 | LangGraph 조사 워크플로우 — plan 5단계(structured→vector→graph→synthesize→draft_work_order) · GS-01 대본 결속 | 구현 | step 이벤트 산출(agent-events 스키마) · 🔴 Claude 구독 공개 API 노출 금지(§15.2) — Live 게이트웨이 전 로컬 실행 경계 | T2-1 · T1-5 ✅ | 등재(미발주 · Q-9 재바인딩 결속) |
 | T2-4 | structured audit event + replay fixture 녹화(seq 기준) | 구현 | 조사 실행 스트림 기록 — Phase 3 replay engine·Phase 4 fallback의 원천 | T2-3 | 등재(미발주) |
 | T2-5 | WO 초안 생성·승인 API — CRUD·approve/reject·🔴 안전 조치 서버측 삭제 불가(R12 REQUIRES 강제) + 승인 이력 테이블·`approval_state` 전이 규칙 확정(Q-11 결속 — 스펙 §4 「승인 이력」 실체화) | 구현 | 화면 ④의 「지울 수 없는 항목」을 UI가 아니라 서버가 강제 | CRUD 선행 가능 · 초안 생성은 T2-3 | 등재(미발주) |
@@ -102,3 +102,4 @@ size_limit: 8KB
 | Q-19 | hybrid 이웃 정렬 «사전순» 한계 — 질문의 「진동」→`measurement_type=VIB` 잇는 낱말 사전 부재(SN-204-CUR가 SN-204-VIB에 앞섬). 사전은 평가셋과 함께 설계 | senku2 9대 T2-1 구현 실측(08-30) | D3 측정·평가 티켓 결속 |
 | Q-20 | «STALE인데 검색됨» 노출 경로 — compare 응답의 신선도 침묵은 계약상 참(F-4: 배지 표면 = `/evidence`·`/documents`). 🔴 울음 판정선 = 「낡음 주입 시 어느 층도 안 운다 = FAIL」(응답 침묵 자체는 FAIL 아님 — 검증 축①ⓑ 재규정 08-30) | senku2 소견 + levi2 축① + 오케 판정(08-30) | T2-2 배지 표면 + 검증 축①에 결속 |
 | Q-21 | ai-api torch 무게 — 질의 임베딩 도입으로 「indexer 컨테이너화 비대상」 판정의 근거 무게가 ai-api로 이전. 임베딩 분리(별도 프로세스/서비스) 재론 | senku2 9대 T2-1 구현(08-30 · dev-environment §8 E2 결속) | Phase 4 컨테이너화 시 재론 |
+| Q-22 | 배지 `stale` = 계약상 boolean 1개 vs 신선도 뷰 6상태 — 현행 확정 = 보수 매핑 `stale=(freshness!="FRESH")`(모르는 값을 false로 흘리지 않음 · 도달 불가 상태 가드 성문) + 세 층 분리(의존 단절 = 오류 코드 · 색인 상태 = 배지 · 인용 가능 = approvalState/effective). 6상태 enum «노출»은 계약 개정 사안 | senku2 9대 T2-2 소견 + levi2 소견② + 오케 판정(08-30) | 계약 v0.2 재론 |
