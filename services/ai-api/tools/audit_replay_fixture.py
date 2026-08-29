@@ -8,9 +8,24 @@ fixture 는 **리포에 커밋되는 실물**이라, 공개 경계(baseline §15
 산출물 자체에 걸린다. 이 심사기는 그 경계를 «눈»이 아니라 코드로 본다 — 옮겨 적은 대조표는
 조용히 낡고, 사람은 200줄짜리 JSONL 을 두 번째부터 안 읽는다.
 
-🔴 **못 우는 심사기는 심사가 아니다**(오케 단서). `--self-test` 는 절대경로·자격 증명을 각
-   1건씩 «메모리 안의 사본»에 주입해 이 심사기가 실제로 검출하는지 확인한다. 파일에 주입하지
-   않는 이유: 주입한 뒤 지우는 절차가 실패하면 위반이 커밋된다 — 대조군이 사고가 된다.
+🔴 **못 우는 심사기는 심사가 아니다**(오케 단서). `--self-test` 는 위반 표본을 «메모리 안의
+   사본»에 주입해 이 심사기가 실제로 검출하는지 확인한다. 파일에 주입하지 않는 이유: 주입한
+   뒤 지우는 절차가 실패하면 위반이 커밋된다 — 대조군이 사고가 된다.
+
+🔴 **그리고 자기가 고른 표본으로만 우는 심사기도 심사가 아니다**(V-8 · 검증 좌석 적발).
+   첫 판의 대조군은 절대경로·「자격 증명 이름표」 2종이었고 둘 다 초록이었다. 밖에서 온
+   표본(`sk-ant-…` 값만 · `ghp_…` 값만 · `api.claude.ai`)을 먹이자 그대로 통과했다 —
+   **키의 «이름표»와 벤더 «이름»은 보면서 키 자신의 «형상»은 어느 축에도 없었다.**
+   내가 잡을 줄 아는 것으로 내가 잡는지 확인한 것이라, 초록이 아무것도 뜻하지 않았다.
+
+   그래서 대조군의 구조를 바꿨다(같은 구멍이 재발할 자리를 없앤다):
+     ① 표본은 **축마다 최소 1개**다 — `RULES` 에 축을 더하고 표본을 잊으면 self-test 가
+        먼저 운다(「잊을 수 있는 자리를 없앤다」 · V-7 계보).
+     ② 밖에서 온 표본은 **출처를 달아 코드에 남긴다** — 다음 세대가 「이건 왜 있나」로
+        지우지 못하게, 그리고 검증이 같은 표본으로 독립 재현할 수 있게.
+     ③ 🔴 **오탐 대조군을 함께 둔다** — 정상 문자열(온톨로지 ID·sha256 지문·GP- evidenceId)이
+        «울지 않는지». 값 형상 축은 고엔트로피 문자열을 물기 쉬워서, 우는 것만 확인하면
+        「전부 위반」이라 외치는 심사기도 통과한다.
 
 🔴 **검사가 무엇을 봤는지 센다**(계보: 「빈 결과는 통과가 아니다」). 스캔한 문자열이 0 이면
    그것은 «깨끗함»이 아니라 심사기 고장이므로 FAIL 이다.
@@ -57,6 +72,21 @@ RULES: tuple[tuple[str, re.Pattern[str], str], ...] = (
         "자격 증명은 synthetic 이라도 커밋 금지 — 값의 진위와 무관하게 관행이 무너진다",
     ),
     (
+        # 🔴 위 축과 «따로» 둔다(V-8 처방). 한 축에 합치면 이름표 표본 하나로 그 축의 표본
+        #    요건이 채워져, 값 형상이 표본 없이 남는 자리가 그대로 살아난다 — 이번에 물린
+        #    구멍이 정확히 그 형태였다.
+        "credential_value",
+        # 🔴 두 갈래인 이유는 «구분자»다. 첫 판은 접두 뒤에 `[-_]` 를 요구했는데, AWS 키는
+        #    `AKIA` 뒤에 구분자 없이 영숫자가 바로 이어져 표본이 통과했다 — 이 도구의 오탐
+        #    대조군이 아니라 «주입 대조군»이 그 자리에서 잡아 준 결함이다.
+        re.compile(
+            r"\b(?:sk-ant|sk-proj|sk|pk|ghp|gho|ghu|ghs|github_pat|xox[baprs]|glpat)"
+            r"[-_][A-Za-z0-9_-]{16,}"
+            r"|\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"
+        ),
+        "이름표 없이 «값만» 실려 나가는 것이 키가 실제로 새는 형태다(§15.2 가 지키는 물건)",
+    ),
+    (
         "connection_string",
         re.compile(r"(?i)\b(?:postgres(?:ql)?|neo4j(?:\+s)?|bolt|redis|mysql|mongodb)://"),
         "DSN 은 호스트·계정·포트를 한 줄에 담는다",
@@ -68,10 +98,21 @@ RULES: tuple[tuple[str, re.Pattern[str], str], ...] = (
     ),
     (
         "claude_gateway",
-        re.compile(r"(?i)anthropic|claude[_-]?(?:api|key|token)|x-api-key"),
+        # 🔴 호스트 «형상»을 더한다(V-8 형제 — 검증 좌석 적발). 앞판은 `claude[_-]?(api|key|
+        #    token)` 이라 구분자가 `.` 인 `api.claude.ai` 가 통과했다 — 이 축의 성문이
+        #    「구독 «경로»를 드러내지 않는다」인데 경로 그 자체가 빠져나간 것이다.
+        re.compile(r"(?i)anthropic|claude[_-]?(?:api|key|token)|x-api-key|\b(?:api\.)?claude\.ai\b"),
         "Claude 구독 경로를 공개 산출물에 드러내지 않는다(baseline §15.2)",
     ),
 )
+
+# 🔴 **넣지 않기로 한 축 1개 — 「일반 고엔트로피 40자+」**(실측 근거를 남긴다).
+#    `\b[A-Za-z0-9+/=_-]{40,}\b` 로 재 보니 **정상 fixture 에서 오탐 5건**이 났다 — 근거의
+#    `contentHash`(sha256 64자)가 정확히 그 형상이기 때문이다. 켜면 깨끗한 fixture 가 매번
+#    FAIL 하고, 그렇게 항상 빨간 신호는 곧 아무도 안 보는 신호가 된다(계보). 게다가 그 축은
+#    위 두 표본(sk-ant·ghp)을 **잡지도 못했다**(하이픈 때문에 40자 연속이 끊긴다) — 못 잡는
+#    것을 얻으려고 잡을 것을 잃는 교환이라 채택하지 않는다. 필요해지면 「값 형상」 축을
+#    벤더별로 넓히는 편이 싸다.
 
 
 @dataclass
@@ -135,14 +176,89 @@ def audit(events: list[dict[str, Any]]) -> Report:
 
 # 주입 표본 — 실제로 나올 법한 형태여야 한다. 「검출되도록 만든 문자열」이 아니라
 # 「실수로 섞일 법한 문자열」을 넣어야 대조군이 뜻을 갖는다.
-_INJECTIONS: tuple[tuple[str, str], ...] = (
-    ("absolute_path", r"C:\Users\operator\repos\factory-knowledge-twin\data\seed.csv 에서 읽음"),
-    ("credential", "postgres password=fkt_local_dev 로 접속"),
+#
+# 🔴 **축마다 최소 1개**다(아래 `self_test` 가 강제한다). `RULES` 에 축을 더하고 표본을
+#    잊으면 이 도구가 자기 결함을 먼저 말한다.
+# 🔴 `source` 는 표본의 «출처»다. 밖에서 온 표본(V-8)을 지우지 못하게 남긴다 — 자기가 고른
+#    표본만 남으면 이 대조군은 다시 자기 확인이 된다.
+#
+# 키 형상 표본은 **조립해서** 만든다. 진짜처럼 보이는 리터럴을 소스에 두면 그 파일이 다음
+# 스캐너의 적발 대상이 되고, 「가짜입니다」라는 주석은 스캐너가 읽지 않는다.
+_FAKE_ANTHROPIC = "sk-ant-" + "api03-" + "AAAA" * 5 + "zz"
+_FAKE_GITHUB = "ghp_" + "B" * 24
+_FAKE_AWS = "AKIA" + "C" * 16
+
+
+@dataclass(frozen=True)
+class Injection:
+    axis: str
+    label: str
+    payload: str
+    source: str
+
+
+_INJECTIONS: tuple[Injection, ...] = (
+    Injection(
+        "absolute_path", "이 머신의 경로",
+        r"C:\Users\operator\repos\factory-knowledge-twin\data\seed.csv 에서 읽음",
+        "구현(초판)",
+    ),
+    Injection(
+        "credential", "자격 «이름표»",
+        "postgres password=fkt_local_dev 로 접속", "구현(초판)",
+    ),
+    Injection(
+        "connection_string", "DSN",
+        "postgresql://fkt:pw@db.internal:5432/fkt 연결 실패", "구현(V-8 정정 — 축 표본 보충)",
+    ),
+    Injection(
+        "network_endpoint", "내부 주소",
+        "10.0.3.44:7687 로 붙었다", "구현(V-8 정정 — 축 표본 보충)",
+    ),
+    # 🔴 아래 넷은 **밖에서 온 표본**이다 — 검증 좌석(리바이2 8대)이 V-8 로 심어 통과시킨
+    #    바로 그 형태다. 이것이 초록이면 그때 비로소 이 심사기가 「밖에서도 운다」는 뜻이다.
+    Injection(
+        "credential_value", "sk-ant «값만»(이름표 없음)",
+        f"합성 실패 — {_FAKE_ANTHROPIC} 로 붙지 못했다", "검증 좌석 V-8",
+    ),
+    Injection(
+        "credential_value", "ghp_ «값만»",
+        f"토큰 {_FAKE_GITHUB} 이 거부됐다", "검증 좌석 V-8",
+    ),
+    Injection(
+        "credential_value", "AKIA «값만»",
+        f"{_FAKE_AWS} 자격으로 접근", "검증 좌석 V-8",
+    ),
+    Injection(
+        "claude_gateway", "호스트 형상(구분자가 «.»)",
+        "게이트웨이 api.claude.ai/v1/messages 미도달", "검증 좌석 V-8(형제 적발)",
+    ),
+)
+
+# 🔴 **오탐 대조군** — 이 문자열들은 «울면 안 된다». 값 형상 축은 고엔트로피 문자열을 물기
+#    쉬워서, 우는 것만 확인하면 「전부 위반」이라 외치는 심사기도 자기 검증을 통과한다.
+#    표본은 이 리포가 실제로 내는 종류다(온톨로지 ID · 지문 · 재조립 불가 evidenceId · 시각).
+_FALSE_POSITIVE_PROBES: tuple[tuple[str, str], ...] = (
+    ("온톨로지 ID(인용)", "DOC-MAN-0021@r1#006"),
+    ("온톨로지 ID(이력)", "MR-2025-0087"),
+    ("graph 근거 id", "GP-7e4cfd025422-03"),
+    ("run·초안 id", "RUN-7e4cfd025422 · WOD-eaa4fce81c0b"),
+    ("sha256 지문 64자", "3eb624c237dbeaac9f1e77a5c40b8d2e15c9a4f8b3d6e0172a95c8de4b1f36a0"),
+    ("임베딩 모델 id", "sentence-transformers/all-MiniLM-L6-v2"),
+    ("ISO 시각", "2026-08-29T20:22:52.410Z"),
+    ("낱말이 겹치는 정상 문자열", "task-completed-0123456789abcdef · risk-assessment-2026"),
 )
 
 
+def _inject(events: list[dict[str, Any]], payload: str) -> list[dict[str, Any]]:
+    """마지막 이벤트의 payload 에 문자열 하나를 심은 «사본»을 만든다(원본 무접촉)."""
+    tainted = copy.deepcopy(events)
+    tainted[-1]["payload"]["_probe"] = payload
+    return tainted
+
+
 def self_test(events: list[dict[str, Any]]) -> tuple[bool, list[str]]:
-    """위반을 «사본»에 주입해 심사기가 우는지 본다. 파일은 건드리지 않는다."""
+    """대조군 3종 — ① 축 표본 누락 ② 주입 → 검출 ③ 정상 문자열 → 침묵."""
     lines: list[str] = []
     clean = audit(events)
     lines.append(f"  기준선(원본) 위반 {len(clean.violations)}건 · 문자열 {clean.strings}개")
@@ -150,18 +266,35 @@ def self_test(events: list[dict[str, Any]]) -> tuple[bool, list[str]]:
     if not ok:
         lines.append("  🔴 원본이 이미 위반이거나 스캔량이 0 — 대조군 이전에 실패다")
 
-    for axis, payload in _INJECTIONS:
-        tainted = copy.deepcopy(events)
-        # 마지막 이벤트의 payload 에 문자열 하나를 심는다(구조는 그대로 둔다).
-        tainted[-1]["payload"]["_injected"] = payload
-        caught = [v for v in audit(tainted).violations if v.axis == axis]
-        if caught:
-            lines.append(f"  ✔ {axis} 주입 → 검출 {len(caught)}건")
-        else:
+    # ① 🔴 축마다 표본이 있는가. 없으면 그 축은 «한 번도 시험되지 않은 채» 초록을 낸다.
+    covered = {i.axis for i in _INJECTIONS}
+    uncovered = [axis for axis, _, _ in RULES if axis not in covered]
+    if uncovered:
+        ok = False
+        lines.append(f"  ✘ 표본 없는 축 {uncovered} — 시험되지 않은 축은 초록을 낼 자격이 없다")
+    else:
+        lines.append(f"  ✔ 축 표본 충족 {len(RULES)}축 / 표본 {len(_INJECTIONS)}종")
+
+    # ② 주입 → 검출. 밖에서 온 표본은 출처를 함께 찍는다.
+    for inj in _INJECTIONS:
+        caught = [v for v in audit(_inject(events, inj.payload)).violations if v.axis == inj.axis]
+        mark = "✔" if caught else "✘"
+        if not caught:
             ok = False
-            lines.append(f"  ✘ {axis} 주입 → 검출 0건 — 이 심사기는 그 축을 못 본다")
-        # 사본을 버린다(원본 events 는 손대지 않았다).
-        del tainted
+        lines.append(
+            f"  {mark} [{inj.axis}] {inj.label} → 검출 {len(caught)}건  ({inj.source})"
+        )
+
+    # ③ 🔴 오탐 대조군 — 정상 문자열에는 침묵해야 한다.
+    noisy = 0
+    for label, probe in _FALSE_POSITIVE_PROBES:
+        fired = [v.axis for v in audit(_inject(events, probe)).violations]
+        if fired:
+            noisy += 1
+            ok = False
+            lines.append(f"  ✘ 오탐 [{label}] → {fired} 가 울었다 — 정상 문자열이다")
+    if not noisy:
+        lines.append(f"  ✔ 오탐 없음 — 정상 표본 {len(_FALSE_POSITIVE_PROBES)}종에 침묵")
     return ok, lines
 
 
