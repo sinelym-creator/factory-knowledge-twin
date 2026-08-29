@@ -3,9 +3,9 @@ artifact: t1-5-graph-projection-verification
 ticket: T1-5 (Neo4j 투영) + 006(graph_build 원장·짝 판정 view·지문 가드) 독립 검증
 owner: 검증(리바이2 5대)
 status: 판정 제출 — 최종 판정권은 오케
-version: 1.0.0
+version: 1.1.0
 verified_at: 2026-08-29
-verification_base: develop `3fcead2`(006 착지분) → `34a475a`(#82) 재동기 후 3축 재실행 · `lane/levi2-t15-verify`
+verification_base: `3fcead2`(006) → `34a475a`(#82) → **`9ed3219`(007 = Q-6·Q-10 착지)** 재동기 후 전축 재실행 · `lane/levi2-t15-verify`
 target: services/projector/** · services/ai-api/db/migrations/006 · packages/ontology/projection-version.json (읽고 판정만)
 size_limit: 16KB
 ---
@@ -22,7 +22,7 @@ size_limit: 16KB
 
 | 항목 | 내용 |
 |---|---|
-| base | 착수 `3fcead2` → rebase `34a475a`(migrations·projector·ontology·spec 무변경 실측 후 3축 재실행) · worktree `../_wt/levi2-t15-verify` · 주 체크아웃 무접촉 |
+| base | 착수 `3fcead2` → `34a475a` → **`9ed3219`**(007 착지 · merge · migrate로 007 적용 후 전축 재실행 — §8) · worktree `../_wt/levi2-t15-verify` · 주 체크아웃 무접촉 |
 | 스택 | **내 격리 스택** `fkt-levi2`(pg 5534 · bolt 7587). 시작 시 Neo4j **0 노드 / 0 관계**에서 내가 투영했다 |
 | 대조 스택 | `fkt-senku2-t15`는 **열어 보지 않았다** — 정본은 내 재투영이다 |
 | 의존 | `services/projector/.venv`를 새로 세워 실측: `neo4j 6.3.0` · `psycopg 3.3.4` · **py 3.14.0** · `--only-binary :all:` exit 0 |
@@ -141,3 +141,40 @@ PG `savepoint` rollback · manifest는 메모리만) — `D-0`가 그래프 지�
 사정거리는 §5에 적었고, 그 사정거리를 재다가 나온 **구조 축 1건은 회부 ④로 올렸다** —
 그래프에는 색인의 `STALE`에 해당하는 축이 없다. 이번 발주 폭 밖이라 그물을 세우지 않았지만,
 **「폭 밖이라 안 봤다」와 「없다」를 같은 칸에 적지 않기 위해** 계수해 올린다.
+
+
+---
+
+## 8. 007(Q-6·Q-10) 착지가 «내 그물 3곳»을 뒤집었다 (v1.1.0)
+
+검증 도중 처방이 착지했다(develop `9ed3219`). base를 옮기고 `migrate.ps1`로 007을 올린 뒤
+**표를 손대기 전에 그대로 돌렸다.** 두 곳이 FAIL로 떴고, 한 곳은 «숫자가 같은 채로» 뜻이 바뀌어 있었다.
+
+| 자리 | 착지 전 | 착지 후(실측) | 조치 |
+|---|---|---|---|
+| `T-I3` 불완전 S→R | C-24가 울었다(기대 1) | **DB 거부** `23514` | 기대 → `REJECT` · 사유 성문 |
+| `T-S5` 위반 A→R «흔적 보존» | C-24·C-28이 울었다(기대 2) | **DB 거부** `23514` | 〃 |
+| `L-34` 거울 공란 | STALE 0 = 「FRESH라 답한다」 | STALE **여전히 0** · 그러나 답은 **`ONTOLOGY_UNVERIFIED` 45** | 문구 정정 + **`L-34b` 신설** |
+
+🔴 **`L-34`가 이번 조각에서 가장 위험한 자리였다.** 숫자가 0에서 움직이지 않아 **PASS인 채로
+거짓을 말하고 있었다** — 「모르는 것을 FRESH라 답한다」는 문장이 007 후에는 틀렸다.
+STALE 계수만 보는 그물은 이 전환을 **볼 수 없다.** 그래서 STALE 0은 그대로 두고,
+「그럼 무엇이라 답하는가」를 `L-34b`(= `ONTOLOGY_UNVERIFIED` 45)로 따로 못박았다.
+이름이 사라지거나 FRESH로 되돌아가면 이제 그 행이 운다.
+
+### 8.1 C-24의 «사정거리가 줄었다» — 남기되 넓이로 세지 않는다
+
+Q-10이 넣은 것은 `CHECK (approval_state <> 'retired' OR approved_by IS NULL OR effective_to IS NOT NULL)`.
+**`approved_by IS NULL` 예외**가 있어서, 승인 흔적 없는 `retired`는 여전히 `effective_to` 없이 들어간다.
+그런데 그런 행은 **C-23도 함께 잡는다**(실측 `T-S3` = C-23·C-24·C-28 동시 적발) —
+즉 **C-24는 이제 «홀로 울 수 없다».**
+
+초록을 훔치지는 않는다(울 때는 참으로 운다). 그러나 **「그물 6종」을 넓이의 증거로 세면 과대계상**이다.
+남겨 둔 이유는 그것이 **스펙 측 진술**이고, CHECK의 예외 구멍이 나중에 좁아지거나 넓어져도
+진술 자체는 그대로여야 하기 때문이다 — 주석에 그대로 성문했다.
+
+### 8.2 착지 후 전축 재실행 (전부 exit 0)
+
+`graph_verify 18/18` · `재현성 R-01 PASS` · `graph_drill 22/22` ·
+`seed-integrity 28/28` · `net-liveness **13/13**`(L-34b 신설) · `transition-net 27/27` ·
+`eval-chunk-binding 15/15` · `probes 6/6` · `selfcheck 11/11` · `binding-scope 20/20` · `contract 34/34`.

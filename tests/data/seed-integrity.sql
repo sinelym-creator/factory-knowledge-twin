@@ -173,8 +173,16 @@ WITH checks(ord, check_id, what, expected, actual) AS (
       SELECT count(*)::bigint FROM document_revision
       WHERE approval_state IN ('superseded','retired') AND approved_by IS NULL)),
 
-  -- 🔴 G-1 CHECK는 superseded «한 상태»만 본다. S→R로 넘기면서 effective_to를 지우면 DB는
-  --    막지 않는다(실측 T-I3) — 감사·replay 근거가 조용히 사라진다. 그 구멍을 메우는 그물이다.
+  -- 🔴 2026-08-29 처방 착지(Q-10 · 007) 후 이 그물의 «사정거리가 줄었다» — 성문해 둔다.
+  --    착지 전: G-1 CHECK가 superseded 한 상태만 봐서 S→R로 넘기며 effective_to를 지우면 DB가
+  --            통과시켰다(실측 T-I3). 이 그물이 그 구멍을 «혼자» 메우고 있었다.
+  --    착지 후: ck_retired_has_effective_to = (retired 아님 OR approved_by IS NULL OR
+  --            effective_to IS NOT NULL). 승인 흔적이 있는 retired는 DB가 먼저 거부한다.
+  --    🔴 그래서 지금 이 그물이 «잡을 수 있는» 행은 approved_by IS NULL인 retired뿐이고,
+  --       그 행은 C-23도 함께 잡는다 — 즉 C-24는 이제 «홀로 울 수 없다»(실측 T-S3 = C-23·C-24·C-28
+  --       동시 적발). 초록을 훔치지는 않지만(울 때는 참으로 운다) «넓이의 증거»로 세지 마라.
+  --       남겨 두는 이유: 이것은 스펙 측 진술이고, CHECK의 예외 구멍(approved_by 대리 축)이
+  --       나중에 좁아지거나 넓어져도 진술 자체는 그대로여야 한다.
   (24, 'C-24', 'G-3 retired 인데 effective_to 없음(G-1 CHECK 사정거리 밖)', 0, (
       SELECT count(*)::bigint FROM document_revision
       WHERE approval_state='retired' AND effective_to IS NULL)),
