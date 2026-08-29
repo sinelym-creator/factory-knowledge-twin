@@ -92,6 +92,22 @@ async def graph_paths(
             status_code=404,
             detail={"code": "not_found", "message": f"run {byRun} 를 찾을 수 없다"},
         )
+    if record.mode == "replay":
+        # 🔴 재생 run 에는 경로 «원본»이 없다(T2-4 판정 J-G). fixture 는 이벤트 스트림만
+        #    담고, `graphPaths` 는 이벤트 밖에 살던 값이다. 여기서 빈 배열을 200 으로 내면
+        #    「fixture 부재는 시끄럽게 막으면서 경로 원본 부재는 빈 배열로 답하는」 것 —
+        #    같은 병을 반만 고친 것이 된다. 이벤트의 excerpt 문자열을 파싱해 되세우는 길도
+        #    있으나 그것은 재조립이고, 재조립 금지가 이 축의 상위 규율이다(J-C).
+        raise HTTPException(
+            status_code=501,
+            detail={
+                "code": "replay_path_source_absent",
+                "message": (
+                    f"run {byRun} 은 재생본이다 — replay fixture 는 이벤트만 담으므로 "
+                    "그래프 경로 원본이 없다"
+                ),
+            },
+        )
     return record.graphPaths
 
 
