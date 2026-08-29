@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -54,6 +56,44 @@ class DependencyUnavailable(StarletteHTTPException):
                 "message": f"{which} 에 연결할 수 없다 — 잠시 후 다시 시도하라",
             },
         )
+
+
+# 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
+#    이 목록과 아래 `dependency_guard` 가 **그 변환의 유일한 정의**다(V-7 정정 · 「1곳 수렴」).
+#    전에는 compare 만 자기 안에 이 목록을 갖고 있었고, 나중에 열린 읽기 라우트에는 그 자리가
+#    없어 같은 단절이 500(`internal_error`)으로 나갔다 — 한 사건에 두 판정이 나온 것이다.
+#    새 라우트가 열릴 때 «변환을 잊는» 것이 결함의 형태였으므로, 잊을 수 있는 자리를 없앤다.
+DEPENDENCY_ERRORS: tuple[type[BaseException], ...] = (OSError, ConnectionError)
+try:                                                  # pragma: no cover - 설치 환경에 따라 다름
+    import asyncpg
+
+    DEPENDENCY_ERRORS += (asyncpg.PostgresError,)
+except Exception:                                     # noqa: BLE001
+    pass
+try:                                                  # pragma: no cover
+    from neo4j.exceptions import DriverError, Neo4jError
+
+    DEPENDENCY_ERRORS += (DriverError, Neo4jError)
+except Exception:                                     # noqa: BLE001
+    pass
+
+
+@asynccontextmanager
+async def dependency_guard(which: str) -> AsyncIterator[None]:
+    """블록 안에서 난 «의존 단절»을 503 `dependency_unavailable` 로 바꾼다.
+
+    🔴 예외 «내용»은 로그에만 남긴다. 드라이버 메시지에는 호스트·포트·계정이 섞여 나올 수
+       있고 이 서비스는 인증 없는 공개 Sandbox 다(`DependencyUnavailable` 성문과 같은 이유).
+
+    🔴 여기서 잡는 것은 **의존 예외뿐**이다. 그 밖의 예외는 그대로 위로 흘려 전역 500 이
+       되게 둔다 — 우리 코드의 결함을 「잠시 후 다시 시도하라」로 접으면 그 결함은 영영
+       발견되지 않는다.
+    """
+    try:
+        yield
+    except DEPENDENCY_ERRORS as exc:
+        log.warning("%s 단절 — %s", which, exc.__class__.__name__)
+        raise DependencyUnavailable(which) from exc
 
 
 class NotImplementedRoute(StarletteHTTPException):
