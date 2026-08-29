@@ -84,11 +84,11 @@ size_limit: 8KB
 | Q-2 | `ssot_manifest_hash`(스펙 §3.3) 산출 | 센쿠2 판단 요청 ④ | ✅ 종결(005 `v_ssot_manifest` — SQL 단일 정본·view 파생 · 검증 PR#68 독립 조립 일치 · 🔴 collation 의존 = Q-8 이월) |
 | Q-3 | `data/documents/README.md` 구 앵커 정정 | wireframes v0.4 · E-4/E-5 | ✅ 종결(PR#66 · 검증 확인) |
 | Q-4 | ontology STALE 축 처방(스펙 §3.3 「동일 처리」) | levi2 B단 적발(PR#63) | ✅ 종결(004 `ontology_registry`+신선도 확장 · 검증 PR#68 3축 재현·L-32 전환·L-33 신설 · 🔴 거울 공란 표시 = Q-6 이월) |
-| Q-6 | 거울 공란 시 «판정 안 함»이 FRESH로 표시 — freshness에 `ONTOLOGY_UNVERIFIED` 상태 신설 또는 읽기 경로 FAIL(빌드 경로는 이미 멈춤 — 심각도 낮음 E3 · L-34가 현재 동작 고정 · 착지 시 L-34가 울려 알림) | levi2 PR#68 ⓑ 잔여(상태 ⑤/⑥ 대조 실측) | T1-5 후 소조각 묶음 |
-| Q-7 | `migrate.ps1` 헤더 `embedding_dim=768` 표기 stale(실제 최종 상태 384 · 경미) | levi2 회부 ③ | Q-6 동반 |
-| Q-8 | `v_ssot_manifest` 정렬의 collation 의존 — 바이트 순서 고정(`COLLATE "C"`) 명시 검토. 현 ID 체계(DOC-AAA-NNNN 단일 모양)에선 동일함 실측 — ID 체계 확장 시 지문이 DB 설정에 좌우된다 | levi2 회부 ②(E3 · LC_ALL=C 독립 조립 대조) | Q-6 동반 |
+| Q-6 | freshness `ONTOLOGY_UNVERIFIED` 신설 + 읽기 경로 FAIL | levi2 PR#68 ⓑ 잔여 | ✅ 구현 완료 접수(007 · PR#83 — «둘 다» 집행 · 아는 불일치 우선 순서 · 🔴 L-34 전환 = 검증 몫 잔여) |
+| Q-7 | `migrate.ps1` 헤더 dim 표기 stale | levi2 회부 ③ | ✅ 종결(PR#83 — 자리표시자/최종 병기 배너) |
+| Q-8 | `v_ssot_manifest` 정렬 collation 의존 | levi2 회부 ②(E3) | ✅ 구현 완료 접수(007 `COLLATE "C"` — 현 데이터 지문 불변 실측 · 갈림 우선 실증) |
 | Q-9 | 「2순위 후보」 3자 정합 — seed 실물 rank2 = FM-SPDL-OVERHEAT ↔ 화면(wireframes ②)·대본은 FM-TOOL-IMB. «측정 후 바인딩» 계열(V-1 선례): T2-3(조사 워크플로우) 착지 시 실물 후보로 화면·대본 재바인딩 · 스펙 문구 혼선은 정오표 E-6 성문 | senku2 6대 회부 ①(FM-TOOL-IMB = 어떤 incident에도 진단 없음 실측 · D-5 정합) | T2-3 착지 시 오케 패스 |
-| Q-10 | G-1 CHECK 확장 — `ck_superseded_has_effective_to`가 superseded «한 상태»만 본다: S→R 전이하며 `effective_to`를 지우면 DB 통과(T-I3 실측 E1 · 현재 C-24 그물이 대신 적발) → retired 잔여열 요건 CHECK 확장 신규 마이그레이션 | levi2 5대 회부 ②(PR#75) | Q-6 묶음 동반 |
+| Q-10 | G-1 CHECK 확장 — retired 잔여열 요건 | levi2 5대 회부 ②(PR#75 · T-I3 실측) | ✅ 구현 완료 접수(007 `ck_retired_keeps_effective_to` — 대리 축 approved_by · 정당 경로 통과 · 기존 축 생존 확인) |
 | Q-11 | work_order 승인 축 — 스펙 §4 「전체 행 + 승인 이력」 vs 스키마 = 현재 상태 1열·이력 테이블 없음 + `approval_state` 전이 규칙 스펙 부재 → 🔴 T2-5(WO API) 티켓에 «승인 이력 테이블 + 전이 규칙 확정(오케)» 편입 | levi2 5대 회부 ③(PR#75) | T2-5 발주 시 결속 |
 | Q-12 | E-7의 대가 — 최상위 revision은 retired 불가(retired ⇒ superseded 경유 ⇒ 승계자 필요) = «문서 전체 폐기 revision 경로 없음». 현 PoC 범위 밖 «수용»(GS·평가에 폐기 시나리오 없음 · seed retired 0행 · 레지스트리 축 `document.status='retired'`는 별개). 폐기 시나리오 필요 시 §3.3 개정으로 개방 — 그때 C-28이 FAIL로 알린다 | levi2 5대 대가 계수(PR#79 · E-7 집행분) | §3.3 개정 시 재론 |
 | Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
