@@ -13,6 +13,7 @@ pwsh tests/data/run-seed-integrity.ps1  # ① DB 데이터 정합 표본 (DB 필
 python tests/data/selfcheck_mutation.py # ② 자기 점검 감지력 시험 (DB 불필요)
 pwsh tests/data/run-net-liveness.ps1    # ③ 데이터 그물 생존 시험 (DB 필요 · 주입 후 롤백)
 python tests/data/probe_binding_scope.py# ④ GS 바인딩 검사 사정거리 측정 (DB 불필요)
+pwsh tests/data/run-eval-chunk-binding.ps1 # ⑤ 평가 문항 chunk 입도 바인딩 (DB+색인 필요)
 ```
 
 좌석별 병렬 스택은 `docs/product/dev-environment.md` §4.2를 따른다(포트·`VOLUME_ROOT` 분리).
@@ -22,7 +23,8 @@ python tests/data/probe_binding_scope.py# ④ GS 바인딩 검사 사정거리 �
 | `seed-integrity.sql` + `run-seed-integrity.ps1` | 적재된 **데이터**가 스펙·평가셋 전제와 맞는가 | 필요 |
 | `selfcheck_mutation.py` | 생성기 **자기 점검이 실패를 «낼 수 있는가»**(위반 11종 주입) | 불필요 |
 | `net-liveness.sql` + `run-net-liveness.ps1` | **이 표본의 그물이 실패를 «낼 수 있는가»**(C-10·C-11·C-21·C-22에 위반 주입 → 롤백) | 필요 |
-| `probe_binding_scope.py` | 자기 점검의 **GS 바인딩 검사가 어디까지 닿는가**(20키 전수 · F-2의 실제 넓이) | 불필요 |
+| `probe_binding_scope.py` | 자기 점검의 **GS 바인딩 검사가 어디까지 닿는가**(20키 전수 · F-2를 닫은 자리) | 불필요 |
+| `eval-chunk-binding.sql` + `run-eval-chunk-binding.ps1` | 평가셋이 적어 둔 **chunk 좌표가 색인에 실재하는가**(존재·정방향·역방향) | 필요(+색인) |
 
 🔴 **읽기 전용은 `seed-integrity.sql`뿐이다.** `net-liveness.sql`은 쓴다 — 다만 검사 1건 = 트랜잭션 1개
 (`BEGIN … ROLLBACK`)라 잔여물이 0이고, 마지막 `L-0`가 그 되감기를 실측한다. 두 파일을 한 러너로 섞지 않는다.
@@ -68,14 +70,16 @@ C-13은 특히 **역방향**이다. 생성기는 「알람 → 그 시각 계측
 | 0 | 대조군 통과 + 감지 결과와 **사유**가 표와 일치 |
 | 1 | 대조군 실패 · 감지 결과 불일치 · **사유 불일치** · 주입 자체가 죽음 |
 
-**현재: 주입 11건 · 감지 10건 · 알려진 구멍 1건(F-2) · 기대 불일치 0 · exit 0.**
+**현재: 주입 11건 · 감지 11건 · 알려진 구멍 0건 · 기대 불일치 0 · exit 0.** (F-2 닫힘 · 2026-08-29)
 
-🔴 **그 「구멍 1건」은 1건이 아니다 — `probe_binding_scope.py`가 잰 실제 넓이는 20키 중 18키다.**
-이 표의 «감지 10건»에는 착시가 하나 섞여 있다. `GS 바인딩 ID 변조(부품)`는 **`component.id`와
-`component_failure_mode.component_id`를 «둘 다»** 바꾸므로 그 문자열이 집합에서 통째로 사라져 잡힌다.
-소유 테이블의 `id`만 바꾸면 **부품도 잡히지 않는다**. 즉 감지 여부는 검사의 성질이 아니라
-「그 ID를 다른 테이블이 참조하느냐」는 데이터의 우연이다. 자세한 실측과 처방은 `probe_binding_scope.py`
-docstring과 `evidence/t1-7-a-selfcheck-and-nets.md` §2.
+🔴 **F-2가 어떻게 닫혔는지는 남겨 둔다 — 이 표만으로는 그때도 「구멍 1건」으로 보였기 때문이다.**
+옛 상태의 «감지 10건»에는 착시가 하나 섞여 있었다. `GS 바인딩 ID 변조(부품)`는 **`component.id`와
+`component_failure_mode.component_id`를 «둘 다»** 바꾸므로 문자열이 집합에서 통째로 사라져 잡혔다.
+소유 테이블의 `id`만 바꾸면 **부품도 잡히지 않았다** — 넓이를 따로 잰 `probe_binding_scope.py`가
+**20키 중 18키 미감지**를 드러냈고, 그래서 처방이 「equipment 한 건 고치기」가 아니라
+「검사 방식을 소유 테이블로 좁히기」(`config.GS_OWNER`)가 됐다.
+**2개 표본만 보고 구멍의 넓이를 판단하지 마라** — 실측과 처방 전문은 `probe_binding_scope.py`
+docstring과 `evidence/t1-7-a-selfcheck-and-nets.md` §2 · 닫힘 확인은 `evidence/t1-7-q-verify.md` §1.
 
 ## GS 바인딩 검사 사정거리 (`probe_binding_scope.py`)
 
@@ -83,10 +87,11 @@ GS 20키 각각에 대해 **소유 테이블의 `id`만** 바꾸고 `self_check`
 「감지했는가」가 아니라 **「바인딩 검사가 감지했는가」**다 — GS ID를 바꾸면 D-5·F-1 같은 다른 검사가
 먼저 우는 키가 있고, 그 감지를 바인딩 검사의 공로로 계수하면 정작 재려던 축은 미측정으로 남는다.
 
-**현재: 20키 · 감지 2건(`sensor_cur`·`alarm`) · 미감지 18건 · 기대 불일치 0 · exit 0.**
-감지되는 2건은 그림자 참조가 **0곳**이라 문자열이 통째로 사라져서다 — 다른 테이블이 그 ID를 참조하게
-되는 순간 이 둘도 조용히 미감지로 넘어간다. 🔴 **처방은 `data/generators/generate.py`(구현 좌석 scope)에
-있다** — 검증 좌석은 넓이를 재고 기대표를 고정해 둘 뿐, 여기서 닫을 수 없다.
+**현재: 20키 · 감지 20건 · 미감지 0건 · 기대 불일치 0 · exit 0.** (2026-08-29 F-2 닫힘)
+처방(`config.GS_OWNER` — GS 키 → 소유 테이블·칼럼)이 착지한 뒤 검증 좌석이 20/20을 독립 재현하고
+기대표를 전환했다. 그 전 값은 **감지 2건 / 미감지 18건**이었고, 잡히던 2건조차 «그림자 참조가 0곳»이라
+문자열이 통째로 사라져서였다 — 감지 여부가 검사의 성질이 아니라 데이터의 우연이었다는 뜻이고,
+그게 F-2가 «1건이 아니라 구조적»이었던 이유다. 🔴 이제 한 키라도 미감지로 돌아오면 그건 회귀다.
 
 세 가지를 이 도구가 함께 막는다 — 셋 다 실제로 겪은 실패다.
 
@@ -97,7 +102,7 @@ GS 20키 각각에 대해 **소유 테이블의 `id`만** 바꾸고 `self_check`
   절 구조 파싱 실패로 먼저 걸려, 정작 인용 검사는 시험되지 않은 채 초록이었다.
 - 🔴 **F-1 회귀 그물을 포함한다.** MR ID 연도를 어긋나게 주입해, F-1 수정이 **생성 단계에서 죽는지**를 매번 확인한다.
 
-## 알려진 FAIL — **0건** (2026-08-29 재검 기준 · **22/22** · exit 0 · 그물 생존 6/6)
+## 알려진 FAIL — **0건** (2026-08-29 재검 기준 · **22/22** · exit 0 · 그물 생존 **10/10** · chunk 바인딩 **15/15**)
 
 | check | 이력 |
 |---|---|

@@ -123,22 +123,45 @@ SELECT 'L-31', 'STALE 판정 생존 — 원장 sha ≠ 현행 sha 주입 시 STA
             THEN 'PASS' ELSE 'FAIL' END;
 ROLLBACK;
 
--- --- L-32: 🔴 known gap — ontology_version 불일치는 «아직» STALE로 잡히지 않는다 ---
--- spec §3.3은 「ontology_version 불일치도 동일 처리」를 요구하지만, v_index_freshness는
--- source_sha256만 비교한다(003 마이그레이션 실물). 기대값을 «현재 상태»로 고정해 둔다 —
--- 처방이 착지해 잡히기 시작하면 여기가 FAIL로 울린다(표를 갱신하라는 신호).
--- 🔴 처방 위치 = services/ai-api/db/migrations/** = 구현 좌석 scope. 검증 좌석은 못 닫는다.
+-- --- L-32: STALE 판정이 «ontology 상승»을 잡는가 (spec §3.3 「동일 처리」) ---------
+-- 🔴 2026-08-29 전환: known gap → 정상 그물. 004가 ontology 축을 더하기 전까지 이 자리는
+--    「0 = 아직 안 잡는다」로 고정돼 있었다. 처방(004 + ontology_registry) 착지 후
+--    검증 좌석이 독립 재현하고 기대를 뒤집었다. 다시 0이 나오면 그건 회귀다.
+-- 주입 = «거울»을 올린다(온톨로지가 올라갔는데 색인은 그대로) — 현실의 그 순서 그대로.
 BEGIN;
-INSERT INTO index_build (build_id, revision_id, document_id, revision_no, source_sha256,
-  chunking_policy_version, embedding_model, embedding_dim, ontology_version, status, chunk_count)
-SELECT 'PROBE-L32', r.id, r.document_id, r.revision_no, r.content_sha256,
-       1, 'probe-model', 384, '0.0.1-WRONG', 'success', 1
-  FROM document_revision r WHERE r.id = 'DOC-SAF-0029@r3';
-SELECT 'L-32', '🔴 known gap — ontology 불일치 STALE 적발 건수(0 = 아직 안 잡는다)', 0,
-       (SELECT count(*)::bigint FROM v_index_freshness
-         WHERE revision_id='DOC-SAF-0029@r3' AND freshness='STALE'),
-       CASE WHEN (SELECT count(*) FROM v_index_freshness
-                   WHERE revision_id='DOC-SAF-0029@r3' AND freshness='STALE') = 0
+UPDATE ontology_registry SET ontology_version = '9.9.9';
+SELECT 'L-32', 'STALE 판정 생존 — ontology 상승 시 STALE 건수(색인된 revision 전건)', 45,
+       (SELECT count(*)::bigint FROM v_index_freshness WHERE freshness='STALE'),
+       CASE WHEN (SELECT count(*) FROM v_index_freshness WHERE freshness='STALE') = 45
+            THEN 'PASS' ELSE 'FAIL' END;
+ROLLBACK;
+
+-- --- L-33: 두 축이 «사유로» 갈리는가 — 판정은 하나, 사유는 둘 ---------------------
+-- 🔴 STALE 건수만 보면 원문이 바뀐 건지 ontology가 올라간 건지 모른다. 둘은 고칠 곳이
+--    다르다(§3.3은 «처리»만 같다고 했다). 두 축을 동시에 깨고 사유가 섞이지 않는지 본다.
+BEGIN;
+UPDATE ontology_registry SET ontology_version = '9.9.9';
+UPDATE document_revision SET content_sha256 = repeat('b',64) WHERE id = 'DOC-SAF-0029@r3';
+SELECT 'L-33', '사유 분리 — 두 축 동시 주입 시 SOURCE_SHA로 갈리는 건수(나머지는 ONTOLOGY)', 1,
+       (SELECT count(*)::bigint FROM v_index_freshness WHERE stale_reason='SOURCE_SHA'),
+       CASE WHEN (SELECT count(*) FROM v_index_freshness WHERE stale_reason='SOURCE_SHA') = 1
+             AND (SELECT count(*) FROM v_index_freshness WHERE stale_reason='ONTOLOGY_VERSION') = 44
+            THEN 'PASS' ELSE 'FAIL' END;
+ROLLBACK;
+
+-- --- L-34: 🔴 known gap — 거울이 비면 «낡은 색인»도 FRESH라고 답한다 --------------
+-- 004의 의도는 「비교 대상이 없으면 ontology 축을 판정하지 않는다」이고 그 자체는 옳다.
+-- 그러나 freshness 열에는 «판정 안 함» 상태가 없어서, 판정하지 않은 것이 FRESH로 나온다.
+-- 🔴 L-32와 같은 낡음(원장 ontology ≠ 현행)인데 거울 유무로 STALE↔FRESH가 갈린다.
+--    완화책은 있다 — build_index.py가 「ontology_registry 0행」에서 멈춘다(빌드 경로).
+--    막히지 않는 것은 «읽기 경로»다: 거울이 지워진 DB를 그냥 조회하면 FRESH가 나온다.
+--    기대를 현재 상태로 고정해 둔다. UNKNOWN 상태가 생기면 여기가 FAIL로 울린다.
+BEGIN;
+DELETE FROM ontology_registry;
+UPDATE index_build SET ontology_version = '0.0.9';
+SELECT 'L-34', '🔴 known gap — 거울 공란 + 낡은 원장에서의 STALE 건수(0 = FRESH라 답한다)', 0,
+       (SELECT count(*)::bigint FROM v_index_freshness WHERE freshness='STALE'),
+       CASE WHEN (SELECT count(*) FROM v_index_freshness WHERE freshness='STALE') = 0
             THEN 'PASS' ELSE 'FAIL' END;
 ROLLBACK;
 
