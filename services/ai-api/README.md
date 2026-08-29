@@ -57,7 +57,7 @@ $env:FKT_NEO4J_PASSWORD = '***'
 | `/evidence/{evidenceId}` | GET | 501 |
 | `/graph/paths` | GET | 501 |
 | `/documents/{docId}` | GET | 501 |
-| `/retrieval/compare` | POST | 501 |
+| `/retrieval/compare` | POST | **구현 (T2-1)** — 아래 §retrieval |
 | `/work-orders/{woId}` | GET | 501 |
 | `/work-orders/{woId}` | PATCH | 501 |
 | `/work-orders/{woId}/approve` | POST | 501 |
@@ -77,6 +77,7 @@ WebSocket 은 OpenAPI 에 실리지 않아 도구가 라우트 표에서 직접 
 |---|---|---|
 | PostgreSQL | `asyncpg` 풀(`await pool.acquire()` · `await conn.fetchval`) | `app/probes.py` |
 | Neo4j | `neo4j.AsyncGraphDatabase` (`await driver.verify_connectivity()`) | `app/probes.py` |
+| retrieval (T2-1) | 같은 두 드라이버 + 질의 임베딩은 `asyncio.to_thread` 로 오프로드 | `app/retrieval/*` |
 | 그 외 라우트 | IO 없음 — 계약 형상만 알고 즉시 501 을 던진다 | `app/routers/*` |
 
 동기 드라이버(psycopg2 계열·neo4j 동기 세션)는 의존 목록에 없다. 파일 읽기·`time.sleep`·
@@ -104,6 +105,24 @@ WebSocket 은 OpenAPI 에 실리지 않아 도구가 라우트 표에서 직접 
 
 증가분이 유휴 기준선 수준(수 ms)이고, 같은 측정이 블로킹 호출 하나에 **300배 이상** 반응한다.
 대조군을 함께 두는 이유가 이것이다 — 「lag 이 작다」는 측정이 민감할 때만 증거가 된다.
+
+**T2-1 재측정 — 위험이 있는 경로에서 다시 잰다 (E1 · 2026-08-30 · 동시 8 · 각 4초).**
+`/api/health` 만 때리면 새로 들어온 위험(질의 임베딩 = 동기 CPU 작업)을 지나쳐 측정한다.
+그래서 부하 대상을 `POST /api/retrieval/compare` 로 바꿔(`--retrieval`) 다시 쟀고, 임베딩이
+없는 축(`--strategies graphrag`)을 **대조군**으로 함께 뒀다.
+
+| 부하 대상 (증가 = 유휴 기준선 대비) | p50 | p95 | 최대 | 처리량 |
+|---|---:|---:|---:|---:|
+| compare · 3전략 | **-5.38 ms** | +3.40 ms | +64.42 ms | 11 req/s |
+| compare · `vector` 만 (임베딩 있음) | **-5.10 ms** | +3.94 ms | +55.91 ms | 24 req/s |
+| compare · `graphrag` 만 (임베딩 **없음**) | +4.06 ms | +13.66 ms | +61.26 ms | 239 req/s |
+| 대조군 — `time.sleep(0.05)` | **+1,226.11 ms** | +1,228.79 ms | +1,228.29 ms | 19 req/s |
+
+🔴 읽는 법: **최대치의 산발적 증가(55~64 ms)를 임베딩 탓으로 읽으면 안 된다** — 임베딩이
+아예 없는 `graphrag` 축에서 같은 규모(+61 ms)가, 오히려 더 큰 p95 증가와 함께 나온다.
+즉 그 꼬리는 «부하 자체»의 것이지 루프 점유의 서명이 아니다. 동기 블로킹의 서명은 대조군이
+보여 주는 **중앙값 자체의 이동**인데, 실제 경로 어디에도 그것이 없다(p50 증가가 음수이거나
+기준선 수준). `to_thread` 오프로드가 루프를 잡지 않는다는 뜻이다.
 
 ## 부팅·프로브 실측 (AC ① · E1 · 2026-08-29)
 
@@ -150,3 +169,57 @@ WebSocket 은 OpenAPI 에 실리지 않아 도구가 라우트 표에서 직접 
 ## 데이터 계층
 
 DDL·마이그레이션은 `db/` 에 있다(T1-1). `pwsh db/migrate.ps1` — 자세한 것은 `db/README.md`.
+
+
+## retrieval 3전략 — vector·hybrid·graphrag (T2-1)
+
+`POST /api/retrieval/compare` 하나를 해제했다. **여기서 LLM 호출은 0이다** — 후보를 찾아
+인용을 돌려줄 뿐이고, 합성(synthesize)은 T2-3의 몫이다.
+
+| 전략 | 무엇을 하는가 | `score` 의 뜻 |
+|---|---|---|
+| `vector` | T1-4 색인 위 pgvector 최근접(코사인) | 코사인 유사도 |
+| `hybrid` | 구조화 축(앵커 레코드 + 한 걸음 이웃 + ID 언급 chunk) **+ vector 축**을 RRF 결합 | RRF 점수 |
+| `graphrag` | T1-5 투영 위 고정 template traversal(무방향 · 최대 6-hop · 종단 종류별 상한) | `1/(1+hops)` |
+
+🔴 **`score` 는 «전략 내 서수»다.** 산출 방식이 전략마다 달라 전략 «사이»의 크기 비교는
+뜻이 없다(오케 판정 2026-08-30 · 원장 Q-17). 화면이 세 숫자를 나란히 놓고 크기를 견주면
+그것은 없는 사실을 말하는 것이다.
+
+🔴 **`elapsedMs` 는 그 전략 1회의 관측치다**(계약 각주 · baseline §0.2). 모델 로드·색인
+지문 대조는 «준비»라서 측정 구간 밖에서 끝낸다. 반대로 hybrid 는 vector 전략의 결과를
+물려받지 않고 자기 벡터 축을 다시 돈다 — 물려받으면 hybrid 의 숫자에서 벡터 비용이 빠져
+「hybrid 가 더 빠르다」는 없는 사실이 생긴다.
+
+**게이트 — 요청이 검색에 닿기 전에 넘는 것**
+
+1. `sessionId` 형식(영숫자·`-`·`_` 8~64자). 🔴 형식만 본다 — 세션 저장소와 결합하지 않으며,
+   이 티켓은 격리를 «주장하지 않는다»(오케 판정 · 원장 Q-18).
+2. `question` 은 서버측 allowlist(`app/retrieval/allowlist.py`) 통과분만. 목록 밖 질문은
+   비슷한 질문으로 조용히 바꾸지 않고 **명시 거부**한다(`400 question_not_approved`).
+   목록은 손으로 옮겨 적은 것이라 정본과 자동 대조한다 — `python -m tools.verify_allowlist`.
+3. 색인 지문 대조 — `document_chunk` 의 `embedding_model`·차원이 질의 모델과 다르면
+   `500 index_model_mismatch` 로 멈춘다. 🔴 차원만 보면 부족하다: 384차원 모델은 여럿이고
+   다른 모델의 벡터도 «맞는 차원»으로 들어온다.
+
+**실행 실물 (E1 · 2026-08-30 · 스택 `fkt-senku2-q3` · chunk 59 · 노드 309/관계 448)**
+
+GS-01 축 질문(`Q-MULTIHOP-001`)을 3전략으로 1회:
+
+| 전략 | elapsedMs | 상위 인용 |
+|---|---:|---|
+| vector | 94 | `DOC-MAN-0021@r1#005`(0.8628) 외 4건 — 전부 인용 가능 revision |
+| hybrid | 41 | `AL-20260826-0041`(alarm 레코드 · `observed_value=6.3047`) + 문서 chunk 4건 |
+| graphrag | 183 | `SOP-BRG-INSP-014`(3-hop) · `SAF-LOTO-01`(4-hop) — 경로 전문이 `excerpt` 에 |
+
+🔴 graphrag 상한을 «종단 종류별»로 거는 이유가 여기서 나왔다. 전체 상한만 걸었을 때는
+가까운 1~2-hop(Incident·Component)이 자리를 다 먹어 **SOP·SafetyRule 이 통째로 사라졌다**.
+안전 규정 누락은 평가 규약에서 「경로가 맞아도 즉시 FAIL」이다(평가셋 `Q-MULTIHOP-001`).
+
+**없는 것, 그리고 왜**
+
+- `GET /evidence`·`/documents`·`/graph/paths` 는 여전히 501 이다(T2-2). 그래서 `evidenceId`
+  로 전문을 되받는 소비 축은 이 티켓에서 검증되지 않았다.
+- 색인 신선도(`v_index_freshness` 의 `STALE`)를 검색이 «거르지» 않는다. 계약의 compare 응답에
+  그 사실을 담을 필드가 없고, 신뢰 배지는 `GET /evidence`·`/documents` 의 `stale` 필드가
+  말하도록 계약이 정했기 때문이다(F-4). 실측 시점 색인은 `FRESH 45 · SKIPPED 15 · STALE 0`.

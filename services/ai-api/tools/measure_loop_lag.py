@@ -63,7 +63,8 @@ def _summary(lags: list[float]) -> tuple[float, float, float]:
     return (statistics.median(ordered), p95, ordered[-1])
 
 
-async def run(duration: float, concurrency: int, blocking_demo: bool) -> int:
+async def run(duration: float, concurrency: int, blocking_demo: bool, retrieval: bool,
+              strategies: list[str]) -> int:
     import httpx
 
     from app.main import create_app
@@ -79,7 +80,22 @@ async def run(duration: float, concurrency: int, blocking_demo: bool) -> int:
             _time.sleep(0.05)
             return {"blocked": True}
 
-    target = "/api/__blocking_demo" if blocking_demo else "/api/health"
+    # 🔴 T2-1: 새로 들어온 blocking 위험은 «질의 임베딩»(동기 CPU 작업)이다. /health 만
+    #    때리면 그 위험을 지나쳐 측정한다 — 재는 대상이 위험이 있는 경로여야 한다.
+    payload = None
+    if blocking_demo:
+        target = "/api/__blocking_demo"
+    elif retrieval:
+        from app.retrieval.allowlist import APPROVED_QUESTIONS   # noqa: PLC0415
+
+        target = "/api/retrieval/compare"
+        payload = {
+            "sessionId": "loop-lag-probe",
+            "question": APPROVED_QUESTIONS["Q-MULTIHOP-001"],
+            "strategies": strategies,
+        }
+    else:
+        target = "/api/health"
     transport = httpx.ASGITransport(app=app)
 
     # 🔴 ASGITransport 는 lifespan 을 돌리지 않는다. 직접 열지 않으면 app.state.resources 가
@@ -87,6 +103,9 @@ async def run(duration: float, concurrency: int, blocking_demo: bool) -> int:
     async with app.router.lifespan_context(app):
         async with httpx.AsyncClient(transport=transport, base_url="http://asgi") as client:
             await client.get("/api/health")     # 첫 호출의 임포트·검증 비용을 측정 밖으로
+            if payload is not None:
+                # 임베딩 모델 로드도 «준비»다 — 한 번 태워 측정 밖으로 낸다.
+                await client.post(target, json=payload, timeout=300.0)
 
             baseline = await _measure(duration, None)
 
@@ -99,7 +118,10 @@ async def run(duration: float, concurrency: int, blocking_demo: bool) -> int:
                 async def one() -> None:
                     nonlocal sent
                     async with sem:
-                        await client.get(target)
+                        if payload is None:
+                            await client.get(target)
+                        else:
+                            await client.post(target, json=payload, timeout=300.0)
                         sent += 1
 
                 pending: set[asyncio.Task] = set()
@@ -119,7 +141,8 @@ async def run(duration: float, concurrency: int, blocking_demo: bool) -> int:
     l50, l95, lmax = _summary(loaded)
     rps = sent / elapsed if elapsed else 0.0
 
-    print(f"대상        : {target}   (동시 {concurrency} · 구간 {duration:.1f}s × 2)")
+    detail = f" · 전략 {'+'.join(strategies)}" if payload is not None else ""
+    print(f"대상        : {target}{detail}   (동시 {concurrency} · 구간 {duration:.1f}s × 2)")
     print(f"처리        : {sent}건 · 약 {rps:,.0f} req/s")
     print(f"tick 표본   : 유휴 {len(baseline)}개 · 부하 {len(loaded)}개 (약속 주기 {TICK_SEC * 1000:.0f} ms)")
     print()
@@ -142,11 +165,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--concurrency", type=int, default=20)
     ap.add_argument("--blocking-demo", action="store_true",
                     help="대조군 — 루프를 막는 핸들러를 임시로 붙여 같은 측정을 돌린다")
+    ap.add_argument("--retrieval", action="store_true",
+                    help="부하 대상을 POST /api/retrieval/compare 로 (T2-1 질의 임베딩 경로)")
+    ap.add_argument("--strategies", default="vector,hybrid,graphrag",
+                    help="--retrieval 부하가 요청할 전략(쉼표 구분) — 축을 갈라 원인을 좁힐 때 쓴다")
     args = ap.parse_args(argv)
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
-    return asyncio.run(run(args.duration, args.concurrency, args.blocking_demo))
+    return asyncio.run(run(args.duration, args.concurrency, args.blocking_demo, args.retrieval,
+                          [x for x in args.strategies.split(",") if x]))
 
 
 if __name__ == "__main__":

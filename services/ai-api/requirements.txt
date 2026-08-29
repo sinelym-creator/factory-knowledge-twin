@@ -15,3 +15,17 @@ uvicorn[standard]==0.34.0
 pydantic-settings==2.7.1
 asyncpg==0.31.0
 neo4j==5.27.0
+
+# T2-1 추가 — 질의 임베딩(retrieval vector·hybrid 축):
+#   sentence-transformers · torch : 🔴 «색인과 같은 구현체»여야 한다. 색인(services/indexer)이
+#                  sentence-transformers 로 만든 벡터와 같은 공간에 질문을 넣어야 검색이
+#                  뜻을 갖는다. 다른 런타임(fastembed/ONNX)으로 같은 모델을 돌리면 값이
+#                  근사할 뿐 «동일»하지 않고, 어긋나도 오류 없이 순위만 조용히 나빠진다.
+#                  버전은 indexer/requirements.txt 와 맞춘다(3.14 wheel 실측 선례 계승).
+#
+#   🔴 무게 소견(오케 판정 대기 사안 — dev-environment §8 E2): torch 는 설치 용량이 크고
+#      ai-api 컨테이너화(Phase 4)의 이미지 크기에 직결한다. 「indexer 는 컨테이너화 비대상」
+#      판정의 근거가 그것이었는데, 질의 임베딩 때문에 ai-api 가 같은 무게를 지게 됐다.
+#      Phase 4 에서 «임베딩만 떼어낸 경량 경로»를 재론할 값어치가 있다(T2-1 완료 보고 병기).
+sentence-transformers==6.0.0
+torch==2.13.0

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 
 from ..errors import NOT_IMPLEMENTED, NotImplementedRoute
+from ..retrieval.service import compare
 from ..schemas import CompareRequest, CompareResult
 
 router = APIRouter(tags=["knowledge"])
@@ -41,11 +42,13 @@ async def document_preview(docId: str, highlight: str | None = None) -> None:
     raise NotImplementedRoute("GET /documents/{docId}", "문서·색인 조회 계층")
 
 
-@router.post("/retrieval/compare", response_model=list[CompareResult], responses=NOT_IMPLEMENTED)
-async def compare_strategies(body: CompareRequest) -> list[CompareResult]:
-    """전략별 `[{ strategy, hits, elapsedMs }]`.
+@router.post("/retrieval/compare", response_model=list[CompareResult])
+async def compare_strategies(body: CompareRequest, request: Request) -> list[CompareResult]:
+    """전략별 `[{ strategy, hits, elapsedMs }]` — vector·hybrid·graphrag (T2-1 해제).
 
     🔴 `elapsedMs` 는 이 실행 1회의 관측치다. 화면은 이것을 벤치마크로 표시하지 않는다
        (baseline §0.2 측정-주장 경계 · wireframes ⑤ 각주).
+    🔴 `score` 는 «전략 내 서수»다 — 전략마다 산출 방식이 달라(코사인 / RRF / 경로 길이)
+       전략 «사이»의 크기 비교는 뜻이 없다(오케 판정 08-30 ③-2 · 원장 Q-17).
     """
-    raise NotImplementedRoute("POST /retrieval/compare", "retrieval 3전략 구현")
+    return await compare(request.app.state.resources, body)
