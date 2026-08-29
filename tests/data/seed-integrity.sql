@@ -164,10 +164,14 @@ WITH checks(ord, check_id, what, expected, actual) AS (
   --    🔴 여기 «없는» 것: 「superseded 인데 effective_to 없음」 = 002 ck_superseded_has_effective_to
   --       가 이미 DB에서 막는다(실측 T-I2 = SQLSTATE 23514). 그 위에 그물을 얹으면 그 초록은
   --       그물의 것이 아니라 스키마의 것이다 — 얹지 않았다.
+  --    🔴 2026-08-29 정오표 E-7(오케 확정): 합법 전이 = «인접 전진 3쌍뿐». 침묵했던 건너뜀
+  --       3쌍(D→S·D→R·A→R)도 «위반»이다 = 사슬이 유일 경로다. 이 확정으로 두 가지가 따라온다:
+  --       ⓐ C-23의 사정거리가 retired까지 넓어진다(retired 도달도 승인을 지나야 한다)
+  --       ⓑ C-28이 성립한다(retired는 superseded를 거치고, superseded는 승계자를 함축한다)
 
-  (23, 'C-23', 'G-3 superseded 인데 승인자 없음(approved를 지나지 않은 흔적)', 0, (
+  (23, 'C-23', 'G-3 superseded·retired 인데 승인자 없음(approved를 지나지 않은 흔적)', 0, (
       SELECT count(*)::bigint FROM document_revision
-      WHERE approval_state='superseded' AND approved_by IS NULL)),
+      WHERE approval_state IN ('superseded','retired') AND approved_by IS NULL)),
 
   -- 🔴 G-1 CHECK는 superseded «한 상태»만 본다. S→R로 넘기면서 effective_to를 지우면 DB는
   --    막지 않는다(실측 T-I3) — 감사·replay 근거가 조용히 사라진다. 그 구멍을 메우는 그물이다.
@@ -196,7 +200,19 @@ WITH checks(ord, check_id, what, expected, actual) AS (
       SELECT count(*)::bigint FROM document_revision s
       WHERE s.approval_state='superseded' AND NOT EXISTS (
         SELECT 1 FROM document_revision h
-        WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no)))
+        WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no))),
+
+  -- 🔴 E-7 확정의 직접 귀결. retired 도달 경로가 사슬뿐이면 retired는 superseded를 거쳤고,
+  --    superseded는 승계자를 함축한다(C-27) — 그래서 retired에도 승계자가 있어야 한다.
+  --    이 그물이 없으면 「draft를 승인자·기간까지 채워 retired로 위조」가 «절대 0»으로 샌다
+  --    (실측: transition-net T-S4가 신설 전 유일한 무성 위반이었다).
+  --    🔴 대가를 성문한다: 이 판정을 문자 그대로 따르면 «최상위 revision은 retired가 될 수
+  --       없다» — 문서 전체를 폐기하는 revision 경로가 스펙에 없다는 뜻이다(오케 회부).
+  (28, 'C-28', 'G-3 retired 인데 더 높은 revision_no가 없음(승계자 없는 폐기)', 0, (
+      SELECT count(*)::bigint FROM document_revision t
+      WHERE t.approval_state='retired' AND NOT EXISTS (
+        SELECT 1 FROM document_revision h
+        WHERE h.document_id=t.document_id AND h.revision_no > t.revision_no)))
 )
 SELECT check_id, what, expected, actual,
        CASE WHEN actual = expected THEN 'PASS' ELSE 'FAIL' END AS verdict

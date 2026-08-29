@@ -26,7 +26,7 @@ pwsh tests/data/run-transition-net.ps1  # ⑥ approval_state 전이 그물 (DB �
 | `net-liveness.sql` + `run-net-liveness.ps1` | **이 표본의 그물이 실패를 «낼 수 있는가»**(C-10·C-11·C-21·C-22에 위반 주입 → 롤백) | 필요 |
 | `probe_binding_scope.py` | 자기 점검의 **GS 바인딩 검사가 어디까지 닿는가**(20키 전수 · F-2를 닫은 자리) | 불필요 |
 | `eval-chunk-binding.sql` + `run-eval-chunk-binding.ps1` | 평가셋이 적어 둔 **chunk 좌표가 색인에 실재하는가**(존재·정방향·역방향) | 필요(+색인) |
-| `transition-net.sql` + `run-transition-net.ps1` | `approval_state` **전이 자체**를 어디까지 볼 수 있는가 — 합법 3쌍·위반 6쌍(흔적 보존/삭제 2변형)·미정의 3쌍을 주입해 **전이 그물 ↔ 기존 그물** 증분을 나란히 계수(G-3) | 필요 |
+| `transition-net.sql` + `run-transition-net.ps1` | `approval_state` **전이 자체**를 어디까지 볼 수 있는가 — 합법 3쌍 + 위반 9쌍(역방향 6 + 건너뜀 3 · 각 흔적 보존/삭제 2변형)을 주입해 **전이 그물 ↔ 기존 그물**을 **증분(귀속)·절대(운용)** 두 축으로 나란히 계수(G-3) | 필요 |
 
 🔴 **읽기 전용은 `seed-integrity.sql`뿐이다.** `net-liveness.sql`·`transition-net.sql`은 쓴다 — 다만 검사
 1건 = 트랜잭션 1개(`BEGIN … ROLLBACK`)라 잔여물이 0이고, 마지막 `L-0`·`L-0b`·`T-0`가 그 되감기를 실측한다.
@@ -36,7 +36,7 @@ pwsh tests/data/run-transition-net.ps1  # ⑥ approval_state 전이 그물 (DB �
 
 | exit | 뜻 |
 |---:|---|
-| 0 | 표본 전건 PASS (`seed-integrity` 27건 · 2026-08-29 기준) |
+| 0 | 표본 전건 PASS (`seed-integrity` 28건 · 2026-08-29 기준) |
 | 1 | FAIL 1건 이상 — 데이터가 전제와 어긋난다 |
 | 2 | 실행 오류(스택 미기동·표본 파일 없음·psql 실패) |
 
@@ -56,7 +56,7 @@ pwsh tests/data/run-transition-net.ps1  # ⑥ approval_state 전이 그물 (DB �
 |---|---|---|
 | **스키마가 비강제로 확정한 정합** | C-10·C-11 (G-4b: `component.id`·`sensor.id`의 설비 번호 ↔ 실제 소속) | T1-1에서 「CHECK로 불가 · **T1-2 seed 생성 시 검증**」으로 이관된 축이다. 스키마도 자기 점검도 보지 않으므로 **여기가 유일한 그물**이다. 🔴 2026-08-28 스키마 표본의 **옛 `P-5`·`P-6`이 정식으로 여기로 이관**됐다(`tests/schema/constraint-probes.json`의 `relocated`) |
 | **스키마가 «막지 않기로 확정»한 축** | C-21·C-22 (G-2: 전 문서 «지금 인용 가능 revision» = 1건 · approved 유효구간 겹침 = 0) | 🔴 2026-08-29 신설(T1-7 A단 ③). 스키마 표본 `P-3`(expect=accept)이 「대신 지키는 것 = C-4」라 적었는데, **C-4는 `DOC-SOP-0014` 한 문서만 본다**. 45문서 전부 1건이라는 «사실»은 맞았으나 그것을 **지키는 검사가 없었다** — 주장이 그물보다 넓은 accept는 눈감기다 |
-| **스키마가 «막지 않기로 확정»한 축 — 전이 방향** | C-23·C-24·C-25·C-26·C-27 (G-3: 승인 흔적 ↔ 현재 상태의 모순 · 문서 내 승계 배치) | 🔴 2026-08-29 신설(G-3 전이 그물). 종래 근거는 「전이는 스냅숏으로 볼 수 없다」였는데 그 문장은 전건이 아니었다 — 전이는 `approved_by`·`effective_to`·승계 배치에 **흔적**을 남긴다. 어디까지 닿고 어디서 끊기는지는 `transition-net.sql`이 쌍별로 계수한다. 🔴 「superseded인데 effective_to 없음」은 여기 **없다** — 002 `ck_superseded_has_effective_to`가 이미 DB에서 막는다(그 위의 그물은 초록을 훔친다) |
+| **스키마가 «막지 않기로 확정»한 축 — 전이 방향** | C-23·C-24·C-25·C-26·C-27·C-28 (G-3: 승인 흔적 ↔ 현재 상태의 모순 · 문서 내 승계 배치 · 승계자 유무) | 🔴 2026-08-29 신설(G-3 전이 그물). 종래 근거는 「전이는 스냅숏으로 볼 수 없다」였는데 그 문장은 전건이 아니었다 — 전이는 `approved_by`·`effective_to`·승계 배치에 **흔적**을 남긴다. 어디까지 닿고 어디서 끊기는지는 `transition-net.sql`이 쌍별로 계수한다. 🔴 2026-08-29 정오표 **E-7**(합법 = 인접 전진 3쌍뿐 · 건너뜀 3쌍도 위반)로 C-23이 `retired`까지 넓어졌고 **C-28**이 성립했다. 🔴 「superseded인데 effective_to 없음」은 여기 **없다** — 002 `ck_superseded_has_effective_to`가 이미 DB에서 막는다(그 위의 그물은 초록을 훔친다) |
 | **주장했으나 어느 점검에도 없던 것** | C-9(비용 표현 전 text 칼럼 훑기) · C-12·C-13(알람 ↔ 시계열 **양방향**) · C-14(진행 중 incident 진단 누설) · C-18(시간 인과) | 생성기 README가 「지켰다」고 적은 것들. 적힌 것과 있는 것은 다르다 |
 | **ID를 읽어 의미를 얻는다는 전제** | C-16·C-17 (`MR/INC/WO/AL-{날짜}` ↔ 실제 시각) | 이 프로젝트는 ID에서 소속·시점을 읽는다(§3.1). 어긋난 행은 예외도 로그도 없이 **조용히** 틀린 답을 만든다 |
 

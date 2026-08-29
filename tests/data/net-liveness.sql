@@ -112,6 +112,9 @@ ROLLBACK;
 
 -- --- L-23: C-23(superseded 인데 승인자 없음)이 실패를 내는가 -------------------
 -- 🔴 「superseded = approved를 지나온 상태」라는 전이 사슬의 함의를 지키는 그물이다.
+--    🔴 2026-08-29 E-7 확정으로 C-23의 사정거리가 retired까지 넓어졌다. 여기서는 superseded
+--       주입만 유지한다 — retired 쪽 생존은 transition-net T-S1·T-S3이 «전이 맥락과 함께»
+--       증명한다(같은 주입을 두 파일에 두면 둘이 갈릴 뿐이다).
 --    승인자를 지우면 그 행은 «승인을 지나지 않고 물러난» 행이 된다 — DB는 막지 않는다
 --    (CHECK는 approved에만 승인자를 요구한다). 그래서 그물이 필요하고, 우는 것을 여기서 본다.
 BEGIN;
@@ -219,9 +222,9 @@ SELECT 'L-0', '되감기 확인 — 주입 후 4 그물 합계 적발 건수(잔
 -- --- L-0b: 되감기 확인(G-3 계열) — L-0은 신설 «전»의 4 그물만 본다 ------------
 -- 🔴 L-23이 건드리는 열(approved_by)은 L-0의 4 그물에 걸리지 않는다. 되감기를 재는
 --    자가 되감긴 것을 못 보면 그 초록은 아무것도 말하지 않는다 — 그래서 한 줄 더 둔다.
-SELECT 'L-0b', '되감기 확인(G-3) — C-23~C-27 합계 적발 건수(잔여물 0이면 0)', 0,
+SELECT 'L-0b', '되감기 확인(G-3) — C-23~C-28 합계 적발 건수(잔여물 0이면 0)', 0,
        ((SELECT count(*)::bigint FROM document_revision
-          WHERE approval_state='superseded' AND approved_by IS NULL)
+          WHERE approval_state IN ('superseded','retired') AND approved_by IS NULL)
       + (SELECT count(*)::bigint FROM document_revision
           WHERE approval_state='retired' AND effective_to IS NULL)
       + (SELECT count(*)::bigint FROM document_revision
@@ -234,9 +237,13 @@ SELECT 'L-0b', '되감기 확인(G-3) — C-23~C-27 합계 적발 건수(잔여�
       + (SELECT count(*)::bigint FROM document_revision s
           WHERE s.approval_state='superseded' AND NOT EXISTS (
             SELECT 1 FROM document_revision h
-            WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no))),
+            WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no))
+      + (SELECT count(*)::bigint FROM document_revision t
+          WHERE t.approval_state='retired' AND NOT EXISTS (
+            SELECT 1 FROM document_revision h
+            WHERE h.document_id=t.document_id AND h.revision_no > t.revision_no))),
        CASE WHEN ((SELECT count(*) FROM document_revision
-          WHERE approval_state='superseded' AND approved_by IS NULL)
+          WHERE approval_state IN ('superseded','retired') AND approved_by IS NULL)
       + (SELECT count(*) FROM document_revision
           WHERE approval_state='retired' AND effective_to IS NULL)
       + (SELECT count(*) FROM document_revision
@@ -249,5 +256,9 @@ SELECT 'L-0b', '되감기 확인(G-3) — C-23~C-27 합계 적발 건수(잔여�
       + (SELECT count(*) FROM document_revision s
           WHERE s.approval_state='superseded' AND NOT EXISTS (
             SELECT 1 FROM document_revision h
-            WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no))) = 0
+            WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no))
+      + (SELECT count(*) FROM document_revision t
+          WHERE t.approval_state='retired' AND NOT EXISTS (
+            SELECT 1 FROM document_revision h
+            WHERE h.document_id=t.document_id AND h.revision_no > t.revision_no))) = 0
             THEN 'PASS' ELSE 'FAIL' END;
