@@ -303,21 +303,35 @@ def integrity_drift(target: str, control: str) -> int:
             "UPDATE document_chunk SET text = text || '⟪levi2-drift-probe⟫' "
             f"WHERE id = '{target}'"
         )
-        status, body = get(hl)
-        code = (body or {}).get("error", {}).get("code") if isinstance(body, dict) else None
-        raw = json.dumps(body, ensure_ascii=False)
-        leaked = any(m in raw.lower() for m in ("traceback", "site-packages", "asyncpg", "/usr/"))
+        # 🔴 두 라우트를 «같은 잣대»로 잰다(오케 판정 08-30 — /evidence ③ 포함 확정).
+        #    근거: 계약 v0.1.1 이 doc-chunk 에 약속한 것이 「원문 + 강조 offset」이고,
+        #    인용 실체의 정합 파열은 /documents 와 같은 사건이다. 결정 근거였던 「배지가
+        #    이 파열을 못 본다」(아래 I-07)가 /evidence 에도 똑같이 성립한다.
+        seen: dict[str, tuple[int, str | None]] = {}
+        index = 0
+        for route, path in (("/documents", hl), ("/evidence", evidence_path(target))):
+            status, body = get(path)
+            code = (body or {}).get("error", {}).get("code") if isinstance(body, dict) else None
+            raw = json.dumps(body, ensure_ascii=False)
+            leaked = any(m in raw.lower() for m in ("traceback", "site-packages", "asyncpg", "/usr/"))
+            seen[route] = (status, code)
+            shown = code or f"강조={(body or {}).get('highlight')}"
+            print(f"  주입 후  {route} → {status} {shown}")
+            for name, ok in (
+                (f"{route} 조용한 200 이 아니다", status != 200),
+                (f"{route} 5xx 로 운다(오케 판정 ③)", 500 <= status < 600),
+                (f"{route} 구분 코드다(internal_error 아님)", bool(code) and code != "internal_error"),
+                (f"{route} 내부 경로·traceback 비노출", not leaked),
+            ):
+                index += 1
+                bad += 0 if ok else 1
+                print(f"  {'PASS' if ok else 'FAIL'}  I-{index:02} {name}")
 
-        checks = [
-            ("조용한 200 이 아니다", status != 200),
-            ("5xx 로 운다(오케 판정 ③)", 500 <= status < 600),
-            ("구분 코드다(일반 internal_error 아님)", bool(code) and code != "internal_error"),
-            ("내부 경로·traceback 비노출", not leaked),
-        ]
-        print(f"  주입 후  /documents → {status} {code or (body or {}).get('highlight')}")
-        for index, (name, ok) in enumerate(checks, start=1):
-            bad += 0 if ok else 1
-            print(f"  {'PASS' if ok else 'FAIL'}  I-0{index} {name}")
+        same = seen["/documents"] == seen["/evidence"]
+        bad += 0 if same else 1
+        index += 1
+        print(f"  {'PASS' if same else 'FAIL'}  I-{index:02} 한 사건을 한 코드로 말한다 — "
+              f"{' · '.join(f'{k} {v[0]} {v[1]}' for k, v in seen.items())}")
 
         # 🔴 덤(오케 지시) — sha 축은 무접촉이라 freshness 는 FRESH 로 남는다.
         #    「신선도가 chunk 수준 drift 를 못 본다」가 ③ 판정이 존재하는 이유다.
@@ -326,18 +340,17 @@ def integrity_drift(target: str, control: str) -> int:
         )
         blind = fresh_during == "FRESH"
         bad += 0 if blind else 1
-        print(f"  {'PASS' if blind else 'FAIL'}  I-05 freshness 는 이 drift 를 못 본다 — {fresh_during}"
-              " (배지만으로는 잡히지 않는 파열이라 ③ 이 필요하다)")
-
-        ev_status, ev_body = get(evidence_path(target))
-        ev_code = (ev_body or {}).get("error", {}).get("code") if isinstance(ev_body, dict) else None
-        print(f"  관측(판정 아님)  /evidence/{target} → {ev_status} "
-              f"{ev_code or ('강조=' + str((ev_body or {}).get('highlight')))}")
+        index += 1
+        print(f"  {'PASS' if blind else 'FAIL'}  I-{index:02} freshness 는 이 drift 를 못 본다 — "
+              f"{fresh_during} (배지만으로는 잡히지 않는 파열이라 ③ 이 필요하다)")
 
         ctl_status, ctl_body = get(ctl_hl)
-        intact = ctl_status == 200 and bool((ctl_body or {}).get("highlight"))
+        ctl_ev_status, _ = get(evidence_path(control))
+        intact = ctl_status == 200 and bool((ctl_body or {}).get("highlight")) and ctl_ev_status == 200
         bad += 0 if intact else 1
-        print(f"  {'PASS' if intact else 'FAIL'}  I-06 무접촉 대조군은 강조를 유지한다 — {control} {ctl_status}")
+        index += 1
+        print(f"  {'PASS' if intact else 'FAIL'}  I-{index:02} 무접촉 대조군은 그대로다 — "
+              f"{control} /documents {ctl_status} · /evidence {ctl_ev_status}")
     finally:
         psql(
             "UPDATE document_chunk SET text = replace(text, '⟪levi2-drift-probe⟫', '') "
