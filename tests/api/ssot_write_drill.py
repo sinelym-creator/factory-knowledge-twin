@@ -1,0 +1,146 @@
+"""ssot_write_drill — 조사 실행이 SSOT 를 «쓰지 않는가» (검증 좌석 · T2-3 · J-3).
+
+🔴 이 그물이 지키는 문장: **J-3 의 「SSOT 쓰기 0」은 주장이 아니라 잴 수 있는 사실이다.**
+   저장소를 「프로세스 내 세션 스코프 · SSOT 쓰기 0 · 재기동 소실은 성문된 대가」로 판정했다면,
+   그 판정이 참인지는 **run 전후로 SSOT 를 세어 보면** 안다. 성문만 있고 측정이 없으면
+   「그렇게 하기로 했다」와 「그렇게 되고 있다」가 같은 초록을 낸다(4대 유언 계보).
+
+무엇을 세는가: 공개 스키마의 **모든 base 테이블**의 행수 지문. 목록을 이 파일에 적지 않고
+`information_schema` 에서 매 실행 뽑는다 — 테이블이 늘어도 표가 따라 자란다.
+
+🔴 대조군이 판정의 절반이다. 「run 을 돌렸는데 안 변했다」만으로는 부족하다 — 지문 비교기가
+   변화를 «실제로 잡는지» 먼저 증명한다(자기 검증: 알려진 변화를 넣었다 되돌린다).
+
+    python tests/api/ssot_write_drill.py               # 지문 + 자기 검증(쓰기 없음의 증명)
+    python tests/api/ssot_write_drill.py --run         # + run 1회 실행 전후 대조(T2-3 해제 후)
+
+exit: 0 = 기대대로 · 1 = SSOT 가 변했다 · 2 = 실행 오류·미해제(측정 불가)
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+PG_CONTAINER = os.environ.get("FKT_PG_CONTAINER", "fkt-levi2-postgres-1")
+PG_USER = os.environ.get("FKT_PG_USER", "fkt")
+PG_DB = os.environ.get("FKT_PG_DB", "fkt")
+SESSION_ID = "levi2-ssot-drill"
+SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
+
+_TABLES_SQL = (
+    "SELECT table_name FROM information_schema.tables "
+    "WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name"
+)
+
+
+class DrillError(RuntimeError):
+    """드릴 자신이 고장났거나 대상이 서 있지 않다 — 결과가 아니라 «측정 불가»다."""
+
+
+def psql(sql: str) -> str:
+    out = subprocess.run(
+        ["docker", "exec", PG_CONTAINER, "psql", "-U", PG_USER, "-d", PG_DB, "-t", "-A", "-c", sql],
+        capture_output=True, text=True, encoding="utf-8",
+    )
+    if out.returncode != 0:
+        raise DrillError(f"psql 실패: {(out.stderr or '').strip()[:200]}")
+    return (out.stdout or "").strip()
+
+
+def fingerprint() -> dict[str, int]:
+    """공개 스키마 전 테이블의 행수 — 목록은 매 실행 DB 에서 뽑는다."""
+    tables = [t for t in psql(_TABLES_SQL).splitlines() if t]
+    if len(tables) < 5:
+        raise DrillError(f"테이블을 {len(tables)}개밖에 못 찾았다 — 대상 DB 가 맞는가")
+    counts = psql(" UNION ALL ".join(
+        f"SELECT '{t}' AS t, count(*) AS n FROM {t}" for t in tables
+    ) + " ORDER BY 1")
+    out: dict[str, int] = {}
+    for line in counts.splitlines():
+        if "|" in line:
+            name, number = line.rsplit("|", 1)
+            out[name] = int(number)
+    if len(out) != len(tables):
+        raise DrillError(f"지문이 불완전하다({len(out)}/{len(tables)})")
+    return out
+
+
+def diff(before: dict[str, int], after: dict[str, int]) -> list[str]:
+    changed = []
+    for table in sorted(set(before) | set(after)):
+        a, b = before.get(table), after.get(table)
+        if a != b:
+            changed.append(f"{table} {a}→{b}")
+    return changed
+
+
+def self_check() -> None:
+    """🔴 비교기가 «빨강을 낼 수 있는가»부터 — 안 변한 것만 보는 비교기는 아무것도 보증하지 않는다."""
+    base = {"document": 3, "alarm": 2}
+    if diff(base, dict(base)):
+        raise DrillError("자기 검증 실패 — 같은 지문을 다르다고 판정한다")
+    if not diff(base, {"document": 3, "alarm": 3}):
+        raise DrillError("자기 검증 실패 — 늘어난 행을 못 잡는다")
+    if not diff(base, {"document": 3, "alarm": 2, "run": 1}):
+        raise DrillError("자기 검증 실패 — 새 테이블을 못 잡는다")
+    print("  자기 검증  표본 3종(무변 1 · 증가 1 · 신설 1) 전건 기대대로 — 비교기 살아 있음")
+
+
+def start_run() -> str:
+    payload = json.dumps({"sessionId": SESSION_ID, "mode": "live"}).encode("utf-8")
+    req = urllib.request.Request(
+        f"{API_BASE}/api/scenarios/{SCENARIO}/runs", data=payload,
+        headers={"Content-Type": "application/json"}, method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=300) as res:
+            return json.loads(res.read().decode("utf-8")).get("runId", "")
+    except urllib.error.HTTPError as exc:
+        if exc.code == 501:
+            raise DrillError("runs 표면이 아직 501 이다 — 미해제는 결함이 아니다(측정 불가)") from exc
+        raise DrillError(f"run 생성이 {exc.code} 를 냈다") from exc
+    except urllib.error.URLError as exc:
+        raise DrillError(f"{API_BASE} 에 닿지 못했다: {exc}") from exc
+
+
+def main() -> int:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+    with_run = "--run" in sys.argv
+
+    print(f"대상 DB   : {PG_CONTAINER}/{PG_DB}")
+    print(f"run 실행  : {'켬 — 1회 돌리고 전후를 센다' if with_run else '끔(--run 으로 켠다)'}\n")
+    self_check()
+
+    before = fingerprint()
+    print(f"  지문      테이블 {len(before)}개 · 총 {sum(before.values())}행")
+
+    bad = 0
+    if with_run:
+        run_id = start_run()
+        print(f"  run       {run_id or '(runId 없음)'}")
+        after = fingerprint()
+        changed = diff(before, after)
+        ok = not changed
+        bad += 0 if ok else 1
+        print(f"  {'PASS' if ok else 'FAIL'}  W-01 run 전후 SSOT 무변 — {' · '.join(changed) or '변화 0'}")
+    else:
+        print("  ----  W-01 run 전후 대조 — 건너뜀(--run 으로 켠다 · T2-3 해제 후)")
+
+    print(f"\n결과: 어긋남 {bad}건")
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except DrillError as exc:
+        print(f"\n측정 불가 — {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc

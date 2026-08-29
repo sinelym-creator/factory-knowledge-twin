@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종이 됐다.**
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3 선행 설계분 3종이 더 붙어 **11종**이 됐다.
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -14,6 +14,9 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `freshness_badge_drill.py` | 색인 «낡음»이 **배지가 되어 표면까지** 오는가 | 뷰 정본 + HTTP | 필요 | T2-2 |
 | `dependency_code_drill.py` | 의존 단절을 «서비스 결함»과 **다른 코드**로 말하는가 | HTTP 표면 | 필요 | T2-2 |
 | `injection_surface_drill.py` | 사용자 문자열이 **조회 대상을 고르지** 못하는가(보안) | HTTP 표면 | 필요 | T2-2 |
+| `event_schema_drill.py` | 이벤트가 **스키마 정본** 그대로인가 · `seq` 단조 · kind 어휘 | 스키마 정본 + HTTP | 일부 | T2-3 |
+| `credential_leak_drill.py` | 자격 증명·내부가 **응답·로그로 새지** 않는가 | 계약 정본 + HTTP | 필요 | T2-3 |
+| `ssot_write_drill.py` | 조사 실행이 **SSOT 를 쓰지 않는가**(J-3) | psql 지문 | 일부 | T2-3 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -28,6 +31,9 @@ python tests/api/freshness_badge_drill.py --inject-stale   # + 실주입 왕복(
 python tests/api/dependency_code_drill.py       # 기준선만
 python tests/api/dependency_code_drill.py --cut-postgres   # + 의존 단절(자기 스택 한정)
 python tests/api/injection_surface_drill.py     # 적대 입력 10종 × 문 3
+python tests/api/event_schema_drill.py --samples-only   # 서버 없이 검증기 자기 검증만
+python tests/api/credential_leak_drill.py --log <서버 로그>
+python tests/api/ssot_write_drill.py            # 지문만 · --run 으로 run 전후 대조
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
@@ -40,6 +46,12 @@ python tests/api/injection_surface_drill.py     # 적대 입력 10종 × 문 3
 셋 다 되감기 실측을 «마지막 행»으로 둔다 — 되돌아왔다는 것까지가 측정이다.
 `injection_surface_drill` 은 파괴적 payload 를 «던지되» 그것이 통과하면 그게 결함이므로,
 마지막 행에서 코퍼스 크기가 그대로인지를 세어 대상 생존을 실측한다.
+
+## 🔴 미해제(501)는 red 가 아니다
+
+T2-3 자산 3종은 계약에 있으나 아직 안 열린 라우트를 만나면 **skip 하거나 `exit 2`(측정 불가)**
+로 죽는다. 「아직 안 만들었다」를 결함으로 세면 그 표는 착지 전까지 계속 빨갛고, 그 빨강 속에서
+**진짜 빨강이 묻힌다**. 판정 규칙표의 exit 2 가 그 자리다.
 
 ## 🔴 그물이 자기 그림자를 물지 않게
 
