@@ -62,7 +62,7 @@ size_limit: 8KB
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
 | T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | ✅ PASS(levi2 4대 — A단 PR#60: stale 6곳 정정·F-2 대체 분기(사정거리 2/20 실측·처방 회부)·G-2 그물 C-21/C-22+생존 6/6 · B단 PR#63: 재현성 PASS·index_build↔spec 8/9(⑨ 부분 — ontology 축 부재 «적발»·L-31/L-32 그물 고정)·V-1 해소·U-7 치환) |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | ✅ PASS(senku2 3대 구현 PR#48 · levi2 3대 독립 검증 PR#52 — 계약 표면 23/23 교차 대조·blocking 0(−9.36ms)·도메인 0 전수 실독·harness strict green) |
-| T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 티켓 준비 완료(tickets/T1-9.md · 08-29 · 스타일링 = Tailwind 오케 확정) — T1-5 착지 후 구현 차기 |
+| T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 구현 완료 «접수»(senku2 6대 · PR#81 — AC 6항 E1 · 4상태 배지·pending 세션 정직·세션 가드 단일화(proxy) · Tailwind 4.3.3 · 계약 밖 0 · 검사기 contract-surface.mjs 신설) — 계수는 독립 검증(E2E — 「재지 않은 것」 명시 이월분 포함) PASS 후(§32.1) |
 | T1-10 | harness 커버리지 상시 경고(미실행 스키마 속성 검출) | 검증 | 계약 필드 추가 시 구멍 재발 방지 — 러너 경고+옵션 실패 | ✅ PASS(오케 판정 — 로컬 strict 37/37 exit 0 · levi2 · PR#25) |
 
 ### Phase 2 분해안 (준비 완료 · 🔴 분모 «밖» — Phase 2 진입 게이트 때 「분모 25→31」 선행 선언과 함께 등재 · baseline §21 Phase 2 정본 대조 08-29)
