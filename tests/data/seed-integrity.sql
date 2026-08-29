@@ -151,7 +151,52 @@ WITH checks(ord, check_id, what, expected, actual) AS (
         ON a.document_id=b.document_id AND a.id < b.id
       WHERE a.approval_state='approved' AND b.approval_state='approved'
         AND a.effective_from < COALESCE(b.effective_to, DATE '9999-12-31')
-        AND b.effective_from < COALESCE(a.effective_to, DATE '9999-12-31')))
+        AND b.effective_from < COALESCE(a.effective_to, DATE '9999-12-31'))),
+
+  -- 🔴 C-23~C-27 = G-3(상태 «전이» 방향)을 «대신 지키는» 그물. 2026-08-29 신설(G-3 전이 그물).
+  --    스펙 §3.3: 「draft → approved → superseded → retired (역방향 없음).
+  --    새 revision 승인 시 직전 revision은 superseded + effective_to 기입」
+  --    🔴 전이 자체는 스냅숏에 없다. 그러나 «전이가 남기는 흔적»은 있다 — approved_by·
+  --    effective_to·문서 내 상태 배치는 앞 상태를 지나온 증거다. 상태 열만 되돌리면 그 증거가
+  --    남고, 증거까지 함께 지우면 이번에는 «문서 내 배치»가 어긋난다. 아래 5건은 그 모순을 본다.
+  --    🔴 사정거리(어느 전이 쌍을 잡고 어느 쌍을 놓치는가)는 tests/data/transition-net.sql이
+  --       쌍별로 계수한다 — 그 표가 이 5건의 «생존 증명»이자 «한계 성문»이다.
+  --    🔴 여기 «없는» 것: 「superseded 인데 effective_to 없음」 = 002 ck_superseded_has_effective_to
+  --       가 이미 DB에서 막는다(실측 T-I2 = SQLSTATE 23514). 그 위에 그물을 얹으면 그 초록은
+  --       그물의 것이 아니라 스키마의 것이다 — 얹지 않았다.
+
+  (23, 'C-23', 'G-3 superseded 인데 승인자 없음(approved를 지나지 않은 흔적)', 0, (
+      SELECT count(*)::bigint FROM document_revision
+      WHERE approval_state='superseded' AND approved_by IS NULL)),
+
+  -- 🔴 G-1 CHECK는 superseded «한 상태»만 본다. S→R로 넘기면서 effective_to를 지우면 DB는
+  --    막지 않는다(실측 T-I3) — 감사·replay 근거가 조용히 사라진다. 그 구멍을 메우는 그물이다.
+  (24, 'C-24', 'G-3 retired 인데 effective_to 없음(G-1 CHECK 사정거리 밖)', 0, (
+      SELECT count(*)::bigint FROM document_revision
+      WHERE approval_state='retired' AND effective_to IS NULL)),
+
+  -- 🔴 이 검사의 초록은 «비어 있어서» 초록일 수 있다 — 현 표본의 draft 행 = 0건(E1).
+  --    값은 위반 주입에서만 나온다(net-liveness L-25 · transition-net T-R1·T-R2·T-R4).
+  (25, 'C-25', 'G-3 draft 인데 승인 흔적 잔존(approved 이후 역방향 지문)', 0, (
+      SELECT count(*)::bigint FROM document_revision
+      WHERE approval_state='draft' AND (approved_by IS NOT NULL OR effective_to IS NOT NULL))),
+
+  -- 승계 미이행 — 「새 revision 승인 시 직전 revision은 superseded」의 대우다.
+  -- hi가 한 번이라도 승인에 도달했다면(approved·superseded·retired) 그 직전은 물러나 있어야
+  -- 한다. 직전이 draft면 승인이 건너뛴 것이고, approved면 물러나지 않은 것이다.
+  (26, 'C-26', 'G-3 승계 미이행 — 승인 도달 revision의 직전이 superseded·retired가 아님', 0, (
+      SELECT count(*)::bigint FROM document_revision hi
+      JOIN document_revision lo
+        ON lo.document_id = hi.document_id AND lo.revision_no = hi.revision_no - 1
+      WHERE hi.approval_state IN ('approved','superseded','retired')
+        AND lo.approval_state NOT IN ('superseded','retired'))),
+
+  -- superseded = «승계당함». 승계자가 없는 superseded는 물러날 이유가 없었던 행이다.
+  (27, 'C-27', 'G-3 superseded 인데 더 높은 revision_no가 없음(승계자 없는 승계)', 0, (
+      SELECT count(*)::bigint FROM document_revision s
+      WHERE s.approval_state='superseded' AND NOT EXISTS (
+        SELECT 1 FROM document_revision h
+        WHERE h.document_id=s.document_id AND h.revision_no > s.revision_no)))
 )
 SELECT check_id, what, expected, actual,
        CASE WHEN actual = expected THEN 'PASS' ELSE 'FAIL' END AS verdict
