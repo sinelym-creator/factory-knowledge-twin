@@ -69,8 +69,11 @@ size_limit: 8KB
 
 | # | 조각 | 근거 | 예정 |
 |---|---|---|---|
-| Q-1 | F-2 처방: `data/generators/generate.py` self_check 바인딩을 «소유 테이블 대응표»로 전환(사정거리 2/20 → 20/20) + 착지 후 기대표 2곳 전환(검증 좌석 절차 성문분) | `evidence/t1-7-a-selfcheck-and-nets.md` §2.4(처방 전문 · levi2 4대) | T1-4 독립 검증 완주 후 구현 묶음 |
-| Q-2 | `ssot_manifest_hash`(스펙 §3.3) 산출 — 문서 집합 단위 산출물 · T1-4 색인 범위 밖 확정(오케 08-29) | 센쿠2 5대 판단 요청 ④(id 1543005746461933668) | Q-1 동반 발주 후보 |
-| Q-3 | `data/documents/README.md` 구 앵커 참조 정정(`#014`·`#009`·`#007` 1-based 시대 표기 — wireframes v0.4 바인딩으로 stale化) | wireframes v0.4 · 정오표 E-4·E-5 | Q-1 동반 발주 후보 |
-| Q-4 | ontology STALE 축 처방: `v_index_freshness`에 `ontology_version` 비교 추가(스펙 §3.3 「불일치도 동일 처리」 — 현 view는 sha만 비교 · 주입 실측 FRESH 오판) — 신규 마이그레이션(001~003 무수정) · 착지 시 L-32 known gap이 FAIL→그물 전환 | levi2 4대 B단 적발(evidence/t1-7-b · PR#63 · 대조군 실증) | Q-1 묶음 동반 |
+| Q-1 | F-2 처방: self_check 바인딩 «소유 테이블 대응표» 전환 + 기대표 2곳 전환 | evidence §2.4(levi2) | ✅ 종결(구현 PR#66 `config.GS_OWNER` · 검증 PR#68 — red 확인 후 전환 20/20·11/11·exit 0 · 사유 키 정밀화 · 미등록 키 FAIL 가드 생존) |
+| Q-2 | `ssot_manifest_hash`(스펙 §3.3) 산출 | 센쿠2 판단 요청 ④ | ✅ 종결(005 `v_ssot_manifest` — SQL 단일 정본·view 파생 · 검증 PR#68 독립 조립 일치 · 🔴 collation 의존 = Q-8 이월) |
+| Q-3 | `data/documents/README.md` 구 앵커 정정 | wireframes v0.4 · E-4/E-5 | ✅ 종결(PR#66 · 검증 확인) |
+| Q-4 | ontology STALE 축 처방(스펙 §3.3 「동일 처리」) | levi2 B단 적발(PR#63) | ✅ 종결(004 `ontology_registry`+신선도 확장 · 검증 PR#68 3축 재현·L-32 전환·L-33 신설 · 🔴 거울 공란 표시 = Q-6 이월) |
+| Q-6 | 거울 공란 시 «판정 안 함»이 FRESH로 표시 — freshness에 `ONTOLOGY_UNVERIFIED` 상태 신설 또는 읽기 경로 FAIL(빌드 경로는 이미 멈춤 — 심각도 낮음 E3 · L-34가 현재 동작 고정 · 착지 시 L-34가 울려 알림) | levi2 PR#68 ⓑ 잔여(상태 ⑤/⑥ 대조 실측) | T1-5 후 소조각 묶음 |
+| Q-7 | `migrate.ps1` 헤더 `embedding_dim=768` 표기 stale(실제 최종 상태 384 · 경미) | levi2 회부 ③ | Q-6 동반 |
+| Q-8 | `v_ssot_manifest` 정렬의 collation 의존 — 바이트 순서 고정(`COLLATE "C"`) 명시 검토. 현 ID 체계(DOC-AAA-NNNN 단일 모양)에선 동일함 실측 — ID 체계 확장 시 지문이 DB 설정에 좌우된다 | levi2 회부 ②(E3 · LC_ALL=C 독립 조립 대조) | Q-6 동반 |
 | Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
