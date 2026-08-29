@@ -96,23 +96,21 @@ test.describe("셸·라우트 골격", () => {
   });
 
   /* ────────────────────────────────────────────────────────────────────────────
-   * 🔴 결함 V-2 — spacing 토큰이 «요소에 닿지 않는다».
+   * V-2 회귀 그물 — spacing 토큰이 «요소에 닿는가».
    *
-   * app-shell.tsx 가 쓰는 `h-[--spacing-appbar]` / `w-[--spacing-rail]` 는 Tailwind v3 의
+   * 있었던 일(develop 8bca478): `h-[--spacing-appbar]` / `w-[--spacing-rail]` 는 Tailwind v3 의
    * «맨 변수» 축약이다. v4 는 대괄호 안을 값 그대로 쓰므로 `height: --spacing-appbar` 라는
-   * 무효 선언이 나고(빌드 산출 CSS 실물에서 확인), 브라우저가 그 선언만 조용히 버린다.
+   * 무효 선언이 났고(빌드 산출 CSS 실물 확인), 브라우저가 그 선언만 조용히 버렸다 —
+   * 토큰은 :root 에 56px 로 있는데 앱바는 27px · 레일은 37px 로 섰다.
+   * 고쳐진 것(e3ca284): `h-(--spacing-appbar)` / `w-(--spacing-rail)` — v4 괄호 축약. 토큰 무수정.
    *
-   * 실측: --spacing-appbar 는 :root 에 56px 로 «있다». 그런데 앱바 높이 27px · 레일 폭 37px.
-   * 대조군(tests/web/token_layer_probe.mjs · tailwindcss 4.3.3 실물, 같은 토큰 네 표기):
-   *     h-[--spacing-appbar]      → height: --spacing-appbar        🔴 무효
-   *     h-[var(--spacing-appbar)] → height: var(--spacing-appbar)   ○
-   *     h-(--spacing-appbar)      → height: var(--spacing-appbar)   ○
-   *     bg-panel                  → background-color: var(--color-panel)  ○ ← 색은 멀쩡하다
-   * 🔴 색 토큰이 정상이라 「토큰 계층이 선다」로 보인다. 소스 리뷰·빌드(경고 0)·클래스 존재
-   *    확인이 전부 통과하고, 화면도 «깨져» 보이지 않고 내용 높이로 선다 — computed style 만이 가른다.
+   * 🔴 이 결함이 왜 소스 리뷰를 통과했는지가 이 그물의 존재 이유다: 규칙은 생기고, 클래스도
+   *    붙어 있고, 토큰도 있고, 빌드 경고 0 · lint 통과 · «색 토큰은 정상 적용»된다. 화면도
+   *    깨져 보이지 않고 내용 높이로 선다. computed style 을 재는 이 행 말고는 아무도 못 본다.
+   *    표기가 다시 `[--토큰]` 으로 돌아가면 여기서 운다.
+   *    (대조군 = tests/web/token_layer_probe.mjs — 같은 토큰 네 표기를 고정 4.3.3 로 컴파일한다)
    * ──────────────────────────────────────────────────────────────────────────── */
-  test("🔴 V-2 앱바·레일 치수가 토큰 값(56px)으로 선다", async ({ page }) => {
-    test.fail(true, "h-[--토큰] 표기가 v4 에서 무효 선언을 낸다 — 처방(var() 표기) 착지 시 이 행이 빨강으로 알린다");
+  test("V-2 회귀 — 앱바·레일 치수가 토큰 값(56px)으로 선다", async ({ page }) => {
     await enter(page);
     const bar = page.getByTestId("app-bar");
     const rail = page.locator('nav[aria-label="주요 화면"]');

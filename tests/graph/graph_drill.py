@@ -190,13 +190,42 @@ def main() -> int:
         # 🔴 n_onto는 «한 build 안»의 ontology 종수다 — 새 build를 만들면 그 build가 따로
         #    ONTOLOGY_MISMATCH가 될 뿐 이 축은 울지 않는다(내 첫 주입이 그 오답이었다).
         dup_idx = ("update index_build set ontology_version='9.9.9' where ctid = "
-                   "(select ctid from index_build where build_id='levi2-run1' limit 1)")
-        sqls = {"P-01": "delete from graph_build", "P-02": ins_failed,
-                "P-03": ins_onto, "P-04": dup_idx}
+                   "(select ctid from index_build where build_id = %s limit 1)")
+
+        # 🔴 P-04의 «대상»을 자기 DB에서 도출한다 — 픽스처 id를 박아 두지 않는다.
+        #
+        #    박아 뒀던 값은 `levi2-run1`이었다. 이 좌석의 러너가 시드하는 이름이라 «내 스택에서는»
+        #    돌지만, 다른 DB를 겨누면 subselect가 NULL이 되고 `where ctid = NULL`은 0행을 고친다.
+        #    그러면 드릴은 «아무것도 주입하지 않은 채» 판정을 내고, 그 침묵이 「미탐지」로 읽힌다.
+        #    (실제로 다른 좌석이 자기 DB에서 그렇게 읽었다 — 관측은 참이었고 진단은 드릴의
+        #     성질이 아니라 «어느 DB를 겨눴는가»의 성질이었다.)
+        #    「빈 결과를 결과로 읽지 마라」의 드릴판이다.
+        cur.execute("select build_id from index_build group by build_id "
+                    "having count(*) > 1 order by build_id limit 1")
+        row = cur.fetchone()
+        cur.execute("select count(distinct build_id) from index_build")
+        n_builds = cur.fetchone()[0]
+        if row is None or n_builds < 2:
+            # 🔴 전제가 없으면 «판정하지 않는다». 「2행 이상인 build」와 「build 2개 이상」이
+            #    둘 다 있어야 이 축(한 build만 갈리고 나머지는 PAIRED)이 성립한다.
+            #    전제 없이 낸 초록도 빨강도 이 축에 대해서는 거짓이다.
+            raise SystemExit(
+                f"🔴 FAIL P-04 전제 불충족 — build {n_builds}개 · 2행 이상인 build "
+                f"{'없음' if row is None else row[0]}. 드릴 고장이지 검사 결과가 아니다")
+        split_build = row[0]
+        print(f"   P-04 주입 대상 = index_build build_id={split_build} (DB에서 도출 · 전체 build {n_builds}개)")
+
+        sqls = {"P-01": ("delete from graph_build", None), "P-02": (ins_failed, None),
+                "P-03": (ins_onto, None), "P-04": (dup_idx, (split_build,))}
         for cid, what, _s, want in drills:
             cur.execute("savepoint d")
             try:
-                cur.execute(sqls[cid])
+                sql, params = sqls[cid]
+                cur.execute(sql, params)
+                # 🔴 주입이 «0행»이면 결과가 아니라 고장이다. 이 한 줄이 없으면 아무것도 안 한
+                #    드릴이 조용히 판정을 내고, 그 판정이 미탐지 부채로 원장에 오른다.
+                if cur.rowcount == 0:
+                    raise SystemExit(f"🔴 FAIL {cid} 주입이 0행을 고쳤다 — 대상이 없다(드릴 고장)")
                 got = pairing()
             finally:
                 cur.execute("rollback to savepoint d")
