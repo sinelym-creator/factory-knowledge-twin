@@ -1,0 +1,320 @@
+# T2-2 독립 검증 — 읽기 3라우트(`/evidence`·`/documents`·`/scenarios`)
+
+> 리바이2 8대 · 2026-08-30 · 근거 등급 **E1(실측)**
+>
+> **판정: PASS** — 최종 대상 = develop `53bf2fb`(정정 착지 = PR#112 + PR#113).
+> 1차 검증(`9e5b324`)에서 결함 **2건**(V-6 · V-7 · red 8행)을 적발해 **불합격**을 냈고,
+> 정정 착지 후 **같은 그물의 빨강이 초록으로 바뀌는 것**을 실측해 뒤집었다(§6).
+> 두 결함 다 「없는 것을 없다고 말하지 않는」 계열이며, 둘 다 **구현 자신의 성문과 어긋났다**.
+
+## 0. 판정 범위 — 이 판정이 «무엇을» 말하는가
+
+🔴 판정이 자기보다 넓게 읽히지 않도록 경계를 먼저 적는다.
+
+| 이 판정이 덮는 것 | 이 판정이 덮지 «않는» 것 |
+|---|---|
+| 계약 v0.1.1 append 3라우트의 응답 형상·왕복 정합 | 검색 «품질»(정확도·재현율) — D3 평가 티켓의 몫 |
+| compare 실물 evidenceId 38건의 왕복 전수 | kind `graph-path`·`sensor-series` — T2-2 범위 밖(계약 v0.1.1) |
+| 색인 낡음의 배지 전이(주입 전후 2점) | 화면(web-console) 렌더링 — `stale` 소비 코드가 아직 없다 |
+| 읽기 3문의 주입 저항(적대 입력 30종) | 인증·권한 — 공개 Sandbox 라 인증 자체가 없다(§34.6 설계) |
+| 런타임 의존 단절 시의 오류 «코드» | 부하·동시성 한계 — 측정 안 했다 |
+| allowlist 관문의 보안 통제 성립 | 세션 격리 — T2-1이 「주장하지 않는다」고 성문했고 여기서도 안 잰다 |
+
+## 1. 측정 조건
+
+| 축 | 값 |
+|---|---|
+| 대상 | develop `9e5b324` · uvicorn 이 **소스를 직접 load** 하는 구성(빌드 산출물 없음) |
+| 스택 | `fkt-levi2` — pg `5534` · neo4j `7574/7587` · 색인 `intfloat/multilingual-e5-small` / 384d |
+| 재기동 | 🔴 교대로 내려가 있던 8000 을 **재기동한 뒤** 측정했다. 낡은 코드 위의 초록을 만들지 않는다 |
+| 질문 입력 | 🔴 **정본에서 내가 따로 뽑았다**(`benchmarks/datasets/eval-questions-draft.md` §2 · 매 실행 재추출) |
+| 상태 목록 | 🔴 배지 상태표의 정본은 **뷰**(`db/migrations/007_…sql`)다 — 구현 상수를 베끼지 않는다 |
+| 회귀 기준선 | T2-1 자산 3종(`evidence/t2-1-retrieval-verification.md`) |
+
+## 2. 적발한 결함
+
+### V-6 — 실재하지 않는 chunk 좌표를 «조용한 200» 으로 삼킨다
+
+**무엇이 어긋났나.** 구현이 스스로 적은 문장이 판정 근거다
+(`app/reading/documents.py` 머리말):
+
+> 🔴 `highlight` 의 chunk 가 이 문서의 것이 아니면 강조를 «조용히 버리지» 않는다 — 400 으로
+> 거절한다. 버리면 화면은 강조를 요청했는데 강조 없는 문서를 받고, 왜 없는지 알 수 없다.
+
+가드는 chunk ID 의 **문자열 접두(docId)만** 본다. 그 chunk 가 «있는지»는 보지 않는다.
+
+| 요청 | 응답 | 무엇이 조용한가 |
+|---|---|---|
+| `/documents/DOC-SOP-0014?highlight=DOC-SOP-0014@r1#001` | `200` · `revisionId=…@r1` · `highlight:null` · `stale:true` | r1 은 chunk **0건**(superseded·skipped)인데, 보여 주는 revision 을 **말없이 r1 로 갈아끼고** 강조는 사라진다 |
+| `/documents/DOC-SOP-0014?highlight=DOC-SOP-0014@r2#999` | `200` · 현행 r2 본문 · `highlight:null` | 존재하지 않는 index 인데 사유 없이 강조만 사라진다 |
+
+**기전.** `fetch()` 는 `CHUNK_ID_RE` 매칭과 `match.group("document") == document_id` 만 확인하고
+`revision_no` 를 뽑아 그 revision 을 편다. chunk 조회는 그 revision 의 것을 다 가져오지만,
+`locate()` 가 대상 index 를 못 찾으면 `None` 을 돌려주고 — 호출부는 그 `None` 을
+「강조 없음」과 구분하지 않는다. `locate()` 자신은 **옳게** 동작한다(그럴듯한 좌표를 지어내지
+않는다). 잃는 자리는 그 다음 칸, 「못 찾았다」를 응답으로 옮기지 않는 곳이다.
+
+**왜 «범위 밖 입력»이 아닌가.** 이 좌표는 사람이 지어내는 것이 아니라 **화면이 받은 것**이다.
+`/evidence` 가 낸 evidenceId 를 그대로 `highlight` 로 넘기는 것이 이 라우트의 사용법이고
+(계약 v0.1.1 · `?highlight={chunkId}`), 재색인으로 chunk 경계가 바뀌거나 revision 이 승격되면
+어제의 인용 좌표가 오늘 없는 좌표가 된다. 그때 화면은 **강조 없는 다른 revision 본문**을 받고
+오류도 사유도 없이 「인용을 찾을 수 없다」를 알 방법이 없다.
+
+**대조군이 갈랐다.** 같은 라우트가 `highlight=garbage`(형식 위반)와 타 문서 chunk 는
+`400 highlight_mismatch` 로 **옳게** 거절한다. 거절 경로가 살아 있는데 이 두 입력만 통과한다 —
+「거절을 안 만들었다」가 아니라 「조건이 실재를 안 본다」는 뜻이다.
+
+#### V-6 의 «세 번째 경로» — 좌표는 옳은데 본문에서 못 찾는다 (주입 실증 · E1)
+
+`locate()` 가 `None` 을 내는 길은 셋이고, 위 표의 둘은 그중 둘일 뿐이다.
+
+| 길 | 조건 | 입력으로 재현 |
+|---|---|---|
+| ① | chunk 가 «없는 revision» 좌표 | 가능(C-08) |
+| ② | 있는 revision · «범위 밖 index» | 가능(C-07) |
+| ③ | chunk 는 **있는데** 그 텍스트가 revision body 에서 발견되지 않는다 | **불가** — 현 데이터 59/59 가 유일 매칭 |
+
+③ 은 입력으로 못 만들지만 **상태로는 만들 수 있다**(오케 승인 08-30 · `--inject-drift`).
+색인 산출물 `document_chunk.text` 한 칸을 원문과 어긋나게 두면 그것이 ③ 의 정의 그 자체다 —
+`document_revision.body`·`content_sha256`·`index_build`·임베딩·그래프는 무접촉.
+
+| 시점 | `/documents?highlight={그 chunk}` | `v_index_freshness` | 무접촉 대조군 |
+|---|---|---|---|
+| 주입 전 | `200` · 강조 있음 | `FRESH` | 강조 있음 |
+| 주입 후 | **`200` · `highlight:null`** — 사유 없음 | **`FRESH`**(변하지 않는다) | 강조 유지 |
+| 되감기 | `200` · 강조 복귀 · 원문 일치 | — | — |
+
+🔴 **덤으로 잡힌 사실 하나(오케 지시로 병기).** 이 파열 중에도 `freshness` 는 `FRESH` 로 남는다 —
+신선도는 `source_sha256 ↔ content_sha256` 축만 보므로 **chunk 수준의 drift 를 보지 못한다**.
+즉 배지가 조용한 그 자리에서 인용이 깨진다. ③ 을 「5xx 로 울린다」로 판정한 이유가 여기 있다
+(오케 08-30) — 배지가 못 잡는 파열이라 응답 자체가 말해야 한다.
+
+부수 관측(판정 회부): 같은 상태에서 `GET /evidence/{그 chunk}` 도 `200` · `highlight:null` 이다.
+같은 `locate()` 를 쓰므로 같은 계열이며, 계약이 doc-chunk 에 「원문 + 강조 offset」을 약속한 이상
+같은 판정을 받아야 한다고 본다 — 판정은 오케 몫이라 여기서는 관측으로만 적는다.
+
+### V-7 — 같은 사건(의존 단절)을 라우트마다 «다른 코드»로 말한다
+
+**실측.** postgres 컨테이너 정지 중, 같은 프로세스의 세 라우트:
+
+| 라우트 | 단절 중 응답 | |
+|---|---|---|
+| `POST /retrieval/compare` | `503 dependency_unavailable` | ✅ V-2 정정이 지킨다 |
+| `GET /evidence/{id}` | `500 internal_error` | 🔴 |
+| `GET /documents/{id}` | `500 internal_error` | 🔴 |
+
+**기전.** `routers/knowledge.py:_pool()` 은 `pg_pool is None` 일 때만 `DependencyUnavailable` 을
+던진다 — 그것은 **기동 시점에 풀을 못 만든** 경우다. 기동 «후» 의존이 죽으면 풀 객체는 그대로
+남고 `pool.acquire()` 가 예외를 던지는데, 읽기 경로에는 그것을 잡는 자리가 없다 →
+`errors._unhandled` 의 전역 500(`internal_error`)이 된다.
+`retrieval/service.py` 는 같은 예외군(`_DEPENDENCY_ERRORS`)을 잡아 503 으로 바꾼다 — V-2 처방이
+그 자리에만 들어갔고, T2-2 의 새 라우트에는 오지 않았다.
+
+**왜 결함인가.** 계약은 오류 «형상»만 정하므로 형상 검사(`error_shape_drill`)는 이것을 초록으로
+넘긴다. 그러나 코드는 구현 자신이 뜻을 부여한 값이다(`app/errors.py`):
+
+> `DependencyUnavailable` — 의존(PostgreSQL·Neo4j)에 닿지 못했다 — «서비스 결함»과 **구분되는
+> 사건**이다.
+
+그리고 화면(`apps/web-console/lib/contract.ts`)은 그 구분 위에 서 있다 — 백엔드 부재·501·
+타임아웃을 `unavailable` 로 접어 **«미연결»로 표시하고 오류로 붉히지 않는다**. 한 사건에
+`503`(잠시 후 다시)과 `500`(서비스 결함) 두 판정이 나오면 **하나는 반드시 거짓**이고,
+Evidence 뷰만 없는 장애를 보고하게 된다.
+
+**오케 소견② 에 대한 답.** 「503 이 화면에서 「미연결」로 접히는 문제 — 배지 데이터가 구분을
+실을 수 있는가」 → **실을 수 있다.** 단절 중 `/health` 는 `status=degraded` ·
+`postgres=unavailable` 로 옳게 말했고, `/scenarios` 는 DB 를 지나지 않아 `200` 을 유지한다 —
+「미연결이 전역이 아니다」까지 화면이 알 수 있다. 부족한 것은 데이터가 아니라 **읽기 2라우트가
+내는 코드**다. 처방은 compare 의 의존예외 변환을 reading 경로에 **1곳으로 수렴**시키는 것이다.
+
+## 3. 축별 결과
+
+> 🔴 아래 표는 **1차(`9e5b324`) 실측**이다. FAIL 로 적힌 축은 정정 착지본(`53bf2fb`)에서
+> 뒤집혔고, 그 전환 실측은 §6 에 있다 — 이 절을 정정 후 상태로 고쳐 쓰지 않는다.
+> 빨강이 있었다는 사실 자체가 그물이 살아 있었다는 근거이기 때문이다.
+
+### 축① 왕복 본체 — **PASS**(본체) / **FAIL**(대조군 · V-6)
+
+| 축 | 결과 |
+|---|---|
+| 정본 10문 × 3전략 → 고유 evidenceId | **38건**(chunk 형상 23 · record 형상 15) |
+| record prefix 분포 | `AL·CP·EQ·FM·MR·SAF·SN·SOP·WO` — T2-2가 넓힌 `CP` 포함 |
+| `/evidence` 전건 열림 | **38/38** · 404 0건 |
+| `excerpt` ↔ `/evidence.text` 앞머리 일치 | 어긋남 **0건** |
+| `/documents.body[start:end]` == chunk 원문 | 어긋남 **0건** · 강조 `chunkId` 일치 |
+| record 자기정합(`record.fields.id == evidenceId` · `stale=false` 상수) | 어긋남 **0건** |
+| 대조군 9종 | **7 PASS · 2 FAIL**(V-6) |
+
+🔴 **자기 검증**을 본 시험 앞에 뒀다 — 한 chunk 의 앞머리를 다른 chunk 본문에 걸어 비교기가
+어긋남을 «실제로 잡는지» 먼저 본다. 통과만 하는 비교기는 아무것도 보증하지 않는다.
+
+### 축② `/scenarios` ↔ allowlist 이원화 — **PASS**
+
+| 축 | 결과 |
+|---|---|
+| 정본 10문(내 파서 재추출) ≡ `/scenarios` questions | **집합 일치** · 차집합 0/0 |
+| `/scenarios` 문자열 **그대로** compare 에 | **10/10 `200`** · 생존 신호 hits **50건** |
+| 교차 대조군(거부돼야 하는 것) | **6/6 `400 question_not_approved`** |
+
+교차 대조군 = 끝 낱말 교체 · 접두 부분문자열 · 접미 추가 · 공백만 · SQL 조각 · Cypher 조각.
+🔴 ①만 재면 「목록을 통째로 열어 두어도 초록」이다. allowlist 는 보안 통제(계약 §16.2 임의
+질의 금지)이므로 **밖이 닫혀 있는 것까지** 봐야 안쪽 일치가 뜻을 갖는다.
+
+### 축③ STALE 배지 (Q-20) — **PASS**
+
+**상태표**(쓰기 없음 · 정본 = 뷰): 6상태 + 값 없음 = **7/7 기대대로**.
+자기 검증으로 **정정 «전» 매핑(「`STALE` 만 true」)을 4건에서 잡는다** — 옛 결함을 못 잡는 표는
+약한 표다.
+
+**실주입 왕복**(오케 승인분 · `index_build[DOC-SOP-0014@r2 · levi2-run2].source_sha256` 한 칸):
+
+| 시점 | `v_index_freshness` | `/evidence.stale` | `/documents.stale` | 무접촉 대조군 |
+|---|---|---|---|---|
+| 주입 전 | `FRESH` | `false` | `false` | `false` |
+| 주입 후 | `STALE` | **`true`** | **`true`** | `false`(머문다) |
+| 되감기 | `FRESH` | `false` | — | — |
+
+🔴 **대조군을 「전후 같음」으로 재지 않았다** — 둘 다 true 여도 «같다». `false` 로 머무는 것까지
+본다. 주입이 그 한 행에만 들었다는 것이 그렇게 갈린다.
+
+### 축④ 의존 단절의 코드 구분 — **FAIL**(V-7)
+
+§2 V-7. 되감기(재기동 → 4라우트 200)까지 실측했다.
+
+### 축⑤ tests/api 모집단 — **3종 → 8종** (표면이 자란 만큼 표도 자랐다)
+
+| 자산 | 신설/증설 | 이번 결과 |
+|---|---|---|
+| `citation_roundtrip_drill.py` | 신설 | 왕복 38 green · 대조군 **2 red**(V-6 ①②) · 주입 **3 red**(V-6 ③) |
+| `scenario_allowlist_drill.py` | 신설 | **전건 green**(집합 1 + 관문 10 + 대조군 6) |
+| `freshness_badge_drill.py` | 신설 | **전건 green**(상태표 7 + 주입 왕복 6) |
+| `dependency_code_drill.py` | 신설 | 기준선 4 green · 단절 **3 red**(V-7) |
+| `injection_surface_drill.py` | 신설(보안) | **전건 green**(적대 입력 30 + 대상 생존 1) |
+| `error_shape_drill.py` | 증설 E-07·E-08·E-09 | **11/11 green** |
+| `anchor_boundary_drill.py` · `anchor_extraction_probe.py` | 회귀 | 10/10 · 16/16 green |
+
+검사 행 계수(자기 검증·되감기 포함): **32 → 168** — 16(경계 probe) + 10(표기 변형) + 11(오류 형상)
++ 55(왕복 38 + 대조군 9 + 주입 8) + 17(시나리오 1+10+6) + 13(배지 7+6) + 15(의존 코드) + 31(적대 입력 30 + 생존 1).
+
+🔴 red **8행**은 일부러 남긴다. 정정이 그 빨강을 초록으로 바꾸는 것이 재검의 판정 근거다 —
+T2-1 에서 V-1~V-4 가 그렇게 뒤집혔다.
+
+### 축⑥ 보안 경계 — **PASS** (발주 축 밖 · 검증 좌석 scope · 오케 승인 08-30)
+
+T2-2 는 «문자열로 테이블·행을 고르는» 코드 근처에 문을 셋 냈다 — `/evidence/{id}` ·
+`/documents/{id}` · `?highlight={chunkId}`. baseline §16.2 · 계약 README 원칙3 이
+임의 SQL·Cypher 경로를 Stop 조건으로 두므로, 그 경계를 밖에서 쟀다.
+
+| 축 | 결과 |
+|---|---|
+| 적대 입력 10종 × 문 3 = 30건 | **전건 계약 형상 4xx** · 5xx 0 · 200 0 · 내부 누출 0 |
+| 입력 종류 | SQL 주석종결 · `UNION SELECT` · `DROP TABLE` · `pg_shadow` 지정 · 경로 traversal 2형 · 널바이트 · 4KB 초장문 · U+202E 방향 제어 · chunk 형상+주석 |
+| 🔴 대상 생존 | `DROP TABLE` payload 를 **실제로 던진 뒤** 코퍼스 재계수 — 본문 1376자 → 1376자 무변 |
+
+방어의 실체는 `ontology_tables.table_of()` 화이트리스트(테이블은 상수에서만 온다)와
+전 구간 파라미터 바인딩이다. 구현이 주석으로 «주장»한 그것이 밖에서도 성립한다.
+
+🔴 **이 축에서 내가 틀렸던 자리를 남긴다.** 첫 실행은 red 3행을 냈는데 원인은 대상이 아니라
+**나**였다 — 오류 message 가 되비친 내 payload(`… UNION SELECT * FROM document_revision …`)가
+내 누출 표지에 걸렸다. 판정 전에 내 입력을 지우고(`residue()`), 자기 검증에 「반사된 payload 는
+누출이 아니다」 행을 세워 못박았다. **초록만 주어를 묻는 것이 아니라 빨강도 주어를 물어야 한다.**
+
+## 4. 소견 (E3 — 결함으로 계수하지 않는다)
+
+**소견① — `/evidence.highlight` 의 좌표 참조계가 응답 안에 없다.** 좌표는 «원문»(revision body)
+기준인데(`schemas.Highlight` 성문), `/evidence` 응답에는 `body` 가 없고 `text`(chunk) 만 있다.
+소비자가 `text.slice(start,end)` 로 읽으면 조용히 빗나간다. 성문은 돼 있으므로 결함으로 세지
+않되, 화면 구현 시점에 계약 각주로 못박거나 필드명을 갈라 두는 편이 안전하다.
+
+**소견② — `stale` boolean 은 «왜» 를 말하지 못한다.** 구현이 이미 한계를 성문했고 6상태 노출은
+Q-22 로 등재돼 있다. 이번 측정이 더한 사실 하나: `NOT_INDEXED`(색인 기록 없음)와
+`STALE`(색인이 낡음)이 화면에서 **같은 배지**가 된다 — 전자는 「아직 안 만들었다」, 후자는
+「만들었는데 뒤처졌다」로 운영 대응이 다르다.
+
+**소견③ — `record` 의 `stale=false` 상수는 «다른 주장»이다.** doc-chunk 의 `false` 는 「색인
+신선이 실증됐다」이고 record 의 `false` 는 「그 개념이 없다」다. `kind` 가 응답에 있으므로 화면이
+갈라 그릴 수 있으나, 갈라 그리지 않으면 SSOT 직독 근거에 색인 배지를 붙이게 된다.
+
+**소견④ (원장 Q-23 등재 · 오케 판정 08-30) — 오류 `message` 가 요청 문자열을 되비친다(30건 중 28건).** 적대 입력 30종은 전부
+계약 형상 4xx 로 막혔고 내부 누출도 0이며 코퍼스도 그대로였다(축⑤ `injection_surface_drill`).
+다만 message 는 요청한 ID 를 그대로 실어 보낸다 — 4KB payload 와 유니코드 방향 제어문자까지
+되비친다. 응답이 JSON 이고 화면이 React 라 실행 위험은 없어 결함으로 세지 않되, 공개 Sandbox
+에서 되비치는 길이·문자에 상한을 두는 편이 위생적이다.
+
+## 5. 재현 명령
+
+```powershell
+# 스택(자기 것) — pg 5534 · neo4j 7574/7587
+docker ps --filter name=fkt-levi2
+
+# 서버 (services/ai-api 에서 · 의존은 환경변수로만)
+$env:FKT_POSTGRES_DSN='postgresql://fkt:***@127.0.0.1:5534/fkt'
+$env:FKT_NEO4J_URI='bolt://127.0.0.1:7587'; $env:FKT_NEO4J_USER='neo4j'; $env:FKT_NEO4J_PASSWORD='***'
+.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 --host 127.0.0.1
+
+# 자산 8회 (리포 루트에서 · exit 0 = 기대대로 · 1 = 어긋남 · 2 = 측정 불가)
+python tests/api/anchor_extraction_probe.py
+python tests/api/anchor_boundary_drill.py
+python tests/api/error_shape_drill.py --cut-neo4j
+python tests/api/citation_roundtrip_drill.py --inject-drift
+python tests/api/scenario_allowlist_drill.py
+python tests/api/freshness_badge_drill.py --inject-stale
+python tests/api/dependency_code_drill.py --cut-postgres
+python tests/api/injection_surface_drill.py
+```
+
+## 6. 재검 — 정정 착지본 실측 (판정 확정)
+
+| 축 | 값 |
+|---|---|
+| 대상 | develop **`53bf2fb`** — PR#112(V-6 ①② · V-7) + PR#113(V-6 ③ · `/evidence` 결선) |
+| 환경 | venv 설치 후(`langgraph` 추가 · `websockets` 17.1→16.1.1) · 서버 **재기동** 후 |
+| 🔴 낡은 실행 배제 | 정정 착지로 주 워크트리 소스가 바뀐 순간, 옛 코드를 물고 있던 서버를 **내렸다**. 재검은 `53bf2fb` 를 새로 load 한 프로세스에서만 쟀다 |
+| 실행 | 자산 **8종 1회** · 전건 `exit 0` |
+| 계수 | 출력 행 **134**(FAIL **0**) + 요약행이 덮는 왕복 **38**건 = 판정 항목 **172** |
+| 원문 | `evidence/t2-2-recheck-run.log` — 8자산 1회 실행의 «출력 그대로»(계수는 이 파일에서 세었다) |
+
+### red 8행의 전환 — 「같은 그물의 빨강이 초록으로」
+
+| 행 | 1차(`9e5b324`) | 재검(`53bf2fb`) |
+|---|---|---|
+| C-07 있는 revision · 없는 index | 🔴 `200` · `highlight:null` | `400 highlight_not_found` |
+| C-08 chunk 없는 낡은 revision | 🔴 `200` · 조용한 revision 교체 | `400 highlight_not_found` |
+| I-01·02·03 `/documents` 정합 파열 | 🔴 `200` · `highlight:null` | `500 citation_integrity_broken` |
+| I-05·06·07 `/evidence` 정합 파열 | 🔴 `200` · `highlight:null`(관측으로 기록했던 자리) | `500 citation_integrity_broken` |
+| D-02 `/evidence` 의존 단절 | 🔴 `500 internal_error` | `503 dependency_unavailable` |
+| D-03 `/documents` 의존 단절 | 🔴 `500 internal_error` | `503 dependency_unavailable` |
+| D-05 한 사건을 한 코드로 | 🔴 503 vs 500 vs 500 | 세 라우트 전부 `503 dependency_unavailable` |
+
+🔴 **초록으로 남아야 할 것이 남았는지도 함께 봤다** — 정정이 400 을 넓히다 기존 판정을
+흐리지 않았는가. `C-06`(형식 위반)·`C-09`(타 문서)는 재검에서도 `400 highlight_mismatch`
+그대로다. 「없는 좌표」와 「이 문서 것이 아닌 좌표」가 **다른 코드로 갈려 있다**.
+주입 축의 대조군(`I-11`)·되감기(`I-0`·`E-0`·`D-0`)도 전건 초록이라, 이 초록이 «쟀기 때문에»
+난 것이지 «대상이 죽어서» 난 것이 아님을 함께 실증한다.
+
+### 정정 구조에 대한 소견 (E2 — 코드 독해)
+
+처방이 「그 자리를 고쳤다」가 아니라 **「잊을 자리 자체를 없앴다」**로 들어왔다.
+`locate_cited()` 한 함수가 인용 좌표의 유일한 소비 관문이 되어 새 소비처는 부르는 순간
+벽을 지나고, 두 라우트가 다른 코드로 갈라질 수 없다(`I-09` 가 구조적으로 보장된다).
+의존 오류도 같은 방식이다 — `dependency_guard` 1곳 수렴(`D-05`).
+
+🔴 **그물이 지키는 것은 여전히 «행동»이지 «구조»가 아니다.** 이 수렴이 되돌려져도 행동이
+같으면 내 표는 초록으로 남는다 — 구조의 유지는 리뷰의 몫이다(계보: 7대 「그물의 주어는
+처방과 함께 바뀐다」).
+
+### 이 재검이 덮지 «않는» 것
+
+- §0 의 범위를 넓히지 않는다. `stale` 을 소비하는 화면 코드는 여전히 없고,
+  `graph-path`·`sensor-series` 는 T2-2 범위 밖 그대로다.
+- **Q-24**(`_DEPENDENCY_ERRORS` 의 `PostgresError` 광포착 — 진짜 SQL 결함도 503 으로 접힌다)는
+  이번 판정에 들어 있지 않다. 별건으로 원장에 있다.
+- **Q-23**(오류 message 반사 상한 · 소견④)도 이번 판정 밖이다.
+
+### 최종 판정
+
+**PASS** — T2-2(읽기 3라우트)는 계약 v0.1.1 append 형상·왕복 정합·시나리오 관문·신뢰 배지·
+의존 구분·보안 경계 전 축에서 기대대로 동작한다. 1차에 적발한 V-6·V-7 은 정정 착지본에서
+**같은 그물로** 해소를 실측했다.
+
+🔴 이 PASS 가 뜻하지 «않는» 것은 §0 표의 오른쪽 열 그대로다.
