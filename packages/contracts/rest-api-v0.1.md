@@ -89,3 +89,9 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 ## v0.1.2 append (08-30 · T2-3 게이트 1 — 의미 확정 1건)
 
 - **GET `/live/status` `online` 의미 확정** = «로컬 Claude synthesize 게이트웨이 도달 가능 여부»(T2-3 J-1 (b) 채택). 공개 Sandbox에는 게이트 env가 없으므로 `online:false`가 **참**이며 결함이 아니다 — Live/Replay 배지가 §15.2(구독 비노출) 경계와 같은 축을 가리킨다. `true` 전환은 운영자 로컬 실행 환경에서만 성립.
+
+## v0.1.3 append (08-30 · T2-3 구현 회부 — `mode` 낱말 확정 · 두 축 분리)
+
+- **run/envelope `mode` = «이벤트 출처» 축**: `"live"` = 이번 실행이 실제로 수행됨(단계들이 지금 돌았다) · `"replay"` = 커밋된 fixture 재생(T2-4 축). fixture가 없는 동안 `mode:"replay"` 요청 = **501이 참**(없는 것을 있다고 답하지 않는다).
+- 🔴 **본문 「live 불가 시 replay 강등」의 «live 불가» = «실행 자체가 불가»로 한정** — 합성 게이트웨이 부재는 실행 불가가 아니다(synthesize가 공개 경로의 replay 구현으로 돈다 · J-5). 게이트 부재를 강등 트리거로 읽으면 실행된 run의 이벤트가 replay로 나가 되감기 판정이 오염된다 — 그 독법을 금지한다.
+- **합성 게이트웨이 축은 별도 낱말** = `/live/status.online`(v0.1.2)이 말한다 — 화면의 Live 배지는 두 축의 조합으로 읽는다. run 응답·이벤트에 synthesize 구현 표시를 실을지는 T2-4/데모 리허설 시점 재론(필요 시 회부).
