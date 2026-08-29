@@ -31,7 +31,7 @@ size_limit: 4KB
 | `infra/` | 로컬 인프라 보조(postgres init SQL 등) | 환경 변경 시 |
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
 | `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
-| `tests/data/` | seed 무결성 probe 22건(C-21·C-22 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물 · 러너 동반) | seed 개정 동반 |
+| `tests/data/` | seed 무결성 probe 27건(C-21~C-27 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 · 러너 동반 — G-3) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
 | `evidence/` | 독립 검증 보고(phase0-verification 등) | 검증 시 |

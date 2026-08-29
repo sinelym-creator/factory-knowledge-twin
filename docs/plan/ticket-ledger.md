@@ -73,7 +73,7 @@ size_limit: 8KB
 | T2-2 | 문서·evidence 읽기 API — `/documents`(highlight)·`/evidence` 501 해제 + STALE 배지 데이터(`v_index_freshness`) | 구현 | 인용 강조 offset · revision/hash 표면 — evidence ID ↔ source 문장 일치가 완료 증거 | T1-4 ✅ |
 | T2-3 | LangGraph 조사 워크플로우 — plan 5단계(structured→vector→graph→synthesize→draft_work_order) · GS-01 대본 결속 | 구현 | step 이벤트 산출(agent-events 스키마) · 🔴 Claude 구독 공개 API 노출 금지(§15.2) — Live 게이트웨이 전 로컬 실행 경계 | T2-1 · T1-5 |
 | T2-4 | structured audit event + replay fixture 녹화(seq 기준) | 구현 | 조사 실행 스트림 기록 — Phase 3 replay engine·Phase 4 fallback의 원천 | T2-3 |
-| T2-5 | WO 초안 생성·승인 API — CRUD·approve/reject·🔴 안전 조치 서버측 삭제 불가(R12 REQUIRES 강제) | 구현 | 화면 ④의 「지울 수 없는 항목」을 UI가 아니라 서버가 강제 | CRUD 선행 가능 · 초안 생성은 T2-3 |
+| T2-5 | WO 초안 생성·승인 API — CRUD·approve/reject·🔴 안전 조치 서버측 삭제 불가(R12 REQUIRES 강제) + 승인 이력 테이블·`approval_state` 전이 규칙 확정(Q-11 결속 — 스펙 §4 「승인 이력」 실체화) | 구현 | 화면 ④의 「지울 수 없는 항목」을 UI가 아니라 서버가 강제 | CRUD 선행 가능 · 초안 생성은 T2-3 |
 | T2-6 | Phase 2 독립 검증 — GS integration · 3전략 동일 질문 실측 · evidence↔원문 일치 · 계약 준수 | 검증 | baseline §21 Phase 2 완료 증거 4종 전건 + Gate 결속 | T2-1~T2-5 |
 
 ### 구현 대기열 (소조각 · 미발주 — 원장 분모 밖 · 발주 시 티켓 생성, 티켓化 안 되면 발주문 소조각)
@@ -88,4 +88,6 @@ size_limit: 8KB
 | Q-7 | `migrate.ps1` 헤더 `embedding_dim=768` 표기 stale(실제 최종 상태 384 · 경미) | levi2 회부 ③ | Q-6 동반 |
 | Q-8 | `v_ssot_manifest` 정렬의 collation 의존 — 바이트 순서 고정(`COLLATE "C"`) 명시 검토. 현 ID 체계(DOC-AAA-NNNN 단일 모양)에선 동일함 실측 — ID 체계 확장 시 지문이 DB 설정에 좌우된다 | levi2 회부 ②(E3 · LC_ALL=C 독립 조립 대조) | Q-6 동반 |
 | Q-9 | 「2순위 후보」 3자 정합 — seed 실물 rank2 = FM-SPDL-OVERHEAT ↔ 화면(wireframes ②)·대본은 FM-TOOL-IMB. «측정 후 바인딩» 계열(V-1 선례): T2-3(조사 워크플로우) 착지 시 실물 후보로 화면·대본 재바인딩 · 스펙 문구 혼선은 정오표 E-6 성문 | senku2 6대 회부 ①(FM-TOOL-IMB = 어떤 incident에도 진단 없음 실측 · D-5 정합) | T2-3 착지 시 오케 패스 |
+| Q-10 | G-1 CHECK 확장 — `ck_superseded_has_effective_to`가 superseded «한 상태»만 본다: S→R 전이하며 `effective_to`를 지우면 DB 통과(T-I3 실측 E1 · 현재 C-24 그물이 대신 적발) → retired 잔여열 요건 CHECK 확장 신규 마이그레이션 | levi2 5대 회부 ②(PR#75) | Q-6 묶음 동반 |
+| Q-11 | work_order 승인 축 — 스펙 §4 「전체 행 + 승인 이력」 vs 스키마 = 현재 상태 1열·이력 테이블 없음 + `approval_state` 전이 규칙 스펙 부재 → 🔴 T2-5(WO API) 티켓에 «승인 이력 테이블 + 전이 규칙 확정(오케)» 편입 | levi2 5대 회부 ③(PR#75) | T2-5 발주 시 결속 |
 | Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
