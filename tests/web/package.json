@@ -1,0 +1,16 @@
+{
+  "name": "fkt-web-verification",
+  "private": true,
+  "description": "검증 좌석 자산 — T1-9 셸 E2E(브라우저 실측)와 토큰 계층 대조군. apps/web-console 의 node_modules 를 빌려 쓰지 않는다: 검사 도구가 대상 안에 결합하면 대상이 바뀔 때 도구가 함께 죽는다.",
+  "scripts": {
+    "e2e": "playwright test",
+    "drill": "node ../../tests/web/contract_surface_drill.mjs",
+    "tokens": "node token_layer_probe.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3"
+  },
+  "//tailwind": "🔴 4.3.3 «정확히» 고정한다. token_layer_probe 는 apps/web-console 이 실측으로 쓰는 바로 그 버전이 같은 표기에 무엇을 내는지를 재는 대조군이라, 버전이 흐르면 대조가 아니라 다른 실험이 된다."
+}
