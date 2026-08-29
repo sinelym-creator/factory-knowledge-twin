@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -142,6 +142,82 @@ class CompareResult(BaseModel):
     strategy: Literal["vector", "hybrid", "graphrag"]
     hits: list[CompareHit]
     elapsedMs: int = Field(ge=0)
+
+
+# --- 근거·문서 읽기 (v0.1.1 append) ------------------------------------------------
+
+
+class Highlight(BaseModel):
+    """원문에서 인용 문장이 놓인 자리. 좌표는 «문자» 기준이다.
+
+    🔴 `document_chunk` 에 offset 열이 없어 원문 대조로 산출한다(T2-2 게이트 1 실측:
+       59/59 chunk 가 본문에서 그대로·유일하게 발견 · 인접 chunk gap 0).
+    """
+
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+
+
+class DocumentHighlight(Highlight):
+    """`/documents` 쪽 강조 — 어느 chunk 를 가리켰는지 함께 말한다."""
+
+    chunkId: str
+
+
+class EvidenceRecord(BaseModel):
+    """`record: { entityType, fields }` — SSOT 레코드를 그대로 편 것."""
+
+    entityType: str
+    fields: dict[str, Any]
+
+
+class EvidenceResponse(BaseModel):
+    """GET /evidence/{evidenceId} — 계약 v0.1.1 append.
+
+    🔴 revision 6필드는 `doc-chunk` 에서만 실값이다. `record` 에는 revision 이 없으므로
+       null 이며, `stale` 도 `false` 상수다 — SSOT 를 직독하는 근거라 「색인이 낡았다」는
+       개념 자체가 없다(계약 v0.1.1 · 사유는 `app/reading/evidence.py` 성문).
+    """
+
+    evidenceId: str
+    kind: Literal["doc-chunk", "record"]
+    revisionId: str | None = None
+    contentHash: str | None = None
+    stale: bool
+    approvalState: str | None = None
+    effectiveFrom: date | None = None
+    effectiveTo: date | None = None
+    text: str
+    highlight: Highlight | None = None
+    record: EvidenceRecord | None = None
+
+
+class DocumentPreview(BaseModel):
+    """GET /documents/{docId}?highlight={chunkId} — 계약 v0.1.1 append."""
+
+    documentId: str
+    title: str
+    revisionId: str
+    contentHash: str
+    stale: bool
+    approvalState: str
+    effectiveFrom: date
+    effectiveTo: date | None = None
+    body: str
+    highlight: DocumentHighlight | None = None
+
+
+class ScenarioSummary(BaseModel):
+    """GET /scenarios → `[{ scenarioId, title, questions }]` — 계약 v0.1.1 append.
+
+    🔴 `questions` 의 유일한 원천은 `app/retrieval/allowlist.py` 다. 이 응답은 그것을
+       «읽어서» 낼 뿐 자기 목록을 갖지 않는다 — 두 목록이 따로 자라면 화면이 승인받지
+       못한 질문을 compare 에 보내게 된다.
+    """
+
+    scenarioId: str
+    title: str
+    questions: list[str]
 
 
 # --- 작업지시 --------------------------------------------------------------------

@@ -2,24 +2,51 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query, Request
+from typing import Any
 
-from ..errors import NOT_IMPLEMENTED, NotImplementedRoute
+from fastapi import APIRouter, HTTPException, Query, Request
+
+from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute
+from ..reading import documents as document_reader
+from ..reading import evidence as evidence_reader
 from ..retrieval.service import compare
-from ..schemas import CompareRequest, CompareResult
+from ..schemas import CompareRequest, CompareResult, DocumentPreview, EvidenceResponse
 
 router = APIRouter(tags=["knowledge"])
 
 
-@router.get("/evidence/{evidenceId}", responses=NOT_IMPLEMENTED)
-async def evidence(evidenceId: str) -> None:
-    """kind별 실체 — doc-chunk(원문 + 강조 offset + `revisionId`·`contentHash`·`stale`·
-    `approvalState`·`effectiveFrom`/`effectiveTo`) · graph-path · record · sensor-series.
+def _pool(request: Request) -> Any:
+    pool = request.app.state.resources.pg_pool
+    if pool is None:
+        raise DependencyUnavailable("postgres")
+    return pool
 
-    신뢰 배지(검증 F-4)와 인용 유효 조건(T0-6 §3.3)이 이 응답에 걸려 있다. kind 별 실체
-    형상은 계약이 서술로만 두었으므로 모델을 만들지 않는다.
+
+def _not_found(what: str, ident: str) -> HTTPException:
+    """🔴 「없다」를 «빈 응답»으로 말하지 않는다 — 없는 것과 비어 있는 것은 다른 사건이다."""
+    return HTTPException(
+        status_code=404,
+        detail={"code": "not_found", "message": f"{what} {ident} 를 찾을 수 없다"},
+    )
+
+
+@router.get("/evidence/{evidenceId}", response_model=EvidenceResponse)
+async def evidence(evidenceId: str, request: Request) -> EvidenceResponse:
+    """kind별 실체 — `doc-chunk` · `record` (계약 v0.1.1 append · T2-2 해제).
+
+    신뢰 배지(검증 F-4)와 인용 유효 조건(T0-6 §3.3)이 이 응답에 걸려 있다. 🔴 조회는
+    인용 유효 조건으로 **거르지 않는다** — 인용할 수 없는 revision 인지를 화면이 보려면
+    그 revision 도 열려야 한다. 거르는 것은 검색(T2-1)의 몫이고, 여기는 «보여 주고
+    표시하는» 자리다.
+
+    kind `graph-path`·`sensor-series` 는 T2-2 범위 밖이다(계약 v0.1.1 · compare 가 해당
+    evidenceId 를 만들지 않는다).
     """
-    raise NotImplementedRoute("GET /evidence/{evidenceId}", "evidence 저장소 + 계약의 kind별 형상 확정")
+    pool = _pool(request)
+    found = await evidence_reader.fetch(pool, evidenceId)
+    if found is None:
+        raise _not_found("evidence", evidenceId)
+    return found
 
 
 @router.get("/graph/paths", responses=NOT_IMPLEMENTED)
@@ -36,10 +63,29 @@ async def graph_paths(
     raise NotImplementedRoute("GET /graph/paths", "그래프 조회 계층(고정 template)")
 
 
-@router.get("/documents/{docId}", responses=NOT_IMPLEMENTED)
-async def document_preview(docId: str, highlight: str | None = None) -> None:
-    """문서 미리보기 + 인용 문장 강조 좌표 + revision 신뢰 필드(F-4 · T0-6 §3.3)."""
-    raise NotImplementedRoute("GET /documents/{docId}", "문서·색인 조회 계층")
+@router.get("/documents/{docId}", response_model=DocumentPreview)
+async def document_preview(
+    docId: str, request: Request, highlight: str | None = None
+) -> DocumentPreview:
+    """문서 미리보기 + 인용 문장 강조 좌표 + revision 신뢰 필드(F-4 · T0-6 §3.3).
+
+    `highlight` 가 있으면 **그 chunk 의 revision** 을 편다 — 인용은 특정 revision 의 문장이라
+    현행본 위에 옛 좌표를 찍으면 엉뚱한 자리를 강조한다.
+    """
+    pool = _pool(request)
+    try:
+        found = await document_reader.fetch(pool, docId, highlight)
+    except document_reader.HighlightMismatch as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "highlight_mismatch",
+                "message": f"highlight={highlight} 는 문서 {docId} 의 chunk 가 아니다",
+            },
+        ) from exc
+    if found is None:
+        raise _not_found("document", docId)
+    return found
 
 
 @router.post("/retrieval/compare", response_model=list[CompareResult])
