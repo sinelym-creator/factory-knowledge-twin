@@ -62,7 +62,7 @@ size_limit: 8KB
 | T1-6 | contract test harness 승격(검사기→정식) | 검증 | 인자화·exit code·22케이스+ 유지 | ✅ PASS(오케 판정 — 로컬 실측 25/25·자기 검증 PASS · levi2 · PR#19) |
 | T1-7 | seed→index 재현성·무결성 검증 | 검증 | ID unique·hash·재생성 diff 0 · +F-2·G-4b·G-2 계승축 | ✅ PASS(levi2 4대 — A단 PR#60: stale 6곳 정정·F-2 대체 분기(사정거리 2/20 실측·처방 회부)·G-2 그물 C-21/C-22+생존 6/6 · B단 PR#63: 재현성 PASS·index_build↔spec 8/9(⑨ 부분 — ontology 축 부재 «적발»·L-31/L-32 그물 고정)·V-1 해소·U-7 치환) |
 | T1-8 | FastAPI async skeleton(§7 품질 원칙 골격) | 구현 | boot·health·계약 골격·blocking 0 | ✅ PASS(senku2 3대 구현 PR#48 · levi2 3대 독립 검증 PR#52 — 계약 표면 23/23 교차 대조·blocking 0(−9.36ms)·도메인 0 전수 실독·harness strict green) |
-| T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 구현 접수(PR#81) · 검증 완료(levi2 6대 · PR#90 — AC 6/6 «충족»이나 🔴 결함 2건: V-1 세션 가드 .svg 우회 · V-2 spacing 토큰 무효 선언 + 검사기 D-13 · 「AC 문장이 정본보다 짧았다」 · 「계약 밖 0」 주장은 독립 재측정 참) — 🔴 정정 발주(senku2 7대 · 15:52) → 재검 PASS 후 계수 |
+| T1-9 | Next.js A안 셸 skeleton | 구현 | AppShell·라우트 골격·세션 칩 | 구현 접수(PR#81) · 검증(PR#90 — 결함 2건+검사기 1건 적발) · 🔴 정정 완료 접수(senku2 7대 · PR#93 — V-1 가드 한정(`[^/]+\.svg$`)+실패 방향 설계 · V-2 표기(computed 56px) · D-13 3분할+불변식 자체 검사 · R-3·R-5) — 재검(levi2 6대 · 16:52 착수) PASS 후 계수 = Phase 1 완결 |
 | T1-10 | harness 커버리지 상시 경고(미실행 스키마 속성 검출) | 검증 | 계약 필드 추가 시 구멍 재발 방지 — 러너 경고+옵션 실패 | ✅ PASS(오케 판정 — 로컬 strict 37/37 exit 0 · levi2 · PR#25) |
 
 ### Phase 2 분해안 (준비 완료 · 🔴 분모 «밖» — Phase 2 진입 게이트 때 「분모 25→31」 선행 선언과 함께 등재 · baseline §21 Phase 2 정본 대조 08-29)
