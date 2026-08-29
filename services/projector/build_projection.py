@@ -87,9 +87,12 @@ def canon(v):
 
 
 def preflight(cur) -> None:
-    cur.execute("SELECT 1 FROM schema_migration WHERE filename = '006_graph_projection.sql'")
-    if cur.fetchone() is None:
-        raise SystemExit("006_graph_projection.sql 미적용 — 먼저 `pwsh services/ai-api/db/migrate.ps1`")
+    # 008은 투영기가 «쓰는» 열(source_data_sha256·source_scope)과 지문 함수를 만든다.
+    # 없는 채로 돌면 원장에 낡음 축이 빠진 행이 쌓이고, 그 행은 영원히 GRAPH_UNVERIFIED다.
+    for mig in ("006_graph_projection.sql", "008_graph_source_digest.sql"):
+        cur.execute("SELECT 1 FROM schema_migration WHERE filename = %s", (mig,))
+        if cur.fetchone() is None:
+            raise SystemExit(f"{mig} 미적용 — 먼저 `pwsh services/ai-api/db/migrate.ps1`")
     errs = M.selfcheck() + M.check_spec()
     if errs:
         for e in errs:
@@ -243,8 +246,25 @@ def project(uri, auth, db, nodes, rels) -> tuple[int, int, int]:
 
 LEDGER_SQL = (
     "INSERT INTO graph_build (build_id, projection_version, manifest_sha256, ontology_version, "
-    " node_count, relationship_count, status, error) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+    " node_count, relationship_count, status, error, source_data_sha256, source_scope) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
+
+
+def source_digest(cur):
+    """투영이 «읽는» PG 데이터의 지문 — 008 함수를 호출해 받는다(Q-15).
+
+    🔴 여기서 파이썬으로 다시 계산하지 않는다. 빌드가 자기 방식으로 계산하고 판정이 SQL로
+       계산하면 두 구현이 언젠가 갈리고, 그때 「낡았다」는 데이터가 아니라 «구현 차이»를
+       가리킨다 — 낡음을 잡으려던 축이 거짓말하는 축이 된다. 정의는 008에 하나만 둔다.
+    🔴 호출 시점이 중요하다. 노드·관계를 읽은 «같은 트랜잭션 안»에서 불러야 지문이 실제로
+       투영된 행들을 가리킨다. 커밋 뒤에 부르면 그 사이의 변경이 지문에 섞인다.
+    """
+    from psycopg.types.json import Jsonb
+
+    scope = M.source_scope()
+    cur.execute("SELECT graph_source_digest(%s)", (Jsonb(scope),))
+    return cur.fetchone()[0], Jsonb(scope), scope
 
 
 def main() -> int:
@@ -266,6 +286,7 @@ def main() -> int:
         onto = ontology_version(cur)
         nodes = fetch_nodes(cur)
         rels = fetch_rels(cur)
+        src_sha, src_scope, scope = source_digest(cur)
         read_s = time.perf_counter() - t0
 
         t1 = time.perf_counter()
@@ -274,14 +295,17 @@ def main() -> int:
         except BaseException as exc:
             # 🔴 실패도 원장에 남는다. 남기지 않으면 「그래프가 왜 반쪽인가」에 아무도 답하지
             #    못한다 — index_build가 skipped를 사유와 함께 남기는 것과 같은 이유다.
+            #    데이터 지문은 실패 행에도 적는다 — 읽기는 «이미 끝났고», 무엇을 읽다 실패했는지는
+            #    사실이다. 다만 실패 행은 짝 판정에서 PROJECTION_FAILED가 먼저 잡는다.
             cur.execute(LEDGER_SQL, (build_id, proj_ver, fp, onto, 0, 0, "failed",
-                                     f"{type(exc).__name__}: {exc}"[:2000]))
+                                     f"{type(exc).__name__}: {exc}"[:2000], src_sha, src_scope))
             conn.commit()
             print(f"🔴 투영 실패 — graph_build에 failed 1행 기록(build_id={build_id})")
             raise
         build_s = time.perf_counter() - t1
 
-        cur.execute(LEDGER_SQL, (build_id, proj_ver, fp, onto, n_nodes, n_rels, "success", None))
+        cur.execute(LEDGER_SQL, (build_id, proj_ver, fp, onto, n_nodes, n_rels, "success", None,
+                                 src_sha, src_scope))
         conn.commit()
 
     print(f"== 투영: 노드 {n_nodes} · 관계 {n_rels} (라벨 {len(M.NODES)} · 관계형 {len(M.projected())})")
@@ -292,6 +316,8 @@ def main() -> int:
         print(f"   {rel.code} {rel.start}-[:{rel.rel_type}]->{rel.end:18s} {len(rels[rel.code]):5d}")
     print(f"   원장 graph_build 1행 — build_id={build_id} · {proj_ver} · ontology {onto}")
     print(f"   manifest 지문 {fp}")
+    n_col = sum(len(c) for c in scope.values())
+    print(f"   데이터 지문   {src_sha} (원천 {len(scope)}테이블 · {n_col}열)")
     return 0
 
 

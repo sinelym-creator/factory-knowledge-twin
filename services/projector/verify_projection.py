@@ -262,7 +262,8 @@ def report(ses, cur) -> int:
     print("[9] graph_build 원장 ↔ 현행 manifest · 색인과의 짝(v_graph_index_pairing)")
     cur.execute(
         "SELECT build_id, projection_version, manifest_sha256, ontology_version, "
-        "  node_count, relationship_count, status FROM graph_build "
+        "  node_count, relationship_count, status, source_data_sha256, source_scope "
+        "FROM graph_build "
         "ORDER BY built_at DESC, build_id DESC LIMIT 1"
     )
     row = cur.fetchone()
@@ -270,7 +271,7 @@ def report(ses, cur) -> int:
         print("    🔴 FAIL graph_build 0행 — 그래프는 있는데 «무엇이 만들었는지»가 원장에 없다")
         fails += 1
     else:
-        bid, pver, msha, onto, nn, nr, status = row
+        bid, pver, msha, onto, nn, nr, status, src_sha, src_scope = row
         print(f"    {pver} · ontology {onto} · 노드 {nn} · 관계 {nr} · {status} (build_id={bid[:8]}…)")
         # 🔴 원장의 지문이 «지금 코드»의 지문과 다르면, DB에 있는 그래프는 다른 규칙으로 만든
         #    것이다. 이 축이 없으면 manifest를 고친 뒤 재투영을 잊어도 전부 초록으로 보인다.
@@ -281,6 +282,37 @@ def report(ses, cur) -> int:
         if (nn, nr) != (n_node, n_rel):
             print(f"    🔴 FAIL 원장이 적은 수({nn}·{nr}) ≠ 실물({n_node}·{n_rel})")
             fails += 1
+        # 🔴 데이터 낡음 축(Q-15). 위의 지문 대조는 «규칙»이 바뀐 경우만 잡는다 — manifest를
+        #    한 글자도 안 고치고 PG 데이터만 바꾸면 여기까지 전부 초록이었다. 두 축을 나눠
+        #    말해야 「재투영하면 되는가 / 스펙을 다시 봐야 하는가」가 갈린다.
+        if src_sha is None:
+            print("    🔴 FAIL 원장에 데이터 지문이 없다 — 이 투영은 «무엇을 읽었는지»를 "
+                  "관측하지 않았다(008 이전 빌드). 재투영해야 낡음을 판정할 수 있다")
+            fails += 1
+        else:
+            from psycopg.types.json import Jsonb
+
+            # 원장이 적은 «사정거리»로 다시 계산한다 — 지금 manifest의 범위로 계산하면
+            # 범위가 달라진 것과 데이터가 바뀐 것이 한 불일치로 뭉개진다.
+            cur.execute("SELECT graph_source_digest(%s)", (Jsonb(src_scope),))
+            cur_src = cur.fetchone()[0]
+            n_tab = len(src_scope)
+            n_col = sum(len(c) for c in src_scope.values())
+            if src_sha != cur_src:
+                print(f"    🔴 FAIL 원장 데이터 지문 {src_sha[:16]}… ≠ 현행 {cur_src[:16]}… "
+                      "— 투영이 읽는 열이 바뀌었는데 재투영하지 않았다(그래프가 낡았다)")
+                fails += 1
+            else:
+                print(f"    데이터 지문 {src_sha[:16]}… 일치 (원천 {n_tab}테이블 · {n_col}열)")
+            # 사정거리 자체가 바뀌었는지는 «따로» 말한다. 새 원천은 재투영 전까지 감시 밖이다.
+            now_scope = M.source_scope()
+            if {t: sorted(c) for t, c in src_scope.items()} != now_scope:
+                a = {f"{t}.{c}" for t, cs in src_scope.items() for c in cs}
+                b = {f"{t}.{c}" for t, cs in now_scope.items() for c in cs}
+                print(f"    🔴 FAIL 지문 사정거리가 바뀌었다 — 원장 {n_col}열 ≠ 현행 manifest "
+                      f"{len(b)}열 (신규 {sorted(b - a)} · 사라짐 {sorted(a - b)}). "
+                      "새 원천은 아직 낡음 감시 밖이다 — 재투영해야 들어온다")
+                fails += 1
     cur.execute("SELECT pairing, count(*) FROM v_graph_index_pairing GROUP BY 1 ORDER BY 1")
     pair = dict(cur.fetchall())
     if not pair:
