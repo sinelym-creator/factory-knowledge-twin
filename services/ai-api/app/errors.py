@@ -8,11 +8,15 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+log = logging.getLogger("fkt.errors")
 
 
 class ErrorBody(BaseModel):
@@ -32,6 +36,24 @@ NOT_IMPLEMENTED = {
         "description": "골격 — 계약 표면만 존재하고 구현은 아직 없다(T1-8).",
     }
 }
+
+
+class DependencyUnavailable(StarletteHTTPException):
+    """의존(PostgreSQL·Neo4j)에 닿지 못했다 — «서비스 결함»과 구분되는 사건이다.
+
+    🔴 `which` 만 밝히고 예외 문자열은 응답에 싣지 않는다. 드라이버 메시지에는 호스트·포트·
+       계정 같은 접속 정보가 섞여 나올 수 있고, 이 서비스는 인증 없는 공개 Sandbox 다
+       (baseline §34.6 공개 경계). 상세는 로그에만 남긴다.
+    """
+
+    def __init__(self, which: str) -> None:
+        super().__init__(
+            status_code=503,
+            detail={
+                "code": "dependency_unavailable",
+                "message": f"{which} 에 연결할 수 없다 — 잠시 후 다시 시도하라",
+            },
+        )
 
 
 class NotImplementedRoute(StarletteHTTPException):
@@ -64,6 +86,29 @@ def install_error_handlers(app: FastAPI) -> None:
             status_code=exc.status_code,
             content=ErrorResponse(error=body).model_dump(),
             headers=getattr(exc, "headers", None),
+        )
+
+    @app.exception_handler(Exception)
+    async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
+        """🔴 계약 밖 응답이 새어 나가는 마지막 구멍을 막는다.
+
+        여기가 없으면 미포착 예외는 ASGI 서버의 기본 500(`text/plain` «Internal Server
+        Error»)으로 나간다 — 계약이 약속한 `{"error":{...}}` JSON 이 아니다. 소비자는
+        「어떤 오류든 이 형상」을 전제로 파싱하므로, 하필 «의존이 죽은» 순간에만 형상이
+        달라지면 화면은 그 순간을 오류로도 인식하지 못한다(V-2 · 검증 적발).
+
+        🔴 `message` 는 고정 문구다. 예외 문자열·traceback·파일 경로는 응답에 싣지 않는다 —
+           인증 없는 공개 Sandbox 이므로 내부 구조가 그대로 밖으로 나간다(§34.6).
+           진단에 필요한 전문은 `log.exception` 으로 서버 로그에만 남는다.
+        """
+        log.exception("처리되지 않은 예외 %s %s", request.method, request.url.path)
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(
+                error=ErrorBody(
+                    code="internal_error", message="요청 처리 중 내부 오류가 발생했다"
+                )
+            ).model_dump(),
         )
 
     @app.exception_handler(RequestValidationError)

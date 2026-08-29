@@ -13,12 +13,14 @@
 
 from __future__ import annotations
 
+import logging
 import re
 import time
 from typing import Any
 
 from fastapi import HTTPException
 
+from ..errors import DependencyUnavailable
 from ..probes import Resources
 from ..schemas import CompareRequest, CompareResult
 from . import allowlist, graphrag, hybrid, vector
@@ -26,7 +28,31 @@ from .embedding import MODEL_ID, EmbeddingMismatch, embed_query, ensure_ready
 
 # sessionId 는 형식만 본다 — 세션 저장소와 결합하지 않는다(오케 판정 08-30 ④-1 · 원장 Q-18).
 # 🔴 「형식이 맞다」는 「그 세션이 있다」가 아니다. 이 티켓은 격리를 «주장하지 않는다».
+log = logging.getLogger("fkt.retrieval")
+
 _SESSION_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+
+# 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
+#    드라이버가 던지는 것을 여기서 붙잡지 않으면 전역 500(`internal_error`)이 되어, 화면은
+#    잠시 후 다시 시도하면 될 일을 «서비스 결함»으로 읽는다.
+_DEPENDENCY_ERRORS: tuple[type[BaseException], ...] = (OSError, ConnectionError)
+try:                                                  # pragma: no cover - 설치 환경에 따라 다름
+    import asyncpg
+
+    _DEPENDENCY_ERRORS += (asyncpg.PostgresError,)
+except Exception:                                     # noqa: BLE001
+    pass
+try:                                                  # pragma: no cover
+    from neo4j.exceptions import DriverError, Neo4jError
+
+    _DEPENDENCY_ERRORS += (DriverError, Neo4jError)
+except Exception:                                     # noqa: BLE001
+    pass
+
+
+def _dependency_of(strategy: str) -> str:
+    """그 전략이 기대는 의존. graphrag 만 그래프를 쓴다."""
+    return "neo4j" if strategy == "graphrag" else "postgres"
 
 
 def _error(status: int, code: str, message: str) -> HTTPException:
@@ -37,7 +63,8 @@ async def compare(res: Resources, body: CompareRequest) -> list[CompareResult]:
     if not _SESSION_RE.match(body.sessionId):
         raise _error(422, "invalid_session_id", "sessionId 형식이 아니다(영숫자·-·_ 8~64자)")
 
-    if allowlist.resolve(body.question) is None:
+    qid = allowlist.resolve(body.question)
+    if qid is None:
         # 🔴 비슷한 승인 질문으로 «조용히» 바꾸지 않는다(판정 08-30 ④-2 ⓐ).
         raise _error(
             400,
@@ -45,18 +72,24 @@ async def compare(res: Resources, body: CompareRequest) -> list[CompareResult]:
             "승인 시나리오 질문 목록에 없는 질문이다 — 목록 내 질문을 그대로 보내라",
         )
 
+    # 🔴 이유 문자열(`res.notes`)을 응답에 싣지 않는다 — 드라이버 메시지에 호스트·계정이
+    #    섞여 나올 수 있고 이 서비스는 인증 없는 공개 Sandbox 다(§34.6). 진단은 /health 가
+    #    맡는다(그쪽은 운영 창구이며 같은 정보를 이미 구조화해 준다).
     pool = res.pg_pool
     if pool is None:
-        raise _error(503, "dependency_unavailable", f"postgres 없음: {res.notes.get('postgres', '')}")
+        raise DependencyUnavailable("postgres")
     driver = res.neo4j_driver
     if "graphrag" in body.strategies and driver is None:
-        raise _error(503, "dependency_unavailable", f"neo4j 없음: {res.notes.get('neo4j', '')}")
+        raise DependencyUnavailable("neo4j")
 
     # --- 측정 «전»: 색인과 질의가 같은 공간인지 확인한다 -------------------------------
     try:
         signature = await vector.index_signature(pool)
     except LookupError as exc:
         raise _error(503, "index_unavailable", str(exc)) from exc
+    except _DEPENDENCY_ERRORS as exc:
+        log.warning("색인 지문 조회 중 postgres 단절: %s", exc.__class__.__name__)
+        raise DependencyUnavailable("postgres") from exc
     if signature.model != MODEL_ID:
         # 티켓 T2-1 단계 2: 「색인과 동일 모델·차원(어긋나면 즉시 보고)」.
         raise _error(
@@ -70,13 +103,22 @@ async def compare(res: Resources, body: CompareRequest) -> list[CompareResult]:
         raise _error(500, "index_model_mismatch", str(exc)) from exc
 
     # --- 측정 «안»: 요청한 전략을 요청 순서대로, 하나씩 -------------------------------
+    # 🔴 하류는 «표준 표기» 하나만 본다 — 승인된 같은 질문이 표기 때문에 다른 결과를 내지
+    #    않게 한다(V-1 계보 · `allowlist.canonical` 성문).
+    question = allowlist.canonical(qid)
+
     results: list[CompareResult] = []
     for strategy in body.strategies:
         started = time.perf_counter()
         try:
-            hits = await _run(strategy, pool, driver, body.question)
+            hits = await _run(strategy, pool, driver, question)
         except EmbeddingMismatch as exc:
             raise _error(500, "index_model_mismatch", str(exc)) from exc
+        except _DEPENDENCY_ERRORS as exc:
+            which = _dependency_of(strategy)
+            # 예외 «내용»은 로그에만. 응답에는 어느 의존인지만 나간다.
+            log.warning("%s 전략 실행 중 %s 단절: %s", strategy, which, exc.__class__.__name__)
+            raise DependencyUnavailable(which) from exc
         results.append(
             CompareResult(
                 strategy=strategy,
