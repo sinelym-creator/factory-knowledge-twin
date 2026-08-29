@@ -91,8 +91,8 @@ size_limit: 8KB
 | Q-10 | G-1 CHECK 확장 — retired 잔여열 요건 | levi2 5대 회부 ②(PR#75 · T-I3 실측) | ✅ 구현 완료 접수(007 `ck_retired_keeps_effective_to` — 대리 축 approved_by · 정당 경로 통과 · 기존 축 생존 확인) |
 | Q-11 | work_order 승인 축 — 스펙 §4 「전체 행 + 승인 이력」 vs 스키마 = 현재 상태 1열·이력 테이블 없음 + `approval_state` 전이 규칙 스펙 부재 → 🔴 T2-5(WO API) 티켓에 «승인 이력 테이블 + 전이 규칙 확정(오케)» 편입 | levi2 5대 회부 ③(PR#75) | T2-5 발주 시 결속 |
 | Q-12 | E-7의 대가 — 최상위 revision은 retired 불가(retired ⇒ superseded 경유 ⇒ 승계자 필요) = «문서 전체 폐기 revision 경로 없음». 현 PoC 범위 밖 «수용»(GS·평가에 폐기 시나리오 없음 · seed retired 0행 · 레지스트리 축 `document.status='retired'`는 별개). 폐기 시나리오 필요 시 §3.3 개정으로 개방 — 그때 C-28이 FAIL로 알린다 | levi2 5대 대가 계수(PR#79 · E-7 집행분) | §3.3 개정 시 재론 |
-| Q-7b | migrate.ps1 헤더 dim 표기 — 구현 정정분(PR#83)과 검증 «재현» 보고(PR#85)가 갈림 → 실물 대조 1줄 판정 | levi2 회부 ①(PR#85) | 발주(senku2 7대 · 08-29) |
+| Q-7b | migrate.ps1 헤더 dim 표기 — 구현 정정분과 검증 «재현» 보고가 갈림 → 실물 대조 판정 | levi2 회부 ①(PR#85) | ✅ 종결(senku2 7대 실측 — 구현 정정분 참 · 「값이 아니라 값의 뜻」 · 양쪽 자기 축에서 참 · 코드 변경 0 · 잔여 docs 자리 = 오케 PR#87 정정) |
 | Q-13 | 덤프 «형식» 정본 없음 — 구현·검증 덤프가 각자 뜬다(각자 재현성만 보므로 현재 무해 E3) → 교차 검증 필요 시점에 정본화 | levi2 회부 ②(PR#85) | 필요 시점 오케 판정 |
-| Q-14 | `index_build.graph_projection_version` 채움(indexer 연동) — COMMENT 성문 확인분 · 새 빌드부터 채우는 연동 | levi2 회부 ③(PR#85 · T1-5 티켓 범위 밖 명시분) | 구현 묶음 후보 |
-| Q-15 | 🔴 그래프 «낡음» 축 부재 — 색인은 sha 대조 STALE이 있는데 graph_build는 데이터 지문이 없어 재투영을 잊으면 조용히 낡는다(세 축 전수 확인 E1) → graph_build에 «원장 데이터 지문» 1열 + 짝 판정 상태 1종(GRAPH_STALE 계열) · T2 쓰기 경로 전 선결 | levi2 회부 ④(PR#85) | 발주(senku2 7대 · 08-29) |
+| Q-14 | `index_build.graph_projection_version` 채움(indexer 연동) | levi2 회부 ③(PR#85) | ✅ 불요 종결(오케 판정 — 006 «전» 관점의 회부였고 B안 확정이 답: 열 = NULL이 참(색인 경로 비관측) · 짝 판정 = view. COMMENT 성문분이 정본) |
+| Q-15 | 그래프 «낡음» 축 부재 → 원장 데이터 지문 + 짝 판정 상태 | levi2 회부 ④(PR#85) | ✅ 구현 완료 접수(008 · PR#88 — 처방 이탈 3건 전건 승인: 2열(지문+사정거리)·2상태(STALE/UNVERIFIED)·🔴 사정거리 = «투영이 읽는 열»(23테이블 78열 — 경보 사정거리 = 해소 범위 원칙) · 대조군 8종 · 🔴 착지 여파 = 재투영 전 기존 행 UNVERIFIED(설계) — 검증 재검 몫) |
 | Q-5 | spec §4 pgvector 보유분 2건(`MaintenanceRecord.note`·`FailureMode.description` 임베딩) 미착지 — 명시 제외 vs 착지 «판정 이연»(T2 검색 전략 구현 진입 시 필요 실측으로 오케 판정 · 이연 자체를 여기 성문 — 조용한 누락 아님) | levi2 4대 부수 계수(vector 칼럼 전수 = document_chunk.embedding 1개) | T2 진입 시 오케 판정 |
