@@ -112,7 +112,7 @@ def self_check() -> None:
 # ── 표면 훑기 ───────────────────────────────────────────────────────────────
 
 
-def call(method: str, path: str, body: dict | None) -> tuple[int, str]:
+def call(method: str, path: str, body: dict | None = None) -> tuple[int, str]:
     data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
     headers = {"Content-Type": "application/json"} if data else {}
     req = urllib.request.Request(API_BASE + path, data=data, headers=headers, method=method)
@@ -192,6 +192,28 @@ def main() -> int:
     print(f"  {'PASS' if not bad else 'FAIL'}  L-01 응답 {probed}건 누출 {bad}건 (미해제 skip {skipped}건)")
     if probed == 0:
         raise DrillError("훑은 응답이 0건이다 — 초록이 아니라 고장이다")
+
+    # ── 이벤트 면 — 🔴 키는 대개 «응답»이 아니라 note·summary·message 로 샌다 ──────
+    status, created = call("POST", "/api/scenarios/GS-01/runs",
+                           {"sessionId": SESSION_ID, "mode": "live"})
+    if status == 200 and isinstance(json.loads(created or "{}"), dict):
+        run_id = json.loads(created)["runId"]
+        import time as _time
+        for _ in range(180):
+            _time.sleep(1)
+            _, snap = call("GET", f"/api/runs/{run_id}")
+            if json.loads(snap).get("status") != "running":
+                break
+        status, events = call("GET", f"/api/runs/{run_id}/events")
+        count = len(json.loads(events)) if status == 200 else 0
+        if count == 0:
+            raise DrillError("이벤트를 0건 훑었다 — 초록이 아니라 고장이다")
+        found = leaks(events, [])
+        ok = not found
+        bad += 0 if ok else 1
+        print(f"  {'PASS' if ok else 'FAIL'}  L-03 이벤트 면 {count}건 — {' · '.join(found) or '누출 0'}")
+    else:
+        print(f"  ----  L-03 이벤트 면 — 건너뜀(runs 표면 {status} · 미해제는 결함이 아니다)")
 
     if log_path:
         text = log_path.read_text(encoding="utf-8", errors="replace")

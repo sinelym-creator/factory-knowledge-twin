@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3 선행 설계분 3종이 더 붙어 **11종**이 됐다.
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3 로 다시 자라 **13종**이 됐다.
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -17,6 +17,8 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `event_schema_drill.py` | 이벤트가 **스키마 정본** 그대로인가 · `seq` 단조 · kind 어휘 | 스키마 정본 + HTTP | 일부 | T2-3 |
 | `credential_leak_drill.py` | 자격 증명·내부가 **응답·로그로 새지** 않는가 | 계약 정본 + HTTP | 필요 | T2-3 |
 | `ssot_write_drill.py` | 조사 실행이 **SSOT 를 쓰지 않는가**(J-3) | psql 지문 | 일부 | T2-3 |
+| `run_surface_drill.py` | runs 표면 5 + `?byRun` 이 계약대로 서 있는가 · 중지가 **타임라인도 닫는가** | HTTP 표면 | 필요 | T2-3 |
+| `scenario_script_drill.py` | 대본대로 도는가 · **0건 단계 통과 금지** · 낸 근거를 kind 별 소비처로 펴는가 | 스키마·대본 정본 + HTTP | 필요 | T2-3 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -34,6 +36,8 @@ python tests/api/injection_surface_drill.py     # 적대 입력 10종 × 문 3
 python tests/api/event_schema_drill.py --samples-only   # 서버 없이 검증기 자기 검증만
 python tests/api/credential_leak_drill.py --log <서버 로그>
 python tests/api/ssot_write_drill.py            # 지문만 · --run 으로 run 전후 대조
+python tests/api/run_surface_drill.py
+python tests/api/scenario_script_drill.py
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
