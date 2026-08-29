@@ -274,32 +274,50 @@ def main() -> int:
     #    갖고 있어도, 그 대조군의 표본은 도구가 «자기가 잡을 수 있는 것»으로 고른 것이다.
     #    무엇을 못 잡는지는 밖에서 골라 넣어 봐야 안다. 자기 스택 fixture 는 건드리지 않고
     #    임시 디렉터리의 사본에 심는다(주입한 뒤 지우다 실패하면 위반이 커밋된다 — 도구 머리말과 같은 이유).
+    # 🔴 요구 표본 — 이 프로젝트의 자격 표면(§15.2 Anthropic · 리포 도구 GitHub · 클라우드 AWS)과
+    #    구독 «경로»(게이트웨이 호스트). 하나라도 안 울면 red 다.
     probes = [
         ("자격 이름표", "ANTHROPIC_API_KEY=levi2probe", True),
         ("Authorization 헤더", "Bearer sk-ant-api03-LEVI2PROBE00000", True),
         ("벤더 이름", "anthropic.com/v1/messages", True),
-        # 🔴 여기가 이 표의 본론이다 — «이름표 없이 값만» 샌 경우.
+        # 🔴 여기가 이 표의 본론이다 — «이름표 없이 값만» 샌 경우(V-8 이 물린 자리).
         ("Anthropic 키 «값»만", "sk-ant-api03-LEVI2PROBE0000000000AAAA", True),
-        ("범용 토큰 «값»만", "ghp_LEVI2PROBE0000000000000000000000", True),
+        ("GitHub 토큰 «값»만", "ghp_LEVI2PROBE0000000000000000000000", True),
+        ("AWS 키 «값»만", "AKIALEVI2PROBE000000", True),
+        ("구독 경로 호스트", "api.claude.ai/v1/messages", True),
+        # 🔴 V-9 — 표본은 «한국어 문장 안»에 심긴다(아래 replace 가 질문 문장의 ID 를 갈아끼운다).
+        #    fixture 의 문자열이 한국어라, 키가 실제로 새는 문맥이 바로 이것이다. 종단 경계를
+        #    `\b` 로 잠근 규칙은 여기서 불발한다 — 한글도 단어문자라 경계가 서지 않는다
+        #    (T2-1 V-1 과 같은 기전 · 처방은 «문자집합으로 잠그기»).
+        ("🔴 구독 호스트 단독 · 한글 인접", "claude.ai", True),
+        # 🔴 오탐 대조군을 «같은 표»에 둔다 — 값 형상 축은 고엔트로피 문자열을 물기 쉽다.
+        #    잡는 것만 세는 표는 처방이 과했는지 말해 주지 못한다.
+        ("오탐? sha256 64자", "59457442ce3f642b2cf711218ee088fd604afe9ee81a5c3010ec4847ef77f5e8", False),
+        ("오탐? chunk ID", "DOC-MAN-0021@r1#006", False),
+        ("오탐? GP- evidenceId", "GP-7e4cfd025422-03", False),
     ]
     caught: list[str] = []
     missed: list[str] = []
     with tempfile.TemporaryDirectory() as tmp:
         planted = Path(tmp) / FIXTURE.name
         source = FIXTURE.read_text(encoding="utf-8")
-        for what, payload, _ in probes:
+        for what, payload, want_cry in probes:
             planted.write_text(source.replace("AL-20260826-0041", payload, 1),
                                encoding="utf-8", newline="\n")
             probe = subprocess.run([PYTHON, str(AUDIT), "--fixture-dir", tmp],
                                    cwd=str(SERVER_REPO / "services" / "ai-api"),
                                    capture_output=True, text=True, encoding="utf-8")
-            (caught if probe.returncode == 1 else missed).append(what)
+            cried = probe.returncode == 1
+            (caught if cried else missed).append(what) if want_cry else None
+            if not want_cry and cried:
+                missed.append(f"{what}(오탐)")
     ok = not missed
     bad += 0 if ok else 1
-    print(f"  {'PASS' if ok else 'FAIL'}  F-10 🔴 심사기가 «운다» — 심은 표본 {len(probes)}종")
+    required = sum(1 for _, _, want in probes if want)
+    print(f"  {'PASS' if ok else 'FAIL'}  F-10 🔴 심사기가 «운다» — 요구 {required}종 · 오탐 대조군 {len(probes) - required}종")
     print(f"        잡음 {caught}")
     if missed:
-        print(f"        🔴 못 잡음 {missed} — 이름표는 보는데 «값의 형상»은 안 본다")
+        print(f"        🔴 어긋남 {missed}")
 
     # ⓕ fixture 부재 상태 — 경로를 «없는 곳»으로 돌려 실제로 만든다(J-F)
     print()
