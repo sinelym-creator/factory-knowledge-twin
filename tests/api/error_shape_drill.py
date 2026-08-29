@@ -106,6 +106,12 @@ CASES: list[tuple[str, str, str, str, dict | None]] = [
     ("E-04", "필수 필드 누락", "POST", "/api/retrieval/compare", {"sessionId": SID}),
     ("E-05", "미구현 라우트(501)", "POST", "/api/sessions", None),
     ("E-06", "없는 경로(404)", "GET", "/api/does-not-exist", None),
+    # 🔴 T2-2 로 표면이 자랐다 — 읽기 3라우트의 오류 경로도 같은 형상이라야 한다.
+    #    자라난 표면을 표에 올리지 않으면 그것은 「내가 안 본다」는 뜻이다.
+    ("E-07", "없는 근거(404)", "GET", "/api/evidence/EQ-CNC-999", None),
+    ("E-08", "없는 문서(404)", "GET", "/api/documents/DOC-ZZZ-9999", None),
+    ("E-09", "강조 좌표 불일치(400)", "GET",
+     "/api/documents/DOC-SOP-0014?highlight=DOC-MAN-0021%40r1%23000", None),
 ]
 
 
@@ -138,14 +144,14 @@ def main() -> int:
                 {"sessionId": SID, "question": APPROVED_Q, "strategies": ["graphrag"]},
             )
             ok, why = conforms(status, ctype, raw)
-            print(f"  {'PASS' if ok else 'FAIL'}  E-07 neo4j 단절 중 compare  {status}  {why}")
+            print(f"  {'PASS' if ok else 'FAIL'}  E-10 neo4j 단절 중 compare  {status}  {why}")
             if not ok:
-                bad.append("E-07")
+                bad.append("E-10")
                 print(f"        Content-Type: {ctype!r} · 본문: {raw[:160]}")
             elif "traceback" in raw.lower() or "\\\\" in raw or "site-packages" in raw:
                 # 🔴 형상만 맞추고 내부 경로를 흘리면 그것대로 공개 경계 위반이다(baseline §34.6).
-                bad.append("E-07x")
-                print("  FAIL  E-07x message 에 내부 경로·traceback 이 보인다")
+                bad.append("E-10x")
+                print("  FAIL  E-10x message 에 내부 경로·traceback 이 보인다")
         finally:
             print(f"  -- 되감기 — {NEO4J_CONTAINER} 재기동")
             docker("start", NEO4J_CONTAINER)
