@@ -22,6 +22,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ..errors import CitationIntegrityBroken
+
 
 @dataclass(frozen=True)
 class Span:
@@ -45,3 +47,30 @@ def locate(body: str, chunk_texts: list[str], target_index: int) -> Span | None:
             return Span(start=found, end=found + len(text))
         cursor = found + len(text)
     return None
+
+
+def locate_cited(
+    body: str,
+    chunk_texts: list[str],
+    target_index: int,
+    *,
+    chunk_id: str,
+    revision_id: str,
+) -> Span:
+    """`locate` 와 같되 **None 을 돌려주지 않는다** — 못 찾으면 운다.
+
+    🔴 **인용을 내보내는 모든 경로는 이것을 쓴다**(`/documents` · `/evidence`). 소비처마다
+       `if span is None` 을 각자 적기로 하면 새 소비처가 생길 때 «적기를 잊는» 자리가 다시
+       생기고, 잊은 자리는 조용한 200 으로 나타나 사람 눈에 안 띈다 — 실제로 그렇게
+       두 라우트가 같은 병을 앓았다(V-6 ③ · 검증 실측 I-01~I-03).
+
+    호출 전제: `target_index` 가 `chunk_texts` 범위 «안»이어야 한다. 범위 밖은 「요청 좌표가
+    틀렸다」(400)라 정합 파열과 다른 사건이고, 그 판정은 호출부가 먼저 한다 — 여기서 섞으면
+    사유를 말할 수 없다.
+    """
+    span = locate(body, chunk_texts, target_index)
+    if span is None:
+        raise CitationIntegrityBroken(
+            f"{chunk_id}: chunk 텍스트를 revision {revision_id} body 에서 찾지 못했다"
+        )
+    return span

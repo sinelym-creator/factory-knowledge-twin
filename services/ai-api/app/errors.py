@@ -96,6 +96,23 @@ async def dependency_guard(which: str) -> AsyncIterator[None]:
         raise DependencyUnavailable(which) from exc
 
 
+class CitationIntegrityBroken(RuntimeError):
+    """인용 좌표를 원문에서 되찾지 못했다 — 색인↔원문 정합이 깨졌다.
+
+    🔴 **호출자 잘못이 아니다**(오케 판정 08-30). 요청 좌표는 옳고, chunk 텍스트가 그
+       revision 의 body 안에 없다는 뜻이다. 400 으로 접으면 서버의 정합 문제를 호출자 탓으로
+       돌리게 되고, 200 + 무강조로 접으면 「사유 없는 200」 — 조용한 null 의 상위형이 된다.
+
+    🔴 이 벽이 필요한 이유는 **배지가 이 파열을 못 보기 때문이다**(검증 실측 I-05): 신선도는
+       `source_sha256 ↔ content_sha256` 축만 보므로 chunk 수준 drift 에는 `FRESH` 라고
+       답한다. 배지가 조용한 자리에서는 응답 자체가 말해야 한다.
+
+    🔴 이 예외는 **어느 라우트에서 나오든** 아래 `install_error_handlers` 가 같은 코드로
+       바꾼다. 라우트마다 잡기로 하면 새 인용 소비처가 생길 때 «잡기를 잊는» 자리가 다시
+       생긴다 — V-7 이 바로 그 형태의 결함이었다(잊을 자리를 없앤다).
+    """
+
+
 class NotImplementedRoute(StarletteHTTPException):
     """계약에 있으나 아직 구현이 없는 라우트."""
 
@@ -126,6 +143,26 @@ def install_error_handlers(app: FastAPI) -> None:
             status_code=exc.status_code,
             content=ErrorResponse(error=body).model_dump(),
             headers=getattr(exc, "headers", None),
+        )
+
+    @app.exception_handler(CitationIntegrityBroken)
+    async def _citation_integrity(_: Request, exc: CitationIntegrityBroken) -> JSONResponse:
+        """인용 정합 파열 — 계약 오류 형상 그대로 5xx + 구분 코드(오케 판정 08-30).
+
+        🔴 상세(어느 revision·어느 chunk)는 **로그에만**. 인증 없는 공개 Sandbox 라 응답에
+           내부 식별자를 실으면 그대로 밖으로 나간다(§34.6 · V-2 규율).
+        🔴 `internal_error` 와 코드를 나누는 이유: 화면·모니터가 「우리 코드가 터졌다」와
+           「인용 자산이 어긋났다」를 다르게 다뤄야 한다. 후자는 재색인이 처방이다.
+        """
+        log.error("인용 정합 파열 — 강조 좌표를 되찾지 못했다: %s", exc)
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(
+                error=ErrorBody(
+                    code="citation_integrity_broken",
+                    message="인용 좌표를 원문에서 되찾지 못했다 — 색인과 원문이 어긋나 있다",
+                )
+            ).model_dump(),
         )
 
     @app.exception_handler(Exception)
