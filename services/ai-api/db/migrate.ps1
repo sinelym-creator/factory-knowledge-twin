@@ -2,7 +2,11 @@
 # migrate.ps1 — 마이그레이션 적용 (1명령)
 #
 #   pwsh services/ai-api/db/migrate.ps1
-#   pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원 바꿔서 신규 적용 시
+#   pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 001 단독 적용 시의 자리표시자 차원
+#
+# 🔴 -EmbeddingDim 은 «001의 자리표시자»일 뿐 최종 차원이 아니다(Q-7 정정). 003이 모델 확정분
+#    384로 못박으므로, 무엇을 주든 전 파일 적용 후 최종 상태는 vector(384)다. 이 파라미터는
+#    모델 미정 상태에서 001만 적용하던 시절의 잔재로 남아 있다.
 #
 # 🔴 재실행 멱등 — 이미 적용된 파일은 schema_migration 이력을 보고 «건너뛴다».
 #
@@ -22,6 +26,7 @@
 # 🔴 compose 스택(fkt-postgres)이 기동 중이어야 한다: docker compose up -d
 # =============================================================================
 param(
+  # 001의 vector(:embedding_dim) 자리표시자 값. 🔴 최종 차원은 003이 384로 확정한다.
   [int]    $EmbeddingDim = 768,
   # 🔴 D-1 구조 격리: 컨테이너를 «이름»이 아니라 compose «서비스명»으로 지목한다.
   #    container_name을 없앴으므로 프로젝트명이 달라도(좌석별 병렬 스택) 그대로 동작한다.
@@ -55,7 +60,9 @@ $out = docker compose exec -T $Service psql -U $DbUser -d $DbName -tAc `
   "SELECT filename FROM schema_migration" 2>$null
 if ($LASTEXITCODE -eq 0 -and $out) { $applied = @($out | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
 
-Write-Host "== migrate: $($files.Count)개 · 적용됨 $($applied.Count)개 · embedding_dim=$EmbeddingDim · db=$DbName ==" -ForegroundColor Cyan
+# 🔴 배너에 «자리표시자»라고 적는다. 그냥 embedding_dim=768 이라고 찍으면 최종 차원이 768인
+#    것처럼 읽힌다 — 실제 최종 상태는 003이 정한 384다(Q-7 · levi2 회부 ③).
+Write-Host "== migrate: $($files.Count)개 · 적용됨 $($applied.Count)개 · 001 자리표시자 dim=$EmbeddingDim(최종=003의 384) · db=$DbName ==" -ForegroundColor Cyan
 
 foreach ($f in $files) {
   if ($applied -contains $f.Name) {

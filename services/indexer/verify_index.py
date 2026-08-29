@@ -98,16 +98,20 @@ def report(cur) -> int:
     cur.execute("SELECT DISTINCT current_ontology_version FROM v_index_freshness")
     onto_db = ", ".join(str(r[0]) for r in cur.fetchall())
     print(f"[2] 신선도: {fresh} · DB 거울 ontology_version = {onto_db}")
-    if fresh.get("STALE") or fresh.get("BUILD_FAILED") or fresh.get("NOT_INDEXED"):
+    # 🔴 ONTOLOGY_UNVERIFIED(007)도 실패로 센다 — 「판정하지 못했다」는 「괜찮다」가 아니다.
+    #    이 상태에서 색인은 자기가 현행 ontology와 짝인지 답할 수 없다. 고칠 수 있는 축이므로
+    #    (거울을 올리는 마이그레이션) 조용히 지나가지 않는다.
+    if (fresh.get("STALE") or fresh.get("BUILD_FAILED") or fresh.get("NOT_INDEXED")
+            or fresh.get("ONTOLOGY_UNVERIFIED")):
         # 🔴 사유를 갈라 찍는다 — 「STALE 1건」만으로는 원문이 바뀐 건지 ontology가 올라간
         #    건지 알 수 없고, 둘은 고칠 곳이 다르다(스펙 §3.3은 «처리»만 같다고 했다).
         cur.execute(
             "SELECT revision_id, freshness, coalesce(stale_reason,'-') FROM v_index_freshness "
-            "WHERE freshness <> 'FRESH' AND freshness <> 'SKIPPED' ORDER BY revision_id LIMIT 10"
+            "WHERE freshness NOT IN ('FRESH','SKIPPED') ORDER BY revision_id LIMIT 10"
         )
         for rid, fr, why in cur.fetchall():
             print(f"    🔴 {rid:24s} {fr:12s} 사유 {why}")
-        print("    🔴 FAIL STALE·실패·미색인 revision 존재")
+        print("    🔴 FAIL STALE·실패·미색인·ontology 미판정 revision 존재")
         fails += 1
 
     # --- 3. GS-01 기대 인용 온전성 (AC · chunk 좌표 병기) --------------------------
