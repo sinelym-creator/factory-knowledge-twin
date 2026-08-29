@@ -93,9 +93,10 @@ pnpm dev --port 3100
 compose 기동 후 **1명령**으로 적용한다. 재실행 멱등이라 몇 번 돌려도 안전하다.
 
 ```powershell
-pwsh services/ai-api/db/migrate.ps1                      # 기본 embedding_dim=768
-pwsh services/ai-api/db/migrate.ps1 -EmbeddingDim 1024   # 차원을 바꿔 새로 만들 때
+pwsh services/ai-api/db/migrate.ps1   # -EmbeddingDim(기본 768)은 001 자리표시자 전용 잔재
 ```
+
+> 🔴 정정(08-29): `-EmbeddingDim`은 001 단독 적용(모델 미정 시절)의 잔재다 — **최종 차원은 003이 384로 못박으며**, 무엇을 주든 최종 상태는 384다(003 주석 정본). 위 옛 예시의 「기본 768」·「1024로 새로」 문구는 오해를 남겨 제거했다(Q-7b 판정 — 값이 아니라 «값의 뜻»이 바뀐 자리).
 
 - DDL 정본 = `services/ai-api/db/migrations/001_core_schema.sql`
 - **스펙 대조표**(T0-6 항목 ↔ DDL 위치 1:1) = `services/ai-api/db/README.md` — 검증 좌석은 이 표로 대조한다.
