@@ -24,6 +24,7 @@
 --         E-7 아래 도달 불가) 증분만으로는 「아무도 안 운다」와 구별되지 않기 때문이다.
 --         **미탐지 판정은 «절대 0»으로만 내린다.**
 --      전이 그물 = C-23·C-24·C-25·C-26·C-27·C-28 (tests/data/seed-integrity.sql 상시분)
+--      🔴 2026-08-29 Q-10(007) 착지 후 C-24는 «홀로 울 수 없다» — 아래 seed-integrity 주석 참조.
 --      기존 그물 = C-21·C-22                     (G-2 · 전이의 «결과»를 잡는 것)
 --    두 계수를 나란히 두는 것이 이 파일의 «대조군»이다 — 새 그물이 기존 그물을 되풀이하는지,
 --    아니면 기존 그물이 못 보던 것을 보는지가 두 열로 갈린다. 되풀이면 신설할 이유가 없다.
@@ -129,10 +130,12 @@ BEGIN
       ( 5,'T-I2','🔴 불완전 A→S(effective_to 미기입) — G-1 CHECK가 거부하는가',
            'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
                               'superseded', 'maintenance_manager', NULL,              'REJECT'),
-      -- 🔴 그런데 그 CHECK는 superseded «한 상태»만 본다. S→R로 넘기며 지우면 DB는 통과시킨다.
-      ( 6,'T-I3','🔴 불완전 S→R(effective_to 지움) — C-24가 그 구멍을 메우는가',
+      -- 🔴 2026-08-29 전환 ②: 처방(Q-10 · 007)이 착지해 «C-24가 메우던 구멍»을 스키마가 막았다.
+      --    착지 «전»에는 DB가 통과시켰고 C-24가 울었다(그때 기대 = 1). 지금은 DB가 먼저 거부한다.
+      --    표를 먼저 옮기지 않았다 — 007을 올린 뒤 그대로 돌려 이 두 행이 FAIL로 뜬 것을 보고 옮겼다.
+      ( 6,'T-I3','🔴 불완전 S→R(effective_to 지움) — Q-10 확장 CHECK가 거부하는가',
            'DOC-SAF-0029@r2', 'superseded', 'maintenance_manager', '2026-07-01',
-                              'retired',    'maintenance_manager', NULL,              '1'),
+                              'retired',    'maintenance_manager', NULL,              'REJECT'),
 
       -- ── 위반 «역방향» 6쌍 × «흔적 보존» ──────────────────────────────────────
       (11,'T-R1','위반 A→D «흔적 보존» — 승인 흔적이 남는다',
@@ -202,9 +205,10 @@ BEGIN
       (34,'T-S4','위반 D→R «흔적 삭제»(승인·기간 위조) — C-28이 잡는가',
            'DOC-SAF-0029@r3', 'draft',      NULL,                  NULL,
                               'retired',    'maintenance_manager', '2026-08-01',      '1'),
-      (35,'T-S5','위반 A→R «흔적 보존»(기간 미기입) — C-24·C-28이 잡는가',
+      -- 🔴 전환 ②의 두 번째 자리(위와 같은 사유).
+      (35,'T-S5','위반 A→R «흔적 보존»(기간 미기입) — Q-10 확장 CHECK가 거부하는가',
            'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
-                              'retired',    'maintenance_manager', NULL,              '2'),
+                              'retired',    'maintenance_manager', NULL,              'REJECT'),
       (36,'T-S6','위반 A→R «흔적 삭제» — C-28이 잡는가',
            'DOC-SAF-0029@r3', 'approved',   'maintenance_manager', NULL,
                               'retired',    'maintenance_manager', '2026-08-01',      '1')

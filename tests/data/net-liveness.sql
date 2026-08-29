@@ -179,9 +179,27 @@ ROLLBACK;
 BEGIN;
 DELETE FROM ontology_registry;
 UPDATE index_build SET ontology_version = '0.0.9';
-SELECT 'L-34', '🔴 known gap — 거울 공란 + 낡은 원장에서의 STALE 건수(0 = FRESH라 답한다)', 0,
+-- 🔴 2026-08-29 전환 ①: known gap → 정상 그물. 처방(Q-6 · 007 ONTOLOGY_UNVERIFIED)이
+--    착지했다. 착지 전 이 자리는 「STALE 0 = 모르는 것을 FRESH라 답한다」로 «고정»돼 있었다.
+--    🔴 숫자는 그대로 0인데 «뜻»이 바뀌었다 — 007 후 같은 주입은 FRESH가 아니라
+--       ONTOLOGY_UNVERIFIED 45를 낸다(실측). STALE 계수만 보면 전환이 보이지 않는다.
+--       그래서 STALE 0을 유지하되 «무엇이라 답하는가»를 L-34b로 함께 못박는다.
+SELECT 'L-34', 'STALE 사유 분리 — 거울 공란 + 낡은 원장에서 STALE로는 세지 않는다', 0,
        (SELECT count(*)::bigint FROM v_index_freshness WHERE freshness='STALE'),
        CASE WHEN (SELECT count(*) FROM v_index_freshness WHERE freshness='STALE') = 0
+            THEN 'PASS' ELSE 'FAIL' END;
+ROLLBACK;
+
+-- --- L-34b: 그럼 «무엇이라» 답하는가 (Q-6 착지 후 신설) -----------------------
+-- 🔴 「STALE이 아니다」는 「FRESH다」가 아니다. 그 구분에 이름이 생겼는지를 여기서 본다 —
+--    이름이 사라지거나 FRESH로 되돌아가면 이 행이 FAIL로 알린다.
+BEGIN;
+DELETE FROM ontology_registry;
+UPDATE index_build SET ontology_version = '0.0.9';
+SELECT 'L-34b', '🔴 거울 공란 + 낡은 원장 = ONTOLOGY_UNVERIFIED로 답하는 revision 수', 45,
+       (SELECT count(*)::bigint FROM v_index_freshness WHERE freshness='ONTOLOGY_UNVERIFIED'),
+       CASE WHEN (SELECT count(*) FROM v_index_freshness
+                   WHERE freshness='ONTOLOGY_UNVERIFIED') = 45
             THEN 'PASS' ELSE 'FAIL' END;
 ROLLBACK;
 
