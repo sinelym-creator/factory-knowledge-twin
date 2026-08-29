@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 6종이 됐다.**
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 7종이 됐다.**
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -13,6 +13,7 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `scenario_allowlist_drill.py` | `/scenarios` 와 compare 관문이 **한 벌**인가 · 목록 «밖»은 닫혀 있는가 | HTTP 표면 | 필요 | T2-2 |
 | `freshness_badge_drill.py` | 색인 «낡음»이 **배지가 되어 표면까지** 오는가 | 뷰 정본 + HTTP | 필요 | T2-2 |
 | `dependency_code_drill.py` | 의존 단절을 «서비스 결함»과 **다른 코드**로 말하는가 | HTTP 표면 | 필요 | T2-2 |
+| `injection_surface_drill.py` | 사용자 문자열이 **조회 대상을 고르지** 못하는가(보안) | HTTP 표면 | 필요 | T2-2 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -25,6 +26,7 @@ python tests/api/freshness_badge_drill.py       # 배지 매핑 상태표만(쓰
 python tests/api/freshness_badge_drill.py --inject-stale   # + 실주입 왕복(쓴다 · 원복 포함)
 python tests/api/dependency_code_drill.py       # 기준선만
 python tests/api/dependency_code_drill.py --cut-postgres   # + 의존 단절(자기 스택 한정)
+python tests/api/injection_surface_drill.py     # 적대 입력 10종 × 문 3
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
@@ -34,6 +36,16 @@ python tests/api/dependency_code_drill.py --cut-postgres   # + 의존 단절(자
 `error_shape_drill --cut-neo4j`(컨테이너 정지·재기동) · `dependency_code_drill --cut-postgres`(같음)
 · `freshness_badge_drill --inject-stale`(`index_build` 한 행의 `source_sha256` 한 칸 · 원값 복원).
 셋 다 되감기 실측을 «마지막 행»으로 둔다 — 되돌아왔다는 것까지가 측정이다.
+`injection_surface_drill` 은 파괴적 payload 를 «던지되» 그것이 통과하면 그게 결함이므로,
+마지막 행에서 코퍼스 크기가 그대로인지를 세어 대상 생존을 실측한다.
+
+## 🔴 그물이 자기 그림자를 물지 않게
+
+`injection_surface_drill` 은 첫 실행에서 red 3행을 냈다 — 오류 message 가 되비친 **내
+payload**(`… UNION SELECT * FROM document_revision …`)가 내 누출 표지에 걸린 것이다.
+대상이 흘린 것이 아니라 내가 던진 것이었다. 판정 전에 내 입력을 지우고(`residue()`),
+자기 검증에 「반사된 payload 는 누출이 아니다」 행을 세워 그 착각을 표에 못박았다.
+**빨강도 그 주어를 물어야 한다.**
 
 ## 세 가지 규율
 

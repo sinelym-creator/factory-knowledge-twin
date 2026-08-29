@@ -146,7 +146,7 @@ Evidence 뷰만 없는 장애를 보고하게 된다.
 
 §2 V-7. 되감기(재기동 → 4라우트 200)까지 실측했다.
 
-### 축⑤ tests/api 모집단 — **3종 → 6종** (표면이 자란 만큼 표도 자랐다)
+### 축⑤ tests/api 모집단 — **3종 → 7종** (표면이 자란 만큼 표도 자랐다)
 
 | 자산 | 신설/증설 | 이번 결과 |
 |---|---|---|
@@ -154,8 +154,12 @@ Evidence 뷰만 없는 장애를 보고하게 된다.
 | `scenario_allowlist_drill.py` | 신설 | **전건 green**(집합 1 + 관문 10 + 대조군 6) |
 | `freshness_badge_drill.py` | 신설 | **전건 green**(상태표 7 + 주입 왕복 6) |
 | `dependency_code_drill.py` | 신설 | 기준선 4 green · 단절 **3 red**(V-7) |
+| `injection_surface_drill.py` | 신설(보안) | **전건 green**(적대 입력 30 + 대상 생존 1) |
 | `error_shape_drill.py` | 증설 E-07·E-08·E-09 | **11/11 green** |
 | `anchor_boundary_drill.py` · `anchor_extraction_probe.py` | 회귀 | 10/10 · 16/16 green |
+
+검사 행 계수(자기 검증·되감기 포함): **32 → 160** — 16(경계 probe) + 10(표기 변형) + 11(오류 형상)
++ 47(왕복 38 + 대조군 9) + 17(시나리오 1+10+6) + 13(배지 7+6) + 15(의존 코드) + 31(적대 입력 30 + 생존 1).
 
 🔴 red 5행은 **일부러 남긴다**. 정정이 그 빨강을 초록으로 바꾸는 것이 재검의 판정 근거다 —
 T2-1 에서 V-1~V-4 가 그렇게 뒤집혔다.
@@ -171,6 +175,12 @@ T2-1 에서 V-1~V-4 가 그렇게 뒤집혔다.
 Q-22 로 등재돼 있다. 이번 측정이 더한 사실 하나: `NOT_INDEXED`(색인 기록 없음)와
 `STALE`(색인이 낡음)이 화면에서 **같은 배지**가 된다 — 전자는 「아직 안 만들었다」, 후자는
 「만들었는데 뒤처졌다」로 운영 대응이 다르다.
+
+**소견④ — 오류 `message` 가 요청 문자열을 되비친다(30건 중 28건).** 적대 입력 30종은 전부
+계약 형상 4xx 로 막혔고 내부 누출도 0이며 코퍼스도 그대로였다(축⑤ `injection_surface_drill`).
+다만 message 는 요청한 ID 를 그대로 실어 보낸다 — 4KB payload 와 유니코드 방향 제어문자까지
+되비친다. 응답이 JSON 이고 화면이 React 라 실행 위험은 없어 결함으로 세지 않되, 공개 Sandbox
+에서 되비치는 길이·문자에 상한을 두는 편이 위생적이다.
 
 **소견③ — `record` 의 `stale=false` 상수는 «다른 주장»이다.** doc-chunk 의 `false` 는 「색인
 신선이 실증됐다」이고 record 의 `false` 는 「그 개념이 없다」다. `kind` 가 응답에 있으므로 화면이
@@ -195,6 +205,7 @@ python tests/api/citation_roundtrip_drill.py
 python tests/api/scenario_allowlist_drill.py
 python tests/api/freshness_badge_drill.py --inject-stale
 python tests/api/dependency_code_drill.py --cut-postgres
+python tests/api/injection_surface_drill.py
 ```
 
 ## 6. 재검 — 정정 착지 후 (예정)
