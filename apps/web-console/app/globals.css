@@ -1,49 +1,49 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import "tailwindcss";
+
+/* =============================================================================
+   토큰 계층 — 🔴 «확정 팔레트가 아니다»
+
+   ux-direction.md 경고: 「mock의 색값·간격은 확정 팔레트가 아니다 … 최종 시각은 기능 완료 후
+   «UX 폴리시 패스»에서 확정한다(D-002 유보 ①③). 채택된 A안에서 확정된 것은 레이아웃 구조·
+   정보 위계이며 색값이 아니다.」
+
+   그래서 색값은 «여기 한 곳»에만 적는다. 컴포넌트는 bg-panel·text-muted처럼 토큰 이름만
+   부른다 — 폴리시 패스에서 값이 바뀌어도 고칠 곳이 이 블록 하나가 되게 한다.
+   아래 값은 ux-direction A안 §③의 «잠정» 값이다.
+   ============================================================================= */
+@theme {
+  --color-bg: #0b0f14;      /* 배경 3단 뉴트럴 ① */
+  --color-panel: #111823;   /* ② 패널 */
+  --color-edge: #1e2a38;    /* ③ 경계 */
+  --color-ink: #dbe4ef;     /* 본문 텍스트 */
+  --color-muted: #7d8fa5;   /* 보조 텍스트 */
+  --color-ok: #31c48d;      /* 정상 */
+  --color-warn: #f0a742;    /* 주의 */
+  --color-danger: #f0555c;  /* 위험 */
+  --color-ai: #38bdf8;      /* AI·evidence·graph path — 상태색과 계열 분리(§10) */
+
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+
+  --spacing-appbar: 56px;   /* wireframes §0 상단 바 */
+  --spacing-rail: 56px;     /* ux-direction A안 좌측 아이콘 레일 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 🔴 다크가 «기본»이다(§10 neutral dark). 라이트 모드 전환은 P0 범위 밖이라 두지 않는다 —
+   prefers-color-scheme에 반응하는 스캐폴드 기본값을 그대로 두면 밝은 배경에서 토큰이 깨진다. */
 html {
-  height: 100%;
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  color-scheme: dark;
 }
 
 body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* ID·수치는 모노스페이스(ux-direction A안 §③ — 근거 추적 단위인 ID를 눈으로 잡기 위해) */
+.id {
+  font-family: var(--font-mono);
+  letter-spacing: 0.01em;
 }
