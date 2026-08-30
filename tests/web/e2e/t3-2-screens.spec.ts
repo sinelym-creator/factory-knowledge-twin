@@ -176,6 +176,7 @@ test.describe("T3-2 ① Factory Overview", () => {
   test("🔴 첫 진입 안내는 «1회»다 — 닫으면 다시 뜨지 않고, 다시 열 자리가 있다 (§0.1 ①)", async ({
     page,
   }) => {
+    test.slow(); // 진입·닫기·새로고침·재진입을 왕복한다 — 부하에서 기본 타임아웃을 먹는다
     await page.goto("/overview", { waitUntil: "networkidle" });
     const intro = page.getByTestId("intro-card");
     await expect(intro, "첫 진입 안내가 아예 없다").toHaveCount(1);
@@ -195,8 +196,11 @@ test.describe("T3-2 ① Factory Overview", () => {
 
     // 🔴 정본 §0.1: 「재노출: 앱바 `?` 아이콘으로 언제든 다시 연다」. 닫으면 영영 못 여는
     //    안내는 「닫아도 다시 열 수 있다」는 카드 채택 사유(오버레이가 아닌 이유)를 지운다.
+    // 🔴 «버튼»만 세지 않는다(11대 자수). 재열람 자리는 링크로도 설 수 있고, 정본이 요구한
+    //    것은 「다시 열 수 있다」이지 「버튼이다」가 아니다 — 그물이 구현 형태를 정하면
+    //    대상이 그물에 맞춰 자란다.
     const reopen = page.locator(
-      'button:has-text("?"), button[aria-label*="안내"], button[title*="안내"]',
+      '[data-testid=intro-reopen], button:has-text("?"), a:has-text("?"), [aria-label*="안내"], [title*="안내"]',
     );
     expect(await reopen.count(), "닫은 안내를 다시 열 자리가 화면에 없다 (§0.1 재노출)")
       .toBeGreaterThan(0);
@@ -301,6 +305,9 @@ test.describe("T3-2 ② Incident 조사", () => {
 });
 
 test("화면이 런타임 오류를 내지 않는다 — hydration 불일치 포함", async ({ browser }) => {
+  // 🔴 표본을 여러 번 뜨는 축이라 기본 타임아웃 안에 못 끝난다(부하에서 실측) — 계측기가
+  //    시간에 걸려 내는 빨강은 대상의 것이 아니다.
+  test.slow();
   /* 🔴 red 의 출처: AC 「blocking 0」의 이웃이 아니라, **화면이 살아 있다는 주장 자체**다.
    * hydration 불일치(React #418)는 서버가 그린 트리를 브라우저가 버리고 다시 그리게 한다 —
    * 화면은 «멀쩡해 보이고» 콘솔에서만 운다. 눈으로 보는 검수가 못 잡는 자리라 그물이 든다.
@@ -325,4 +332,113 @@ test("화면이 런타임 오류를 내지 않는다 — hydration 불일치 포
     await ctx.close();
   }
   expect(seen, `브라우저가 오류를 냈다(${seen.length}/${N} 표본):\n${seen.join("\n")}`).toEqual([]);
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * T3-2 재검 축 — 픽스(PR#171)가 «거동»으로 섰는가 (11대).
+ *
+ * 🔴 red 가 green 이 된 것만 보고 닫지 않는다. D-1·R-3 은 **처방이 다른 형태로 되살아날 수
+ *    있는** 병이라, 처방의 «뜻»을 거동으로 묻는 축을 새로 연다.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+test.describe("T3-2 재검 — 처방의 뜻이 거동으로 서는가", () => {
+  test("🔴 R-3 — 차트 센서가 «알람 행의 sensorId»에서 온다(문자열 추측이 아니다)", async ({
+    page,
+  }) => {
+    test.slow();
+    // ① 알람이 «있는» incident: 유래가 alarm 이고, 그 센서가 알람 행의 sensorId 다.
+    await page.goto("/overview", { waitUntil: "networkidle" });
+    const { overview } = await overviewFromApi(page);
+    const top = overview.activeAlarms[0];
+    test.skip(!top, "활성 알람 0건 — 이 축의 표본이 없다");
+
+    await page.getByTestId("start-from-alarm").first().click();
+    await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 20_000 });
+    await page.waitForLoadState("networkidle");
+
+    const trend = page.getByTestId("sensor-trend");
+    await expect(trend, "알람이 있는데 추세가 안 선다").toBeVisible();
+    await expect(trend, "차트가 알람의 센서를 그리지 않는다").toContainText(top.sensorId);
+    await expect(
+      page.getByTestId("sensor-provenance"),
+      "이 곡선이 알람의 것인지 화면이 말하지 않는다",
+    ).toContainText(top.alarmId);
+    const alarmText = (await page.getByTestId("sensor-provenance").textContent())!;
+
+    /* ② 🔴 **대조군 — 여기가 이 축의 값이다.** VIB 센서가 «있는데» 연결 알람이 없는 설비.
+     *    앞판(`sensorId.includes("VIB")`)이었다면 SN-…-VIB 를 골라 놓고 그것을 근거처럼
+     *    배치했을 자리다. 지금은 **못 골랐다고 말해야** 한다.
+     *    🔴 표본을 이름이 아니라 **조건**으로 찾는다 — id 를 박으면 seed 가 바뀐 날 죽는다. */
+    let control: { incidentId: string; sensors: string[] } | null = null;
+    // incident 목록 라우트가 계약에 없다 — 화면이 여는 동선으로 닿을 수 있는 표본만 쓴다.
+    // 활성 알람이 1건뿐인 seed 에서 «알람 없는» incident 는 딥링크로만 열린다.
+    for (const candidate of ["INC-2026-005", "INC-2026-008", "INC-2026-011"]) {
+      const r = await page.request.get(`/api/incidents/${candidate}`);
+      if (r.status() !== 200) continue;
+      const inc = await r.json();
+      if (inc.alarmIds.length > 0) continue;
+      const eq = await (await page.request.get(`/api/equipment/${encodeURIComponent(inc.equipmentId)}`)).json();
+      control = { incidentId: candidate, sensors: eq.sensors.map((s: any) => s.sensorId) };
+      if (control.sensors.some((s) => s.includes("VIB"))) break;
+    }
+    test.skip(!control, "알람이 연결되지 않은 incident 표본을 찾지 못했다 — 대조군 없이 판정하지 않는다");
+
+    await page.goto(`/incidents/${control!.incidentId}`, { waitUntil: "networkidle" });
+    const prov = page.getByTestId("sensor-provenance");
+    await expect(prov, "알람이 없는데 유래를 말하지 않는다").toBeVisible();
+
+    /* 🔴 **낱말이 아니라 뜻을 묻는다**(11대 자수). 처음엔 「특정하지 못했다」라는 «문구»를
+     *    기대했고, 화면은 「⚠ 알람 센서가 아니다 — 이 설비의 첫 센서다. 이 incident 에
+     *    연결된 알람이 없다」라고 **더 정확히** 말하고 있었다. 정본이 요구한 것은 「못 골랐다고
+     *    말한다」이지 「이 낱말로 말한다」가 아니다 — 문구를 그물이 정하면 대상이 그물에
+     *    맞춰 자란다(「넓은 축은 엄격함이 아니라 오답」의 형제 형태).
+     *    ⇒ 축 = ⓐ 알람 유래일 때와 **다른 문장**을 낸다 ⓑ 없는 알람을 **인용하지 않는다**. */
+    const fallbackText = (await prov.textContent())!;
+    expect(
+      fallbackText === alarmText,
+      "알람이 있을 때와 없을 때가 같은 문장이다 — 화면이 유래를 구분하지 않는다",
+    ).toBeFalsy();
+    expect(
+      /AL-\d/.test(fallbackText),
+      `연결 알람이 없는데 알람 id 를 인용한다: ${fallbackText}`,
+    ).toBeFalsy();
+  });
+
+  test("🔴 D-1 — 안내는 «세션»에 묶인다: 닫으면 안 뜨고, 새 세션이면 다시 뜬다", async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto("/overview", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("intro-card"), "첫 진입 안내가 없다").toHaveCount(1);
+    await page.getByTestId("intro-card").getByRole("button", { name: "안내 닫기" }).click();
+    await page.reload({ waitUntil: "networkidle" });
+    await expect(page.getByTestId("intro-card"), "새로고침에 다시 떴다").toHaveCount(0);
+
+    // 재열람 — 앱바 「?」가 실재하고, 눌러서 «다시 열린다».
+    const reopen = page.getByTestId("intro-reopen");
+    await expect(reopen, "닫은 안내를 다시 열 자리가 없다").toBeVisible();
+    await reopen.click();
+    await expect(page.getByTestId("intro-card"), "「?」를 눌러도 안 열린다").toHaveCount(1);
+    // 🔴 다시 닫으면 닫힌 채로 있어야 한다 — `?intro=1` 이 남아 새로고침이 되열면 「닫았다」가 안 지켜진다.
+    await page.getByTestId("intro-card").getByRole("button", { name: "안내 닫기" }).click();
+    // 🔴 닫기는 «두 가지»를 한다: 세션에 적고, 주소의 `?intro=1` 을 지운다. 뒤엣것은 라우터가
+    //    비동기로 하므로 기다린 뒤에 새로고침한다 — 안 기다리고 reload 하면 아직 남은 쿼리가
+    //    카드를 다시 열고, 그 빨강은 대상이 아니라 내 경합이다.
+    await expect(page).toHaveURL(/\/overview$/);
+    await page.reload({ waitUntil: "networkidle" });
+    await expect(page.getByTestId("intro-card"), "닫았는데 새로고침이 다시 열었다").toHaveCount(0);
+    await ctx.close();
+
+    // 🔴 **대조군 — 새 세션이면 «다시» 본다.** 안 보이는 것이 「세션 기록」인지 「영영 안 뜸」인지
+    //    가르는 유일한 축이다(브라우저 수명 저장소에 적으면 여기서 걸린다 — 정본 §0.1 명문).
+    const fresh = await browser.newContext();
+    const p2 = await fresh.newPage();
+    await p2.goto("/overview", { waitUntil: "networkidle" });
+    await expect(
+      p2.getByTestId("intro-card"),
+      "새 세션인데 안내가 안 뜬다 — 세션이 아니라 브라우저에 적힌 것이다",
+    ).toHaveCount(1);
+    await fresh.close();
+  });
 });
