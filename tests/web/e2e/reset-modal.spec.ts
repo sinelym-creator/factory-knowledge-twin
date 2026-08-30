@@ -86,7 +86,19 @@ test.describe("세션 리셋", () => {
     expect(new URL(sent.url()).pathname).toBe(`/api/sessions/${encodeURIComponent(sid)}/reset`);
   });
 
-  test("백엔드 501 → «못 했다»고 말한다 (성공으로 접지 않는다)", async ({ page }) => {
+  test("백엔드 실패 → «못 했다»고 말한다 (성공으로 접지 않는다)", async ({ page }) => {
+    // 🔴 표본을 «모킹»으로 옮겼다. 이 칸은 T1-9 때 실제 백엔드가 501 을 주던 시절에
+    //    「501 이라고 말하는가」로 세웠는데, T3-1 이 reset 을 구현하면서 그 전제가 사라졌다 —
+    //    낡은 단언이 빨강을 냈고, 그 빨강은 대상의 것이 아니었다.
+    //    이 칸이 «재려던 것»은 501 이라는 숫자가 아니라 **실패를 성공으로 접지 않는가**다.
+    //    그래서 실패를 내가 만들어 던진다(성공 경로를 모킹으로 재는 아래 칸과 같은 idiom).
+    await page.route("**/api/sessions/*/reset", (route) =>
+      route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: { code: "dependency_unavailable", message: "x" } }),
+      }),
+    );
     await enter(page);
     await page.getByTestId("reset-button").click();
     await page.getByRole("button", { name: "되돌리기" }).click();
@@ -94,7 +106,7 @@ test.describe("세션 리셋", () => {
     const status = page.getByRole("status").filter({ hasText: "초기화" });
     await expect(status).toBeVisible();
     await expect(status).toContainText("초기화하지 못했습니다");
-    await expect(status).toContainText("501");
+    await expect(status).toContainText("503");
     // 🔴 이 한 줄이 P0 「리셋 동작」의 참·거짓을 가른다.
     await expect(status).not.toContainText("되돌렸습니다");
     await expect(page.getByRole("dialog")).toHaveCount(0);

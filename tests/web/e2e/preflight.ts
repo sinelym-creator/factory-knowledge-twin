@@ -35,8 +35,15 @@ export default async function preflight() {
   console.log(`   ai-api            ${API}`);
   console.log(`     GET  /api/live/status  → ${live.status}  ${live.ok ? live.body : ""}`);
   console.log(`     POST /api/sessions     → ${create.status}  ${create.ok ? create.body : ""}`);
-  console.log("   🔴 POST /sessions 가 501 이므로 이 실행의 세션 origin 은 «pending» 이 정상이다");
-  console.log("      (승인된 설계 판단 — 결함이 아니다). online:false 이므로 모드 배지는 REPLAY 가 정상이다.\n");
+  // 🔴 여기 «고정 문장»을 적어 두었더니 T3-1 착지 후 측정 조건을 거짓으로 찍었다.
+  //    preflight 는 판정이 아니라 «이 실행이 무엇을 상대했는지»를 남기는 자리다 —
+  //    남기는 문장도 실측을 따라가야 한다.
+  console.log(
+    create.ok && create.status === 200
+      ? "   POST /sessions 가 200 이다 — 이 실행의 세션 origin 은 «api» 가 정상이다(T3-1 착지분)"
+      : "   🔴 POST /sessions 가 501 이다 — 이 실행의 세션 origin 은 «pending» 이 정상이다(승인된 설계 판단)",
+  );
+  console.log("      online:false 이므로 모드 배지는 REPLAY 가 정상이다.\n");
 
   if (web.status !== 307) {
     throw new Error(`🔴 preflight 이상: 쿠키 없는 /overview 가 307 이 아니라 ${web.status} 다 — 세션 가드가 이 빌드에 없거나 서버가 다른 빌드다`);

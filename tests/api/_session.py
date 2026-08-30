@@ -74,11 +74,18 @@ def status() -> tuple[bool, str]:
     return _STATE.active, _STATE.why
 
 
-def prepare(body, path: str = ""):
+def prepare(body, path: str = "", *, sample: bool = False):
     """요청 직전 훅. 반환 = (본문, 추가 헤더).
 
     🔴 미착지 상태에서는 **받은 객체를 그대로** 돌려준다 — 사본도 만들지 않는다.
        그래야 「어댑터를 붙였더니 값이 달라졌다」가 원천적으로 불가능하다.
+
+    🔴 `sample=True` = **이 요청에서는 세션 «값 자체»가 표본이다.** 설계 기준 ①(「세션은
+       운반이지 표본이 아니다」)의 예외 칸이고, 예외가 필요하다는 것을 T3-1 착지가 가르쳤다:
+       `error_shape` E-01 은 잘못된 `sessionId` 를 던져 서버가 «거절하는가»를 재는데,
+       어댑터가 그 값을 성한 것으로 바꿔치기해 표본이 사라지고 200 이 났다.
+       이 칸에서는 본문을 손대지 않는다 — 쿠키는 그대로 싣는다(가드를 지나야 «형식» 판정에
+       닿기 때문이고, 가드 자체를 재는 것은 `session_guard_drill` 의 몫이다).
     """
     _STATE.ensure()
     if not _STATE.active:
@@ -86,6 +93,8 @@ def prepare(body, path: str = ""):
     if any(path.startswith(p) for p in EXCLUDED):
         return body, {}
     headers = {"Cookie": _STATE.cookie} if _STATE.cookie else {}
+    if sample:
+        return body, headers
     if isinstance(body, dict) and "sessionId" in body and _STATE.sid:
         body = dict(body)
         body["sessionId"] = _STATE.sid
