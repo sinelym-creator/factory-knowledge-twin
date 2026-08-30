@@ -34,6 +34,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 REPO = Path(__file__).resolve().parents[2]
 SOURCE = REPO / "benchmarks" / "datasets" / "eval-questions-draft.md"
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
@@ -83,16 +86,14 @@ def get(path: str) -> tuple[int, object]:
 
 def ask(question: str) -> tuple[int, str, int]:
     """(status, code, hits) — 관문 통과 여부와 «생존 신호»."""
-    payload = json.dumps(
-        {"sessionId": SESSION_ID, "question": question, "strategies": ["vector"]},
-        ensure_ascii=False,
-    ).encode("utf-8")
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 본문·헤더가 그대로다.
+    _body, _carry = _session.prepare(
+        {"sessionId": SESSION_ID, "question": question, "strategies": ["vector"]}, "/api/retrieval/compare")
+    payload = json.dumps(_body, ensure_ascii=False).encode("utf-8")
+    _headers = {"Content-Type": "application/json"}
+    _headers.update(_carry)
     req = urllib.request.Request(
-        API_BASE + "/api/retrieval/compare",
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
+        API_BASE + "/api/retrieval/compare", data=payload, headers=_headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=180) as res:
             body = json.loads(res.read().decode("utf-8"))

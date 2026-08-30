@@ -42,6 +42,9 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 REPO = Path(__file__).resolve().parents[2]
 SOURCE = REPO / "benchmarks" / "datasets" / "eval-questions-draft.md"
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
@@ -95,22 +98,21 @@ def _open(req: urllib.request.Request) -> tuple[int, object]:
 
 
 def get(path: str) -> tuple[int, object]:
-    return _open(urllib.request.Request(API_BASE + path))
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 헤더가 비어 no-op 이다.
+    return _open(urllib.request.Request(API_BASE + path,
+                                        headers=_session.prepare(None, path)[1]))
 
 
 def compare(question: str) -> list[dict]:
-    payload = json.dumps(
-        {"sessionId": SESSION_ID, "question": question, "strategies": STRATEGIES},
-        ensure_ascii=False,
-    ).encode("utf-8")
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 본문·헤더가 그대로다.
+    _body, _carry = _session.prepare(
+        {"sessionId": SESSION_ID, "question": question, "strategies": STRATEGIES}, "/api/retrieval/compare")
+    payload = json.dumps(_body, ensure_ascii=False).encode("utf-8")
+    _headers = {"Content-Type": "application/json"}
+    _headers.update(_carry)
     status, body = _open(
-        urllib.request.Request(
-            API_BASE + "/api/retrieval/compare",
-            data=payload,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-    )
+        urllib.request.Request(API_BASE + "/api/retrieval/compare",
+                               data=payload, headers=_headers, method="POST"))
     if status != 200:
         raise DrillError(f"compare 가 {status} 를 냈다 — 대상이 아프다: {str(body)[:200]}")
     return body                                     # type: ignore[return-value]

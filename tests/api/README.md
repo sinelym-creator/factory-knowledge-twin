@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4·T2-5 로 다시 자라 **20종**이 됐다(Q-30 으로 CI 게이트 축 · T2-6 으로 «연쇄» 축이 하나씩 붙었다).
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4·T2-5 로 다시 자라 **21종**이 됐다(Q-30 = CI 게이트 축 · T2-6 = «연쇄» 축 · T3-6 선행 = 세션 가드 축).
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -26,6 +26,8 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `q27_replay_wo_drill.py` | 재생본 초안 **4경로**가 한 코드로 «다른 사건»을 말하는가 + 대조군 2 | 판정 정본 + HTTP | 필요 | T2-5 |
 | `ci_hygiene_drill.py` | CI 공개 경계 게이트 **3종 전수** — 🔴 첫 빨강에서 멈추지 않는다 | `ci.yml` 정본 + 추적 파일 | 불요 | Q-30 |
 | `gs01_integration_drill.py` | 🔴 **연쇄** — 앞 단계 산출이 다음 단계 «입력으로 실재»하는가(13행 한 세션) | baseline §21 + HTTP | 필요 | T2-6 |
+| `session_guard_drill.py` | 계약 v0.1.6 가드 6축 — 🔴 **가드 미착지면 초록도 빨강도 안 낸다**(exit 2) | 계약 정본 + HTTP | 필요 | T3-6 |
+| `_session.py`(자산 아님 · 공용) | 드릴 «세션 운반» 어댑터 — 미착지 = 엄격 no-op · 착지 후 자동 활성 | — | 선택 | T3-6 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -52,6 +54,8 @@ python tests/api/wo_shape_drill.py
 python tests/api/q27_replay_wo_drill.py
 python tests/api/ci_hygiene_drill.py       # 서버 불요 · 세 게이트 전부 보고
 python tests/api/gs01_integration_drill.py  # GS-01 한 세션 완주 · 끊기면 그 자리에서 죽는다
+python tests/api/session_guard_drill.py     # 🔴 T3-1 가드 착지 «후»에만 판정(그 전엔 exit 2)
+python tests/api/_session.py                # 어댑터 자기 검증(no-op 갈래 + 활성 모의 대조군)
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_PYTHON`(기본 = 대상 리포의 `.venv` — 🔴 worktree 에서 검수할 때 반드시 준다. 없으면 드릴이 없는 venv 를 찾다 WinError 2 로 죽고, 그 빨강은 «대상»의 것이 아니다) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
@@ -128,3 +132,17 @@ V-1 정정은 두 겹이다 — ⓐ `anchors._ID_RE` 의 경계를 문자집합�
 
 `error_shape_drill --cut-neo4j` 는 **쓴다** — 컨테이너를 정지했다 되돌리고, 마지막 `E-0` 가
 되감기(health `healthy` + compare 200)를 실측한다. 기본은 꺼져 있고, 타 좌석 스택에 겨누지 않는다.
+
+
+## 세션 운반 어댑터 (T3-6 선행 · 계약 v0.1.6)
+
+가드가 착지하면 세션을 안 든 드릴은 **한꺼번에 401** 로 죽는다. 그 빨강은 대상의 것이 아니므로,
+착지 «전»에 운반 경로를 깔아 뒀다 — 18종이 `_session.prepare(body, path)` 를 지난다.
+
+- **미착지 = 엄격 no-op.** `POST /sessions` 가 501 이면 어댑터는 받은 객체를 **그대로** 돌려준다
+  (사본조차 만들지 않는다). 오늘의 초록이 흔들리지 않는다는 뜻이고, 자기 검증이 그 «객체 동일성»을 잰다.
+- **착지 후 = 자동 활성.** 드릴을 다시 고치지 않는다. 바뀌는 것은 둘뿐 — 쿠키 헤더 부착 ·
+  본문 `sessionId` «값» 치환. 경로·메서드·그 밖의 키는 손대지 않는다.
+- 🔴 **활성 갈래도 대조군이 있다.** 서버로는 아직 못 재므로 상태를 «모의»해 코드 경로로 잰다
+  (쿠키 부착 · sessionId 값만 치환 · 타 키 무변 · 제외 라우트 맨몸 · 호출자 dict 무오염).
+  서버가 그 쿠키를 실제로 받아들이는가는 **착지 후 `session_guard_drill` 의 몫**이다.
