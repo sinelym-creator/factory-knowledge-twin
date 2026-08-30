@@ -82,7 +82,7 @@ size_limit: 8KB
 |---|---|---|---|---|---|
 | T3-1 | 세션 실체화 — `POST /sessions` 해제(Q-18 성문분) · browser session sandbox · 🔴 세션 가드 전면(Q-16 오케 설계 집행: 전 라우트 가드 + evidence 딥링크 «읽기 전용» 예외 §3:244) · Q-25 결속(초안·승인 세션 소유권) | 구현 | 방문자 격리의 기반 축 — 화면 4장이 이 위에 선다 | T2-6 ✅ | ✅ PASS 08-30 18:07(구현 PR#151 d53bc7f + 🔴 V-1 픽스 PR#159 0628201(쿠키 재직렬화 — 갈래 ⓐ반증/ⓑ확정 «후» 픽스 · 순서 뒤집기 기각·재발 자리 제거) ∥ 독립 검증 리바이2 10대 PR#158+#160 — 가드 7축 전건 PASS(소유권 404 무누설 · 독법 ⓑ 3칸 실증 · reset 실효) · 🔴 V-1은 구현이 «못 잰 축»(브라우저 쿠키 왕복)에서 검증이 적발 → E-1 상시 red가 픽스 완료 기준 = 「완료 기준이 사람이 아니라 코드」 · 셸 재빌드 후 재검 green · 정비 8건+E-05 조건화(「표본을 이름이 아니라 조건으로」) · 계측기 자수 4건 · 회귀 API 21/21·브라우저 39/0 · 판정문 evidence/t3-1-session-guard-verification.md) |
 | T3-2 | Overview·Incident 화면 데이터 결선 + 조회 계층 라우트 해제 판정(`/incidents`·`/plants`·`/equipment` — Q-18 잔여 · 해제 단위 = 화면 소비처 실재 질의 형태만) | 구현 | placeholder 해소 · wireframes ①② | T3-1 구현 착지 ✅(검증 병행) | 🔶 발주 08-30 17:08(센쿠2 13대 · lane/senku2-t3-2 · T3-1 주석 소조각 동봉) |
-| T3-3 | Evidence·Documents 화면 — 근거 열람·STALE 배지 표면(Q-20 소비처)·딥링크(Q-16 예외 축 소비) | 구현 | wireframes ③ | T3-1 | 등재 |
+| T3-3 | Evidence·Documents 화면 — 근거 열람·STALE 배지 표면(Q-20 소비처)·딥링크(Q-16 예외 축 소비) | 구현 | wireframes ③ | T3-1 ✅ | 🔶 발주 08-30 18:43(센쿠2 14대 · lane/senku2-t3-3 — T3-2 검증(리바이2 11대)과 병렬 · red 회부 시 픽스 1착 전환) |
 | T3-4 | 조사 실행·전략 비교 화면 — run 타임라인(이벤트 스트림) · replay 재생 UI(Q-27 화면 축 판정) · graph evidence 시각화(`/graph/paths?from&to` 소비처 — Q-26 재판정) | 구현 | wireframes ⑤ + deterministic replay 소비 | T3-1 | 등재 |
 | T3-5 | WO 초안 편집·승인 화면 — R12 툴팁 문구(Q-31) · 근거 툴팁 축(Q-32 판정) | 구현 | wireframes ④ | T3-1 | 등재 |
 | T3-6 | Phase 3 통합 독립 검증 — 🔴 §21 증거 4종(노트북 OFF GS 완주 · 방문자 세션 격리 · 키보드 인터랙션 · desktop viewport QA) + Gate smoke(1~5 축소판) · E2E(playwright) | 검증 | 그물 선행 소조각 즉시 발주(T2-5 패턴) | T3-1~T3-5 | 등재(그물 선행) |
