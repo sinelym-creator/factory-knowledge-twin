@@ -103,6 +103,9 @@ def docker(*args: str) -> str:
     return out.stdout.strip()
 
 
+# 🔴 이 sentinel 은 «런타임에 찾는 경로»의 자리다 — 아래 find_unimplemented() 가 채운다.
+UNIMPLEMENTED = "@@runtime-501@@"
+
 CASES: list[tuple[str, str, str, str, dict | None]] = [
     # 🔴 이 칸은 «세션 값 자체»가 표본이라 어댑터가 비켜선다(아래 dispatch 의 sample=True).
     #    v0.1.6 착지 후 서버가 무엇으로 거절하는지는 갈릴 수 있다 — 형식 위반이든
@@ -114,9 +117,13 @@ CASES: list[tuple[str, str, str, str, dict | None]] = [
     ("E-03", "계약 밖 전략명", "POST", "/api/retrieval/compare",
      {"sessionId": SID, "question": APPROVED_Q, "strategies": ["bm25"]}),
     ("E-04", "필수 필드 누락", "POST", "/api/retrieval/compare", {"sessionId": SID}),
-    # 🔴 표본을 갈았다. 옛 표본은 `POST /api/sessions` 였는데 T3-1 이 그것을 구현했다 —
-    #    「미구현 501」의 주어가 사라진 자리에서 표가 200 을 물고 빨강을 냈다(그물이 판정보다 낡는다).
-    ("E-05", "미구현 라우트(501)", "GET", "/api/plants", None),
+    # 🔴 이 칸의 표본은 «런타임에 찾는다»(경로가 아래 sentinel 이다).
+    #    두 번 갈아 봤다: `POST /api/sessions`(T3-1 이 구현) → `GET /api/plants`(T3-2 가 구현).
+    #    한 시간 안에 두 번 죽었다 — 「아직 미구현인 라우트」를 **이름으로** 박아 두는 형태 자체가
+    #    틀렸다는 뜻이다. 재는 것은 「그 경로가 501 인가」가 아니라 **「501 도 계약 형상인가」**다.
+    #    그래서 지금 501 을 내는 라우트를 계약 표면에서 «찾아» 쓴다. 하나도 없으면 그때는
+    #    측정 불가로 적는다 — 없는 표본 위에서 초록을 만들지 않는다.
+    ("E-05", "미구현 라우트(501)", "GET", UNIMPLEMENTED, None),
     ("E-06", "없는 경로(404)", "GET", "/api/does-not-exist", None),
     # 🔴 T2-2 로 표면이 자랐다 — 읽기 3라우트의 오류 경로도 같은 형상이라야 한다.
     #    자라난 표면을 표에 올리지 않으면 그것은 「내가 안 본다」는 뜻이다.
@@ -125,6 +132,27 @@ CASES: list[tuple[str, str, str, str, dict | None]] = [
     ("E-09", "강조 좌표 불일치(400)", "GET",
      "/api/documents/DOC-SOP-0014?highlight=DOC-MAN-0021%40r1%23000", None),
 ]
+
+
+# 계약 표면 중 «지금» 501 인 것을 찾을 후보. 순서는 안정성 기대순이다 —
+# `?from&to` 는 Q-26 판정상 Phase 3 그래프 화면 전까지 열리지 않는다(오케 단서 08-30).
+UNIMPLEMENTED_CANDIDATES = (
+    "/api/graph/paths?from=EQ-CNC-204&to=FM-BRG-WEAR",
+    "/api/plants",
+    "/api/plants/PLANT-SEOSAN/overview",
+    "/api/equipment/EQ-CNC-204",
+    "/api/equipment/EQ-CNC-204/sensors/SN-204-VIB/series?window=24h",
+    "/api/incidents/INC-2026-014",
+)
+
+
+def find_unimplemented() -> str | None:
+    """🔴 지금 501 을 내는 라우트를 «찾는다». 이름을 박아 두면 구현되는 날 표본이 죽는다."""
+    for path in UNIMPLEMENTED_CANDIDATES:
+        status, _ctype, _raw = request("GET", path)
+        if status == 501:
+            return path
+    return None
 
 
 def main() -> int:
@@ -138,7 +166,20 @@ def main() -> int:
     self_check()
 
     bad: list[str] = []
+    skipped: list[str] = []
+    unimplemented = find_unimplemented()
+    if unimplemented:
+        print(f"  표본 발견  미구현 라우트 = {unimplemented}")
+    else:
+        print("  ----  E-05 미구현 라우트 표본: 🔴 계약 표면에 501 이 하나도 없다 — 측정 불가"
+              "(초록으로 세지 않는다)")
+
     for cid, what, method, path, body in CASES:
+        if path is UNIMPLEMENTED:
+            if not unimplemented:
+                skipped.append(cid)
+                continue
+            path = unimplemented
         # 🔴 E-01 은 세션 «값 자체»가 표본이다 — 어댑터가 비켜서야 표본이 서버까지 간다.
         status, ctype, raw = request(method, path, body, sample=(cid == "E-01"))
         ok, why = conforms(status, ctype, raw)
@@ -183,8 +224,11 @@ def main() -> int:
             if not restored:
                 bad.append("E-0")
 
-    total = len(CASES) + (2 if cut else 0)
-    print(f"\n결과: {total - len(bad)}/{total} 계약 형상 · 이탈 {len(bad)}건" + (f" ({', '.join(bad)})" if bad else ""))
+    # 🔴 «잰» 칸만 분모에 넣는다. 건너뛴 칸을 통과로도 이탈로도 세지 않는다.
+    total = len(CASES) + (2 if cut else 0) - len(skipped)
+    print(f"\n결과: {total - len(bad)}/{total} 계약 형상 · 이탈 {len(bad)}건"
+          + (f" ({', '.join(bad)})" if bad else "")
+          + (f" · 🔴 건너뛴 칸 {len(skipped)}건({', '.join(skipped)}) — 초록 아님" if skipped else ""))
     return 1 if bad else 0
 
 
