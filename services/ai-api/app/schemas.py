@@ -17,7 +17,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- 세션 -----------------------------------------------------------------------
 
@@ -231,7 +231,16 @@ class WorkOrderDecision(BaseModel):
 
 
 class DecisionComment(BaseModel):
-    """`{ comment? }`"""
+    """`{ comment? }`
+
+    🔴 `extra="forbid"` — 승인·반려 본문에 계약에 없는 키가 오면 **거절한다**(422). pydantic
+       기본값은 «조용히 버리기»라, 그대로 두면 승인 경로가 편집 경로로 쓰인다:
+       `{comment, safetyMeasures: []}` 를 보낸 호출자는 200 을 받고 안전 조치를 지웠다고
+       믿는다. R12 를 PATCH 에서만 세우고 이 문을 열어 두면 「같은 병을 반만 고친 것」이다
+       (T2-5 R12 형제 세기 · 성문 6종 밖에서 찾은 자리).
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     comment: str | None = None
 

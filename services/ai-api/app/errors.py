@@ -40,6 +40,17 @@ NOT_IMPLEMENTED = {
 }
 
 
+def contract_error(status: int, code: str, message: str) -> StarletteHTTPException:
+    """계약 오류 형상을 실은 예외 하나 — 사유 코드가 필요한 모든 라우트의 «정본 자리».
+
+    🔴 지금 리포에 같은 3줄이 두 벌 더 있다(`routers/investigations.py`·`retrieval/service.py`).
+       세 번째 사본을 만들지 않으려고 여기 둔다 — 이 파일이 이미 「잊을 수 있는 자리를
+       없앤다」로 값을 치른 자리다(위 `DEPENDENCY_ERRORS` 성문 · V-7). 기존 두 벌을 여기로
+       모으는 것은 그 라우터를 건드리는 일이라 이번 티켓 밖이다: **방향만 세우고 남긴다.**
+    """
+    return StarletteHTTPException(status_code=status, detail={"code": code, "message": message})
+
+
 class DependencyUnavailable(StarletteHTTPException):
     """의존(PostgreSQL·Neo4j)에 닿지 못했다 — «서비스 결함»과 구분되는 사건이다.
 
