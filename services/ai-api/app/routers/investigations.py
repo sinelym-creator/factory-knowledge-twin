@@ -30,6 +30,7 @@ from .. import ownership, session_id
 from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
 from ..investigation import binding, replay, runner
 from ..investigation.store import RunRecord, RunStore
+from ..reading import factory as factory_reader
 from ..reading import scenarios as scenario_reader
 from ..schemas import AgentEvent, RunCreated, RunStopped, ScenarioSummary
 from ..settings import get_settings
@@ -59,6 +60,14 @@ def _store(request: Request) -> RunStore:
 
 def _resources(request: Request) -> Any:
     return request.app.state.resources
+
+
+def _pool_or_503(request: Request) -> Any:
+    """SSOT 풀 — 미설정이면 «의존 단절»로 답한다(우리 코드의 결함과 구분되는 사건이다)."""
+    pool = request.app.state.resources.pg_pool
+    if pool is None:
+        raise DependencyUnavailable("postgres")
+    return pool
 
 
 def _run_or_404(request: Request, run_id: str) -> RunRecord:
@@ -136,13 +145,31 @@ async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunC
     return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
 
-@router.get("/incidents/{incidentId}", responses=NOT_IMPLEMENTED)
-async def incident(incidentId: str) -> None:
-    """incident 표제 — 계약 「제목·상태·대상 설비·연결 알람·runId」(필드명 미확정).
+@router.get("/incidents/{incidentId}", responses={404: {"description": "`not_found`"}})
+async def incident(incidentId: str, request: Request) -> dict[str, Any]:
+    """incident 표제 — 계약 v0.1.7 형상(T3-2 해제 · 화면 ② 헤더가 먹는다).
 
-    T2-3 범위 밖이다(오케 판정 J-1): 온톨로지 «조회 계층»이라 `/plants`·`/equipment` 와 한 묶음이다.
+    🔴 `runId` 는 **이 세션의 run 만** 붙는다. incident 자체는 SSOT 라 누구에게나 같지만,
+       「그 incident 를 지금 조사 중인 run」은 세션 스코프다 — 남의 run id 를 여기 실으면
+       소유권 은닉(계약 v0.1.6)이 이 라우트에서 새어 나간다. 그래서 조회 층은 SSOT 만 읽고
+       (`reading/factory.incident_detail` 머리말), 세션 축은 여기서 **한 곳의 판정**
+       (`app/ownership`)으로 얹는다.
+
+    🔴 run 이 여럿이면 **가장 최근 것**이다. 「하나뿐일 것」이라는 가정을 두지 않는다 —
+       같은 세션이 같은 incident 를 두 번 조사할 수 있고, 그때 dict 삽입 순서가 답을 정하게
+       두면 순서 때문에 초록이 되는 자리가 생긴다(store.by_work_order_draft 성문과 같은 축).
     """
-    raise NotImplementedRoute("GET /incidents/{incidentId}", "온톨로지 조회 계층 + 계약의 표제 형상 확정")
+    pool = _pool_or_503(request)
+    async with dependency_guard("postgres"):
+        found = await factory_reader.incident_detail(pool, incidentId)
+    if found is None:
+        raise _error(404, "not_found", f"incident {incidentId} 를 찾을 수 없다")
+
+    session = ownership.current_session(request)
+    mine = [r for r in _store(request).by_session(session) if r.incidentId == incidentId] if session else []
+    if mine:
+        found["runId"] = mine[-1].runId
+    return found
 
 
 @router.post("/runs/{runId}/stop", response_model=RunStopped)
