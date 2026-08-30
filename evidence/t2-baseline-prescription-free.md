@@ -12,7 +12,7 @@
 | 리포 tip | `9809bdd` (pull 후 원격과 일치 확인) |
 | 스택 | `fkt-levi2` — postgres `5534` · neo4j `7574`/`7587` · 2컨테이너 **Up · healthy** |
 | 기동 경위 | 🔴 재부팅 후 **자동 기동**(`restart: unless-stopped`) · `StartedAt 2026-08-29T12:38:22Z` · `RestartCount=0` |
-| 볼륨 마운트 | `C:\Users\sinel\repos\factory-knowledge-twin\.volumes-levi2\{postgres,neo4j}` — **주 체크아웃 정본** |
+| 볼륨 마운트 | `{리포 루트}\.volumes-levi2\{postgres,neo4j}` — **주 체크아웃 정본** |
 | 데이터 생존 | neo4j 노드 **309** · 관계 **448**(라벨 14종·관계 19종 합산 교차 검증) · pg public 테이블 32 |
 | 짝 판정 | `v_graph_index_pairing` 2행 전부 **PAIRED** · ontology 지문 `84ca2b75…` |
 | 서버 | web-console `3101`(재빌드) · ai-api `8000`(uvicorn) |

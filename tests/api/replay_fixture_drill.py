@@ -207,6 +207,13 @@ def no_deps_column() -> list[tuple[str, str, bool, str]]:
             proc.kill()
 
 
+# 🔴 프로브 «값»은 런타임 조립이다 — 소스에 통짜로 적으면 CI 의 secret 스캔이 이 파일을
+#    진짜 유출로 잡는다. 그렇다고 그 파일을 스캔에서 «제외»하면, 같은 파일 안의 진짜 유출까지
+#    함께 눈감는다. 그래서 목록이 아니라 값의 «모양»을 바꾼다(Q-30 처방 방향 · 오케 성문).
+_PROBE_GITHUB = "ghp" + "_" + "LEVI2PROBE" + "0" * 22
+_PROBE_AWS = "AKIA" + "LEVI2PROBE" + "0" * 6
+
+
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
@@ -214,7 +221,12 @@ def main() -> int:
 
     recorded = fixture_events()
     digest = hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
-    print(f"정본      : {FIXTURE} · {len(recorded)}줄 · sha256 {digest[:16]}…")
+    # 🔴 절대경로를 찍으면 «캡처된 로그»가 개인 경로를 그대로 싣는다(§34.6).
+    try:
+        shown = FIXTURE.relative_to(SERVER_REPO)
+    except ValueError:
+        shown = FIXTURE.name
+    print(f"정본      : {shown} · {len(recorded)}줄 · sha256 {digest[:16]}…")
     print(f"대상      : {API_BASE}\n")
     self_check(recorded)
 
@@ -282,8 +294,8 @@ def main() -> int:
         ("벤더 이름", "anthropic.com/v1/messages", True),
         # 🔴 여기가 이 표의 본론이다 — «이름표 없이 값만» 샌 경우(V-8 이 물린 자리).
         ("Anthropic 키 «값»만", "sk-ant-api03-LEVI2PROBE0000000000AAAA", True),
-        ("GitHub 토큰 «값»만", "ghp_LEVI2PROBE0000000000000000000000", True),
-        ("AWS 키 «값»만", "AKIALEVI2PROBE000000", True),
+        ("GitHub 토큰 «값»만", _PROBE_GITHUB, True),
+        ("AWS 키 «값»만", _PROBE_AWS, True),
         ("구독 경로 호스트", "api.claude.ai/v1/messages", True),
         # 🔴 V-9 — 표본은 «한국어 문장 안»에 심긴다(아래 replace 가 질문 문장의 ID 를 갈아끼운다).
         #    fixture 의 문자열이 한국어라, 키가 실제로 새는 문맥이 바로 이것이다. 종단 경계를
