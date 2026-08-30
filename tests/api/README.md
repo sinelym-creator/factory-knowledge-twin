@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4 로 다시 자라 **14종**이 됐다.
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4·T2-5 로 다시 자라 **18종**이 됐다.
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -20,6 +20,10 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `run_surface_drill.py` | runs 표면 5 + `?byRun` 이 계약대로 서 있는가 · 중지가 **타임라인도 닫는가** | HTTP 표면 | 필요 | T2-3 |
 | `scenario_script_drill.py` | 대본대로 도는가 · **0건 단계 통과 금지** · 낸 근거를 kind 별 소비처로 펴는가 | 스키마·대본 정본 + HTTP | 필요 | T2-3 |
 | `replay_fixture_drill.py` | 재생이 **녹화본 그대로**인가 · 없는 것을 복원하지 않는가 · **심사기가 우는가** | fixture 정본 + HTTP | 필요 | T2-4 |
+| `approval_transition_drill.py` | 승인 전이 **12칸 전수** · 위반의 사유가 갈리는가 · **침묵 금지** | 계약 정본 + HTTP | 필요 | T2-5 |
+| `r12_enforcement_drill.py` | 안전 조치를 **서버가** 지키는가 · 형제 6 + 대조군 + **7번째 탐색** | 스펙·판정 + HTTP | 필요 | T2-5 |
+| `wo_shape_drill.py` | 초안 응답이 **지금 정본**의 12필드인가(v0.1.4 9 + v0.1.5 3 · 매 실행 추출) | 계약 정본 + HTTP | 필요 | T2-5 |
+| `q27_replay_wo_drill.py` | 재생본 초안 **4경로**가 한 코드로 «다른 사건»을 말하는가 + 대조군 2 | 판정 정본 + HTTP | 필요 | T2-5 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -36,13 +40,17 @@ python tests/api/dependency_code_drill.py --cut-postgres   # + 의존 단절(자
 python tests/api/injection_surface_drill.py     # 적대 입력 10종 × 문 3
 python tests/api/event_schema_drill.py --samples-only   # 서버 없이 검증기 자기 검증만
 python tests/api/credential_leak_drill.py --log <서버 로그>
-python tests/api/ssot_write_drill.py            # 지문만 · --run 으로 run 전후 대조
+python tests/api/ssot_write_drill.py            # 지문만 · --run 으로 run 전후 대조 · --wo 로 초안 편집·승인 전후 + 공장 WO 조준
 python tests/api/run_surface_drill.py
 python tests/api/scenario_script_drill.py
 python tests/api/replay_fixture_drill.py --no-deps   # + 의존 없이 띄운 앱 열(쓴다: fixture 를 잠시 치웠다 되돌린다)
+python tests/api/approval_transition_drill.py
+python tests/api/r12_enforcement_drill.py
+python tests/api/wo_shape_drill.py
+python tests/api/q27_replay_wo_drill.py
 ```
 
-환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
+환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_PYTHON`(기본 = 대상 리포의 `.venv` — 🔴 worktree 에서 검수할 때 반드시 준다. 없으면 드릴이 없는 venv 를 찾다 WinError 2 로 죽고, 그 빨강은 «대상»의 것이 아니다) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
 · `FKT_PG_CONTAINER`(기본 `fkt-levi2-postgres-1`).
 
 🔴 **쓰는 자산 4종**은 전부 기본 꺼짐이고 자기 스택에만 겨눈다 —

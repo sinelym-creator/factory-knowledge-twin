@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -144,14 +145,66 @@ def start_run() -> str:
         raise DrillError(f"{API_BASE} 에 닿지 못했다: {exc}") from exc
 
 
+def api(method: str, path: str, body: dict | None = None) -> tuple[int, object]:
+    data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
+    headers = {"Content-Type": "application/json"} if data else {}
+    req = urllib.request.Request(API_BASE + path, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=300) as res:
+            return res.status, json.loads(res.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8", "replace")
+        try:
+            return exc.code, json.loads(raw)
+        except json.JSONDecodeError:
+            return exc.code, {"_raw": raw[:200]}
+    except urllib.error.URLError as exc:
+        raise DrillError(f"{API_BASE} 에 닿지 못했다: {exc}") from exc
+
+
+def await_run(run_id: str) -> str:
+    """🔴 run 이 «끝난 뒤»에 지문을 뜬다 — 도는 중을 재면 끝에서 나는 쓰기를 놓친다."""
+    deadline = time.time() + 300
+    while time.time() < deadline:
+        _, snap = api("GET", f"/api/runs/{run_id}")
+        state = (snap or {}).get("status")
+        if state != "running":
+            return str(state)
+        time.sleep(0.5)
+    raise DrillError("run 이 제한 시간 안에 끝나지 않았다 — 측정 불가")
+
+
+def fresh_draft() -> str:
+    status, created = api("POST", f"/api/scenarios/{SCENARIO}/runs",
+                          {"sessionId": SESSION_ID, "mode": "live"})
+    if status != 200:
+        raise DrillError(f"run 생성이 {status} 를 냈다 — 측정 불가")
+    run_id = created["runId"]                            # type: ignore[index]
+    await_run(run_id)
+    _, snap = api("GET", f"/api/runs/{run_id}")
+    draft = (snap or {}).get("workOrderDraftId")         # type: ignore[union-attr]
+    if not draft:
+        raise DrillError("완주한 run 에 workOrderDraftId 가 없다 — 측정 불가")
+    return str(draft)
+
+
+def factory_row() -> tuple[str, str]:
+    """공장 WO 한 행을 «DB 에서» 읽는다 — API 가 아니라 저장소가 증인이다."""
+    raw = psql("select id || '|' || title || '|' || approval_state from work_order order by id limit 1;")
+    line = [l.strip() for l in raw.strip().splitlines() if l.strip()][0]
+    return line.split("|", 1)[0], line
+
+
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
     with_run = "--run" in sys.argv
+    with_wo = "--wo" in sys.argv
 
     print(f"대상 DB   : {PG_CONTAINER}/{PG_DB}")
-    print(f"run 실행  : {'켬 — 1회 돌리고 전후를 센다' if with_run else '끔(--run 으로 켠다)'}\n")
+    print(f"run 실행  : {'켬 — 1회 돌리고 전후를 센다' if with_run else '끔(--run 으로 켠다)'}")
+    print(f"WO 축     : {'켬 — 초안 편집·승인 전후 + 공장 WO 조준' if with_wo else '끔(--wo 로 켠다)'}\n")
     self_check()
 
     proof = same_target()
@@ -164,7 +217,8 @@ def main() -> int:
     skipped = 0
     if with_run:
         run_id = start_run()
-        print(f"  run       {run_id or '(runId 없음)'}")
+        state = await_run(run_id)
+        print(f"  run       {run_id or '(runId 없음)'} · 완주 {state}")
         after = fingerprint()
         changed = diff(before, after)
         ok = not changed
@@ -175,6 +229,36 @@ def main() -> int:
         skipped = 1
         print("  ----  W-01 run 전후 대조 — 건너뜀(--run 으로 켠다). 🔴 초록으로 세지 않는다")
 
+    if with_wo:
+        # ── W-02 초안 편집·승인 전후 SSOT 무변 (T2-5 축⑤) ──────────────────
+        #    초안 축은 세션 스코프(계약 v0.1.4 저장 축 해석)라 SSOT 에 아무것도 남기면 안 된다.
+        base = fingerprint()
+        draft = fresh_draft()
+        api("PATCH", f"/api/work-orders/{draft}", {"title": "리바이2 SSOT 축"})
+        st_ap, _ = api("POST", f"/api/work-orders/{draft}/approve")
+        changed = diff(base, fingerprint())
+        ok = not changed and st_ap == 200
+        bad += 0 if ok else 1
+        print(f"  {'PASS' if ok else 'FAIL'}  W-02 초안 편집·승인 전후 SSOT 무변 — "
+              f"{' · '.join(changed) or '변화 0'} (approve {st_ap})")
+
+        # ── W-03 🔴 초안 라우트로 «공장 WO» 를 조준한다 ─────────────────────
+        #    id CHECK 배타라는 «설계»가 런타임에서도 참인지 던져서 확인한다.
+        wo_id, before_row = factory_row()
+        codes = []
+        for method, path, body in (("GET", f"/api/work-orders/{wo_id}", None),
+                                   ("PATCH", f"/api/work-orders/{wo_id}", {"title": "levi2-intrusion"}),
+                                   ("POST", f"/api/work-orders/{wo_id}/approve", None),
+                                   ("POST", f"/api/work-orders/{wo_id}/reject", None)):
+            st, _bd = api(method, path, body)
+            codes.append(str(st))
+            if st == 200:
+                bad += 1
+        intact = before_row == factory_row()[1]
+        bad += 0 if intact else 1
+        print(f"  {'PASS' if intact else 'FAIL'}  W-03 공장 WO {wo_id} — 초안 4경로 응답 {codes} · "
+              f"행 {'무변' if intact else '🔴 바뀌었다'}")
+        print("        (200 이 하나라도 있으면 초안 라우트가 SSOT 를 잡은 것이다)")
     print(f"\n결과: 어긋남 {bad}건" + (f" · 🔴 건너뛴 행 {skipped}건(초록 아님)" if skipped else ""))
     return 1 if bad else 0
 
