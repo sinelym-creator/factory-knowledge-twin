@@ -227,6 +227,17 @@ _FAKE_ANTHROPIC = "sk-ant-" + "api03-" + "AAAA" * 5 + "zz"
 _FAKE_GITHUB = "ghp_" + "B" * 24
 _FAKE_AWS = "AKIA" + "C" * 16
 
+# 🔴 **경로 표본도 같은 이유로 조립한다**(Q-30 · CI 위생 게이트가 이 파일을 물었다).
+#    바로 위 세 줄이 이미 그 처방인데 절대경로 표본만 리터럴로 남아 있었고, 러너의 개인경로
+#    게이트에 그대로 걸렸다 — 사용자명이 합성(`operator`)이어도 스캐너가 읽는 것은 «값»이
+#    아니라 «형태»다. 처방이 이 파일에 있다는 것과 이 줄에 닿았다는 것은 다른 사실이었다.
+#    🔴 스캐너 제외 목록으로 끄지 않는다 — 그러면 다음에 들어올 «진짜» 경로까지 함께 통과한다.
+#    조립해도 런타임 값은 한 글자도 달라지지 않으므로 이 축의 대조군은 힘을 잃지 않는다.
+_BS = chr(92)                             # 소스에 백슬래시 리터럴을 남기지 않기 위한 우회
+_FAKE_WIN_PATH = "C:" + _BS + _BS.join(
+    ("Users", "operator", "repos", "factory-knowledge-twin", "data", "seed.csv")
+)
+
 
 @dataclass(frozen=True)
 class Injection:
@@ -239,7 +250,7 @@ class Injection:
 _INJECTIONS: tuple[Injection, ...] = (
     Injection(
         "absolute_path", "이 머신의 경로",
-        r"C:\Users\operator\repos\factory-knowledge-twin\data\seed.csv 에서 읽음",
+        f"{_FAKE_WIN_PATH} 에서 읽음",
         "구현(초판)",
     ),
     Injection(
