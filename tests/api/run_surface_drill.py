@@ -120,10 +120,14 @@ def main() -> int:
     rows.append(("R-06", "배열 순서 == seq 순서", bool(ordered), ""))
 
     # ── mode 축 (v0.1.3) ────────────────────────────────────────────────
+    # 🔴 T2-4 로 참이 바뀐 자리다. T2-3 시점에는 「replay = 501」이 참이었고 이 행은 그것을
+    #    지켰다. fixture 가 착지한 지금 참은 「fixture 있는 시나리오의 replay = 200 · mode=replay」다.
+    #    갱신 «전»에 옛 조건이 red 를 내는 것을 먼저 확인했다 — 갱신부터 하면 그물이 무엇을
+    #    잡았는지 기록이 남지 않는다(그물의 주어는 처방과 함께 바뀐다).
     status, body = start("replay")
-    replay_honest = status == 501 and code_of(body) == "not_implemented"
-    rows.append(("R-07", "replay 요청 = 501 (fixture 는 T2-4 · 200 이면 없는 것을 있다고 한 것)",
-                 replay_honest, f"{status} {code_of(body)}"))
+    replay_served = status == 200 and (body or {}).get("mode") == "replay"   # type: ignore[union-attr]
+    rows.append(("R-07", "replay 요청 = 200 · mode=replay (fixture 착지 · T2-4)",
+                 replay_served, f"{status} {(body or {}).get('mode') if isinstance(body, dict) else code_of(body)}"))
 
     status, live_status = call("GET", "/api/live/status")
     online = (live_status or {}).get("online") if isinstance(live_status, dict) else None

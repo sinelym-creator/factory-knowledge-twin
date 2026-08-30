@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3 로 다시 자라 **13종**이 됐다.
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4 로 다시 자라 **14종**이 됐다.
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -19,6 +19,7 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `ssot_write_drill.py` | 조사 실행이 **SSOT 를 쓰지 않는가**(J-3) | psql 지문 | 일부 | T2-3 |
 | `run_surface_drill.py` | runs 표면 5 + `?byRun` 이 계약대로 서 있는가 · 중지가 **타임라인도 닫는가** | HTTP 표면 | 필요 | T2-3 |
 | `scenario_script_drill.py` | 대본대로 도는가 · **0건 단계 통과 금지** · 낸 근거를 kind 별 소비처로 펴는가 | 스키마·대본 정본 + HTTP | 필요 | T2-3 |
+| `replay_fixture_drill.py` | 재생이 **녹화본 그대로**인가 · 없는 것을 복원하지 않는가 · **심사기가 우는가** | fixture 정본 + HTTP | 필요 | T2-4 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -38,6 +39,7 @@ python tests/api/credential_leak_drill.py --log <서버 로그>
 python tests/api/ssot_write_drill.py            # 지문만 · --run 으로 run 전후 대조
 python tests/api/run_surface_drill.py
 python tests/api/scenario_script_drill.py
+python tests/api/replay_fixture_drill.py --no-deps   # + 의존 없이 띄운 앱 열(쓴다: fixture 를 잠시 치웠다 되돌린다)
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
@@ -46,10 +48,18 @@ python tests/api/scenario_script_drill.py
 🔴 **쓰는 자산 4종**은 전부 기본 꺼짐이고 자기 스택에만 겨눈다 —
 `error_shape_drill --cut-neo4j`(컨테이너 정지·재기동) · `dependency_code_drill --cut-postgres`(같음)
 · `freshness_badge_drill --inject-stale`(`index_build` 한 행의 `source_sha256` 한 칸 · 원값 복원)
-· `citation_roundtrip_drill --inject-drift`(`document_chunk` 한 행의 `text` 한 칸 · 원값 복원).
+· `citation_roundtrip_drill --inject-drift`(`document_chunk` 한 행의 `text` 한 칸 · 원값 복원)
+· `replay_fixture_drill`(fixture 를 «치웠다 되돌린다» — 부재 상태를 실제로 만들기 위함 · 되감기에서 sha 동일 확인).
 셋 다 되감기 실측을 «마지막 행»으로 둔다 — 되돌아왔다는 것까지가 측정이다.
 `injection_surface_drill` 은 파괴적 payload 를 «던지되» 그것이 통과하면 그게 결함이므로,
 마지막 행에서 코퍼스 크기가 그대로인지를 세어 대상 생존을 실측한다.
+
+## 🔴 그물이 «남의 스택»을 물지 않게
+
+`ssot_write_drill` 은 한때 컨테이너를 **이름 기본값**으로 골랐다. 다른 좌석이 자기 스택에서
+돌렸을 때 조용히 이 좌석의 DB 를 물었고 — 오류도 경고도 없었다. env 필수화로 끝내지 않고
+**「같은 것을 보고 있다」의 증명**으로 바꿨다: API 가 말하는 문서 해시와 지문 뜰 DB 의 해시를
+대조해 어긋나면 `exit 2`. 대상을 이름으로 «믿지» 않고 실측으로 «확인»한다.
 
 ## 🔴 미해제(501)는 red 가 아니다
 

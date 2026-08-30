@@ -32,6 +32,8 @@ PG_USER = os.environ.get("FKT_PG_USER", "fkt")
 PG_DB = os.environ.get("FKT_PG_DB", "fkt")
 SESSION_ID = "levi2-ssot-drill"
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
+# 대상 동일성 대조에 쓰는 문서 — 씨앗 데이터에 항상 있는 것 하나면 된다.
+PROBE_DOC = os.environ.get("FKT_PROBE_DOC", "DOC-SOP-0014")
 
 _TABLES_SQL = (
     "SELECT table_name FROM information_schema.tables "
@@ -51,6 +53,39 @@ def psql(sql: str) -> str:
     if out.returncode != 0:
         raise DrillError(f"psql 실패: {(out.stderr or '').strip()[:200]}")
     return (out.stdout or "").strip()
+
+
+def same_target() -> str:
+    """🔴 지문 뜬 DB 가 «시험 대상 API 가 쓰는 그 DB» 인가.
+
+    처음 이 그물은 컨테이너를 **이름 기본값**으로 골랐다(`FKT_PG_CONTAINER` 미설정이면
+    `fkt-levi2-postgres-1`). 다른 좌석이 자기 스택에서 돌렸을 때 **내 DB 를 물었고**, 오류도
+    경고도 없었다 — 조용히 다른 것을 보고 초록을 냈다. 이 세션 내내 쫓던 병(V-6 계열)을
+    내 자산이 스스로 앓은 자리다.
+
+    처방은 env 필수화가 아니다(그것도 사람이 맞게 주기를 바라는 것이다). **같은 것을 보고
+    있다는 증명**으로 바꾼다 — API 로 문서 1건을 읽어 `contentHash` 를 받고, 지문 뜰 DB 에서
+    같은 id 의 `content_sha256` 을 조회해 대조한다. 어긋나면 «측정 불가»(exit 2)다.
+    """
+    try:
+        with urllib.request.urlopen(f"{API_BASE}/api/documents/{PROBE_DOC}", timeout=30) as res:
+            served = json.loads(res.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        raise DrillError(f"대조용 문서를 API 에서 못 읽었다({exc.code}) — 대상 확인 불가") from exc
+    except urllib.error.URLError as exc:
+        raise DrillError(f"{API_BASE} 에 닿지 못했다: {exc}") from exc
+
+    revision = served.get("revisionId")
+    api_hash = served.get("contentHash")
+    db_hash = psql(f"SELECT content_sha256 FROM document_revision WHERE id = '{revision}'")
+    if not api_hash or not db_hash:
+        raise DrillError("대조에 쓸 해시를 못 얻었다 — 측정 불가")
+    if api_hash != db_hash:
+        raise DrillError(
+            f"🔴 지문 대상이 시험 대상 API 의 DB 가 아니다 — {PG_CONTAINER}/{PG_DB} 를 보고 있다. "
+            f"API {api_hash[:12]}… ≠ DB {db_hash[:12]}…  (FKT_PG_CONTAINER 를 맞춰라)"
+        )
+    return f"{revision} {api_hash[:12]}…"
 
 
 def fingerprint() -> dict[str, int]:
@@ -119,10 +154,14 @@ def main() -> int:
     print(f"run 실행  : {'켬 — 1회 돌리고 전후를 센다' if with_run else '끔(--run 으로 켠다)'}\n")
     self_check()
 
+    proof = same_target()
+    print(f"  대상 동일성  API 와 DB 가 같은 문서를 같은 해시로 말한다 — {proof}")
+
     before = fingerprint()
     print(f"  지문      테이블 {len(before)}개 · 총 {sum(before.values())}행")
 
     bad = 0
+    skipped = 0
     if with_run:
         run_id = start_run()
         print(f"  run       {run_id or '(runId 없음)'}")
@@ -132,9 +171,11 @@ def main() -> int:
         bad += 0 if ok else 1
         print(f"  {'PASS' if ok else 'FAIL'}  W-01 run 전후 SSOT 무변 — {' · '.join(changed) or '변화 0'}")
     else:
-        print("  ----  W-01 run 전후 대조 — 건너뜀(--run 으로 켠다 · T2-3 해제 후)")
+        # 🔴 건너뛴 행은 초록이 아니다 — 결과줄에서도 세지 않는다.
+        skipped = 1
+        print("  ----  W-01 run 전후 대조 — 건너뜀(--run 으로 켠다). 🔴 초록으로 세지 않는다")
 
-    print(f"\n결과: 어긋남 {bad}건")
+    print(f"\n결과: 어긋남 {bad}건" + (f" · 🔴 건너뛴 행 {skipped}건(초록 아님)" if skipped else ""))
     return 1 if bad else 0
 
 
