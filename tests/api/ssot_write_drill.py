@@ -132,10 +132,16 @@ def self_check() -> None:
 
 
 def start_run() -> str:
-    payload = json.dumps({"sessionId": SESSION_ID, "mode": "live"}).encode("utf-8")
+    # 🔴 이 함수만 어댑터 «밖»에 있었다(api() 보다 먼저 쓰인 코드) — 가드 착지 순간
+    #    401 로 죽었고, 그 빨강은 대상의 것이 아니었다. 같은 경로로 합류시킨다.
+    _body, _carry = _session.prepare({"sessionId": SESSION_ID, "mode": "live"},
+                                     f"/api/scenarios/{SCENARIO}/runs")
+    payload = json.dumps(_body).encode("utf-8")
+    _headers = {"Content-Type": "application/json"}
+    _headers.update(_carry)
     req = urllib.request.Request(
         f"{API_BASE}/api/scenarios/{SCENARIO}/runs", data=payload,
-        headers={"Content-Type": "application/json"}, method="POST",
+        headers=_headers, method="POST",
     )
     try:
         with urllib.request.urlopen(req, timeout=300) as res:

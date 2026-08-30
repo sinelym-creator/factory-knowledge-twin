@@ -1,5 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
+const API = process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
+
 /**
  * 축 ① — 세션 가드 «브라우저» 실측. 구현이 재지 않은 세 번째 축.
  *
@@ -93,15 +95,31 @@ test.describe("세션 가드", () => {
     }
   });
 
-  test("백엔드가 세션을 «발급하지 않았음»을 화면이 숨기지 않는다 (501 구간 · 승인분)", async ({ page }) => {
+  test("세션 origin 이 «지금의 사실»을 말한다 — 발급되면 api, 아니면 pending", async ({ page }) => {
+    // 🔴 이 칸은 T1-9 때 「501 구간이니 origin 은 pending 이 참」으로 세웠다. T3-1 이
+    //    POST /sessions 를 구현하면서 그 전제가 사라졌고, 낡은 단언이 빨강을 냈다 —
+    //    대상이 바뀐 게 아니라 그물이 판정보다 낡은 것이다. 그래서 «사실을 따라가게» 고친다:
+    //    무엇이 참인지를 백엔드에 먼저 묻고, 화면이 그것과 같은 말을 하는지 본다.
+    const issued = (await fetch(`${API}/api/sessions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    })).status === 200;
+
     await page.goto("/");
     const c = (await page.context().cookies()).find((x) => x.name === "fkt_session")!;
-    // POST /sessions 가 501 인 지금, origin 은 pending 이 «참»이다 — 이것은 결함이 아니라 정직이다.
-    expect(decodeURIComponent(c.value)).toMatch(/^pending:/);
     const chip = page.getByTestId("session-chip");
-    await expect(chip).toHaveAttribute("data-origin", "pending");
-    await expect(chip).toContainText("*"); // 서버가 모르는 세션이라는 표시
-    await expect(chip).toHaveAttribute("title", /아직 백엔드에 등록되지 않은/);
+
+    if (issued) {
+      expect(decodeURIComponent(c.value)).toMatch(/^api:/);
+      await expect(chip).toHaveAttribute("data-origin", "api");
+      await expect(chip).not.toContainText("*"); // 서버가 아는 세션이면 표시가 없다
+    } else {
+      expect(decodeURIComponent(c.value)).toMatch(/^pending:/);
+      await expect(chip).toHaveAttribute("data-origin", "pending");
+      await expect(chip).toContainText("*"); // 서버가 모르는 세션이라는 표시
+      await expect(chip).toHaveAttribute("title", /아직 백엔드에 등록되지 않은/);
+    }
   });
 
   /* ────────────────────────────────────────────────────────────────────────────
