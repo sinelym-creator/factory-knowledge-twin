@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4·T2-5 로 다시 자라 **19종**이 됐다(Q-30 으로 CI 게이트 축이 하나 붙었다).
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4·T2-5 로 다시 자라 **20종**이 됐다(Q-30 으로 CI 게이트 축 · T2-6 으로 «연쇄» 축이 하나씩 붙었다).
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -25,6 +25,7 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `wo_shape_drill.py` | 초안 응답이 **지금 정본**의 12필드인가(v0.1.4 9 + v0.1.5 3 · 매 실행 추출) | 계약 정본 + HTTP | 필요 | T2-5 |
 | `q27_replay_wo_drill.py` | 재생본 초안 **4경로**가 한 코드로 «다른 사건»을 말하는가 + 대조군 2 | 판정 정본 + HTTP | 필요 | T2-5 |
 | `ci_hygiene_drill.py` | CI 공개 경계 게이트 **3종 전수** — 🔴 첫 빨강에서 멈추지 않는다 | `ci.yml` 정본 + 추적 파일 | 불요 | Q-30 |
+| `gs01_integration_drill.py` | 🔴 **연쇄** — 앞 단계 산출이 다음 단계 «입력으로 실재»하는가(13행 한 세션) | baseline §21 + HTTP | 필요 | T2-6 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -50,6 +51,7 @@ python tests/api/r12_enforcement_drill.py
 python tests/api/wo_shape_drill.py
 python tests/api/q27_replay_wo_drill.py
 python tests/api/ci_hygiene_drill.py       # 서버 불요 · 세 게이트 전부 보고
+python tests/api/gs01_integration_drill.py  # GS-01 한 세션 완주 · 끊기면 그 자리에서 죽는다
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_PYTHON`(기본 = 대상 리포의 `.venv` — 🔴 worktree 에서 검수할 때 반드시 준다. 없으면 드릴이 없는 venv 를 찾다 WinError 2 로 죽고, 그 빨강은 «대상»의 것이 아니다) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
