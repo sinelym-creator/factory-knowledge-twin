@@ -63,6 +63,19 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="ml-auto flex items-center gap-2">
+              {/* 🔴 안내 카드 재노출 — wireframes §0.1 ① 「앱바 `?` 아이콘으로 언제든 다시
+                  연다」. 이 자리가 없어서 한 번 닫은 사람은 영영 못 열었다(결함 D-1의 절반).
+                  링크로 둔다: 어느 화면에 있든 `/overview` 로 데려가면서 열리고, 클라이언트
+                  JS 없이 키보드로 잡힌다. */}
+              <Link
+                href="/overview?intro=1"
+                className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+                title="처음 오셨나요? 안내 다시 보기"
+                data-testid="intro-reopen"
+              >
+                <span aria-hidden>?</span>
+                <span className="sr-only">안내 다시 보기</span>
+              </Link>
               <ModeBadge />
               {session && (
                 <span

@@ -23,7 +23,14 @@ import { SESSION_COOKIE, parseSession } from "@/lib/session";
  * 🔴 **plantId를 코드에 박지 않는다.** `/plants`로 물어서 «있는 것»을 쓴다 — 박아 두면
  *    seed가 바뀐 날 화면이 조용히 빈다.
  */
-export default async function OverviewPage() {
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ intro?: string }>;
+}) {
+  // 🔴 안내 카드를 «다시 여는» 자리는 URL 이다(§0.1 ① 재노출 · 앱바 `?`). 클라이언트 이벤트
+  //    버스로 하면 다른 화면의 `?` 는 아무 일도 못 하고, 그 침묵은 고장과 구별되지 않는다.
+  const { intro } = await searchParams;
   const jar = await cookies();
   const cookieHeader = (await headers()).get("cookie") ?? "";
   const session = parseSession(jar.get(SESSION_COOKIE)?.value);
@@ -68,6 +75,10 @@ export default async function OverviewPage() {
       sessionId={session?.id ?? null}
       sessionOrigin={session?.origin ?? null}
       headline={buildHeadline(overview.data, topEquipment?.state === "ok" ? topEquipment.data : null)}
+      // 🔴 「받은 시각」은 «서버가 이 응답을 그린 순간»이다 — 렌더 안에서 시계를 읽으면 서버와
+      //    브라우저가 다른 초를 그려 hydration 이 깨진다(결함 D-2 · lib/time.ts 머리말).
+      receivedAt={new Date().toISOString()}
+      forceIntro={intro === "1"}
     />
   );
 }

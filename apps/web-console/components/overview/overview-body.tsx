@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 
 import { Sparkline } from "@/components/overview/sparkline";
 import { StartInvestigation } from "@/components/overview/start-investigation";
 import type { ActiveAlarm, Overview, OverviewEquipment, Scenario } from "@/lib/contract";
+import { TZ_LABEL, clock, stamp } from "@/lib/time";
 
 /**
  * ① Overview 본문 (wireframes §1) — 좌 트리 280 · 중앙 카드 그리드 · 우 도크 380.
@@ -25,11 +27,58 @@ function markOf(status: string) {
   return STATUS_MARK[status] ?? { ...UNKNOWN_MARK, label: `알 수 없음(${status})` };
 }
 
-const SEVERITY_TONE: Record<string, string> = {
-  critical: "text-danger",
-  warning: "text-warn",
-  info: "text-muted",
+/**
+ * 알람 severity — 🔴 **색«만»으로 가르지 않는다**(§10 · baseline §11.3 · 회부 R-2).
+ *
+ * 같은 화면의 설비 카드는 ●▲■ 를 지키는데 알람 도크만 `▲` 고정이었다 — 색각 이상에서는
+ * 네 줄이 전부 같은 줄로 보였다. 두 자리가 «같은 규칙»을 쓰도록 표를 나란히 둔다.
+ * 🔴 모르는 severity 를 낮은 쪽으로 접지 않는다(설비 카드의 `UNKNOWN_MARK` 와 같은 축) —
+ *    enum 이 늘면 여기가 먼저 모르게 되고, 그때 조용히 ● 로 그리면 위험이 정보로 보인다.
+ */
+const SEVERITY_MARK: Record<string, { icon: string; tone: string; label: string }> = {
+  critical: { icon: "■", tone: "text-danger", label: "위험" },
+  warning: { icon: "▲", tone: "text-warn", label: "주의" },
+  info: { icon: "●", tone: "text-muted", label: "정보" },
 };
+
+function severityMark(severity: string) {
+  return SEVERITY_MARK[severity] ?? { ...UNKNOWN_MARK, label: `알 수 없음(${severity})` };
+}
+
+/** 안내 카드 «세션 상태» 기록 자리 — wireframes §0.1 ①.
+ *
+ * 🔴 `localStorage` 가 아니다(정본 명문). 브라우저 수명 내내 남는 저장소에 적으면 「세션의
+ *    첫 진입」이 「이 브라우저의 첫 진입」이 되어 세션 격리와 어긋난다. `sessionStorage` 는
+ *    탭 수명이고, 키에 sessionId 를 넣어 «다른 세션이면 다시 본다»를 만든다.
+ * 🔴 저장소 접근은 전부 try/catch 다 — 사생활 모드·차단 설정에서 던지는데, 안내 카드 하나
+ *    때문에 화면 전체가 죽는 것은 실패 방향이 틀렸다.
+ */
+const INTRO_KEY = (sessionId: string | null) => `fkt.intro.seen:${sessionId ?? "anon"}`;
+
+function introSeen(sessionId: string | null): boolean {
+  try {
+    return window.sessionStorage.getItem(INTRO_KEY(sessionId)) === "1";
+  } catch {
+    // 읽지 못하면 «안 봤다»로 친다 — 처음 온 사람에게 안내가 안 뜨는 쪽보다 낫다.
+    return false;
+  }
+}
+
+function markIntroSeen(sessionId: string | null): void {
+  try {
+    window.sessionStorage.setItem(INTRO_KEY(sessionId), "1");
+  } catch {
+    // 못 적으면 다음 진입에 다시 뜬다 — 조용히 실패하되 화면은 살아 있다.
+  }
+  for (const l of introListeners) l();
+}
+
+/** `useSyncExternalStore` 구독자 — 저장소에 적은 사실을 화면이 «즉시» 알게 한다. */
+const introListeners = new Set<() => void>();
+function subscribeIntro(onChange: () => void): () => void {
+  introListeners.add(onChange);
+  return () => introListeners.delete(onChange);
+}
 
 export function OverviewBody({
   plantName,
@@ -38,6 +87,8 @@ export function OverviewBody({
   sessionId,
   sessionOrigin,
   headline,
+  receivedAt,
+  forceIntro,
 }: {
   plantName: string;
   overview: Overview;
@@ -45,9 +96,46 @@ export function OverviewBody({
   sessionId: string | null;
   sessionOrigin: string | null;
   headline: { text: string; alarmId: string | null; equipmentId: string | null };
+  /** 🔴 «서버가 이 응답을 그린 순간» — 렌더 안에서 `new Date()` 를 부르지 않는 이유는
+   *  lib/time.ts 머리말에 있다(D-2). 값이 prop 이라 SSR·하이드레이션이 같은 글자를 낸다. */
+  receivedAt: string;
+  /** 앱바 「?」로 «명시적으로» 열고 들어온 진입(wireframes §0.1 ① 재노출). */
+  forceIntro: boolean;
 }) {
   const [lineFilter, setLineFilter] = useState<string | null>(null);
-  const [showIntro, setShowIntro] = useState(true);
+
+  const router = useRouter();
+  const pathname = usePathname();
+
+  /* 🔴 **노출 여부를 «상태»가 아니라 «파생»으로 둔다.**
+   *
+   *   보였다 = 앱바 `?` 로 직접 열었거나(forceIntro) · 이 세션에서 아직 안 봤다(!seen)
+   *
+   * 앞판 D-1 의 병은 `useState(true)` 였다 — 마운트마다 참이라 새로고침도 재진입도 «첫
+   * 진입»이었다. 그렇다고 초기값만 프롭으로 바꾸면 이번엔 재열람이 죽는다(실측): 앱바 `?`
+   * 는 같은 라우트 안의 이동이라 React 가 인스턴스를 재사용하고, useState 의 «초기값»은
+   * 다시 평가되지 않는다. 두 병 다 「상태가 프롭·저장소를 못 따라간다」는 한 형태다 —
+   * 그래서 따라가야 할 것이 없게 파생으로 만든다.
+   *
+   * 🔴 저장소는 `useSyncExternalStore` 로 읽는다. 렌더 중에 직접 읽으면 서버는 못 읽고
+   *    브라우저는 읽어 두 트리가 갈리는데(방금 고친 D-2 와 같은 병), 이 훅은 서버 스냅샷을
+   *    따로 받아 그 갈림을 구조적으로 막는다. 서버 스냅샷 = `true`(=본 것으로 친다): 서버는
+   *    세션 저장소를 알 수 없으니 «모르면 안 띄우는» 쪽으로 틀린다.
+   */
+  const seen = useSyncExternalStore(
+    subscribeIntro,
+    () => introSeen(sessionId),
+    () => true,
+  );
+  const showIntro = forceIntro || !seen;
+
+  const closeIntro = useCallback(() => {
+    markIntroSeen(sessionId);
+    // 🔴 `?intro=1` 을 남긴 채 닫으면 새로고침이 다시 연다 — 「닫았다」가 지켜지지 않는다.
+    //    🔴 `history.replaceState` 가 아니라 라우터로 지운다: 주소만 바꾸면 `forceIntro`
+    //       프롭이 true 로 남아 카드가 닫히지 않는다.
+    if (forceIntro) router.replace(pathname, { scroll: false });
+  }, [forceIntro, sessionId, router, pathname]);
 
   const shown = useMemo(
     () =>
@@ -98,8 +186,8 @@ export function OverviewBody({
             status<>'closed' 로 센다(계약 v0.1.7 판정). 화면 낱말은 그 뜻대로 «진행»이다. */}
         <Kpi label="진행 Incident" value={overview.kpi.openIncidents} />
         <Kpi label="승인 대기 WO" value={overview.kpi.pendingWorkOrders} />
-        <span className="ml-auto text-muted">
-          {plantName} · 이 화면을 받은 시각 {new Date().toLocaleTimeString("ko-KR")}
+        <span className="ml-auto text-muted" data-testid="received-at">
+          {plantName} · 이 화면을 받은 시각 {clock(receivedAt) ?? "—"} {TZ_LABEL}
         </span>
       </section>
 
@@ -148,7 +236,7 @@ export function OverviewBody({
 
         {/* ── 우측 도크 ─────────────────────────────────────────────────── */}
         <aside className="w-95 shrink-0 space-y-3" aria-label="알람과 시나리오">
-          {showIntro && <IntroCard onClose={() => setShowIntro(false)} />}
+          {showIntro && <IntroCard onClose={closeIntro} />}
 
           <section className="rounded border border-edge bg-panel p-3" data-testid="alarm-dock">
             <p className="text-xs text-muted">활성 알람 {overview.activeAlarms.length}건</p>
@@ -156,14 +244,27 @@ export function OverviewBody({
               <p className="mt-2 text-sm text-muted">지금 울고 있는 알람이 없습니다.</p>
             ) : (
               <ul className="mt-2 space-y-3">
-                {overview.activeAlarms.map((a) => (
-                  <li key={a.alarmId} className="border-t border-edge pt-2 first:border-0 first:pt-0">
-                    <p className={`text-xs ${SEVERITY_TONE[a.severity] ?? "text-danger"}`}>
-                      ▲ {a.severity}
+                {overview.activeAlarms.map((a) => {
+                  const sev = severityMark(a.severity);
+                  return (
+                  <li
+                    key={a.alarmId}
+                    className="border-t border-edge pt-2 first:border-0 first:pt-0"
+                    data-testid="alarm-card"
+                    data-severity={a.severity}
+                  >
+                    <p className={`text-xs ${sev.tone}`}>
+                      <span aria-hidden>{sev.icon}</span> {sev.label} · {a.severity}
                     </p>
                     <p className="id mt-1 text-xs">{a.alarmId}</p>
                     <p className="id text-xs text-muted">
                       {a.equipmentId} · {a.sensorId}
+                    </p>
+                    {/* 🔴 발생 시각 — §1 알람 패널 표시 7항 중 하나였고 빠져 있었다(회부 R-1).
+                        목업의 「12:03」 자리다. 시각이 없으면 「지금 난 일」과 「며칠 전부터
+                        울고 있는 일」이 같은 줄로 보인다 — seed 의 이 알람은 후자다. */}
+                    <p className="mt-1 text-xs text-muted" data-testid="alarm-raised-at">
+                      발생 {stamp(a.raisedAt) ?? a.raisedAt} {TZ_LABEL}
                     </p>
                     <p className="mt-1 text-xs text-muted">
                       임계 {a.thresholdValue} → 관측 {a.observedValue}
@@ -177,7 +278,8 @@ export function OverviewBody({
                       />
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
           </section>

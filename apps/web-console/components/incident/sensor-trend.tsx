@@ -2,14 +2,24 @@
 
 import { useEffect, useState } from "react";
 
-import { CONTRACT, type Series, type SeriesWindow, apiGetBrowser } from "@/lib/contract";
+import { type ActiveAlarm, CONTRACT, type Series, type SeriesWindow, apiGetBrowser } from "@/lib/contract";
+import { TZ_LABEL, stamp } from "@/lib/time";
 
 /**
  * 센서 추세 차트 (wireframes §2 · 창 전환 24h ↔ 3주).
  *
- * 🔴 **기준선은 warnThreshold 다.** alarmThreshold(더 높은 값)를 그리면 「알람이 임계 아래에서
- *    떴다」는 거짓 화면이 된다 — 활성 알람의 threshold_value 가 warn 과 같은 값이라 그렇다
- *    (계약 v0.1.7 성문). 두 임계를 다 그리되 «기준»이라고 부르는 것은 warn 뿐이다.
+ * 🔴 **기준선을 «한 낱말»로 지정하지 않는다**(계약 v0.1.7-정정 2차 · 검증 11대 전수 실측).
+ *    앞판 주석은 「기준선은 warnThreshold 다 · 활성 알람의 threshold_value 가 warn 과 같은
+ *    값」이라 적었는데 그 전제가 **오기**였다: 실물 `AL-20260826-0041.threshold_value = 6.3`
+ *    은 **alarmThreshold** 이고 warn 은 4.5 다. warn 을 단독 기준선으로 읽으면 24h 곡선
+ *    (3.75~8.25)이 4.5 를 수차 넘는데 알람은 6.3 에서 1회뿐이라 「임계를 넘었는데 알람이
+ *    침묵한다」는 거짓 서사가 된다. 두 임계선을 **모두** 그리고 라벨을 병기한다.
+ *
+ * 🔴 **알람 서사의 앵커는 «그 알람 행의» thresholdValue 다**(같은 정정). 센서의 임계 표가
+ *    아니라 실제로 울린 행의 값이 마커가 된다 — 둘이 갈리는 날 화면이 조용히 어긋나지 않게.
+ *
+ * 🔴 **이 곡선이 «알람의 것»인지 화면이 말한다**(회부 R-3). 알람 행을 정본에서 찾지 못하면
+ *    설비의 첫 센서로 떨어지는데, 그 사실을 말하지 않으면 무관한 추세가 근거처럼 배치된다.
  *
  * 🔴 **줄인 사실을 화면이 숨기지 않는다.** 3주 창 원본은 44,400점(2MB)이라 서버가 버킷
  *    min·max 로 줄여 보낸다. 그 사실을 캡션에 남기지 않으면 보는 사람은 전량을 봤다고 믿는다.
@@ -18,10 +28,18 @@ export function SensorTrend({
   equipmentId,
   sensorId,
   unit,
+  source,
+  alarm,
+  alarmIds,
 }: {
   equipmentId: string;
   sensorId: string;
   unit: string;
+  /** `alarm` = 알람 행에서 센서를 골랐다 · `fallback` = 못 골라 첫 센서로 떨어졌다. */
+  source: "alarm" | "fallback";
+  alarm: ActiveAlarm | null;
+  /** incident 가 말하는 알람 목록 — 「왜 못 골랐는가」를 화면이 구별해 말하기 위해 받는다. */
+  alarmIds: string[];
 }) {
   const [window, setWindow] = useState<SeriesWindow>("24h");
   // 🔴 결과에 «어느 요청의 답인가»를 붙여 둔다. 창을 바꾸면 이전 창의 그림이 잠깐 남는데,
@@ -45,7 +63,12 @@ export function SensorTrend({
   }, [key, equipmentId, sensorId, window]);
 
   return (
-    <section className="rounded border border-edge bg-panel p-3" data-testid="sensor-trend">
+    <section
+      className="rounded border border-edge bg-panel p-3"
+      data-testid="sensor-trend"
+      data-sensor-source={source}
+      data-sensor={sensorId}
+    >
       <div className="flex items-center gap-2">
         <p className="id text-xs">{sensorId}</p>
         <p className="text-xs text-muted">{unit}</p>
@@ -67,21 +90,55 @@ export function SensorTrend({
         </div>
       </div>
 
+      <SensorProvenance source={source} alarm={alarm} alarmIds={alarmIds} />
+
       {why && (
         <p className="mt-3 text-sm text-warn" role="status">
           추세를 가져오지 못했다: {why}
         </p>
       )}
       {!why && !series && <p className="mt-3 text-sm text-muted">불러오는 중…</p>}
-      {series && <Chart series={series} />}
+      {series && <Chart series={series} alarm={source === "alarm" ? alarm : null} />}
     </section>
   );
 }
 
-function Chart({ series }: { series: Series }) {
+/** 이 곡선이 «어디서 온 센서»인지 — 화면이 스스로 말한다(R-3). */
+function SensorProvenance({
+  source,
+  alarm,
+  alarmIds,
+}: {
+  source: "alarm" | "fallback";
+  alarm: ActiveAlarm | null;
+  alarmIds: string[];
+}) {
+  if (source === "alarm" && alarm) {
+    return (
+      <p className="mt-1 text-xs text-muted" data-testid="sensor-provenance">
+        <span className="text-ai">이 incident 를 울린 알람의 센서</span> ·{" "}
+        <span className="id">{alarm.alarmId}</span> · 발생 {stamp(alarm.raisedAt) ?? alarm.raisedAt}{" "}
+        {TZ_LABEL}
+      </p>
+    );
+  }
+  // 🔴 「알람 센서가 아니다」를 «말한다». 앞판은 같은 자리에 아무 말 없이 첫 센서를 그렸다.
+  return (
+    <p className="mt-1 text-xs text-warn" data-testid="sensor-provenance">
+      ⚠ 알람 센서가 아니다 — 이 설비의 첫 센서다.{" "}
+      {alarmIds.length === 0
+        ? "이 incident 에 연결된 알람이 없다."
+        : `연결된 알람(${alarmIds.join(", ")})이 «활성» 목록에 없어 센서를 정본에서 특정하지 못했다.`}
+    </p>
+  );
+}
+
+function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null }) {
   const values = series.points.map((p) => p.value);
-  const thresholds = [series.warnThreshold, series.alarmThreshold].filter(
-    (v): v is number => v !== null,
+  // 🔴 알람 행의 임계도 «스케일에» 넣는다 — 넣지 않으면 마커가 그림 밖으로 나가 조용히
+  //    사라지고, 화면은 앵커를 그렸다고 믿는다.
+  const thresholds = [series.warnThreshold, series.alarmThreshold, alarm?.thresholdValue].filter(
+    (v): v is number => v !== null && v !== undefined,
   );
   const min = Math.min(...values, ...thresholds);
   const max = Math.max(...values, ...thresholds);
@@ -106,13 +163,29 @@ function Chart({ series }: { series: Series }) {
           <line x1="0" y1={y(series.warnThreshold)} x2="100" y2={y(series.warnThreshold)}
             stroke="currentColor" className="text-warn" strokeDasharray="2 2" strokeWidth="0.5" />
         )}
+        {/* 🔴 알람 «행»의 임계 = 서사의 앵커(계약 v0.1.7-정정 2차). 센서 임계표와 갈릴 수
+            있으므로 별도 선으로 긋는다 — 겹치면 겹친 대로가 사실이다. */}
+        {alarm?.thresholdValue !== null && alarm?.thresholdValue !== undefined && (
+          <line
+            x1="0" y1={y(alarm.thresholdValue)} x2="100" y2={y(alarm.thresholdValue)}
+            stroke="currentColor" className="text-danger" strokeWidth="0.35"
+          />
+        )}
         <path d={path} fill="none" stroke="currentColor" className="text-ai" strokeWidth="0.6" />
       </svg>
       <figcaption className="mt-2 flex flex-wrap gap-x-4 text-xs text-muted">
-        <span>
-          기준선 <span className="text-warn">warn {series.warnThreshold}</span>
+        {/* 🔴 「기준선」이라는 낱말로 한쪽을 지목하지 않는다 — 두 임계는 뜻이 다른 두 선이다. */}
+        <span data-testid="threshold-legend">
+          임계 <span className="text-warn">warn {series.warnThreshold}</span>
           {series.alarmThreshold !== null && (
             <span className="text-danger/70"> · alarm {series.alarmThreshold}</span>
+          )}
+          {alarm && (
+            <span className="text-danger">
+              {" "}
+              · 알람 <span className="id">{alarm.alarmId}</span> 임계 {alarm.thresholdValue} → 관측{" "}
+              {alarm.observedValue}
+            </span>
           )}
         </span>
         <span className="id">
