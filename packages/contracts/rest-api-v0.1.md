@@ -90,6 +90,10 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 
 - **GET `/live/status` `online` 의미 확정** = «로컬 Claude synthesize 게이트웨이 도달 가능 여부»(T2-3 J-1 (b) 채택). 공개 Sandbox에는 게이트 env가 없으므로 `online:false`가 **참**이며 결함이 아니다 — Live/Replay 배지가 §15.2(구독 비노출) 경계와 같은 축을 가리킨다. `true` 전환은 운영자 로컬 실행 환경에서만 성립.
 
+## v0.1.5 append (08-30 · T2-5 구현 대조 — v0.1.4 형상 정정 3필드)
+
+- **v0.1.4 형상에 3필드 추가**: `incidentId` · `equipmentId` · `failureModeId` — v0.1.4가 「T2-3 초안 산출 형상 그대로」라 적고 실물 12필드 중 3필드를 빠뜨렸다(성문 시 실물 자동 대조 미실시 — 오케 귀속 · 「옮겨 적은 표는 자동 대조하라」 계보). 채택 근거 = WO 화면이 「어느 incident·어느 설비·어느 고장의 작업지시인가」를 말해야 한다(화면 ④ 맥락 — 별도 조회 강제는 계약이 화면을 배신하는 형태). `state`→`approvalState`는 v0.1.4의 의도된 낱말 정렬 그대로.
+
 ## v0.1.4 append (08-30 · T2-5 게이트 1 — work-orders 응답 형상 · 저장 축 해석 확정)
 
 - **`GET /work-orders/{woId}`** → T2-3 초안 산출 형상을 정본화: `{ workOrderDraftId, title, procedures, safetyMeasures, parts, evidenceIds, gaps, note, approvalState }` — 본문 서술(「항목·부품·절차·안전 조치·근거 evidenceIds」)의 필드명 확정(두 곳에 적으면 갈린다 — T2-2 /evidence 선례).
