@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
@@ -131,6 +132,10 @@ async def equipment_detail(pool: Any, equipment_id: str) -> dict[str, Any] | Non
         ],
         "maintenanceSummary": [
             {
+                # 🔴 기록의 «자기 id» 가 필수다(계약 v0.1.7-정정). 실물 4행 중 3행이
+                #    work_order_id NULL 이고, 화면이 그리는 `MR-…` 은 근거 id 체계의
+                #    일부라 눌러서 열려야 한다(온톨로지 MR → maintenance_record).
+                "maintenanceRecordId": m["id"],
                 "workOrderId": m["work_order_id"],
                 "type": m["action_type"],
                 "completedOn": _ts(m["performed_at"]),
@@ -214,6 +219,217 @@ async def kpi(pool: Any, plant_id: str) -> dict[str, int]:
         "openIncidents": row["open_incidents"],
         "pendingWorkOrders": row["pending_work_orders"],
     }
+
+
+# --- Overview ----------------------------------------------------------------------
+
+# 🔴 severity 정렬 순서의 «출처는 DB 제약»이다(`alarm_severity_check` = info·warning·critical).
+#    내가 고른 낱말이 아니라 SSOT 가 강제하는 어휘라, 새 낱말이 생기면 여기가 모른다.
+_SEVERITY_RANK: dict[str, float] = {"critical": 0.0, "warning": 1.0, "info": 2.0}
+# 🔴 모르는 낱말은 **critical 바로 아래**에 둔다 — 맨 뒤로 보내면 새 severity 가 목록 끝에
+#    묻혀 아무도 못 보고, 맨 위에 두면 info 급 낱말이 헤드라인을 차지한다. 보이되 최고를
+#    밀어내지 않는 자리다. 함께 로그로 운다(조용히 지나가는 쪽을 고르지 않는다).
+_UNKNOWN_SEVERITY_RANK = 0.5
+
+_PLANT_SQL = "SELECT f.id, f.name FROM factory f WHERE f.id = $1"
+
+_LINES_SQL = """
+    SELECT l.id, l.name, l.line_no, l.status
+      FROM production_line l
+     WHERE l.factory_id = $1
+     ORDER BY l.line_no
+"""
+
+_LINE_EQUIPMENT_SQL = """
+    SELECT e.line_id, e.id, e.name, e.status, e.criticality,
+           coalesce(array_agg(s.id ORDER BY s.id) FILTER (WHERE s.id IS NOT NULL),
+                    ARRAY[]::text[]) AS sensor_ids
+      FROM equipment e
+      LEFT JOIN sensor s ON s.equipment_id = e.id
+     WHERE e.line_id = ANY($1::text[])
+     GROUP BY e.line_id, e.id, e.name, e.status, e.criticality
+     ORDER BY e.id
+"""
+
+_ACTIVE_ALARMS_SQL = """
+    SELECT a.id, a.severity, a.status, a.raised_at,
+           a.threshold_value, a.observed_value, a.equipment_id, a.sensor_id
+      FROM alarm a
+      JOIN equipment e ON e.id = a.equipment_id
+      JOIN production_line l ON l.id = e.line_id
+     WHERE l.factory_id = $1 AND a.status = 'active'
+"""
+
+
+async def overview(pool: Any, plant_id: str) -> dict[str, Any] | None:
+    """`GET /plants/{plantId}/overview` — kpi + lines 트리 + 활성 알람 평면 배열.
+
+    🔴 활성 알람이 **최상위 평면 배열**인 이유(계약 v0.1.7-정정): 도크는 설비별 묶음이 아니라
+       severity 순 목록이고, 헤드라인 문장은 「전체에서 가장 심각한 1건」 — 즉 **정렬된 목록의
+       첫 줄**이다. 트리 원소에 흩어 두면 최댓값을 고르는 규칙이 계약 밖(화면 코드)에 살게
+       되고, 그러면 같은 사실이 화면마다 갈린다.
+    """
+    async with pool.acquire() as conn:
+        plant = await conn.fetchrow(_PLANT_SQL, plant_id)
+        if plant is None:
+            return None
+        lines = await conn.fetch(_LINES_SQL, plant_id)
+        line_ids = [ln["id"] for ln in lines]
+        equipment = await conn.fetch(_LINE_EQUIPMENT_SQL, line_ids) if line_ids else []
+        alarms = await conn.fetch(_ACTIVE_ALARMS_SQL, plant_id)
+        counts = await conn.fetchrow(_KPI_SQL, plant_id)
+
+    by_line: dict[str, list[dict[str, Any]]] = {lid: [] for lid in line_ids}
+    for e in equipment:
+        by_line[e["line_id"]].append(
+            {
+                "equipmentId": e["id"],
+                "name": e["name"],
+                "status": e["status"],
+                "criticality": e["criticality"],
+                # 🔴 스파크라인 «값»은 여기 싣지 않는다 — 카드가 series 를 따로 먹는다
+                #    (계약 v0.1.7 · 집계 응답 비대 방지). 여기는 「어느 센서를 물을지」만 준다.
+                "sensorIds": list(e["sensor_ids"]),
+            }
+        )
+
+    return {
+        "kpi": {
+            "lineActive": counts["line_active"],
+            "alarmCount": counts["alarm_count"],
+            "openIncidents": counts["open_incidents"],
+            "pendingWorkOrders": counts["pending_work_orders"],
+        },
+        "lines": [
+            {
+                "lineId": ln["id"],
+                "name": ln["name"],
+                "lineNo": ln["line_no"],
+                "status": ln["status"],
+                "equipment": by_line[ln["id"]],
+            }
+            for ln in lines
+        ],
+        "activeAlarms": _sorted_alarms(alarms),
+    }
+
+
+def _sorted_alarms(rows: list[Any]) -> list[dict[str, Any]]:
+    def rank(severity: str) -> float:
+        known = _SEVERITY_RANK.get(severity)
+        if known is None:
+            log.warning("정렬 규칙이 모르는 alarm.severity 다: %r — DB 제약이 늘었는가", severity)
+            return _UNKNOWN_SEVERITY_RANK
+        return known
+
+    ordered = sorted(rows, key=lambda a: (rank(a["severity"]), -a["raised_at"].timestamp()))
+    return [
+        {
+            "alarmId": a["id"],
+            "severity": a["severity"],
+            "status": a["status"],
+            "raisedAt": _ts(a["raised_at"]),
+            "thresholdValue": _num(a["threshold_value"]),
+            "observedValue": _num(a["observed_value"]),
+            "equipmentId": a["equipment_id"],
+            "sensorId": a["sensor_id"],
+        }
+        for a in ordered
+    ]
+
+
+# --- 센서 시계열 --------------------------------------------------------------------
+
+# 계약이 허용한 두 창 «만». 사용자 문자열이 기간을 정하지 못하게 여기서 상수로 갈아 끼운다.
+WINDOWS: dict[str, str] = {"24h": "24 hours", "3w": "21 days"}
+
+# 🔴 반환 버킷 수. bucket-minmax 라 버킷당 최대 2점이므로 상한은 대략 이 값의 두 배다.
+#    실측: 3주 원본 44,400점 = 2.07MB · 24시간 15,600점 = 764KB — 그대로는 차트가 죽는다.
+TARGET_BUCKETS = 300
+
+_SERIES_SENSOR_SQL = """
+    SELECT s.id, s.unit, s.warn_threshold, s.alarm_threshold
+      FROM sensor s
+     WHERE s.id = $1 AND s.equipment_id = $2
+"""
+
+# 🔴 창의 «기준점»은 벽시계 now() 가 아니라 **그 센서의 마지막 판독**이다. seed 는 과거
+#    구간(2026-08-05~08-26)의 합성 데이터라, now() 기준으로 자르면 24h 창이 «빈 차트»가
+#    된다 — 데이터가 없는 것이 아니라 창이 빗나간 것인데 화면은 둘을 구분하지 못한다.
+#    points 의 ts 가 구간을 그대로 드러내므로 이 선택은 응답에서 보인다.
+_SERIES_SQL = """
+    WITH bounds AS (
+        SELECT max(r.ts) AS anchor FROM sensor_reading r WHERE r.sensor_id = $1
+    ),
+    src AS (
+        SELECT r.ts, r.value
+          FROM sensor_reading r, bounds b
+         WHERE r.sensor_id = $1
+           AND r.ts >  b.anchor - $2::interval
+           AND r.ts <= b.anchor
+    ),
+    bucketed AS (
+        SELECT ts, value, floor(extract(epoch FROM ts) / $3) AS bucket FROM src
+    ),
+    lows AS (
+        SELECT DISTINCT ON (bucket) bucket, ts, value FROM bucketed ORDER BY bucket, value, ts
+    ),
+    highs AS (
+        SELECT DISTINCT ON (bucket) bucket, ts, value FROM bucketed ORDER BY bucket, value DESC, ts
+    ),
+    picked AS (
+        SELECT ts, value FROM lows
+        UNION
+        SELECT ts, value FROM highs
+    )
+    SELECT (SELECT count(*) FROM src) AS source_points,
+           (SELECT coalesce(json_agg(json_build_object('ts', ts, 'value', value) ORDER BY ts), '[]')
+              FROM picked) AS points
+"""
+
+
+async def sensor_series(
+    pool: Any, equipment_id: str, sensor_id: str, window: str
+) -> dict[str, Any] | None:
+    """`GET /equipment/{id}/sensors/{sid}/series?window=` — 계약 v0.1.7-정정 형상.
+
+    🔴 **줄이되, 줄였다는 사실을 응답이 스스로 말한다**(`sampling`). 버킷당 min·max 를 남기는
+       방식이라 임계 교차와 알람 순간이 평균에 뭉개지지 않는다 — 이 차트가 하는 말이
+       「임계를 넘었다」이므로, 넘은 그 점을 지우는 축약은 그림을 거짓으로 만든다.
+
+    🔴 **경로의 두 id 관계를 확인한다.** `sensorId` 가 다른 설비의 것이면 404 다 — 경로가
+       주장하는 관계가 거짓인데 값을 내주면, 화면은 남의 설비 센서를 이 설비 것으로 그린다.
+    """
+    interval = WINDOWS.get(window)
+    if interval is None:                                  # 라우트의 Literal 이 이미 막지만,
+        return None                                       # 이 함수만 따로 부를 때를 위해 남긴다.
+
+    async with pool.acquire() as conn:
+        sensor = await conn.fetchrow(_SERIES_SENSOR_SQL, sensor_id, equipment_id)
+        if sensor is None:
+            return None
+        span_sec = _WINDOW_SECONDS[window]
+        bucket_sec = max(span_sec / TARGET_BUCKETS, 1.0)
+        row = await conn.fetchrow(_SERIES_SQL, sensor_id, interval, bucket_sec)
+
+    points = json.loads(row["points"]) if isinstance(row["points"], str) else row["points"]
+    return {
+        "sensorId": sensor["id"],
+        "unit": sensor["unit"],
+        "window": window,
+        "warnThreshold": _num(sensor["warn_threshold"]),
+        "alarmThreshold": _num(sensor["alarm_threshold"]),
+        "sampling": {
+            "method": "bucket-minmax",
+            "bucketMs": int(bucket_sec * 1000),
+            "sourcePoints": row["source_points"],
+            "returnedPoints": len(points),
+        },
+        "points": points,
+    }
+
+
+_WINDOW_SECONDS: dict[str, float] = {"24h": 24 * 3600.0, "3w": 21 * 24 * 3600.0}
 
 
 # --- 형 변환 ------------------------------------------------------------------------
