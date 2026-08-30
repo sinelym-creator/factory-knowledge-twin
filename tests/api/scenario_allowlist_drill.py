@@ -76,7 +76,11 @@ def source_questions() -> dict[str, str]:
 
 def get(path: str) -> tuple[int, object]:
     try:
-        with urllib.request.urlopen(API_BASE + path, timeout=60) as res:
+        # 🔴 여기가 어댑터 «밖»이었다 — 가드 착지 순간 /scenarios 가 401 로 죽었고,
+        #    그 빨강은 대상의 것이 아니었다. 운반 경로로 합류시킨다.
+        _req = urllib.request.Request(API_BASE + path,
+                                      headers=_session.prepare(None, path)[1])
+        with urllib.request.urlopen(_req, timeout=60) as res:
             return res.status, json.loads(res.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         return exc.code, {"_raw": exc.read().decode("utf-8", "replace")[:200]}

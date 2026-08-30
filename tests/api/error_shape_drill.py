@@ -49,9 +49,10 @@ APPROVED_Q = (
 SID = "levi2-errshape-01"
 
 
-def request(method: str, path: str, body: dict | None = None) -> tuple[int, str, str]:
+def request(method: str, path: str, body: dict | None = None, *,
+            sample: bool = False) -> tuple[int, str, str]:
     # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 받은 것을 그대로 되돌려준다.
-    body, _carry = _session.prepare(body, path)
+    body, _carry = _session.prepare(body, path, sample=sample)
     data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
     headers = {"Content-Type": "application/json"} if data else {}
     headers.update(_carry)
@@ -103,14 +104,19 @@ def docker(*args: str) -> str:
 
 
 CASES: list[tuple[str, str, str, str, dict | None]] = [
-    ("E-01", "sessionId 형식 위반", "POST", "/api/retrieval/compare",
+    # 🔴 이 칸은 «세션 값 자체»가 표본이라 어댑터가 비켜선다(아래 dispatch 의 sample=True).
+    #    v0.1.6 착지 후 서버가 무엇으로 거절하는지는 갈릴 수 있다 — 형식 위반이든
+    #    쿠키↔본문 불일치든, 이 드릴이 묻는 것은 하나다: **오류가 계약 «형상»인가.**
+    ("E-01", "sessionId 형식/불일치 위반", "POST", "/api/retrieval/compare",
      {"sessionId": "ab", "question": APPROVED_Q, "strategies": ["vector"]}),
     ("E-02", "승인 목록 밖 질문", "POST", "/api/retrieval/compare",
      {"sessionId": SID, "question": "아무 질문", "strategies": ["vector"]}),
     ("E-03", "계약 밖 전략명", "POST", "/api/retrieval/compare",
      {"sessionId": SID, "question": APPROVED_Q, "strategies": ["bm25"]}),
     ("E-04", "필수 필드 누락", "POST", "/api/retrieval/compare", {"sessionId": SID}),
-    ("E-05", "미구현 라우트(501)", "POST", "/api/sessions", None),
+    # 🔴 표본을 갈았다. 옛 표본은 `POST /api/sessions` 였는데 T3-1 이 그것을 구현했다 —
+    #    「미구현 501」의 주어가 사라진 자리에서 표가 200 을 물고 빨강을 냈다(그물이 판정보다 낡는다).
+    ("E-05", "미구현 라우트(501)", "GET", "/api/plants", None),
     ("E-06", "없는 경로(404)", "GET", "/api/does-not-exist", None),
     # 🔴 T2-2 로 표면이 자랐다 — 읽기 3라우트의 오류 경로도 같은 형상이라야 한다.
     #    자라난 표면을 표에 올리지 않으면 그것은 「내가 안 본다」는 뜻이다.
@@ -133,7 +139,8 @@ def main() -> int:
 
     bad: list[str] = []
     for cid, what, method, path, body in CASES:
-        status, ctype, raw = request(method, path, body)
+        # 🔴 E-01 은 세션 «값 자체»가 표본이다 — 어댑터가 비켜서야 표본이 서버까지 간다.
+        status, ctype, raw = request(method, path, body, sample=(cid == "E-01"))
         ok, why = conforms(status, ctype, raw)
         print(f"  {'PASS' if ok else 'FAIL'}  {cid} {what:22} {status}  {why}")
         if not ok:

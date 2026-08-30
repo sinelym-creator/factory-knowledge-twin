@@ -17,6 +17,8 @@
    ④ 🔴 **소유권 은닉** — 남의 run·초안·이력 = `404 not_found`.
       **401/403 은 red 다** — 「없다」와 「남의 것이다」가 갈리면 자원의 «존재»가 새기 때문이다.
    ⑤ **쿠키/본문 상충** — 둘 다 있고 «다르면» `422 invalid_request`(조용한 우선순위 금지).
+   ⑦ 🔴 **운반 독법**(판정 ⓑ) — 인증 운반은 **쿠키 단독**. 본문 `sessionId` 는 동결 v0.1 의
+      «남은» 표기라 있으면 일치 의무이고, **본문 단독은 무세션(401)** 이다.
    ⑥ **reset 자기 한정** — 남의 세션 reset = 404 · 자기 reset 범위 = 그 세션의 run·초안·이력만
       (SSOT 무접촉은 기존 `ssot_write_drill` 축이 지킨다).
 
@@ -145,6 +147,15 @@ def verdict(status: int, code: str | None, rules: dict) -> str:
     return f"other({status}:{code})"
 
 
+# 동결 v0.1 본문이 `sessionId` 를 «가진» 라우트. 나머지는 쿠키만으로 신원을 나른다.
+_SESSION_BODY = ("/runs", "/retrieval/compare")
+
+
+def _takes_session(path: str) -> bool:
+    """계약 동결 본문에 `sessionId` 자리가 있는가 — 없으면 넣지 않는다(422 가 판정을 가린다)."""
+    return path.endswith("/runs") or path.startswith("/api/retrieval/compare")
+
+
 def await_run(run_id: str, cookie: str) -> dict:
     deadline = time.time() + 300
     while time.time() < deadline:
@@ -218,7 +229,10 @@ def main() -> int:
         ("POST", "/api/retrieval/compare"),
     ]
     for method, path in guarded:
-        body = {"sessionId": sid_a} if method in ("POST", "PATCH") else None
+        # 🔴 동결 v0.1 본문에 `sessionId` «자리»가 있는 라우트에만 본문을 싣는다.
+        #    자리가 없는 곳(approve·PATCH 초안 등)에 넣으면 extra=forbid 가 422 를 먼저 내고,
+        #    재려던 401/404 를 가려 버린다 — 첫 판에 축④가 그렇게 가려졌다.
+        body = {"sessionId": sid_a} if _takes_session(path) else None
         st, res, _ = raw(method, path, body)
         got = verdict(st, code_of(res), rules)
         ok = got == "unauth"
@@ -234,7 +248,9 @@ def main() -> int:
                                 ("초안", "GET", f"/api/work-orders/{draft_a}"),
                                 ("승인", "POST", f"/api/work-orders/{draft_a}/approve"),
                                 ("경로", "GET", f"/api/graph/paths?byRun={run_a}")):
-        body = {"sessionId": sid_b} if method == "POST" else None
+        # 🔴 여기서도 같다. 세션 B 의 신원은 «쿠키»가 나른다(v0.1.6 판정: 운반 = 쿠키 단독) —
+        #    본문에 억지로 넣으면 소유권 판정 앞에서 422 가 먼저 서고, 은닉 축이 안 잰다.
+        body = {"sessionId": sid_b} if _takes_session(path) else None
         st, res, _ = raw(method, path, body, cookie=cookie_b)
         got = verdict(st, code_of(res), rules)
         ok = got == "hidden"
@@ -273,6 +289,29 @@ def main() -> int:
         bad += 0 if gone else 1
         print(f"  {'PASS' if gone else 'FAIL'}  축⑥ reset 후 자기 run 소멸        {st} "
               f"{code_of(res) or ''}" + ("" if gone else "  🔴 초기화 범위가 안 닿았다"))
+
+    # ── 축⑦ 🔴 «운반» 독법 (08-30 오케 판정 ⓑ) — 인증 운반 = 쿠키 «단독» ─────
+    #    세 칸을 함께 던져야 독법이 선다. 쿠키만으로 열리고 본문만으로는 안 열려야
+    #    「id 를 아는 것만으로 남의 세션을 쓴다」가 닫힌다(기각 독법 ⓐ 의 기각 사유).
+    sid_c, cookie_c = open_session()
+    carriage = [
+        ("쿠키 단독", raw("GET", "/api/scenarios", None, cookie=cookie_c), "open"),
+        ("본문 단독(쿠키 없음)",
+         raw("POST", f"/api/scenarios/{SCENARIO}/runs", {"sessionId": sid_c, "mode": "live"}),
+         "unauth"),
+        ("쿠키+본문 «일치»",
+         raw("POST", f"/api/scenarios/{SCENARIO}/runs",
+             {"sessionId": sid_c, "mode": "live"}, cookie=cookie_c), "open"),
+    ]
+    for label, (st, res, _), want in carriage:
+        got = verdict(st, code_of(res), rules)
+        ok = got == want
+        bad += 0 if ok else 1
+        note = ""
+        if label.startswith("본문 단독") and got == "open":
+            note = "  🔴 본문만으로 인증된다 — 기각 독법 ⓐ 가 살아 있다(소유권 은닉이 함께 무너진다)"
+        print(f"  {'PASS' if ok else 'FAIL'}  축⑦ 운반 {label:22} {st} "
+              f"{code_of(res) or ''}{note}")
 
     print()
     print(f"결과: 어긋남 {bad}건")

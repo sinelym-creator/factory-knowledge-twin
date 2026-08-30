@@ -35,8 +35,6 @@ export async function proxy(req: NextRequest) {
       ? { id: reply.data.sessionId, origin: "api" as const }
       : { id: crypto.randomUUID().replace(/-/g, ""), origin: "pending" as const };
 
-  const res = NextResponse.redirect(new URL("/overview", req.url));
-
   // 🔴 **ai-api가 심은 세션 쿠키를 브라우저까지 그대로 넘긴다**(T3-1 · 계약 v0.1.6).
   //    입장 요청은 «서버사이드»에서 나가므로, 전달하지 않으면 그 HttpOnly 쿠키는 이 서버의
   //    fetch에서 끝나고 브라우저는 못 받는다 — 그러면 브라우저가 rewrite로 부르는 `/api/*`가
@@ -47,11 +45,28 @@ export async function proxy(req: NextRequest) {
   //       한 곳에 남게 한다(오케 승인 08-30).
   //    🔴 `Secure`는 «셸이» https로 서비스될 때 덧붙인다. API는 자기 요청 스킴을 보고 정하는데
   //       그 요청은 서버간 http라서 Secure가 빠진다 — 브라우저 쪽 조건은 브라우저 쪽에서 안다.
-  if (reply.state === "ok" && reply.setCookie) {
-    const needsSecure =
-      req.nextUrl.protocol === "https:" && !/;\s*secure/i.test(reply.setCookie);
-    res.headers.append("set-cookie", needsSecure ? `${reply.setCookie}; Secure` : reply.setCookie);
-  }
+  const apiCookie =
+    reply.state === "ok" && reply.setCookie
+      ? req.nextUrl.protocol === "https:" && !/;\s*secure/i.test(reply.setCookie)
+        ? `${reply.setCookie}; Secure`
+        : reply.setCookie
+      : null;
+
+  // 🔴 **응답을 «만들 때» 심는다 — 만든 뒤에 append 하지 않는다**(V-1 픽스 · 실측 근거).
+  //    앞판은 `headers.append("set-cookie", …)` 뒤에 `res.cookies.set(…)` 이 왔고, 그
+  //    `cookies.set` 이 자기 쿠키 캐시로 헤더를 **재직렬화하면서 앞의 append 를 지웠다.**
+  //    실측(Node 22 · next 16.3.3): append 직후 set-cookie 1개 → cookies.set 이후 1개인데
+  //    그 1개가 `fkt_session` 뿐이다. 브라우저는 `fkt_sid` 를 못 받고 `/api/*` 가 전건 401.
+  //
+  //    🔴 순서를 뒤집는 것(`cookies.set` 먼저 → append 나중)으로도 «지금은» 고쳐진다.
+  //       그러나 그 형태는 **다음 사람이 `cookies.set` 한 줄을 더 붙이는 날 조용히 되살아난다**
+  //       — 실측으로 확인했다(뒤집기 + set 한 번 더 = fkt_sid 소멸 · 아래 방식 = 생존).
+  //       그래서 초기화 헤더로 넘긴다: ResponseCookies 가 이 값을 자기 목록으로 «읽어 들여»
+  //       이후의 `cookies.set` 이 몇 번 오든 함께 직렬화된다. 고치는 김에 재발 자리를 없앤다.
+  const res = NextResponse.redirect(
+    new URL("/overview", req.url),
+    apiCookie ? { headers: { "set-cookie": apiCookie } } : undefined,
+  );
 
   res.cookies.set(SESSION_COOKIE, formatSession(created), {
     path: "/",
