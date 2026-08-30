@@ -80,8 +80,8 @@ size_limit: 8KB
 
 | ID | 티켓 | 담당 | 요지 (AC 전문 = 티켓 파일 · 발주 시 생성) | 의존 | 상태 |
 |---|---|---|---|---|---|
-| T3-1 | 세션 실체화 — `POST /sessions` 해제(Q-18 성문분) · browser session sandbox · 🔴 세션 가드 전면(Q-16 오케 설계 집행: 전 라우트 가드 + evidence 딥링크 «읽기 전용» 예외 §3:244) · Q-25 결속(초안·승인 세션 소유권) | 구현 | 방문자 격리의 기반 축 — 화면 4장이 이 위에 선다 | T2-6 ✅ | 등재(1착 발주 준비) |
-| T3-2 | Overview·Incident 화면 데이터 결선 + 조회 계층 라우트 해제 판정(`/incidents`·`/plants`·`/equipment` — Q-18 잔여) | 구현 | placeholder 해소 · wireframes ①② | T3-1 | 등재 |
+| T3-1 | 세션 실체화 — `POST /sessions` 해제(Q-18 성문분) · browser session sandbox · 🔴 세션 가드 전면(Q-16 오케 설계 집행: 전 라우트 가드 + evidence 딥링크 «읽기 전용» 예외 §3:244) · Q-25 결속(초안·승인 세션 소유권) | 구현 | 방문자 격리의 기반 축 — 화면 4장이 이 위에 선다 | T2-6 ✅ | 🔶 구현 «병합 착지» 08-30 17:00(PR#151 · d53bc7f · 12파일 — 가드 표 27라우트 58검사 어긋남 0 · 소유권 B→A 8경로 404 · 리셋 지문 62축 무변+감도 대조 · 🔴 대조군 A가 FRAMEWORK_UNGUARDED 4라우트 적발 = Q-35 · 독법 판정 ⓑ = v0.1.6 append 26353ef) · **독립 검증 착수 17:04**(리바이2 10대 — session_guard_drill 6축 + 그물 정비 4건 + next build 축) |
+| T3-2 | Overview·Incident 화면 데이터 결선 + 조회 계층 라우트 해제 판정(`/incidents`·`/plants`·`/equipment` — Q-18 잔여 · 해제 단위 = 화면 소비처 실재 질의 형태만) | 구현 | placeholder 해소 · wireframes ①② | T3-1 구현 착지 ✅(검증 병행) | 🔶 발주 08-30 17:08(센쿠2 13대 · lane/senku2-t3-2 · T3-1 주석 소조각 동봉) |
 | T3-3 | Evidence·Documents 화면 — 근거 열람·STALE 배지 표면(Q-20 소비처)·딥링크(Q-16 예외 축 소비) | 구현 | wireframes ③ | T3-1 | 등재 |
 | T3-4 | 조사 실행·전략 비교 화면 — run 타임라인(이벤트 스트림) · replay 재생 UI(Q-27 화면 축 판정) · graph evidence 시각화(`/graph/paths?from&to` 소비처 — Q-26 재판정) | 구현 | wireframes ⑤ + deterministic replay 소비 | T3-1 | 등재 |
 | T3-5 | WO 초안 편집·승인 화면 — R12 툴팁 문구(Q-31) · 근거 툴팁 축(Q-32 판정) | 구현 | wireframes ④ | T3-1 | 등재 |
