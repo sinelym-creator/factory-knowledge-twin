@@ -83,10 +83,46 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
    *    한 화면씩 착지할 때 그 화면의 축만 정확히 깨어난다.
    * ──────────────────────────────────────────────────────────────────────── */
 
-  test("E-2 연쇄 — 조사→근거→WO 승인이 «클릭으로» 이어진다", async ({ page }) => {
+  /* 🔴 E-2 는 **한 칸씩** 열린다(T3-2 착지 · 11대).
+   *
+   * 축 계획 정본의 red 는 「조사 실행 → 근거 열람 → WO 승인이 클릭으로 이어지지 않는다
+   * (id 를 손으로 옮겨야 이어지면 통합이 아니다)」다. T3-2 가 착지시킨 것은 그 사슬의
+   * **첫 칸**(Overview → incident)뿐이고, 근거 열람·WO 승인 화면은 T3-4·T3-5 자리다.
+   * 사슬 전체를 지금 재려 들면 못 재는 칸 때문에 축이 통째로 미뤄지고, 착지한 칸의
+   * 회귀가 아무에게도 안 물린다 — 그래서 칸별로 가른다.
+   * 🔴 반대로 착지한 칸을 「E-2 통과」라고 부르지도 않는다. E-2b 가 남아 있는 동안
+   *    이 축은 **미완**이며, 아래 정직성 행이 그 사실을 계속 든다. */
+  test("E-2a 연쇄 1칸 — 조사 실행이 «클릭으로» incident 화면까지 잇는다", async ({ page }) => {
     test.fixme(await stillPlaceholder(page, "/overview"),
       "Overview 가 자리표시다 — 이을 화면이 아직 없다");
+
     await page.goto("/overview");
+    const start = page.getByTestId("start-from-alarm").first();
+    await expect(start, "알람 도크에 조사 진입이 없다 — 사슬의 첫 칸이 없다").toBeVisible();
+
+    // 🔴 «클릭으로» 가 축이다. url 을 손으로 만들어 넣으면 이 축은 언제나 초록이 된다 —
+    //    id 를 사람이 옮기지 않는다는 것이 정본이 말한 통합의 뜻이다.
+    await start.click();
+    await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 20_000 });
+
+    const m = page.url().match(/\/incidents\/([^?]+)\?run=(.+)$/);
+    expect(m, "incident 로 갔지만 run 이 url 에 실리지 않았다").toBeTruthy();
+    const [, incidentId, runId] = m!;
+
+    // 🔴 도착한 화면이 «그 id 들을 실제로 그리는가». 이동만 재면 빈 화면도 초록이다.
+    await expect(page.getByTestId("incident-header")).toContainText(decodeURIComponent(incidentId));
+    await expect(page.getByTestId("ttae-row")).toContainText(decodeURIComponent(runId));
+
+    // 🔴 그리고 그 run 은 «내 세션의» run 이어야 한다 — 계약 v0.1.6 소유권. 남의 run id 를
+    //    url 에 넣어 같은 화면이 서면, 클릭 연쇄가 아니라 id 를 아는 사람의 통로가 된다.
+    const mine = await page.request.get(`/api/runs/${runId}`);
+    expect(mine.status(), "방금 만든 run 을 내 세션이 못 읽는다").toBe(200);
+  });
+
+  test("E-2b 연쇄 잔여 — 근거 열람 → WO 승인이 클릭으로 이어진다", async ({ page }) => {
+    test.fixme(await stillPlaceholder(page, "/work-orders/WOD-x"),
+      "WO 화면이 자리표시다 — 사슬의 마지막 칸이 아직 없다(T3-5)");
+    await page.goto("/work-orders/WOD-x");
   });
 
   test("E-3 전략 비교 — 세 score 를 «크기»로 견주지 않는다 (Q-17)", async ({ page }) => {
@@ -111,26 +147,76 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
     // 🔴 오늘 mode-badge.spec.ts 가 덮는 것은 «게이트 축»(/live/status.online) 뿐이다.
     //    v0.1.3 이 말한 나머지 한 축(run/envelope 의 `mode` = 이벤트 «출처»)은 그릴 run 화면이
     //    없어서 아직 축으로 서지 않는다 — 배지가 한 축만 말하는 것이 «지금은» 참이다.
-    test.fixme(await stillPlaceholder(page, "/overview"),
-      "run 을 그리는 화면이 자리표시다 — 조합할 두 번째 축이 아직 없다(게이트 축은 mode-badge.spec.ts 가 덮는다)");
+    //
+    // 🔴 관문을 **옮겼다**(11대). 앞판은 `/overview` 를 관문으로 삼았는데, T3-2 로 Overview 가
+    //    자리표시를 벗자 이 축이 「채워라」고 울렸다 — 그러나 채울 수 없었다. run 의 `mode` 를
+    //    그리는 화면은 Overview 가 아니라 **incident** 이고 그쪽은 여전히 T3-4 자리다.
+    //    관문이 대상과 다른 화면을 가리키면 정직성 행이 «거짓 채근»을 한다(10대가 같은 형태의
+    //    잘못된 관문을 한 번 고쳤고, 이것이 그 두 번째다).
+    test.fixme(await runScreenIsPlaceholder(page),
+      "run 을 그리는 화면(incident)이 T3-4 자리표시다 — 조합할 두 번째 축이 아직 없다(게이트 축은 mode-badge.spec.ts 가 덮는다)");
     await page.goto("/overview");
   });
 });
 
-/** 그 화면이 아직 «자리표시»인가 — 축의 관문을 사람 말이 아니라 화면에게 묻는다. */
+/**
+ * 그 화면이 아직 «자리표시»인가 — 축의 관문을 사람 말이 아니라 화면에게 묻는다.
+ *
+ * 🔴 문구를 **둘** 안다(11대). 앞판은 「이 자리에 올 것」 하나만 알았는데, T3-2 가 채운
+ *    화면들은 남은 칸을 「이 자리는 T3-4다」로 적었다 — 같은 뜻의 다른 낱말이다. 하나만 아는
+ *    관문은 새 자리표시를 «벗은 것»으로 오독하고, 그러면 못 재는 축을 잰 것으로 센다.
+ *    🔴 그물의 전제(문구)는 대상이 자랄 때 함께 늙는다 — 문구를 늘리는 자리를 여기 하나로 둔다.
+ */
 async function stillPlaceholder(page: Page, path: string): Promise<boolean> {
-  await page.goto(path);
-  return (await page.getByText(PLACEHOLDER).count()) > 0;
+  /* 🔴 **관문이 그 화면에 실제로 도착했는지부터 본다**(11대 자수 · 두 번 틀렸다).
+   *
+   * 증상: 같은 경로를 보는 두 축(E-2b·E-5)이 실행마다 다른 답을 냈다.
+   * 첫 독법은 「로드를 안 기다려서」였고 — **틀렸다**. 실측한 원인은 **첫 진입 딥링크 유실**이다:
+   * 세션이 없는 첫 요청은 가드 홉이 `/overview` 로 돌려보내므로(정본 동작 · session-guard
+   * 스펙 R-1 이 이미 못박은 사실), 관문은 «대상 화면이 아닌 화면»을 보고 「자리표시가 없다 =
+   * 벗었다」고 오판한다. 배열의 «첫» 관문만 걸리고 뒤는 멀쩡했던 이유가 이것이다.
+   *
+   * ⇒ 세션을 먼저 세우고, 도착 url 이 요청한 경로인지 확인한 뒤에 묻는다. 도착하지 못하면
+   *   «못 잼»이므로 안전한 쪽(자리표시로 본다)으로 답한다 — 관문이 흔들려서 축을 여는 것이
+   *   가장 나쁜 실패다.
+   */
+  await page.goto("/overview", { waitUntil: "networkidle" }); // 세션 홉을 먼저 지난다
+  await page.goto(path, { waitUntil: "networkidle" });
+  if (!new URL(page.url()).pathname.startsWith(path.split("?")[0].split("#")[0])) return true;
+  for (const text of PLACEHOLDERS) {
+    if ((await page.getByText(text).count()) > 0) return true;
+  }
+  return false;
 }
 
-const PLACEHOLDER = "이 자리에 올 것";
+const PLACEHOLDERS = ["이 자리에 올 것", "이 자리는 T3-4다"] as const;
 
-const AXIS_SCREENS: ReadonlyArray<readonly [string, string]> = [
-  ["E-2 연쇄", "/overview"],
-  ["E-3 전략 비교", "/compare"],
-  ["E-4 인용 강조", "/evidence/DOC-MAN-0021%40r1%23005"],
-  ["E-5 R12", "/work-orders/WOD-x"],
-  ["E-6 배지 두 축", "/overview"],
+/**
+ * run 을 그리는 화면(incident)이 아직 자리표시인가 — 🔴 **경로를 지어내지 않는다.**
+ * incident id 를 코드에 박으면 seed 가 바뀐 날 이 관문이 조용히 죽는다(「표본은 이름이 아니라
+ * 조건으로」 계보). 화면이 실제로 여는 동선을 그대로 타고 가서, 도착한 화면에게 묻는다.
+ * 동선 자체가 없으면(Overview 가 아직 자리표시면) 그 역시 «못 잼»이다.
+ */
+async function runScreenIsPlaceholder(page: Page): Promise<boolean> {
+  if (await stillPlaceholder(page, "/overview")) return true;
+  const start = page.getByTestId("start-from-alarm").first();
+  if ((await start.count()) === 0) return true;
+  await start.click();
+  await page.waitForURL(/\/incidents\//, { timeout: 20_000 }).catch(() => {});
+  await page.waitForLoadState("networkidle");
+  for (const text of PLACEHOLDERS) {
+    if ((await page.getByText(text).count()) > 0) return true;
+  }
+  return false;
+}
+
+/** 축 → 그 축의 관문. 🔴 관문은 «그 축이 재려는 화면»이어야 한다 — 다른 화면을 가리키면 거짓 채근이 된다. */
+const AXIS_GATES: ReadonlyArray<readonly [string, (page: Page) => Promise<boolean>]> = [
+  ["E-2b 연쇄 잔여 (WO 승인 · /work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
+  ["E-3 전략 비교 (/compare)", (p) => stillPlaceholder(p, "/compare")],
+  ["E-4 인용 강조 (/evidence)", (p) => stillPlaceholder(p, "/evidence/DOC-MAN-0021%40r1%23005")],
+  ["E-5 R12 (/work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
+  ["E-6 배지 두 축 (incident 화면)", runScreenIsPlaceholder],
 ];
 
 test("골격 정직성 — «못 잼»을 화면별 조건에 묶는다", async ({ page }) => {
@@ -140,9 +226,12 @@ test("골격 정직성 — «못 잼»을 화면별 조건에 묶는다", async 
   //    🔴 앞판의 관문(「브라우저 데이터 경로 401」)은 «틀린 관문»이었다. V-1 이 고쳐져
   //       조건이 풀렸는데도 축은 여전히 못 쟀다 — 화면이 자리표시였기 때문이다.
   //       조건을 잘못 잡으면 정직성 테스트가 «거짓 채근»을 한다. 그래서 화면으로 옮겼다.
+  //    🔴 11대에서 그 오독이 한 번 더 났다 — E-2·E-6 이 «Overview» 를 관문으로 삼고 있었는데
+  //       둘 다 Overview 에서 끝나는 축이 아니었다. 관문을 각 축의 화면으로 옮겼고,
+  //       E-2 는 착지한 칸(E-2a)을 열고 남은 칸(E-2b)만 여기 남긴다.
   const ready: string[] = [];
-  for (const [axis, path] of AXIS_SCREENS) {
-    if (!(await stillPlaceholder(page, path))) ready.push(`${axis} (${path})`);
+  for (const [axis, gate] of AXIS_GATES) {
+    if (!(await gate(page))) ready.push(axis);
   }
   expect(
     ready,
