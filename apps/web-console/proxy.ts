@@ -15,6 +15,29 @@ import { SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
  * 🔴 규칙을 «한 곳»에 둔다. 페이지마다 가드를 넣으면 새 라우트가 생길 때 빠뜨리고,
  *    빠뜨린 라우트는 세션 없이 열리는 «구멍»이 된다 — 화면 목록이 늘어날수록 확실해진다.
  */
+/**
+ * 🔴 **읽기 전용 딥링크 예외 — 계약 v0.1.6 의 «화면» 절반**(T3-3).
+ *
+ * 계약은 `GET /evidence/{id}` · `GET /documents/{id}` 를 「세션 없이 열람만」으로 열었고
+ * (§3:244 집행 · Q-16 긴장 해소), ai-api 쪽 절반은 T3-1 이 `READ_ONLY_EXCEPTIONS` 로 세웠다.
+ * 그런데 **셸이 그 앞에서 세션 없는 방문자를 `/` 로 되돌려 보내고 있었다** — API 는 열려
+ * 있는데 화면이 닫혀서, 딥링크로 들어온 사람은 근거가 아니라 `/overview` 에 도착했다.
+ * 그것이 Q-16 이 「§3:244는 지금도 미구현」이라 적어 둔 상태의 실체다(levi2 6대 R-1 계보).
+ *
+ * 🔴 **긍정형·앵커·문자집합으로 잠근다.** 이 파일의 matcher 가 부정 전방탐색 하나로
+ *    `/incidents/x.svg` 를 세션 없이 열었던 자리다(V-1) — 같은 형태를 반복하지 않는다.
+ *    `\b` 도 쓰지 않는다: 경계 문자가 바뀌면 조용히 다른 자리에서 끊긴다.
+ * 🔴 **세그먼트 «하나»만** 문다. `/evidence/x/y` 는 예외가 아니다 — 계약이 연 것은 단건
+ *    열람 2라우트이고, 그 아래로 무엇이 자라든 그것은 새 표면이다.
+ * 🔴 실패 방향: 이 정규식이 «못 물면» 방문자는 예전처럼 `/` 로 가서 목적지를 잃는다 —
+ *    눈에 보이는 실패다. 반대로 넓게 물면 세션 화면이 세션 없이 열려 «조용한» 구멍이 된다.
+ *    좁게 틀리는 쪽을 고른다.
+ * 🔴 그리고 이 목록이 스스로를 증명하지는 못한다 — 「예외에 없으니 막힌다」는 추론이다.
+ *    실증은 밖에서 온다: 자기 실측 표의 «브라우저 네트워크 축»이 세션 화면(쿠키 없으면
+ *    `/` 로 튄다)과 딥링크(그대로 200)를 «같은 브라우저»에서 나란히 잰다.
+ */
+const READ_ONLY_DEEP_LINK = /^\/(evidence|documents)\/[^/]+$/;
+
 export async function proxy(req: NextRequest) {
   const session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
   const isEntry = req.nextUrl.pathname === "/";
@@ -22,6 +45,12 @@ export async function proxy(req: NextRequest) {
   if (session) {
     // 이미 세션이 있으면 `/`는 머무는 곳이 아니라 지나가는 곳이다.
     return isEntry ? NextResponse.redirect(new URL("/overview", req.url)) : NextResponse.next();
+  }
+
+  // 🔴 세션이 없어도 딥링크 2라우트는 «그대로» 연다. 여기서 세션을 만들어 주지도 않는다 —
+  //    만들어 주면 「열람만」이 아니라 조용한 입장이 되고, 화면은 세션 화면과 구별되지 않는다.
+  if (READ_ONLY_DEEP_LINK.test(req.nextUrl.pathname)) {
+    return NextResponse.next();
   }
 
   if (!isEntry) {
