@@ -103,6 +103,14 @@ def attempt(draft_id: str, patch: dict) -> tuple[int, str | None, list]:
     return status, code_of(body), now if isinstance(now, list) else []
 
 
+def read_draft(draft_id: str) -> dict:
+    """초안 전문을 읽어 온다 — 「200 을 줬다」와 「값이 바뀌었다」는 다른 사건이다."""
+    status, body = call("GET", f"/api/work-orders/{draft_id}")
+    if status != 200 or not isinstance(body, dict):
+        raise DrillError(f"초안을 읽지 못했다({status}) — 측정 불가")
+    return body
+
+
 def self_check(base: list) -> None:
     """🔴 비교기가 «값이 바뀐 것»을 실제로 잡는가."""
     if base == base[:-1]:
@@ -160,11 +168,46 @@ def main() -> int:
         print(f"  {'PASS' if ok else 'FAIL'}  형제 {name:22} {note}")
 
     # ── 대조군 — 🔴 일반 항목은 «지워져야» 한다 ────────────────────────────
-    status, code, now = attempt(draft_id, {"title": "일정 변경 — 리바이2 대조군"})
-    editable = status == 200 and now == base
-    bad += 0 if editable else 1
-    print(f"\n  {'PASS' if editable else 'FAIL'}  대조군 — 일반 항목 편집은 «성공»한다   {status} {code or ''}")
+    # 🔴 200 만 보면 «침묵»에 뚫린다(축① V-6 계보와 같은 병) — 보낸 값이 실제로 «반영»됐는지,
+    #    정본이 적은 대로 «삭제»가 되는지까지 본다. 수정만 재고 삭제를 안 재면
+    #    「일반 항목은 지워져야 한다」(T2-5 판정 append)의 절반만 잰 것이다.
+    new_title = "일정 변경 — 리바이2 대조군"
+    status, code, now = attempt(draft_id, {"title": new_title})
+    body = read_draft(draft_id)
+    applied = body.get("title") == new_title
+    ok = status == 200 and now == base and applied
+    bad += 0 if ok else 1
+    print()
+    print(f"  {'PASS' if ok else 'FAIL'}  대조군 C-1 — 일반 항목 «수정»이 반영된다  "
+          f"{status} {code or ''} · title {'반영' if applied else '🔴 무시(침묵)'}")
+
+    # C-2 «삭제» — 정본의 대조군은 「지워져야 한다」다. parts 가 애초에 비어 있으면 못 잰다.
+    base_parts = body.get("parts")
+    if not isinstance(base_parts, list) or not base_parts:
+        print(f"  ----  대조군 C-2 — 일반 항목 «삭제»: 측정 불가(parts={base_parts!r})"
+              f" — 🔴 초록으로 세지 않는다")
+    else:
+        status, code, now = attempt(draft_id, {"parts": []})
+        after = read_draft(draft_id)
+        emptied = after.get("parts") == []
+        ok = status == 200 and now == base and emptied
+        bad += 0 if ok else 1
+        print(f"  {'PASS' if ok else 'FAIL'}  대조군 C-2 — 일반 항목 «삭제»가 된다      "
+              f"{status} {code or ''} · parts {len(base_parts)}→"
+              f"{len(after.get('parts') or [])}{'' if emptied else '  🔴 안 지워졌다'}")
     print("        (전부 거절이면 R12 를 지킨 게 아니라 편집을 막은 것이다)")
+
+    # C-3 🔴 «화이트리스트»가 참인가 — 정본은 R12 강제를 «허용 열거»로 적었다(T2-5 판정 append).
+    #     안전과 무관한 «목록 밖» 필드를 하나 던진다. 거절되면 허용 열거가 실증되고, 통과하면
+    #     그것은 막을 목록(블랙리스트)이라는 뜻이다 — 형제가 계속 생기는 구조.
+    #     🔴 정본이 «허용 필드 이름»을 열거하진 않았으므로 통과를 red 로 세지 않고 회부로 적는다.
+    status, code, now = attempt(draft_id, {"note": "리바이2 화이트리스트 실증"})
+    listed = 400 <= status < 500
+    print()
+    print(f"  {'실증' if listed else '🔴 회부'}  화이트리스트 — 목록 밖 필드(note) 단독 PATCH  "
+          f"{status} {code or ''}")
+    if not listed:
+        print("        (통과했다 = 허용 열거가 아니라 막을 목록이다 — 성문 여부는 오케 판정)")
 
     # ── 🔴 7번째 형제 탐색 — 6종이 «다 막힌 뒤»에 던진다 ──────────────────
     print(f"\n  ── 🔴 7번째 형제 탐색 (성문 6종 중 막힌 것 {len(blocked)}/5)")
@@ -195,11 +238,33 @@ def main() -> int:
             found.append("경로 축 빈칸 — approve 본문 편집")
         print(f"  {'🔴 형제' if passed else '막힌다'}  {'경로 축 빈칸 — approve 본문 편집':34} {status} {code_of(body) or ''}")
 
+        # 🔴 여섯 번째 빈칸 — «허용 목록 밖»만 세면 놓치는 자리가 하나 남는다: 허용 목록
+        #    «안»에 R12 보호 대상이 섞여 들어오는 경우다. title·parts 가 열려 있으므로,
+        #    parts 에 안전 유래 항목이 실리면 화이트리스트가 그대로 통로가 된다.
+        # 🔴 C-2 가 이미 비운 뒤의 parts 로 재면 «빈 것끼리의 통과»다 — 대조군 이전의
+        #    원본 목록(base_parts)으로 잰다. 빈 목록에서 「안전이 안 섞였다」는 말은 뜻이 없다.
+        rule_ids = {str(m.get("safetyRuleId")) for m in base if isinstance(m, dict)}
+        parts_now = base_parts if isinstance(base_parts, list) else []
+        if not parts_now:
+            print(f"  ----  {'허용 목록 «안» — parts 에 안전 유래 항목':34} "
+                  f"측정 불가(원본 parts 가 비었다) — 🔴 초록으로 세지 않는다")
+        tainted = [x for x in parts_now if isinstance(x, dict)
+                   and (str(x.get("safetyRuleId")) in rule_ids
+                        or any(str(v).startswith(("SAF-", "SOP-")) for v in x.values()))]
+        if not parts_now:
+            pass
+        elif tainted:
+            found.append("허용 목록 «안» 빈칸 — parts 에 안전 유래 항목이 섞였다")
+            print(f"  🔴 형제  {'허용 목록 «안» — parts 에 안전 유래 항목':34} {tainted}")
+        else:
+            print(f"  막힌다  {'허용 목록 «안» — parts 에 안전 유래 항목':34} "
+                  f"0건 (원본 parts {len(parts_now)}건 · 안전은 safetyMeasures 축에만)")
+
         bad += len(found)
         if found:
             print(f"\n  🔴 7번째 형제 «찾았다» — {found}")
         else:
-            print("\n  ✅ 7번째 형제 «못 찾았다» — 던진 5칸이 전부 막힌다."
+            print("\n  ✅ 7번째 형제 «못 찾았다» — 던진 6칸이 전부 막힌다."
                   " 없는 것을 지어내 형제라 부르지 않는다")
 
     print(f"\n결과: 어긋남 {bad}건")

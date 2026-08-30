@@ -3,7 +3,8 @@
 🔴 이 그물이 지키는 문장 셋:
    ① **합법만 확인하는 표는 전이 규칙을 지키지 못한다.** 계약 v0.1.4 는 `pending → approved |
       rejected` 인접 전진 2쌍«만» 을 합법으로 정했다. 그러면 나머지가 막히는지는 «나머지를 전부
-      던져 봐야» 안다 — 상태 3종의 순서쌍 9칸 + `PATCH` 3칸, 합쳐 **12칸 전수**다.
+      던져 봐야» 안다 — 상태 3종 × 연산 3종 = **9칸 전수**다(🔴 계획서의 「12칸」은 과다 계수였다 —
+      `approved→pending` 같은 순서쌍은 그것을 «일으킬 연산이 없어» 던질 수 없다).
    ② **막히는 방식이 사건을 말한다.** 「종단 상태라 못 바꾼다」와 「그런 전이는 애초에 없다」는
       화면이 다르게 말해야 하는 다른 사건이다. 아홉 칸이 한 코드로 뭉치면 그 구분이 사라진다.
    ③ 🔴 **거절이 아니라 «침묵»이면 red 다.** 종단 상태의 `PATCH` 가 200 을 주면서 아무것도
@@ -17,7 +18,7 @@
 
     python tests/api/approval_transition_drill.py
 
-exit: 0 = 12칸 전건 기대대로 · 1 = 어긋남 1건 이상 · 2 = 실행 오류·미해제(측정 불가)
+exit: 0 = 9칸 전건 기대대로 · 1 = 어긋남 1건 이상 · 2 = 실행 오류·미해제(측정 불가)
 """
 
 from __future__ import annotations
@@ -148,7 +149,7 @@ def main() -> int:
 
     legal = canon_legal()
     print(f"정본      : {CONTRACT.relative_to(REPO)} · 합법 전이 {sorted(legal)}")
-    print(f"대상      : {API_BASE} · 12칸 전수(상태 {len(_STATES)} × 연산 {len(OPERATIONS)})\n")
+    print(f"대상      : {API_BASE} · 9칸 전수(상태 {len(_STATES)} × 연산 {len(OPERATIONS)})\n")
     self_check()
     print()
 
