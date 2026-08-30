@@ -362,6 +362,31 @@ def control_conflict_and_format(client: TestClient, report: Report, quiet: bool)
         f"{res_bad.status_code} {res_bad.json().get('error', {}).get('code', '')}",
     )
 
+    # 🔴 **본문 단독은 세션을 싣지 못한다**(v0.1.6 독법 ⓑ — `session_guard.resolve_session_id`
+    #    성문). 이 축이 없으면 「쿠키가 운반이다」는 주장이 실측 없이 남는다.
+    client.cookies.clear()
+    body_only = client.post(
+        "/api/scenarios/GS-01/runs", json={"sessionId": session, "mode": "replay"}
+    )
+    report.add(
+        "본문 단독 sessionId = 401(운반은 쿠키다)",
+        body_only.status_code == 401
+        and body_only.json().get("error", {}).get("code") == "session_required",
+        f"{body_only.status_code} {body_only.json().get('error', {}).get('code', '')}",
+    )
+    # 🔴 오탐 대조 — 같은 요청에 쿠키만 더하면 열려야 한다. 안 그러면 위 401 은 「이 라우트가
+    #    그냥 막혀 있다」는 뜻일 수도 있다.
+    with_cookie = client.post(
+        "/api/scenarios/GS-01/runs",
+        cookies={SESSION_COOKIE: session},
+        json={"sessionId": session, "mode": "replay"},
+    )
+    report.add(
+        "같은 요청 + 쿠키 = 열린다(오탐 대조)",
+        with_cookie.status_code != 401,
+        str(with_cookie.status_code),
+    )
+
     res_unknown = client.get("/api/runs/RUN-x", cookies={SESSION_COOKIE: "aaaaaaaaaaaaaaaa"})
     unknown_ok = (
         res_unknown.status_code == 401
@@ -374,8 +399,8 @@ def control_conflict_and_format(client: TestClient, report: Report, quiet: bool)
     )
 
     if not quiet:
-        print("\n④ 전달 규칙 — 상충 422 · 형식 422 · 미지 401")
-        for c in report.checks[-4:]:
+        print("\n④ 전달 규칙 — 상충 422 · 본문 단독 401 · 형식 422 · 미지 401")
+        for c in report.checks[-6:]:
             print(f"  {'✔' if c.ok else '✘'} {c.label} → {c.detail}")
 
 

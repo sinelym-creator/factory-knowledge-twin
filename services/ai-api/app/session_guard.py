@@ -212,6 +212,18 @@ async def resolve_session_id(conn: HTTPConnection) -> str | None:
     🔴 **둘 다 있고 다르면 422 다 — 조용한 우선순위를 두지 않는다**(계약 v0.1.6). 한쪽을
        말없이 이기게 하면, 화면은 A 세션을 보여 주면서 서버는 B 세션에 쓰는 상태가 생기고
        그 어긋남은 「내 초안이 사라졌다」로만 드러난다.
+
+    🔴 **본문 단독은 세션을 «싣지» 못한다 — 운반은 쿠키다**(T3-1 구현 판단 · 오케 회부 중).
+       계약 v0.1.6 의 「전달 = HttpOnly 쿠키 병행 + 본문 sessionId(동결 본문 표기 유지)」는
+       두 갈래로 읽힌다:
+         ⓐ 둘 다 «운반»이다(본문만 있어도 인증된다)
+         ⓑ 운반은 쿠키고, 본문 표기는 동결 계약이라 «남아 있는» 것이다(있으면 일치해야 한다)
+       검증 좌석의 그물은 ⓑ 로 읽었다(무세션 + 본문 sessionId = 401 기대). 나는 ⓑ 로 «구현»
+       한다 — 판정이 아니라 **실패 방향** 때문이다: ⓐ 가 틀린 경우의 대가는 「쿠키 없이도
+       id 만 알면 남의 세션으로 쓴다」는 조용한 구멍이고, ⓑ 가 틀린 경우의 대가는 「본문만
+       보낸 호출자가 401 을 본다」는 시끄러운 불편이다. 조용히 틀리는 쪽을 고르지 않는다.
+       🔴 판정이 ⓐ 로 나면 아래 두 줄(`if body_sid and not cookie_sid: return None`)을 지우고
+          `return cookie_sid or body_sid` 로 되돌리면 된다.
     """
     from .session_store import SESSION_COOKIE
 
@@ -224,7 +236,9 @@ async def resolve_session_id(conn: HTTPConnection) -> str | None:
             "invalid_request",
             "쿠키와 본문의 sessionId 가 다르다 — 어느 쪽을 뜻하는지 서버가 고르지 않는다",
         )
-    return cookie_sid or body_sid
+    if body_sid and not cookie_sid:
+        return None
+    return cookie_sid
 
 
 def _reject(conn: HTTPConnection, code: str, message: str, status: int) -> Exception:
