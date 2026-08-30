@@ -113,3 +113,12 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - 🔴 **세션 소유권(Q-25 폐쇄 축)**: run · WO 초안 · 승인 이력 = 발급 세션 «소유». 타 세션 자원 = **`404 not_found`**(존재 은닉 — 401/403으로 자원 존재를 누설하는 형태 금지). 「id를 아는 누구나」 축이 이로써 닫힌다.
 - **reset 의미**: `POST /sessions/{sid}/reset` = 자기 세션만(타 세션 = 404) · 초기화 범위 = 그 세션의 run·초안·이력 «만»(SSOT 무접촉 불변).
 - 🔴 **「전달」 독법 판정(08-30 17:02 오케 — T3-1 구현 회부)**: 인증 «운반» = **쿠키 단독**이다. 본문 `sessionId`는 동결 v0.1 형상이라 «남은» 표기 — 있으면 쿠키와 일치 의무(불일치 = 422), **본문 단독 = 무세션(401)**. 기각 독법 ⓐ(본문만으로 인증)의 기각 사유 = id를 아는 것만으로 남의 세션을 «쓰게» 되어 HttpOnly·소유권 은닉 축이 같이 무너진다 — 조용한 구멍과 시끄러운 불편 중 시끄러운 쪽이 참(구현·검증 양 좌석의 독법 일치 확인).
+
+## v0.1.7 append (08-30 · T3-2 게이트 1 — 조회 계층 형상 확정 · 구현 실물 열 대조 제안 채택 · 오케 성문)
+
+- 🔴 **`openIncidents` 낱말 판정**: incident.status enum 실물 = `{investigating, closed}` — `open`이라는 상태값은 없다. **`openIncidents` = `status <> 'closed'` 계수**로 확정(「진행 중」의 뜻 · 실측 2와 목업 「진행 2」 정합). enum이 늘 때 이 결정의 좌표가 여기다 — 코드 주석이 아니라 계약이 말한다.
+- **`GET /incidents/{incidentId}`** → `{ incidentId, title, status, severity, openedAt, closedAt(null 가능), equipmentId, alarmIds[], runId?(연결 run 있을 때만) }`.
+- **`GET /equipment/{equipmentId}`** → `{ equipmentId, name, equipmentClass, model, installedOn, status, criticality, lineId, sensors[{sensorId, measurementType, unit, warnThreshold, alarmThreshold}], recentAlarms[{alarmId, severity, status, openedAt}], maintenanceSummary[{workOrderId, type, completedOn, summary}] }`.
+- **`GET /plants/{plantId}/overview`** → kpi 4필드(동결 본문 유지 · openIncidents = 위 판정) + `lines[{lineId, name, lineNo, status, equipment[{equipmentId, name, status, criticality, sensorIds[]}]}]` — 설비 카드 스파크라인은 본 응답에 싣지 않고 ④ series를 카드가 따로 먹는다(집계 응답 비대 방지).
+- **`GET /equipment/{equipmentId}/sensors/{sensorId}/series`** → `{ sensorId, unit, window("24h"|"3w"만 — 화면 소비 형태 한정), warnThreshold, alarmThreshold, points[{ts, value}] }`.
+- 🔴 **원소 형상 정정 단서**: recentAlarms·maintenanceSummary·lines[].equipment[] 원소 필드는 실물 열 대조 제안의 채택이다 — 구현 게이트에서 화면 요구·실물과 갈리면 **정정 append 1회 회부 허용**(v0.1.5 선례 — 조용한 코드측 확장 금지, 갈림은 여기로 돌아온다).
