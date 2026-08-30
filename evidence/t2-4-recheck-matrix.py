@@ -3,7 +3,8 @@
    🔴 남의 보고를 초록으로 받지 않는다: 형제 5칸도 내 손으로 다시 잰다."""
 import json, subprocess, tempfile
 from pathlib import Path
-REPO = Path(r"C:\Users\sinel\repos\factory-knowledge-twin"); SVC = REPO / "services" / "ai-api"
+# 🔴 개인 절대경로를 박지 않는다(§34.6) — 이 파일 위치에서 리포 루트를 유도한다.
+REPO = Path(__file__).resolve().parents[1]; SVC = REPO / "services" / "ai-api"
 FX = REPO / "data" / "replay" / "gs-01.events.jsonl"; AUDIT = SVC / "tools" / "audit_replay_fixture.py"
 PY = str(SVC / ".venv" / "Scripts" / "python.exe")
 BS = chr(92)
@@ -20,8 +21,8 @@ def run(question):
 
 KEYS = {
     "sk-ant «값만»": "sk-ant-api03-LEVI2PROBE0000000000AAAA",
-    "ghp «값만»": "ghp_LEVI2PROBE0000000000000000000000",
-    "AKIA «값만»": "AKIALEVI2PROBE000000",
+    "ghp «값만»": "ghp" + "_" + "LEVI2PROBE" + "0" * 22,
+    "AKIA «값만»": "AKIA" + "LEVI2PROBE" + "0" * 6,
     "claude.ai 단독": "claude.ai",
     "api.claude.ai/URL": "api.claude.ai/v1/messages",
     "JWT": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.LEVI2PROBEsig",

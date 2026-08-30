@@ -1,3 +1,4 @@
+##### 🔴 08-30 리바이2 10대 — 이 캡처 로그의 절대경로 1건을 `{REPO}` 로 가렸다(§34.6 공개 경계 · 그 값 외 본문 무수정). 뿌리는 드릴 출력에서 닫았다 — replay_fixture_drill 이 정본 경로를 리포 상대로 찍는다.
 ##### anchor_extraction_probe.py
   자기 검증  정정 전 형상(`\b` 종단)을 8건에서 잡는다 — 표가 살아 있다
              예: 조사 부착 — 설비 · 중복 — 등장 순 1회
@@ -337,7 +338,7 @@ run 실행  : 켬 — 1회 돌리고 전후를 센다
 결과: 어긋남 0건
 ##### EXIT=0
 ##### replay_fixture_drill.py --no-deps
-정본      : C:\Users\sinel\repos\factory-knowledge-twin\data\replay\gs-01.events.jsonl · 32줄 · sha256 3eb624c237dbeaac…
+정본      : {REPO}\data\replay\gs-01.events.jsonl · 32줄 · sha256 3eb624c237dbeaac…
 대상      : http://127.0.0.1:8000
 
   자기 검증  표본 5종(동일 1 · 어긋남 4: ts·payload·seq·필드추가) 전건 기대대로 — 비교기 살아 있음

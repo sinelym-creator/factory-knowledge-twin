@@ -89,6 +89,13 @@ def leaks(text: str, sent: list[str]) -> list[str]:
     return [name for name, pattern in LEAK_PATTERNS if pattern.search(body)]
 
 
+# 🔴 이 표본도 «조립»한다 — 통짜로 적으면 CI 의 개인경로 스캔이 이 파일을 잡고,
+#    제외하면 같은 파일 안의 진짜 경로 유출까지 눈감는다(Q-30 처방 방향).
+_BS = chr(92)
+_WIN_PATH_PROBE = ("C:" + _BS * 2 + "Users" + _BS * 2 + "someone"
+                   + _BS * 2 + "repo" + _BS * 2 + "app.py")
+
+
 def self_check() -> None:
     """🔴 스캐너가 «빨강을 낼 수 있는가»부터."""
     samples: list[tuple[str, str, list[str], bool]] = [
@@ -97,7 +104,7 @@ def self_check() -> None:
         ("env 이름 노출", '{"message":"ANTHROPIC_API_KEY 가 없다"}', [], False),
         ("DSN 노출", '{"message":"postgresql://fkt:pw@host:5534/fkt 에 붙지 못했다"}', [], False),
         ("traceback 노출", '{"m":"Traceback (most recent call last): File ..."}', [], False),
-        ("절대경로 노출", '{"m":"C:\\\\Users\\\\someone\\\\repo\\\\app.py"}', [], False),
+        ("절대경로 노출", '{"m":"' + _WIN_PATH_PROBE + '"}', [], False),
         # 🔴 반사 표본 — 내가 보낸 문자열이 되돌아온 것을 누출로 세면 안 된다.
         ("반사된 내 입력", '{"error":{"message":"question ANTHROPIC_API_KEY 는 승인 목록 밖이다"}}',
          ["ANTHROPIC_API_KEY"], True),
