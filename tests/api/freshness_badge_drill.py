@@ -41,6 +41,9 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 REPO = Path(__file__).resolve().parents[2]
 VIEW_SQL = (
     REPO / "services" / "ai-api" / "db" / "migrations"
@@ -95,7 +98,10 @@ def view_states() -> list[str]:
 
 def get(path: str) -> tuple[int, dict]:
     try:
-        with urllib.request.urlopen(API_BASE + path, timeout=60) as res:
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 헤더가 비어 no-op 이다.
+        _carry = _session.prepare(None, path)[1]
+        _req = urllib.request.Request(API_BASE + path, headers=_carry)
+        with urllib.request.urlopen(_req, timeout=60) as res:
             return res.status, json.loads(res.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         raw = exc.read().decode("utf-8", "replace")

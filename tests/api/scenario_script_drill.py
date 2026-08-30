@@ -31,6 +31,9 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 REPO = Path(__file__).resolve().parents[2]
 SCHEMA = REPO / "packages" / "contracts" / "agent-events-v0.1.schema.json"
 SPEC = REPO / "docs" / "product" / "golden-scenario-spec.md"
@@ -67,8 +70,11 @@ def canon_lead() -> str:
 
 
 def call(method: str, path: str, body: dict | None = None) -> tuple[int, object]:
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 받은 것을 그대로 되돌려준다.
+    body, _carry = _session.prepare(body, path)
     data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
     headers = {"Content-Type": "application/json"} if data else {}
+    headers.update(_carry)
     req = urllib.request.Request(API_BASE + path, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=300) as res:

@@ -32,6 +32,9 @@ import unicodedata
 import urllib.error
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
 SESSION_ID = "levi2-r12-drill"
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
@@ -42,8 +45,11 @@ class DrillError(RuntimeError):
 
 
 def call(method: str, path: str, body: dict | None = None) -> tuple[int, object]:
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 받은 것을 그대로 되돌려준다.
+    body, _carry = _session.prepare(body, path)
     data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
     headers = {"Content-Type": "application/json"} if data else {}
+    headers.update(_carry)
     req = urllib.request.Request(API_BASE + path, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=180) as res:
