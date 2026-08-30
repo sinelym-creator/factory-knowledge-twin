@@ -1,13 +1,15 @@
 """계약 v0.1 §공장·설비 (Overview) — T3-2 조회 계층 해제.
 
-무엇이 «있는가»: 공장 목록·설비 상세. 둘 다 **SSOT 읽기 전용**이고, 형상은 계약 v0.1.7
-append 가 정한 것 그대로다(질의는 `reading/factory.py` 한 곳).
+무엇이 «있는가»: 공장 목록 · 공장 overview(트리·활성 알람·KPI) · 설비 상세 · 센서 시계열.
+전부 **SSOT 읽기 전용**이고, 형상은 계약 v0.1.7 + 정정 append 가 정한 것 그대로다
+(질의는 `reading/factory.py` 한 곳).
 
-무엇이 «아직 없는가», 그리고 왜:
-- `/plants/{plantId}/overview` 와 `…/series` 는 **형상 갈림이 오케 판정 대기 중**이다
-  (overview = 활성 알람이 v0.1.7 원소에서 빠졌다 · series = 3주 창이 2.07MB 라 다운샘플이
-  필요한데 「가공했다」를 말할 칸이 형상에 없다). 지어내지 않고 501 로 둔다 — 골격이 계약을
-  앞질러 정하면 계약은 사후 추인이 된다(이 파일 초판의 성문과 같은 이유).
+🔴 **이 파일이 열리기까지 계약이 세 번 정정됐다**, 그리고 그 셋 다 «구현이 형상을 실제로
+   조립해 보다가» 나왔다: ① maintenanceSummary 에 기록 자기 id 가 없어 화면이 「눌러도 안
+   열리는 id」를 그릴 뻔했고 ② series 는 3주 창이 2.07MB 라 다운샘플이 불가피한데 「가공했다」를
+   말할 칸이 없었고 ③ overview 는 트리를 lines[] 로 재구성하며 활성 알람이 통째로 빠졌다.
+   셋 다 **코드에서 조용히 넓히지 않고 계약으로 돌려보냈다** — 골격이 계약을 앞질러 정하면
+   계약은 사후 추인이 된다.
 
 🔴 **해제 단위는 라우트가 아니라 «화면이 부르는 질의 형태»다**(Q-26 · T3-2 게이트 1).
    소비처 없는 축은 열지 않는다 — `GET /graph/paths?from=&to=` 가 이 티켓에서도 501 로
@@ -20,7 +22,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Query, Request
 
-from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, contract_error
+from ..errors import DependencyUnavailable, contract_error
 from ..errors import dependency_guard
 from ..reading import factory as factory_reader
 from ..schemas import PlantSummary
@@ -46,19 +48,20 @@ async def list_plants(request: Request) -> list[PlantSummary]:
     return [PlantSummary(**row) for row in rows]
 
 
-@router.get("/plants/{plantId}/overview", responses=NOT_IMPLEMENTED)
-async def plant_overview(plantId: str) -> None:
-    """라인·설비 상태 트리 + 활성 알람 + `kpi`(계약 G4 · v0.1.7 lines 형상).
+@router.get("/plants/{plantId}/overview", responses=_NOT_FOUND)
+async def plant_overview(plantId: str, request: Request) -> dict[str, Any]:
+    """라인·설비 트리 + 활성 알람 + `kpi` — 계약 v0.1.7 + 정정 append.
 
-    🔴 **활성 알람이 갈 자리가 형상에 없다.** 동결 본문은 활성 알람을 트리 원소가 들게 했고,
-       v0.1.7 은 트리를 `lines[]` 로 다시 짜면서 원소에서 그것을 뺐다. 갈림 시 append 가
-       이기므로 그대로 읽으면 이 응답에 알람이 없는데, 와이어프레임 §1 은 이 응답 하나로
-       알람 도크와 **헤드라인 문장**(「최고 severity 1건」)을 그린다.
-       → 정정 append 회부 중(오케 판정 대기). 판정 전까지 지어내지 않는다.
+    🔴 활성 알람이 **최상위 평면 배열**인 이유는 `reading/factory.overview` 머리말에 있다:
+       헤드라인 문장은 「정렬된 목록의 첫 줄」이지 트리를 훑어 최댓값을 고른 결과가 아니다.
+       고르는 규칙이 화면 코드에 살면 화면마다 갈린다.
     """
-    raise NotImplementedRoute(
-        "GET /plants/{plantId}/overview", "활성 알람 자리 확정(정정 append 회부 중 · T3-2)"
-    )
+    pool = _pool(request)
+    async with dependency_guard("postgres"):
+        found = await factory_reader.overview(pool, plantId)
+    if found is None:
+        raise contract_error(404, "not_found", f"공장 {plantId} 를 찾을 수 없다")
+    return found
 
 
 @router.get("/equipment/{equipmentId}", responses=_NOT_FOUND)
@@ -77,21 +80,28 @@ async def equipment_detail(equipmentId: str, request: Request) -> dict[str, Any]
     return found
 
 
-@router.get("/equipment/{equipmentId}/sensors/{sensorId}/series", responses=NOT_IMPLEMENTED)
+@router.get("/equipment/{equipmentId}/sensors/{sensorId}/series", responses=_NOT_FOUND)
 async def sensor_series(
     equipmentId: str,
     sensorId: str,
+    request: Request,
     window: Literal["24h", "3w"] = Query(description="계약이 허용하는 두 창"),
-) -> None:
-    """시계열 — 계약 v0.1.7 `{ sensorId, unit, window, warnThreshold, alarmThreshold, points[] }`.
+) -> dict[str, Any]:
+    """시계열 — 계약 v0.1.7 + 정정 append(`sampling` 필수).
 
-    🔴 **실측이 형상보다 크다.** SN-204-VIB 기준 `24h` = 15,600점 764KB · `3w` = 44,400점
-       2.07MB 다(E1). 그대로 실으면 차트가 죽고, 줄이면 응답은 「원본 전량」이 아니게 되는데
-       지금 형상에는 **줄였다는 사실을 말할 칸이 없다** — 보는 사람은 모든 샘플을 봤다고
-       믿는다(§0.2 측정-주장 경계). 그래서 `sampling` 칸을 정정 append 로 회부했고, 판정
-       전까지 열지 않는다. 「크기 때문에 조용히 솎은 응답」을 먼저 내보내지 않는다.
+    🔴 **줄이되 줄였다는 사실을 응답이 말한다.** 실측(SN-204-VIB): `24h` 원본 15,600점
+       764KB · `3w` 44,400점 2.07MB — 그대로 실으면 차트가 죽는다. `sampling` 이
+       `sourcePoints`·`returnedPoints` 를 함께 내보내므로 보는 쪽이 「전량을 봤다」고 믿지
+       않는다(§0.2 측정-주장 경계를 형상에 새긴 자리).
+
+    🔴 `sensorId` 가 다른 설비의 것이면 404 다 — 경로가 주장하는 관계가 거짓인데 값을
+       내주면 화면이 남의 설비 센서를 이 설비 것으로 그린다.
     """
-    raise NotImplementedRoute(
-        "GET /equipment/{equipmentId}/sensors/{sensorId}/series",
-        "다운샘플 표기(sampling) 확정(정정 append 회부 중 · T3-2)",
-    )
+    pool = _pool(request)
+    async with dependency_guard("postgres"):
+        found = await factory_reader.sensor_series(pool, equipmentId, sensorId, window)
+    if found is None:
+        raise contract_error(
+            404, "not_found", f"설비 {equipmentId} 의 센서 {sensorId} 를 찾을 수 없다"
+        )
+    return found

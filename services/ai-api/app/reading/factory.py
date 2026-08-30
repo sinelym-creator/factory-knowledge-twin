@@ -17,8 +17,8 @@
 
 from __future__ import annotations
 
-import json
 import logging
+from datetime import timedelta
 from typing import Any
 
 log = logging.getLogger("fkt.reading.factory")
@@ -341,7 +341,8 @@ def _sorted_alarms(rows: list[Any]) -> list[dict[str, Any]]:
 # --- 센서 시계열 --------------------------------------------------------------------
 
 # 계약이 허용한 두 창 «만». 사용자 문자열이 기간을 정하지 못하게 여기서 상수로 갈아 끼운다.
-WINDOWS: dict[str, str] = {"24h": "24 hours", "3w": "21 days"}
+# 창 이름 → 초. 계약이 허용한 두 창 «만» — 임의 기간을 받지 않는다.
+WINDOW_SECONDS: dict[str, float] = {"24h": 24 * 3600.0, "3w": 21 * 24 * 3600.0}
 
 # 🔴 반환 버킷 수. bucket-minmax 라 버킷당 최대 2점이므로 상한은 대략 이 값의 두 배다.
 #    실측: 3주 원본 44,400점 = 2.07MB · 24시간 15,600점 = 764KB — 그대로는 차트가 죽는다.
@@ -369,7 +370,7 @@ _SERIES_SQL = """
            AND r.ts <= b.anchor
     ),
     bucketed AS (
-        SELECT ts, value, floor(extract(epoch FROM ts) / $3) AS bucket FROM src
+        SELECT ts, value, floor(extract(epoch FROM ts) / $3::double precision) AS bucket FROM src
     ),
     lows AS (
         SELECT DISTINCT ON (bucket) bucket, ts, value FROM bucketed ORDER BY bucket, value, ts
@@ -382,9 +383,9 @@ _SERIES_SQL = """
         UNION
         SELECT ts, value FROM highs
     )
-    SELECT (SELECT count(*) FROM src) AS source_points,
-           (SELECT coalesce(json_agg(json_build_object('ts', ts, 'value', value) ORDER BY ts), '[]')
-              FROM picked) AS points
+    SELECT ts, value, (SELECT count(*) FROM src) AS source_points
+      FROM picked
+     ORDER BY ts
 """
 
 
@@ -400,19 +401,28 @@ async def sensor_series(
     🔴 **경로의 두 id 관계를 확인한다.** `sensorId` 가 다른 설비의 것이면 404 다 — 경로가
        주장하는 관계가 거짓인데 값을 내주면, 화면은 남의 설비 센서를 이 설비 것으로 그린다.
     """
-    interval = WINDOWS.get(window)
-    if interval is None:                                  # 라우트의 Literal 이 이미 막지만,
+    span_sec = WINDOW_SECONDS.get(window)
+    if span_sec is None:                                  # 라우트의 Literal 이 이미 막지만,
         return None                                       # 이 함수만 따로 부를 때를 위해 남긴다.
+    # 🔴 `interval` 파라미터는 문자열이 아니라 timedelta 로 넘긴다 — asyncpg 는 `$n::interval`
+    #    을 보고 파이썬 timedelta 를 기대하며, '24 hours' 를 주면 DataError 다. 그리고 그
+    #    DataError 는 `dependency_guard` 가 «의존 단절 503» 으로 접어서 「DB 가 죽었다」로
+    #    보인다 — 질의 결함이 인프라 사건으로 위장되는 자리라 여기 적어 둔다(실측으로 걸렸다).
+    interval = timedelta(seconds=span_sec)
 
     async with pool.acquire() as conn:
         sensor = await conn.fetchrow(_SERIES_SENSOR_SQL, sensor_id, equipment_id)
         if sensor is None:
             return None
-        span_sec = _WINDOW_SECONDS[window]
         bucket_sec = max(span_sec / TARGET_BUCKETS, 1.0)
-        row = await conn.fetchrow(_SERIES_SQL, sensor_id, interval, bucket_sec)
+        rows = await conn.fetch(_SERIES_SQL, sensor_id, interval, bucket_sec)
 
-    points = json.loads(row["points"]) if isinstance(row["points"], str) else row["points"]
+    # 🔴 **시각 문자열을 한 곳에서만 만든다.** 앞판은 SQL 의 `json_agg` 가 점을 통째로
+    #    직렬화해서 `…+00:00` 이 나왔는데, 같은 응답의 알람·정비 시각은 `_ts` 를 지나
+    #    `…Z` 였다 — **같은 종류의 값이 한 기능 안에서 두 표기**가 되는 자리다(이 리포가
+    #    `GET /runs/{id}/events` 의 ts 로 이미 값을 치른 형태). 행으로 받아 `_ts` 로 낸다.
+    points = [{"ts": _ts(r["ts"]), "value": _num(r["value"])} for r in rows]
+    source_points = rows[0]["source_points"] if rows else 0
     return {
         "sensorId": sensor["id"],
         "unit": sensor["unit"],
@@ -422,14 +432,12 @@ async def sensor_series(
         "sampling": {
             "method": "bucket-minmax",
             "bucketMs": int(bucket_sec * 1000),
-            "sourcePoints": row["source_points"],
+            "sourcePoints": source_points,
             "returnedPoints": len(points),
         },
         "points": points,
     }
 
-
-_WINDOW_SECONDS: dict[str, float] = {"24h": 24 * 3600.0, "3w": 21 * 24 * 3600.0}
 
 
 # --- 형 변환 ------------------------------------------------------------------------
