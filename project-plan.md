@@ -47,9 +47,9 @@ size_limit: 10KB
 |---|---|---|---|
 | — | 부트스트랩: 리포·SSOT·팀·Public 개설·CI | 완결 | ✅ |
 | 0 | 제품·UX 방향 확정 | S1 | ✅ (T0-9 완결 · contracts/ontology 동결) |
-| 1 | SSOT·Ontology·Synthetic Data | S2~S3 | ⏳ 진행 중 — 원장 19/25 · S3(색인) 진입 |
-| 2 | Retrieval·Agent Backend | S3~S4 | 대기 |
-| 3 | Always-on Sandbox UX | S5~S6 | 대기 |
+| 1 | SSOT·Ontology·Synthetic Data | S2~S3 | ✅ (08-29 19:05 완결 25/25) |
+| 2 | Retrieval·Agent Backend | S3~S4 | ✅ (08-30 15:58 게이트 통과 — T2-1~T2-6 독립 검증 전건 PASS) |
+| 3 | Always-on Sandbox UX | S5~S6 | ⏳ 진행 — 6티켓(T3-1~T3-6 · 분모 31→37) · 진입 재가 08-30 15:58 |
 | 4 | Live AI 연결(Tunnel·streaming·fallback) | S7 | 대기 |
 | 5 | 평가·보안·운영(Gate 1~8 전건) | 배포 후 | 대기 |
 | 6 | 포트폴리오 패키징(영상·README·Release) | 배포 후 | 대기 |
