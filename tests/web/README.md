@@ -9,6 +9,7 @@ T1-9 독립 검증에서 세운 4종. 판정 근거는 `evidence/t1-9-shell-e2e-
 | `surface_scan.mjs` | 계약 표면을 **동결 계약 문서 파싱**으로 독립 재측정 | 불요 |
 | `token_layer_probe.mjs` | Tailwind 토큰 표기별로 «어떤 선언이 나는가» (V-2 원인 대조군) | 불요 |
 | `route_matrix.sh` | 6라우트 × 쿠키 유무 상태코드 + 가드 matcher 탐침 | 필요 |
+| `e2e/phase2-evidence.spec.ts` | 🔴 **골격** — §21 증거 4종의 «브라우저에서만 보이는» 축(T3-6 선행 · 전건 skip · 축 계획 = `evidence/t3-6-e2e-axis-plan.md`) | 착지 후 |
 
 ## 세 가지 규율
 

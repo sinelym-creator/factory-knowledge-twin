@@ -47,6 +47,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 REPO = Path(__file__).resolve().parents[2]
 SOURCE = REPO / "benchmarks" / "datasets" / "eval-questions-draft.md"
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
@@ -104,12 +107,13 @@ class NotEquivalent(RuntimeError):
 
 
 def compare(question: str) -> dict[str, list[str]]:
-    payload = json.dumps(
-        {"sessionId": SESSION_ID, "question": question, "strategies": STRATEGIES}
-    ).encode("utf-8")
-    req = urllib.request.Request(
-        COMPARE, data=payload, headers={"Content-Type": "application/json"}, method="POST"
-    )
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 본문·헤더가 그대로다.
+    _body, _carry = _session.prepare(
+        {"sessionId": SESSION_ID, "question": question, "strategies": STRATEGIES}, "/api/retrieval/compare")
+    payload = json.dumps(_body).encode("utf-8")
+    _headers = {"Content-Type": "application/json"}
+    _headers.update(_carry)
+    req = urllib.request.Request(COMPARE, data=payload, headers=_headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=120) as res:
             body = json.loads(res.read().decode("utf-8"))

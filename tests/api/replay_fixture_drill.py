@@ -35,6 +35,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+
 REPO = Path(__file__).resolve().parents[2]
 # 🔴 시험 대상 서버가 «실제로 읽는» 리포. 그물이 lane 워크트리에 있고 서버가 주 체크아웃에서
 #    돌 때, 여기를 안 가르면 「부재 상태를 만들었다」면서 서버가 못 보는 파일을 옮기게 된다.
@@ -57,8 +60,11 @@ class DrillError(RuntimeError):
 
 def call(method: str, path: str, body: dict | None = None, base: str | None = None) -> tuple[int, object]:
     root = base or API_BASE
+    # 🔴 세션은 «운반»이지 표본이 아니다 — 미착지에서는 받은 것을 그대로 되돌려준다.
+    body, _carry = _session.prepare(body, path)
     data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
     headers = {"Content-Type": "application/json"} if data else {}
+    headers.update(_carry)
     req = urllib.request.Request(root + path, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=180) as res:
