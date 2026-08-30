@@ -3,12 +3,39 @@ import { headers } from "next/headers";
 import { SensorTrend } from "@/components/incident/sensor-trend";
 import { Unavailable } from "@/components/unavailable";
 import {
+  type ActiveAlarm,
   CONTRACT,
   type EquipmentDetail,
   type Incident,
+  type Overview,
   type RunSnapshot,
   apiGetServer,
 } from "@/lib/contract";
+
+/**
+ * incident 의 `alarmIds[]` 를 «알람 행»으로 되돌린다 — 계약 안에서만.
+ *
+ * 🔴 알람의 `sensorId`·`thresholdValue` 를 싣는 응답은 `overview.activeAlarms[]` 하나다
+ *    (`equipment.recentAlarms[]` 에는 `sensorId` 가 없다 — 계약 v0.1.7). 그래서 plantId 를
+ *    `/plants` 로 물어 overview 를 편다. 계약 밖 경로를 만들지 않는다.
+ * 🔴 «활성» 알람만 실린다는 한계를 그대로 둔다. 해소된 알람의 센서까지 되짚으려면 계약이
+ *    넓어져야 하고, 그것은 코드가 아니라 계약이 정할 일이다 — 못 찾으면 null 을 돌려주고
+ *    화면이 그 사실을 말한다.
+ */
+async function resolveAlarm(
+  alarmIds: string[],
+  cookieHeader: string,
+): Promise<ActiveAlarm | null> {
+  if (alarmIds.length === 0) return null;
+  const plants = await apiGetServer<{ plantId: string }[]>(CONTRACT.plants, cookieHeader);
+  if (plants.state !== "ok" || plants.data.length === 0) return null;
+  const overview = await apiGetServer<Overview>(
+    CONTRACT.plantOverview(plants.data[0].plantId),
+    cookieHeader,
+  );
+  if (overview.state !== "ok") return null;
+  return overview.data.activeAlarms.find((a) => alarmIds.includes(a.alarmId)) ?? null;
+}
 
 /**
  * ② Incident 조사 (wireframes §2) — 컨텍스트 + run 진입 동선 (T3-2).
@@ -52,12 +79,29 @@ export default async function IncidentPage({
   ]);
 
   const eq = equipment.state === "ok" ? equipment.data : null;
-  // 🔴 차트의 센서는 «이 incident 를 울린 센서»가 우선이다. 설비의 첫 센서를 그리면 알람과
-  //    무관한 추세를 보여 주면서 화면은 그것을 근거처럼 배치한다.
-  const alarmSensor =
-    eq?.recentAlarms.length && eq.sensors.length
-      ? eq.sensors.find((s) => s.sensorId.includes("VIB")) ?? eq.sensors[0]
-      : (eq?.sensors[0] ?? null);
+
+  /* 🔴 **차트의 센서를 id 문자열로 «추측»하지 않는다**(회부 R-3).
+   *
+   * 앞판은 `sensors.find(s => s.sensorId.includes("VIB"))` 였다. 주석은 「이 incident 를 울린
+   * 센서」라고 적었지만 코드는 그 관계를 «읽지 않았다» — 이름에 VIB 가 든 센서를 골랐을 뿐이다.
+   * 같은 PR 의 `overview/page.tsx` 는 「id 에서 뜻을 추측하지 않는다」를 성문하고 있었으니,
+   * 한 PR 안에서 규율이 갈린 것이다. 그리고 VIB 가 없는 설비(EQ-CNV-205)에서는 조용히
+   * `sensors[0]` 로 떨어져 «알람과 무관한 추세를 근거처럼» 배치했다.
+   *
+   * 정본 근거는 **알람 행의 `sensorId` 실값**이다 — 계약 v0.1.7-정정이 `activeAlarms[]` 에
+   * `sensorId`·`thresholdValue` 를 싣는다. incident 의 `alarmIds[]` 와 맞춰 그 행을 집는다.
+   *
+   * 🔴 못 찾으면 «못 찾았다»고 말한다. seed 실측: 활성 알람은 1건뿐이고(AL-20260826-0041 ·
+   *    INC-2026-014) 나머지 incident 의 `alarmIds` 는 전부 비어 있다. 그때 첫 센서를 조용히
+   *    그리면 앞판의 병이 이름만 바꿔 되살아난다 — 그래서 아래 `source` 가 화면과 DOM 양쪽에
+   *    「이 곡선이 알람의 것인가」를 남긴다(거동으로 물을 수 있게).
+   */
+  const alarmRow = await resolveAlarm(incident.data.alarmIds, cookieHeader);
+  const sensorFromAlarm = alarmRow
+    ? (eq?.sensors.find((s) => s.sensorId === alarmRow.sensorId) ?? null)
+    : null;
+  const alarmSensor = sensorFromAlarm ?? eq?.sensors[0] ?? null;
+  const sensorSource: "alarm" | "fallback" = sensorFromAlarm ? "alarm" : "fallback";
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
@@ -112,6 +156,9 @@ export default async function IncidentPage({
               equipmentId={eq.equipmentId}
               sensorId={alarmSensor.sensorId}
               unit={alarmSensor.unit}
+              source={sensorSource}
+              alarm={alarmRow}
+              alarmIds={incident.data.alarmIds}
             />
           ) : (
             <p className="rounded border border-edge bg-panel p-4 text-sm text-muted">
