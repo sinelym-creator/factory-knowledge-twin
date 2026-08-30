@@ -131,10 +131,43 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
     await page.goto("/compare");
   });
 
+  /* 🔴 T3-3 착지로 **E-4 가 깨어났다**(11대). 축 계획 정본의 red 는 두 갈래다:
+   *   ⓐ 강조 구간이 evidence 원문과 «다른 문장» 위에 있다
+   *   ⓑ 좌표가 없는데 «그럴듯한 위치»를 그린다
+   * 둘 다 화면만 보면 멀쩡하다 — 원문과 나란히 놓아야 드러난다. 그래서 화면에서 읽은 것을
+   * 화면으로 검산하지 않고, 두 라우트가 낸 값으로 검산한다. */
   test("E-4 인용 강조 — 강조가 «그 문장» 위에 그려진다", async ({ page }) => {
-    test.fixme(await stillPlaceholder(page, "/evidence/DOC-MAN-0021%40r1%23005"),
-      "Evidence 뷰가 자리표시다 — 강조할 본문이 아직 없다");
-    await page.goto("/evidence/DOC-MAN-0021%40r1%23005");
+    const CHUNK = "DOC-MAN-0021@r1#005";
+    const path = `/evidence/${encodeURIComponent(CHUNK)}`;
+    test.fixme(await stillPlaceholder(page, path), "Evidence 뷰가 자리표시다 — 강조할 본문이 아직 없다");
+
+    await page.goto(path, { waitUntil: "networkidle" });
+    const ev = await (await page.request.get(`/api/evidence/${encodeURIComponent(CHUNK)}`)).json();
+    const docId = CHUNK.split("@")[0];
+    const doc = await (
+      await page.request.get(
+        `/api/documents/${encodeURIComponent(docId)}?highlight=${encodeURIComponent(CHUNK)}`,
+      )
+    ).json();
+
+    // ⓐ — 화면의 강조가 «원문에서 잘라 낸 그 구간»인가. 인용문을 따로 그리면 좌표가 틀려도
+    //     화면은 멀쩡해 보인다(이 축이 잡으려는 것이 정확히 그 거짓이다).
+    const slice = doc.body.slice(doc.highlight.start, doc.highlight.end);
+    expect(slice, "두 라우트의 인용이 서로 다르다 — 좌표가 그 문장을 안 가리킨다").toBe(ev.text);
+    expect(
+      await page.getByTestId("cited-span").textContent(),
+      "화면 강조가 원문 슬라이스와 다르다 — 강조가 «다른 문장» 위에 있다",
+    ).toBe(slice);
+
+    // ⓑ — 좌표를 화면이 밝힌다. 밝히지 않으면 「지어낸 위치」와 구별할 방법이 화면에 없다.
+    await expect(page.getByTestId("cited-body")).toHaveAttribute("data-highlight", "ok");
+    await expect(page.getByTestId("cited-body")).toContainText(
+      `offset [${doc.highlight.start}, ${doc.highlight.end})`,
+    );
+
+    // 🔴 ⓑ의 나머지 절반(«좌표가 없을 때 그리지 않는가»)은 여기서 못 잰다 — 서버가 그 응답을
+    //    내는 표본이 없고, 브라우저 모의는 이 화면의 서버 렌더 층에 닿지 않는다(11대 N-4).
+    //    코드에 분기는 있으나 그것은 화면이 그린다의 증거가 아니라, «못 잼»으로 남긴다.
   });
 
   test("E-5 R12 — 화면이 안전 조치를 «지울 수 있다»고 말하지 않는다", async ({ page }) => {
@@ -214,7 +247,8 @@ async function runScreenIsPlaceholder(page: Page): Promise<boolean> {
 const AXIS_GATES: ReadonlyArray<readonly [string, (page: Page) => Promise<boolean>]> = [
   ["E-2b 연쇄 잔여 (WO 승인 · /work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
   ["E-3 전략 비교 (/compare)", (p) => stillPlaceholder(p, "/compare")],
-  ["E-4 인용 강조 (/evidence)", (p) => stillPlaceholder(p, "/evidence/DOC-MAN-0021%40r1%23005")],
+  // 🔴 E-4 는 T3-3 착지로 **채웠다**(11대) — 미룬 축이 아니므로 이 목록에서 내린다.
+  //    채운 축을 여기 남겨 두면 정직성 행이 영영 빨강이고, 그 빨강은 아무 뜻도 없다.
   ["E-5 R12 (/work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
   ["E-6 배지 두 축 (incident 화면)", runScreenIsPlaceholder],
 ];

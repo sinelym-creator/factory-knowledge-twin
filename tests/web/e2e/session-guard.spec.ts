@@ -13,13 +13,26 @@ const API = process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
  * 정본: wireframes §6 「모든 라우트는 세션 쿠키 없이 진입 시 `/`로 보내 세션을 먼저 만든다(격리 보장)」
  */
 
+/**
+ * 🔴 **딥링크 2라우트가 이 목록에서 빠졌다**(T3-3 착지 · 11대).
+ *
+ * `/evidence/{id}` · `/documents/{id}` 는 계약 v0.1.6 이 「세션 없이 «열람만»」으로 연
+ * 라우트이고(§3:244 집행 · Q-16), T3-3 이 셸 쪽 절반(`proxy.ts` `READ_ONLY_DEEP_LINK`)을
+ * 세우면서 **더는 `/` 로 튕기지 않는다**. 이 목록에 남겨 두면 정본대로 바뀐 거동을 그물이
+ * 「깨졌다」고 부르게 된다 — 그물이 대상보다 낡은 자리다(8대 계보 「그물이 판정보다 낡는다」).
+ *
+ * 🔴 그렇다고 지우기만 하면 축이 사라진다. 아래 «딥링크» 절이 그 자리를 이어받아,
+ *    **열리는 것 + 세션 화면은 여전히 닫히는 것**을 한 벌로 잰다.
+ */
 const P0_ROUTES = [
   "/overview",
   "/incidents/INC-2025-019",
-  "/evidence/EV-2025-001",
   "/work-orders/WO-2025-001",
   "/compare",
 ];
+
+/** 계약 v0.1.6 읽기 예외 2라우트 — 세션 «없이» 열려야 하는 쪽. */
+const DEEP_LINK_ROUTES = ["/evidence/EV-2025-001", "/documents/DOC-MAN-0021"];
 
 /** 방문 중 지나간 응답의 상태코드 사슬 — 「어디를 거쳐 왔는가」를 보고서에 남긴다. */
 function chain(page: Page) {
@@ -51,19 +64,65 @@ test.describe("세션 가드", () => {
     });
   }
 
-  test("🔵 R-1 «지금의 뜻»을 못박는다 — 첫 진입 딥링크는 유실된다(정본대로 · 결함 아님)", async ({ page }) => {
-    // wireframes §6 은 `/evidence/[id]?run=&tab=` 를 «딥링크»로 적어 두었다. 쿠키 없는 방문자가
-    // 그 링크로 오면 세션을 받고 /overview 에 선다 — 목적지와 쿼리가 사라진다.
-    // 🔴 이것은 정본 두 줄을 그대로 따른 결과다. 그래서 «결함»이 아니라 «현재 뜻»으로 고정한다.
-    //    누가 나중에 목적지 보존을 넣으면 이 행이 빨강으로 알린다 — 조용히 바뀌지 않게(5대 절차 ②).
+  /* 🔴 **R-1 이 뒤집혔다 — 대상이 정본을 따라잡았다**(T3-3 착지 · 11대).
+   *
+   * 앞판은 「첫 진입 딥링크는 유실된다(정본대로 · 결함 아님)」를 못박고 있었다. 그때의 정본
+   * 상태가 그랬다 — 계약 v0.1.6 은 읽기 예외 2라우트를 이미 열었는데 **셸 쪽 절반이 없어서**
+   * §3:244 가 미구현이었고(Q-16 이 그렇게 적어 두었다), 그 미구현이 「지금의 뜻」이었다.
+   * T3-3 이 그 절반을 세웠다. 그러니 이 행은 «깨진» 것이 아니라 **역할이 끝난** 것이다.
+   *
+   * 🔴 앞판이 이 행에 남긴 부탁을 그대로 지킨다: 「누가 나중에 목적지 보존을 넣으면 이 행이
+   *    빨강으로 알린다 — 조용히 바뀌지 않게」. 조용히 바뀌지 않았다. 여기서 **뒤집힌 사실을
+   *    새 기대로 못박는다** — 지우고 넘어가면 그 부탁이 아무 데도 남지 않는다. */
+  test("🔵 R-1 뒤집힘 — 딥링크 2라우트는 «유실되지 않는다»(v0.1.6 읽기 예외 · T3-3 착지)", async ({
+    page,
+  }) => {
     await page.goto("/evidence/EV-2025-001?run=RUN-1&tab=graph");
-    await expect(page).toHaveURL(/\/overview$/);
-    expect(new URL(page.url()).search, "쿼리까지 사라진다").toBe("");
+    await expect(page, "딥링크가 여전히 /overview 로 튕긴다 — 읽기 예외가 셸에서 죽었다").toHaveURL(
+      /\/evidence\/EV-2025-001\?run=RUN-1&tab=graph$/,
+    );
+    // 🔴 목적지 «와 쿼리»가 함께 살아야 딥링크다 — 경로만 남고 쿼리가 죽으면 탭·run 이 사라진다.
+    expect(new URL(page.url()).search, "쿼리가 사라졌다").toBe("?run=RUN-1&tab=graph");
 
-    // 두 번째 방문(쿠키 보유)에서는 목적지가 그대로 산다 — 유실은 «첫 진입 1회»에 한정된다.
-    await page.goto("/evidence/EV-2025-001?run=RUN-1&tab=graph");
-    await expect(page).toHaveURL(/\/evidence\/EV-2025-001\?run=RUN-1&tab=graph$/);
   });
+
+  test("🔵 R-1 대조군 — 예외는 «딥링크만»이다(세션 화면은 여전히 목적지를 잃는다)", async ({
+    browser,
+  }) => {
+    // 🔴 `clearCookies()` 로 같은 페이지에서 이어 재지 않는다(11대 자수). 쿠키만 지우면
+    //    Next 의 클라이언트 라우터 캐시·프리페치본이 남아 다음 `goto` 가 서버를 안 거치고,
+    //    그러면 「가드가 안 돈다」가 아니라 「가드에 물어보지 않았다」인데 표는 전자로 읽는다.
+    //    무세션 축은 **매번 새 컨텍스트**에서만 참이다.
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await page.goto("/work-orders/WO-2025-001");
+    await expect(page, "세션 화면까지 열린다 — 예외가 넓다").toHaveURL(/\/overview$/);
+    await ctx.close();
+  });
+
+  for (const route of DEEP_LINK_ROUTES) {
+    test(`딥링크 ${route} — 쿠키 없이 열리되 «조용한 입장»은 없다 (v0.1.6 「열람만」)`, async ({
+      browser,
+    }) => {
+      const ctx = await browser.newContext();
+      const page = await ctx.newPage();
+      await page.goto(route, { waitUntil: "networkidle" });
+      expect(new URL(page.url()).pathname, "딥링크가 튕겼다").toBe(route);
+
+      // 🔴 **여기가 이 축의 값이다.** 「열렸다」만 보면 초록인데, 계약이 연 것은 «열람»이지
+      //    «입장»이 아니다. 세션이 생기면 HttpOnly 쿠키와 소유권 축이 조용히 열린다.
+      //    🔴 그리고 그것은 **늦게** 생긴다(11대 실측: networkidle 직후 0 → +2초에 2개).
+      //       프리페치가 `/` 홉을 긁기 때문이다 — 그래서 «기다린 뒤에» 묻는다.
+      //       기다리지 않고 물으면 이 축은 언제나 초록이다.
+      await page.waitForTimeout(4000);
+      const cookies = (await ctx.cookies()).map((c) => c.name);
+      expect(
+        cookies,
+        `딥링크에서 세션이 생겼다 — 「열람만」이 아니라 조용한 입장이다(원장 Q-39): ${cookies.join(", ")}`,
+      ).toEqual([]);
+      await ctx.close();
+    });
+  }
 
   test("`/` 는 머무는 곳이 아니다 — 쿠키가 «있어도» /overview 로 보낸다", async ({ page }) => {
     await page.goto("/");
@@ -134,7 +193,11 @@ test.describe("세션 가드", () => {
    *    통과했다」로 4행이 울었다). 전환을 눈으로 본 뒤에 표시를 걷고 평범한 초록으로 바꿨다 —
    *    조용히 초록이 된 그물은 무엇이 바뀌었는지 아무것도 가르치지 못한다.
    * ──────────────────────────────────────────────────────────────────────────── */
-  for (const bypass of ["/incidents/x.svg", "/evidence/x.svg", "/work-orders/x.svg"]) {
+  // 🔴 `/evidence/x.svg` 를 표본에서 뺐다(T3-3 착지 · 11대). 그 경로는 이제 **읽기 예외**라
+  //    세션 없이 열리는 것이 정본이다 — V-1 이 물었던 「.svg 로 끝나면 가드를 빠져나간다」와는
+  //    다른 사건이고, 섞어 두면 이 축이 「예외가 동작한다」를 「구멍이 났다」로 읽는다.
+  //    🔴 남은 두 표본으로 축은 그대로 선다(가드 대상 라우트에서 .svg id 가 가드를 지나는가).
+  for (const bypass of ["/incidents/x.svg", "/work-orders/x.svg"]) {
     test(`V-1 회귀 ${bypass} — .svg id 도 가드를 «지난다»(§6 「모든 라우트」)`, async ({ page }) => {
       await page.goto(bypass);
       await expect(page).toHaveURL(/\/overview$/);
