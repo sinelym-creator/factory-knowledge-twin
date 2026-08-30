@@ -41,6 +41,12 @@ const ALLOWED = [
   /^\/api\/scenarios$/,
   /^\/api\/scenarios\/\$\{[^}]+\}\/runs$/,
   /^\/api\/runs\/\$\{[^}]+\}$/,
+  // --- T3-3 근거 열람(계약 §근거·그래프 동결 본문 + v0.1.1 형상 append) --------------
+  // 🔴 이 둘은 계약 «동결 본문»에 이미 있는 라우트다(v0.1.6 이 읽기 예외로 지목한 그 둘).
+  //    새로 만든 표면이 아니라, 화면이 이제야 소비하기 시작한 표면이다.
+  /^\/api\/evidence\/\$\{[^}]+\}$/,
+  /^\/api\/documents\/\$\{[^}]+\}$/,
+  /^\/api\/documents\/\$\{[^}]+\}\?highlight=\$\{[^}]+\}$/,
 ];
 
 const ROOTS = ["app", "components", "lib", "proxy.ts", "next.config.ts"];

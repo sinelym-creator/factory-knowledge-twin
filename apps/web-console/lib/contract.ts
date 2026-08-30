@@ -35,6 +35,16 @@ export const CONTRACT = {
   scenarios: "/api/scenarios",
   startRun: (scenarioId: string) => `/api/scenarios/${encodeURIComponent(scenarioId)}/runs`,
   run: (runId: string) => `/api/runs/${encodeURIComponent(runId)}`,
+  // --- T3-3 근거 열람(계약 §근거·그래프 · v0.1.1 형상 · v0.1.6 읽기 예외 2라우트) ------
+  evidence: (evidenceId: string) => `/api/evidence/${encodeURIComponent(evidenceId)}`,
+  /**
+   * 🔴 `highlight` 는 «어느 revision 을 펴는가»까지 정한다(ai-api reading/documents.py).
+   *    주면 그 chunk 의 revision, 안 주면 현행 revision — 두 호출은 다른 문서를 낼 수 있다.
+   */
+  document: (docId: string, chunkId?: string) =>
+    chunkId
+      ? `/api/documents/${encodeURIComponent(docId)}?highlight=${encodeURIComponent(chunkId)}`
+      : `/api/documents/${encodeURIComponent(docId)}`,
 } as const;
 
 /** 계약 표면 대조용 — 이 셸이 부르는 경로 «전수»(테스트·검수가 이 목록을 계약과 맞춘다). */
@@ -50,6 +60,8 @@ export const CONTRACT_SURFACE = [
   "GET /api/scenarios",
   "POST /api/scenarios/{scenarioId}/runs",
   "GET /api/runs/{runId}",
+  "GET /api/evidence/{evidenceId}",
+  "GET /api/documents/{docId}",
 ] as const;
 
 // --- 계약 v0.1.7(+정정) 응답 형상 ------------------------------------------------
@@ -165,6 +177,86 @@ export type RunSnapshot = {
   workOrderDraftId?: string;
 };
 
+// --- T3-3 근거 열람 형상(계약 v0.1.1 append) ------------------------------------
+
+/** 🔴 계약 v0.1.1: kind 는 이 둘 «뿐»이다. `graph-path`·`sensor-series` evidenceId 는 이
+ *  라우트가 다루지 않아 404 로 답한다(Q-34 성문 — 「없는 근거」와 같은 코드인 것이 현행 참). */
+export type EvidenceKind = "doc-chunk" | "record";
+
+/**
+ * GET /evidence/{evidenceId}
+ *
+ * 🔴 `highlight` 는 **문서 body 좌표**다 — 이 응답의 `text`(=chunk 본문) 좌표가 아니다.
+ *    실측(T3-3 E1 · DOC-SOP-0014@r2#001): text 892자 · highlight{171,1063} span 892자 ·
+ *    body 1376자 · `body.slice(171,1063) === text` 참. 그래서 「인용 강조」를 그리려면
+ *    이 응답만으로는 부족하고 `/documents` 를 겹쳐야 한다.
+ * 🔴 revision 6필드는 `doc-chunk` 만 실값이다. `record` 는 전부 null 이고 `stale` 은
+ *    **false 상수**다 — 「신선이 실증됐다」가 아니라 「색인이라는 개념이 없다」는 뜻이다.
+ */
+export type Evidence = {
+  evidenceId: string;
+  kind: EvidenceKind;
+  revisionId: string | null;
+  contentHash: string | null;
+  stale: boolean;
+  approvalState: string | null;
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  text: string;
+  highlight: { start: number; end: number } | null;
+  record: { entityType: string; fields: Record<string, string | number | boolean> } | null;
+};
+
+/** GET /documents/{docId}?highlight={chunkId} */
+export type DocumentPreview = {
+  documentId: string;
+  title: string;
+  revisionId: string;
+  contentHash: string;
+  stale: boolean;
+  approvalState: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  body: string;
+  highlight: { chunkId: string; start: number; end: number } | null;
+};
+
+/**
+ * chunk ID 조성 — T0-6 §3.1 · DB 제약 `ck_chunk_id_composition` 이 강제한다.
+ * `{document_id}@r{N}#{NNN}`. 🔴 ID 자체가 좌표라, 이것을 갈라야 evidence 에서 문서로 간다.
+ *    ai-api `reading/evidence.py` 의 `CHUNK_ID_RE` 와 «같은 조성»이다 — 갈리면 화면이
+ *    문서를 못 찾는다. 🔴 `\b` 를 쓰지 않고 문자집합·앵커로 잠근다(경계 문자가 달라지면
+ *    `\b` 는 조용히 다른 곳에서 끊긴다).
+ */
+const CHUNK_ID = /^(DOC-[A-Z]{3,4}-\d{4})@r\d+#\d{3}$/;
+
+/** doc-chunk evidenceId → documentId. chunk id 가 아니면 null(추측하지 않는다). */
+export function documentIdOf(evidenceId: string): string | null {
+  return CHUNK_ID.exec(evidenceId)?.[1] ?? null;
+}
+
+/**
+ * 동적 라우트 세그먼트를 «값»으로 되돌린다.
+ *
+ * 🔴 **실측(T3-3 E1 · Next 16.3.3 `next start`)**: params 는 퍼센트 인코딩된 «그대로» 온다.
+ *    `/evidence/DOC-SOP-0014%40r2%23001` 로 들어오면 `params.evidenceId` 는
+ *    `DOC-SOP-0014%40r2%23001` 이고, 이것을 다시 `encodeURIComponent` 하면 `%2540`·`%2523`
+ *    이 되어 ai-api 는 「그런 근거가 없다」(404)고 답한다. 🔴 그 404 는 **자원의 사실이 아니라
+ *    내 인코딩의 사실**이었다 — 화면은 「없는 근거」라고 정확한 문장으로 거짓을 말했다.
+ *    chunk id 는 `@`·`#` 을 품는 유일한 id 라, 이 축은 여기서만 드러난다(다른 화면의 id 는
+ *    영숫자·하이픈뿐이라 인코딩 전후가 같아 조용히 지나간다).
+ *
+ * 🔴 두 번 디코딩하지 않는다. 이미 디코딩된 값에는 `%` 가 없어 한 번의 `decodeURIComponent`
+ *    가 항등이고, 깨진 시퀀스는 던지므로 원본을 그대로 돌려준다 — 추측으로 값을 바꾸지 않는다.
+ */
+export function decodeRouteParam(raw: string): string {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 /** 미연결(백엔드 부재·501·타임아웃)과 «응답» 을 구분해 돌려준다.
  *
  * 🔴 `setCookie`는 ai-api가 내려보낸 `Set-Cookie` 헤더 «원문»이다(T3-1). 셸이 쿠키 «이름»을
@@ -172,9 +264,20 @@ export type RunSnapshot = {
  *    한쪽만 자라고, 그때 화면은 살아 있다고 그리는데 서버는 401을 답한다.
  * 🔴 이 값은 로그·캐시에 싣지 않는다(공개 경계).
  */
+/** 서버가 「왜 거절했는가」를 실은 본문 — `{ error: { code, message } }` (계약 §머리말). */
+export type ErrorDetail = { code: string; message: string };
+
 export type Reply<T> =
   | { state: "ok"; data: T; setCookie?: string }
-  | { state: "unavailable"; why: string; status?: number };
+  /**
+   * 🔴 `detail` = 서버가 «사유 코드»로 나눠 답한 것을 화면까지 옮기는 자리(T3-3).
+   *    ai-api 는 같은 400 을 `highlight_mismatch`(이 문서의 것이 아니다)와
+   *    `highlight_not_found`(이 문서의 것이지만 그 좌표가 없다)로 «갈라» 답한다 —
+   *    화면이 `HTTP 400` 하나로만 그리면 서버가 가른 두 사건이 화면에서 도로 합쳐진다.
+   *    🔴 `why` 는 건드리지 않는다: 기존 화면들이 그 문장을 이미 쓰고 있어, 여기서 값을
+   *       바꾸면 이 티켓과 무관한 화면의 문구가 조용히 달라진다(요청 밖 변경).
+   */
+  | { state: "unavailable"; why: string; status?: number; detail?: ErrorDetail };
 
 const TIMEOUT_MS = 2000;
 /** 조회 계층은 SSOT를 훑는다 — 세션 발급보다 여유를 준다(스파크라인 12장이 붙는 화면). */
@@ -186,6 +289,26 @@ const READ_TIMEOUT_MS = 8000;
  */
 export function apiBase(): string {
   return process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
+}
+
+/**
+ * 오류 본문에서 `{ code, message }` 를 꺼낸다 — 🔴 «못 꺼냈다»를 지어내지 않는다.
+ *
+ * 본문이 없거나 형식이 다르면 `undefined` 다. 여기서 `{code:"unknown"}` 같은 그럴듯한 값을
+ * 만들면 화면은 「서버가 사유를 말했다」고 그리는데 실제로는 아무 말도 없었던 것이 된다.
+ */
+async function errorDetail(res: Response): Promise<ErrorDetail | undefined> {
+  try {
+    const body: unknown = await res.json();
+    const err = (body as { error?: unknown })?.error;
+    if (err && typeof err === "object") {
+      const { code, message } = err as { code?: unknown; message?: unknown };
+      if (typeof code === "string" && typeof message === "string") return { code, message };
+    }
+  } catch {
+    // 본문 없음·JSON 아님 — 사유를 «말하지 않은» 것이지 오류가 아니다.
+  }
+  return undefined;
 }
 
 async function call<T>(
@@ -200,7 +323,9 @@ async function call<T>(
     //    가르지 못하면 두 상태가 같은 모습으로 그려진다 — 서버가 사유 코드를 나눈 이유가
     //    화면에서 사라진다.
     if (res.status === 501) return { state: "unavailable", why: "미구현(501)", status: 501 };
-    if (!res.ok) return { state: "unavailable", why: `HTTP ${res.status}`, status: res.status };
+    if (!res.ok) {
+      return { state: "unavailable", why: `HTTP ${res.status}`, status: res.status, detail: await errorDetail(res) };
+    }
     const setCookie = res.headers.get("set-cookie") ?? undefined;
     return { state: "ok", data: (await res.json()) as T, setCookie };
   } catch (e) {
