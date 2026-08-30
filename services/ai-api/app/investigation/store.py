@@ -131,6 +131,18 @@ class RunStore:
     def by_session(self, session_id: str) -> list[RunRecord]:
         return [r for r in self._runs.values() if r.sessionId == session_id]
 
+    def by_work_order_draft(self, wo_id: str) -> list[RunRecord]:
+        """그 초안 id 를 «주장하는» run 전부. 🔴 하나가 아니라 목록으로 돌려준다.
+
+        `WOD-` 는 난수라 충돌하지 않을 것 같지만, **재생본이 남의 이름을 그대로 말한다** —
+        replay run 은 녹화본의 `workOrderDraftId` 를 복원하므로(replay.py), 그 fixture 를
+        녹화한 run 이 같은 프로세스에 아직 살아 있으면 **한 id 를 두 run 이 주장한다**.
+        여기서 「첫 번째」를 골라 돌려주면 dict 삽입 순서가 답을 정하게 되고, 그 답은
+        녹화·재생 순서에 따라 바뀐다 — 검사기가 순서 때문에 초록이 되는 자리가 생긴다.
+        고르는 일은 호출자가 «명시된 규칙»으로 하고, 저장소는 사실만 전부 넘긴다.
+        """
+        return [r for r in self._runs.values() if r.workOrderDraftId == wo_id]
+
     def drop_session(self, session_id: str) -> int:
         """세션 리셋 — 그 세션의 run 만 버린다. 다른 세션은 손대지 않는다(계약 「타 세션 무영향」)."""
         dropped = 0

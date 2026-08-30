@@ -21,6 +21,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 
 from .errors import install_error_handlers
+from .investigation.approvals import ApprovalStore
 from .investigation.guards import enforce_no_telemetry
 from .investigation.store import RunStore
 from .probes import close_resources, open_resources
@@ -51,6 +52,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     # run·이벤트·WO 초안 저장소 — 프로세스 안 · 세션 스코프 · SSOT 쓰기 0(오케 판정 J-3).
     app.state.run_store = RunStore()
+    # 🔴 승인 원장은 run 저장소와 «따로» 둔다 — run 은 상한(MAX_RUNS)에 걸리면 버려지고,
+    #    그 안에 원장을 두면 「승인했다」는 사실이 초안과 함께 사라진다(approvals.py 머리말).
+    app.state.approval_store = ApprovalStore()
 
     app.state.resources = await open_resources(settings)
     notes = app.state.resources.notes
