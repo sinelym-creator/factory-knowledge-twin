@@ -104,8 +104,27 @@ test.describe("세션 가드", () => {
     test(`딥링크 ${route} — 쿠키 없이 열리되 «조용한 입장»은 없다 (v0.1.6 「열람만」)`, async ({
       browser,
     }) => {
+      test.slow();
       const ctx = await browser.newContext();
       const page = await ctx.newPage();
+
+      /* 🔴 **자극이 실재했는지부터 잰다.**
+       *
+       * 이 축의 처방은 프리페치를 «막는» 것이 아니라 프리페치 요청에 **세션을 안 만드는**
+       * 쪽이다. 그러면 「세션 0」이 두 가지 뜻을 갖는다:
+       *   ⓐ 프리페치가 일어났는데 세션이 안 생겼다 ← 처방이 먹은 것
+       *   ⓑ 프리페치 자체가 안 일어나서 세션이 안 생겼다 ← 아무것도 증명하지 못한 초록
+       * 둘을 안 가르면 이 그물은 언젠가 «자극이 사라진 날» 조용히 초록이 된다.
+       * ⇒ 표지 요청을 세고, **0 건이면 초록도 빨강도 내지 않는다**(측정 불가).
+       */
+      const prefetches: string[] = [];
+      page.on("request", (r) => {
+        const h = r.headers();
+        if (h["next-router-prefetch"] || h["rsc"] || r.url().includes("_rsc=")) {
+          prefetches.push(new URL(r.url()).pathname);
+        }
+      });
+
       await page.goto(route, { waitUntil: "networkidle" });
       expect(new URL(page.url()).pathname, "딥링크가 튕겼다").toBe(route);
 
@@ -115,12 +134,23 @@ test.describe("세션 가드", () => {
       //       프리페치가 `/` 홉을 긁기 때문이다 — 그래서 «기다린 뒤에» 묻는다.
       //       기다리지 않고 물으면 이 축은 언제나 초록이다.
       await page.waitForTimeout(4000);
+
       const cookies = (await ctx.cookies()).map((c) => c.name);
+      const stimulated = prefetches.length > 0;
+      await ctx.close();
+
+      // 🔴 세션이 «생겼으면» 자극 유무와 무관하게 빨강이다 — 그때는 이미 입장한 것이다.
+      //    자극 부재로 미루는 것은 «초록으로 셀 뻔한» 경우뿐이다.
+      if (cookies.length === 0) {
+        test.skip(
+          !stimulated,
+          "프리페치 표지 요청이 0건 — 자극이 없었으므로 이 초록은 처방의 것이 아니다(측정 불가)",
+        );
+      }
       expect(
         cookies,
-        `딥링크에서 세션이 생겼다 — 「열람만」이 아니라 조용한 입장이다(원장 Q-39): ${cookies.join(", ")}`,
+        `딥링크에서 세션이 생겼다 — 「열람만」이 아니라 조용한 입장이다(원장 Q-39 · 프리페치 ${prefetches.length}건): ${cookies.join(", ")}`,
       ).toEqual([]);
-      await ctx.close();
     });
   }
 
