@@ -1,6 +1,6 @@
 # tests/api — ai-api 표면 검증 자산 (검증 좌석)
 
-T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4 로 다시 자라 **14종**이 됐다.
+T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면이 자라 8종**, T2-3·T2-4·T2-5 로 다시 자라 **16종**이 됐다.
 🔴 표면이 자랐는데 표가 안 자라면 그것은 「내가 안 본다」는 뜻이다. 판정 근거는
 `evidence/t2-1-retrieval-verification.md`(T2-1) · `evidence/t2-2-reading-verification.md`(T2-2).
 
@@ -20,6 +20,8 @@ T2-1 독립 검증에서 3종을 세웠고, **T2-2(읽기 3라우트)로 표면�
 | `run_surface_drill.py` | runs 표면 5 + `?byRun` 이 계약대로 서 있는가 · 중지가 **타임라인도 닫는가** | HTTP 표면 | 필요 | T2-3 |
 | `scenario_script_drill.py` | 대본대로 도는가 · **0건 단계 통과 금지** · 낸 근거를 kind 별 소비처로 펴는가 | 스키마·대본 정본 + HTTP | 필요 | T2-3 |
 | `replay_fixture_drill.py` | 재생이 **녹화본 그대로**인가 · 없는 것을 복원하지 않는가 · **심사기가 우는가** | fixture 정본 + HTTP | 필요 | T2-4 |
+| `approval_transition_drill.py` | 승인 전이 **12칸 전수** · 위반의 사유가 갈리는가 · **침묵 금지** | 계약 정본 + HTTP | 필요 | T2-5 |
+| `r12_enforcement_drill.py` | 안전 조치를 **서버가** 지키는가 · 형제 6 + 대조군 + **7번째 탐색** | 스펙·판정 + HTTP | 필요 | T2-5 |
 
 ```
 python tests/api/anchor_boundary_drill.py       # 리포 루트에서
@@ -40,6 +42,8 @@ python tests/api/ssot_write_drill.py            # 지문만 · --run 으로 run 
 python tests/api/run_surface_drill.py
 python tests/api/scenario_script_drill.py
 python tests/api/replay_fixture_drill.py --no-deps   # + 의존 없이 띄운 앱 열(쓴다: fixture 를 잠시 치웠다 되돌린다)
+python tests/api/approval_transition_drill.py
+python tests/api/r12_enforcement_drill.py
 ```
 
 환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
