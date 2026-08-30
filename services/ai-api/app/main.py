@@ -18,7 +18,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
 from .errors import install_error_handlers
 from .investigation.approvals import ApprovalStore
@@ -26,6 +26,8 @@ from .investigation.guards import enforce_no_telemetry
 from .investigation.store import RunStore
 from .probes import close_resources, open_resources
 from .routers import factory, investigations, knowledge, ops, sessions, work_orders
+from .session_guard import audit_guard_coverage, session_guard
+from .session_store import SessionStore
 from .settings import get_settings
 
 log = logging.getLogger("fkt.api")
@@ -50,6 +52,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if forced:
         log.warning("부팅 시 egress guard 가 환경을 바꿨다: %s", sorted(forced))
 
+    # 세션 저장소 — 프로세스 안 · TTL 명시(T3-1). 🔴 run·승인 저장소보다 «먼저» 세운다:
+    # 가드가 첫 요청에서 이것을 찾고, 없으면 전 라우트가 500 으로 죽는다.
+    app.state.session_store = SessionStore()
     # run·이벤트·WO 초안 저장소 — 프로세스 안 · 세션 스코프 · SSOT 쓰기 0(오케 판정 J-3).
     app.state.run_store = RunStore()
     # 🔴 승인 원장은 run 저장소와 «따로» 둔다 — run 은 상한(MAX_RUNS)에 걸리면 버려지고,
@@ -80,10 +85,17 @@ def create_app() -> FastAPI:
             "비동기 골격이며 도메인 구현은 아직 없다(T1-8)."
         ),
         lifespan=lifespan,
+        # 🔴 **세션 가드는 앱 레벨이다**(T3-1 · 계약 v0.1.6). 라우터마다 붙이면 새 라우터를
+        #    등록하며 «붙이기를 잊는» 자리가 생기고, 잊은 라우트는 세션 없이 열리는 구멍이
+        #    된다. 기본이 가드이고 면제는 `session_guard` 의 두 목록에만 적는다 — 그 목록이
+        #    실재 라우트와 어긋나면 아래 `audit_guard_coverage` 가 부팅을 멈춘다.
+        dependencies=[Depends(session_guard)],
     )
     install_error_handlers(app)
     for module in (sessions, factory, investigations, knowledge, work_orders, ops):
         app.include_router(module.router, prefix=API_PREFIX)
+    # 🔴 라우트가 다 등록된 «뒤»에 센다. 앞에서 세면 0개를 보고 「모순 없음」을 낸다.
+    audit_guard_coverage(app)
     return app
 
 

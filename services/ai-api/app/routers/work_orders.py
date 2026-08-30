@@ -29,6 +29,7 @@ from typing import Any
 
 from fastapi import APIRouter, Body, Request
 
+from .. import ownership
 from ..errors import ErrorResponse, contract_error
 from ..investigation.approvals import (
     APPROVAL_APPROVED,
@@ -101,7 +102,10 @@ def _draft_or_error(request: Request, wo_id: str) -> tuple[RunRecord, dict[str, 
        「그런 초안이 없다」가 되는데 사실은 「재생본이라 원본이 없다」다. 두 사건을 한 코드로
        답하면 T2-4 에서 `?byRun` 을 501 로 막은 이유가 그대로 무너진다.
     """
-    matches = _store(request).by_work_order_draft(wo_id)
+    # 🔴 **소유권을 「찾기」 단계에서 건다**(T3-1 · 계약 v0.1.6). 찾은 «뒤»에 거르면
+    #    타 세션의 초안이 충돌 판정(아래 500)이나 재생 판정(501)에 먼저 걸려, 응답 코드가
+    #    「그 초안이 있다」를 말해 버린다 — 존재 은닉이 사유 코드에서 깨진다.
+    matches = ownership.visible_runs(request, _store(request).by_work_order_draft(wo_id))
     bodied = [r for r in matches if r.workOrderDraft is not None]
 
     if len(bodied) > 1:

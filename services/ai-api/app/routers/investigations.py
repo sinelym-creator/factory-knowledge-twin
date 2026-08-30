@@ -26,7 +26,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
-from .. import session_id
+from .. import ownership, session_id
 from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
 from ..investigation import binding, replay, runner
 from ..investigation.store import RunRecord, RunStore
@@ -62,12 +62,13 @@ def _resources(request: Request) -> Any:
 
 
 def _run_or_404(request: Request, run_id: str) -> RunRecord:
-    record = _store(request).get(run_id)
-    if record is None:
-        # 🔴 「없다」와 「끝났다」는 다른 사건이다. 프로세스 재기동으로 사라진 run 도 여기 온다 —
-        #    저장소가 프로세스 안에 있다는 사실의 «정직한 대가»다(store.py 머리말).
-        raise _error(404, "not_found", f"run {run_id} 를 찾을 수 없다")
-    return record
+    """이 세션이 볼 수 있는 run 만 — 판정은 `app/ownership.py` 한 곳이 한다(T3-1).
+
+    🔴 「없다」·「끝났다」·**「남의 것이다」**가 전부 같은 404 다. 앞의 둘은 프로세스 안
+       저장소의 정직한 대가고(store.py 머리말), 셋째는 계약 v0.1.6 의 존재 은닉이다 —
+       타 세션에 「있지만 못 본다」로 답하면 남의 run 존재가 응답으로 새어 나간다.
+    """
+    return ownership.run_or_404(request, run_id)
 
 
 @router.get("/scenarios", response_model=list[ScenarioSummary])
@@ -201,8 +202,10 @@ async def run_event_stream(websocket: WebSocket, runId: str) -> None:
        화면에 그려지는 것보다, 끊겨서 다시 연결하는 편이 낫다.
     """
     await websocket.accept()
-    store: RunStore = websocket.app.state.run_store
-    record = store.get(runId)
+    # 🔴 소유권 판정은 HTTP 와 «같은 문»을 쓴다(T3-1). 여기서 `store.get` 을 직접 부르면
+    #    WS 만 남의 run 을 열어 주는 구멍이 남는다 — 화면이 실시간 축으로 쓰는 경로라
+    #    그 구멍이 가장 늦게 발견된다.
+    record = ownership.find_run(websocket, runId)
     if record is None:
         await websocket.close(code=WS_RUN_NOT_FOUND, reason=f"run_not_found: {runId}")
         return

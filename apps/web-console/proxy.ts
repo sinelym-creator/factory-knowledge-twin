@@ -36,6 +36,23 @@ export async function proxy(req: NextRequest) {
       : { id: crypto.randomUUID().replace(/-/g, ""), origin: "pending" as const };
 
   const res = NextResponse.redirect(new URL("/overview", req.url));
+
+  // 🔴 **ai-api가 심은 세션 쿠키를 브라우저까지 그대로 넘긴다**(T3-1 · 계약 v0.1.6).
+  //    입장 요청은 «서버사이드»에서 나가므로, 전달하지 않으면 그 HttpOnly 쿠키는 이 서버의
+  //    fetch에서 끝나고 브라우저는 못 받는다 — 그러면 브라우저가 rewrite로 부르는 `/api/*`가
+  //    전부 401이 된다(가드는 유효 세션을 요구한다). 아래 `fkt_session`은 칩·리셋이 읽는
+  //    «표시용»이고, 실제 격리 키는 이 전달된 쿠키다.
+  //
+  //    🔴 이름을 여기 적지 않는다. 헤더 원문을 그대로 넘겨서 쿠키 «정체성»의 정본이 API
+  //       한 곳에 남게 한다(오케 승인 08-30).
+  //    🔴 `Secure`는 «셸이» https로 서비스될 때 덧붙인다. API는 자기 요청 스킴을 보고 정하는데
+  //       그 요청은 서버간 http라서 Secure가 빠진다 — 브라우저 쪽 조건은 브라우저 쪽에서 안다.
+  if (reply.state === "ok" && reply.setCookie) {
+    const needsSecure =
+      req.nextUrl.protocol === "https:" && !/;\s*secure/i.test(reply.setCookie);
+    res.headers.append("set-cookie", needsSecure ? `${reply.setCookie}; Secure` : reply.setCookie);
+  }
+
   res.cookies.set(SESSION_COOKIE, formatSession(created), {
     path: "/",
     sameSite: "lax",
