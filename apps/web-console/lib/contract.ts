@@ -29,9 +29,16 @@ export const CONTRACT_SURFACE = [
 
 export type LiveStatus = { online: boolean; checkedAt: string };
 
-/** 미연결(백엔드 부재·501·타임아웃)과 «응답» 을 구분해 돌려준다. */
+/**
+ * 미연결(백엔드 부재·501·타임아웃)과 «응답» 을 구분해 돌려준다.
+ *
+ * 🔴 `setCookie`는 ai-api가 내려보낸 `Set-Cookie` 헤더 «원문»이다(T3-1). 셸이 쿠키 «이름»을
+ *    자기 코드에 적지 않기 위해 헤더를 통째로 들고 다닌다 — 이름을 두 번째 자리에 적는 순간
+ *    한쪽만 자라고, 그때 화면은 살아 있다고 그리는데 서버는 401을 답한다.
+ * 🔴 이 값은 로그·캐시에 싣지 않는다(공개 경계 · 오케 단서 ⓐ).
+ */
 export type Reply<T> =
-  | { state: "ok"; data: T }
+  | { state: "ok"; data: T; setCookie?: string }
   | { state: "unavailable"; why: string };
 
 const TIMEOUT_MS = 2000;
@@ -49,7 +56,8 @@ async function call<T>(path: string, init?: RequestInit, base = ""): Promise<Rep
     const res = await fetch(base + path, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
     if (res.status === 501) return { state: "unavailable", why: "미구현(501)" };
     if (!res.ok) return { state: "unavailable", why: `HTTP ${res.status}` };
-    return { state: "ok", data: (await res.json()) as T };
+    const setCookie = res.headers.get("set-cookie") ?? undefined;
+    return { state: "ok", data: (await res.json()) as T, setCookie };
   } catch (e) {
     // 연결 거부·타임아웃·JSON 파손 — 전부 「지금은 못 물어본다」로 같다.
     return { state: "unavailable", why: e instanceof Error ? e.name : "unknown" };
@@ -57,7 +65,12 @@ async function call<T>(path: string, init?: RequestInit, base = ""): Promise<Rep
 }
 
 export function createSession(base = ""): Promise<Reply<{ sessionId: string }>> {
-  return call<{ sessionId: string }>(CONTRACT.createSession, { method: "POST" }, base);
+  // 🔴 `no-store` — 세션 발급 응답은 캐시에 남을 물건이 아니다(쿠키가 실려 있다).
+  return call<{ sessionId: string }>(
+    CONTRACT.createSession,
+    { method: "POST", cache: "no-store" },
+    base,
+  );
 }
 
 export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolean }>> {

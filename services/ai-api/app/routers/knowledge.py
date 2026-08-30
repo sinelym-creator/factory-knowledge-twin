@@ -17,6 +17,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
+from .. import ownership
 from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
 from ..reading import documents as document_reader
 from ..reading import evidence as evidence_reader
@@ -86,12 +87,9 @@ async def graph_paths(
         raise NotImplementedRoute(
             "GET /graph/paths?from=&to=", "이 축의 소비 화면(T2-3 은 byRun 만 쓴다)"
         )
-    record = request.app.state.run_store.get(byRun)
-    if record is None:
-        raise HTTPException(
-            status_code=404,
-            detail={"code": "not_found", "message": f"run {byRun} 를 찾을 수 없다"},
-        )
+    # 🔴 run 을 여는 문이 여기에도 있다(T3-1 형제 세기 — `GET /runs/*` 계열 · WS · 여기).
+    #    소유권을 라우트마다 적으면 셋 중 하나를 잊고, 잊은 문이 곧 Q-25 의 재발이다.
+    record = ownership.run_or_404(request, byRun)
     if record.mode == "replay":
         # 🔴 재생 run 에는 경로 «원본»이 없다(T2-4 판정 J-G). fixture 는 이벤트 스트림만
         #    담고, `graphPaths` 는 이벤트 밖에 살던 값이다. 여기서 빈 배열을 200 으로 내면
