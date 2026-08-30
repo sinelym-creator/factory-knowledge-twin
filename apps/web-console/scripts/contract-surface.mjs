@@ -30,6 +30,17 @@ const ALLOWED = [
   /^\/api\/sessions\/\$\{[^}]+\}\/reset$/, // 템플릿 리터럴 형태 그대로
   /^\/api\/live\/status$/,
   /^\/api\/:path\*$/, // next.config.ts의 rewrite 원본·대상 표기
+  // --- T3-2 조회 계층(계약 v0.1.7 + 정정 append) ------------------------------
+  // 🔴 목록을 «계약에 있는 것»으로만 늘린다. 화면이 필요하다는 이유로 여기에 줄을 더하면
+  //    이 검사기는 「계약 밖 0」이 아니라 「내가 쓴 것 전부 허용」이 된다.
+  /^\/api\/plants$/,
+  /^\/api\/plants\/\$\{[^}]+\}\/overview$/,
+  /^\/api\/equipment\/\$\{[^}]+\}$/,
+  /^\/api\/equipment\/\$\{[^}]+\}\/sensors\/\$\{[^}]+\}\/series\?window=\$\{[^}]+\}$/,
+  /^\/api\/incidents\/\$\{[^}]+\}$/,
+  /^\/api\/scenarios$/,
+  /^\/api\/scenarios\/\$\{[^}]+\}\/runs$/,
+  /^\/api\/runs\/\$\{[^}]+\}$/,
 ];
 
 const ROOTS = ["app", "components", "lib", "proxy.ts", "next.config.ts"];
