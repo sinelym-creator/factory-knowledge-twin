@@ -90,6 +90,12 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 
 - **GET `/live/status` `online` 의미 확정** = «로컬 Claude synthesize 게이트웨이 도달 가능 여부»(T2-3 J-1 (b) 채택). 공개 Sandbox에는 게이트 env가 없으므로 `online:false`가 **참**이며 결함이 아니다 — Live/Replay 배지가 §15.2(구독 비노출) 경계와 같은 축을 가리킨다. `true` 전환은 운영자 로컬 실행 환경에서만 성립.
 
+## v0.1.4 append (08-30 · T2-5 게이트 1 — work-orders 응답 형상 · 저장 축 해석 확정)
+
+- **`GET /work-orders/{woId}`** → T2-3 초안 산출 형상을 정본화: `{ workOrderDraftId, title, procedures, safetyMeasures, parts, evidenceIds, gaps, note, approvalState }` — 본문 서술(「항목·부품·절차·안전 조치·근거 evidenceIds」)의 필드명 확정(두 곳에 적으면 갈린다 — T2-2 /evidence 선례).
+- 🔴 **저장 축 해석 확정**: 스펙 §4 「전체 행 + 승인 이력」은 **«공장 WO»(work_order 테이블 · seed 15행 · SSOT 읽기 전용)의 저장 규격**이다 — 조사 산출 초안(WOD-)의 것이 아니다. 근거 = id CHECK 배타(`WO-…` vs `WOD-…`) · enum 낱말 어긋남 · seed 멱등 보존(T1-2 계보). 초안 CRUD·승인·이력 = 세션 스코프(J-3 계열 · SSOT 쓰기 0) · 이력은 초안보다 오래 산다(비 FK).
+- **`approval_state` 전이 규칙 확정(Q-11)**: `pending → approved | rejected` 인접 전진 2쌍만 · approved/rejected = 종단(재승인·번복 없음) · **PATCH는 pending에서만**(종단 상태 편집 = 승인의 뜻 소멸). 위반 = 명시 오류(사유 코드 분리). 해석 규율 = E-7 선례(「스펙이 침묵한 건너뜀도 위반」). 초안 축 낱말 = 테이블 enum에 정렬(pending — draft 이의어 회피).
+
 ## v0.1.3 append (08-30 · T2-3 구현 회부 — `mode` 낱말 확정 · 두 축 분리)
 
 - **run/envelope `mode` = «이벤트 출처» 축**: `"live"` = 이번 실행이 실제로 수행됨(단계들이 지금 돌았다) · `"replay"` = 커밋된 fixture 재생(T2-4 축). fixture가 없는 동안 `mode:"replay"` 요청 = **501이 참**(없는 것을 있다고 답하지 않는다).
