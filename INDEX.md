@@ -45,3 +45,4 @@ size_limit: 4KB
 | `docs/plan/phase4-5-decomposition.md` | P4·P5 분해안(분모 37→46 · 결정 5건 · 관문 산정 · 선택지 ⓑ — 폐하 재가 08-31 09:55/09:57 · 원장 등재 10:05) | 분모·순서 변경 시 |
 | `docs/plan/tickets/T3-4.md` · `T3-5.md` · `T3-6.md` | Phase 3 «최소 형상» 티켓(조사 실행·전략 비교 화면 / WO 편집·승인 화면 — Feature Freeze 조기 08-31 09:57) + Phase 3 통합 독립 검증(§21 증거 4종 · Gate smoke · 그물 선행) | 발주·완결 시 |
 | `docs/plan/tickets/T4-1.md` · `T4-2.md` · `T4-2a.md` · `T4-3.md` · `T4-4.md` | Phase 4 티켓(공개 형상 골격·Q-37 해소 / Live 보호장치·fallback·queue / 정적 replay 경로 — T4-2 단위 분해 ⓐ · Q-51 / Tunnel·Vercel 공개 RC — 🔴 폐하 확인 2건 · 갈래 (b) Funnel / Phase 4 통합 독립 검증 — Gate 6 8행 외부 축 · §21 증거 4종 · 그물 선행) — 발주 시 status 갱신 | 발주·완결 시 |
+| `docs/plan/tickets/T5-1.md` ~ `T5-5.md` | Phase 5 티켓 선작성(폐하 하명 08-31 23:25 「설계 미리 준비 · P5 까지 자동 승인」): Evaluation Lab(40문·4전략·800회·§30) / Gate 7 13항+이력 secret scan / CI 4 workflow §34.3~34.4 / 운영 runbook·자동 시작·clean env / Phase 5 통합 검증(Gate 1~8 전건·§35 점검표) | 발주 시 status 갱신 |
