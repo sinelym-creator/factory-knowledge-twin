@@ -14,17 +14,20 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .errors import install_error_handlers
 from .investigation.approvals import ApprovalStore
 from .investigation.guards import enforce_no_telemetry
 from .investigation.store import RunStore
 from .probes import close_resources, open_resources
+from .retrieval import embedding
 from .routers import factory, investigations, knowledge, ops, sessions, work_orders
 from .session_guard import audit_guard_coverage, session_guard
 from .session_store import SessionStore
@@ -65,11 +68,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     notes = app.state.resources.notes
     if notes:
         log.info("degraded 로 기동한다: %s", notes)
+
+    # 🔴 임베딩 warm-up 은 «백그라운드»다(Q-44 · T4-1). 여기서 await 하면 모델 적재(실측
+    #    30초+)만큼 /health 조차 안 뜨고, 컨테이너 헬스체크가 그 침묵을 «죽음»으로 읽어
+    #    재시작 루프를 돈다 — 이 파일 머리말이 경계하는 바로 그 형태다.
+    #    준비 여부는 /health 의 `models` 가 말한다(조용한 대기 0).
+    warm: asyncio.Task[None] | None = None
+    if settings.warmup_embedding:
+        warm = asyncio.create_task(embedding.warm_up())
+
     try:
         yield
     finally:
         # 🔴 돌고 있는 조사를 먼저 접는다. 남겨 두면 의존이 닫힌 뒤 질의가 나가 「닫힌 풀에
         #    쓴다」는 애먼 예외가 종료 로그를 덮는다.
+        if warm is not None and not warm.done():
+            warm.cancel()
         for record in tuple(app.state.run_store._runs.values()):   # noqa: SLF001 — 종료 경로
             if record.task is not None and not record.task.done():
                 record.task.cancel()
@@ -91,6 +105,28 @@ def create_app() -> FastAPI:
         #    실재 라우트와 어긋나면 아래 `audit_guard_coverage` 가 부팅을 멈춘다.
         dependencies=[Depends(session_guard)],
     )
+    # 🔴 **CORS 는 allowlist 가 «있을 때만» 켠다**(§16.3 · T4-1 ⓒ).
+    #
+    #    로컬 형상에서는 브라우저가 셸 origin 하나만 쓴다 — `/api/*` 는 Next rewrite 가
+    #    프록시하므로 브라우저 입장에서 전부 same-origin 이고, 그래서 지금까지 CORS 없이
+    #    돌았다. 공개 형상에서 셸(Vercel)과 ai-api(Tunnel)가 «다른 origin» 이 되는 축을
+    #    위해 여기에 문을 만들되, 기본값은 «닫힘»이다.
+    #
+    #    🔴 `allow_origins=["*"]` 를 기본값으로 두지 않는다. 기본값은 그대로 공개 배포까지
+    #       따라가고, 그때는 아무도 그것을 «선택»한 기억이 없다. 목록이 비면 미들웨어를
+    #       아예 달지 않는다 — 「열려 있는데 비어 있는 문」을 만들지 않는다.
+    #    🔴 `allow_credentials=True` 는 allowlist 와 «짝»이다. 와일드카드와 함께 쓰면 브라우저가
+    #       거부하고, 그 거부는 CORS 설정이 아니라 서버 오류처럼 보인다.
+    allowlist = get_settings().cors_allowlist
+    if allowlist:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=allowlist,
+            allow_credentials=True,      # 세션 쿠키가 실려야 소유권 축이 선다(T3-1)
+            allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+            allow_headers=["content-type"],
+        )
+
     install_error_handlers(app)
     for module in (sessions, factory, investigations, knowledge, work_orders, ops):
         app.include_router(module.router, prefix=API_PREFIX)

@@ -12,7 +12,8 @@ from fastapi import APIRouter, Request
 
 from ..investigation.synthesize import live_gateway_available
 from ..probes import Resources
-from ..schemas import HealthResponse, LiveStatus
+from ..retrieval import embedding
+from ..schemas import HealthResponse, LiveStatus, ModelReadiness
 
 router = APIRouter(tags=["ops"])
 
@@ -28,11 +29,20 @@ async def health(request: Request) -> HealthResponse:
     res: Resources = request.app.state.resources
     deps = await res.probe_all()
     degraded = any(d.state != "ok" for d in deps.values())
+    # 🔴 «준비 축»은 의존 프로브와 다른 사실이다(Q-44). DB 가 붙어도 모델이 안 올라와 있으면
+    #    검색은 느리고, 그 느림은 결함이 아니다 — 두 사실을 따로 적어야 운영이 가를 수 있다.
+    state, detail = embedding.readiness()
+    if not res.settings.warmup_embedding and state == "cold":
+        state, detail = "disabled", "FKT_WARMUP_EMBEDDING=0 — 첫 검색 때 올린다"
     return HealthResponse(
         ok=True,
         version=res.settings.version,
         status="degraded" if degraded else "ok",
         dependencies=deps,
+        # 🔴 짧은 sha «만». 「어느 커밋이 답했나」에 답하는 데 그 이상은 필요 없고,
+        #    그 이상은 전부 공개 경계다(§16·§34.6 · Q-46).
+        build=res.settings.build_sha,
+        models=ModelReadiness(embedding=state, detail=detail),
     )
 
 
