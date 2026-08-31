@@ -61,6 +61,10 @@ export const CONTRACT = {
    *    세션 쿠키도 same-origin 으로 자동으로 실린다.
    */
   runStream: (runId: string) => `/api/ws/runs/${encodeURIComponent(runId)}`,
+  // --- T3-5 작업지시서 초안(계약 §work-orders · v0.1.4~5 형상) ------------------------
+  workOrder: (woId: string) => `/api/work-orders/${encodeURIComponent(woId)}`,
+  approveWorkOrder: (woId: string) => `/api/work-orders/${encodeURIComponent(woId)}/approve`,
+  rejectWorkOrder: (woId: string) => `/api/work-orders/${encodeURIComponent(woId)}/reject`,
 } as const;
 
 /** 계약 표면 대조용 — 이 셸이 부르는 경로 «전수»(테스트·검수가 이 목록을 계약과 맞춘다). */
@@ -82,6 +86,10 @@ export const CONTRACT_SURFACE = [
   "GET /api/runs/{runId}/events",
   "POST /api/retrieval/compare",
   "WS /api/ws/runs/{runId}",
+  "GET /api/work-orders/{woId}",
+  "PATCH /api/work-orders/{woId}",
+  "POST /api/work-orders/{woId}/approve",
+  "POST /api/work-orders/{woId}/reject",
 ] as const;
 
 // --- 계약 v0.1.7(+정정) 응답 형상 ------------------------------------------------
@@ -184,6 +192,38 @@ export type Incident = {
 };
 
 export type Scenario = { scenarioId: string; title: string; questions: string[] };
+
+/**
+ * 작업지시서 초안 — 🔴 계약 v0.1.4 + v0.1.5 «12필드». 실측(E1)과 정확히 일치한다.
+ *
+ * 🔴 wireframes §4 목업의 `priority`·`planned_at`·`assignee_role`·`estimated_minutes` 는
+ *    **서버에 없다**(실측 전수). 화면에 그 칸을 만들면 계약 밖 표면이 화면에서 태어난다 —
+ *    목업은 초안 표기이고 계약이 정본이다(오케 판정 08-31).
+ * 🔴 낱말도 서버 것을 쓴다: 목업의 `checklist[]`→`procedures` · `safety[]`→`safetyMeasures` ·
+ *    `approval_state`→`approvalState`. 같은 것을 두 낱말로 부르면 갈린다.
+ */
+export type WoProcedure = { sopId: string; title: string; status: string };
+export type WoSafetyMeasure = { safetyRuleId: string; title: string; class: string; mandatory: boolean };
+/** 🔴 원소 필드는 전부 선택이다(실측: `{name}` 만으로도 200). 사람이 더한 부품에는 componentId 가
+ *  없다 — 온톨로지 id 를 화면이 «지어내지» 않기 위해서다. 비객체 배열은 422 invalid_field_type. */
+export type WoPart = { componentId?: string; name?: string; class?: string };
+
+export type WorkOrderDraft = {
+  workOrderDraftId: string;
+  incidentId: string;
+  equipmentId: string;
+  title: string;
+  failureModeId: string;
+  procedures: WoProcedure[];
+  safetyMeasures: WoSafetyMeasure[];
+  parts: WoPart[];
+  evidenceIds: string[];
+  gaps: string[];
+  note: string;
+  approvalState: "pending" | "approved" | "rejected";
+};
+
+export type ApprovalResult = { status: string; auditId: string };
 
 /** `POST /retrieval/compare` — 실측: 전략별 hits 5건 · hit 키 = evidenceId/score/excerpt. */
 export type CompareHit = { evidenceId: string; score: number; excerpt: string };
@@ -482,5 +522,57 @@ export function compareBrowser(
     },
     "",
     COMPARE_TIMEOUT_MS,
+  );
+}
+
+/**
+ * 초안 부분 갱신 — 🔴 **서버가 여는 것은 `title` 과 `parts` «뿐»이다**(실측).
+ *
+ * `procedures` 는 `403 safety_basis_immutable`, `safetyMeasures` 는 `403 safety_measure_immutable`,
+ * 모르는 필드는 `403 field_not_editable` 로 갈려 온다 — 화면은 그 셋을 «다른 문구»로 그린다.
+ * 종단 상태(approved·rejected)에서는 `409 work_order_not_editable`.
+ *
+ * 🔴 타입으로도 좁힌다: 여기서 다른 필드를 보낼 수 있게 열어 두면 언젠가 누가 보내고,
+ *    그때 서버의 403 이 «화면의 버그»로 보고된다.
+ */
+export function patchWorkOrderBrowser(
+  woId: string,
+  patch: { title?: string; parts?: WoPart[] },
+): Promise<Reply<WorkOrderDraft>> {
+  return call<WorkOrderDraft>(
+    CONTRACT.workOrder(woId),
+    {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(patch),
+      cache: "no-store",
+    },
+    "",
+    READ_TIMEOUT_MS,
+  );
+}
+
+/**
+ * 승인·반려 — `{ status, auditId }`.
+ *
+ * 🔴 `comment` 는 계약상 «선택»이고 서버는 사유 없이도 200 을 준다(실측). 「반려 사유 필수」는
+ *    **화면 규칙**이다 — 화면이 서버보다 «엄격»한 것은 허용되고, «느슨»한 것만 금지다
+ *    (오케 판정 08-31). 그 소재를 여기 적어 두어, 나중에 「서버가 강제한다」로 오독되지 않게 한다.
+ */
+export function decideWorkOrderBrowser(
+  woId: string,
+  decision: "approve" | "reject",
+  comment?: string,
+): Promise<Reply<ApprovalResult>> {
+  return call<ApprovalResult>(
+    decision === "approve" ? CONTRACT.approveWorkOrder(woId) : CONTRACT.rejectWorkOrder(woId),
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(comment ? { comment } : {}),
+      cache: "no-store",
+    },
+    "",
+    READ_TIMEOUT_MS,
   );
 }

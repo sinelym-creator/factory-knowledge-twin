@@ -56,6 +56,11 @@ const ALLOWED = [
   /^\/api\/retrieval\/compare$/,
   // 🔴 WS 는 계약 표기(`/ws/runs/{runId}`)에 base `/api` 가 붙은 형태가 «실재»다(실측 101).
   /^\/api\/ws\/runs\/\$\{[^}]+\}$/,
+  // --- T3-5 작업지시서 초안 ---------------------------------------------------------
+  // 🔴 셋 다 계약 «동결 본문»의 라우트다(v0.1.4~5 가 형상만 확정했다). 화면이 이제야 소비한다.
+  /^\/api\/work-orders\/\$\{[^}]+\}$/,
+  /^\/api\/work-orders\/\$\{[^}]+\}\/approve$/,
+  /^\/api\/work-orders\/\$\{[^}]+\}\/reject$/,
 ];
 
 const ROOTS = ["app", "components", "lib", "proxy.ts", "next.config.ts"];
