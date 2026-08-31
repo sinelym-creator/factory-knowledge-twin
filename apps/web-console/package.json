@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "contract:surface": "node scripts/contract-surface.mjs"
+    "contract:surface": "node scripts/contract-surface.mjs",
+    "prebuild": "node scripts/copy-static-replay.mjs",
+    "predev": "node scripts/copy-static-replay.mjs",
+    "static-replay:harvest": "node scripts/harvest-static-replay.mjs",
+    "static-replay:copy": "node scripts/copy-static-replay.mjs"
   },
   "dependencies": {
     "next": "16.3.3",
