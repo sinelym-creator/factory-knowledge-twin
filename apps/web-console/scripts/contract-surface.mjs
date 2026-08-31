@@ -66,6 +66,16 @@ const ALLOWED = [
 const ROOTS = ["app", "components", "lib", "proxy.ts", "next.config.ts"];
 const EXT = /\.(ts|tsx|mjs|js)$/;
 
+// 🔴 **굳힌 응답 «데이터»는 부르는 자리가 아니다**(T4-2a · 회부 판정 08-31). 정적 replay 사본은
+//    ai-api 응답 원문을 무가공으로 담고, 매니페스트는 「어느 라우트에서 굳혔나」를 적는다 —
+//    둘 다 구체 id 가 박힌 «과거의 기록»이라 템플릿 리터럴 형태인 ALLOWED 와 영영 안 맞는다.
+//    🔴 스캔 자체에서 빼지 않고 «경로 대조»에서만 뺀다: 이 파일들에 fetch 가 생기면 아래
+//       「fetch 는 contract.ts 한 곳」 검사가 그대로 잡아야 한다. 관대해지는 범위를 최소로 둔다.
+//    🔴 `(^|[\\/])` 로 시작한다 — ROOTS 가 `"lib"` 라 실제 경로는 구분자 없이 `lib\…` 로
+//       시작한다. 앞에 구분자를 «요구»한 첫 판은 한 파일도 물지 못했고, 그 사실은 사람 눈이
+//       아니라 아래 불변식이 잡았다(FAIL 64→65). 규칙은 자기가 죽은 것을 스스로 말해야 한다.
+const DATA_ONLY = /(^|[\\/])lib[\\/]static-replay[\\/]generated[\\/]/;
+
 function walk(p, out) {
   const st = statSync(p, { throwIfNoEntry: false });
   if (!st) return out;
@@ -116,6 +126,7 @@ function stripComments(src) {
 let bad = 0;
 const seen = new Set();
 const fetchers = [];
+const excluded = new Set();   // 🔴 제외한 것도 «센다» — 0건이면 규칙이 죽은 것이다(아래 불변식)
 
 for (const f of files) {
   const src = stripComments(readFileSync(f, "utf8"));
@@ -124,8 +135,13 @@ for (const f of files) {
   //    라고 답하는 출력이 나온다(D-13에서 실제로 나왔다). 같은 값을 두 번 쓰면 갈릴 수 없다.
   const callsFetch = FETCH.test(src);
   if (callsFetch) fetchers.push(f);
+  const dataOnly = DATA_ONLY.test(f);
   for (const m of src.matchAll(API)) {
     const path = m[1];
+    if (dataOnly) {
+      excluded.add(`${path}  (${f})`);
+      continue;
+    }
     seen.add(`${path}  (${f}${callsFetch ? " · fetch 호출" : " · 문자열만"})`);
     if (!ALLOWED.some((re) => re.test(path))) {
       console.error(`🔴 FAIL 계약 밖 경로 ${path} — ${f}`);
@@ -134,7 +150,23 @@ for (const f of files) {
   }
 }
 
+// 🔴 **제외 규칙이 «살아 있는지»를 검사기가 스스로 확인한다.** 굳힌 데이터 폴더는 있는데
+//    규칙이 0파일을 물면(경로 구분자 드리프트·폴더 이름 변경) 이 검사는 다시 64건 FAIL 로
+//    울리거나, 반대로 규칙이 넓어졌는데 아무도 모르게 된다 — 「막았다」와 「막는 코드가
+//    동작한다」는 다른 사실이다. 제외 건수를 출력에 세워 두는 이유도 같다.
+const dataFiles = files.filter((f) => DATA_ONLY.test(f));
+const generatedDir = join("lib", "static-replay", "generated");
+if (statSync(generatedDir, { throwIfNoEntry: false })?.isDirectory() && dataFiles.length === 0) {
+  console.error(
+    `🔴 FAIL 제외 규칙이 아무 파일도 물지 않았다 — ${generatedDir} 는 실재하는데 DATA_ONLY 매칭 0건이다`
+  );
+  bad++;
+}
+
 console.log(`== 스캔 ${files.length}파일 · /api 경로 ${seen.size}종`);
+console.log(
+  `== 굳힌 데이터 제외 ${dataFiles.length}파일 · 경로 ${excluded.size}종 (경로 대조만 제외 · fetch 검사는 그대로)`
+);
 for (const s of [...seen].sort()) console.log(`   ${s}`);
 console.log(`== fetch 호출 파일 ${fetchers.length}: ${fetchers.join(", ")}`);
 
