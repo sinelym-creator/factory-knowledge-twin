@@ -200,12 +200,56 @@ test.describe("T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다"
       description: `모달 열린 직후 초점이 모달 «${focusInside ? "안" : "밖"}»에 있다(정본 미규정 · 판정 아님)`,
     });
 
+    // 🔴 **세는 눈 — 「Esc 가 닫았다」와 「아무 키에나 닫힌다」는 다르다.** 대조군 먼저:
+    //    엉뚱한 키를 눌러도 열려 있어야, 뒤이은 Esc 의 초록이 «Esc 의 것»이 된다.
+    await page.keyboard.press("a");
+    await expect(dialog, "다른 키(a)로도 모달이 닫힌다 — 그러면 Esc 축이 아무것도 증명하지 않는다").toHaveCount(1);
+
     // 🔴 정본이 말한 자리 — Esc 로 닫힌다.
     //    🔴 **현재 이 칸은 빨강이다 — D-7 「모달 Esc 닫힘 부재(계통)」**(등재 00:11 · 등급 중 ·
     //    리셋 모달·WO 승인 모달 2종에서 3/3 재현 · 초점을 안으로 옮긴 뒤에도 안 닫힌다).
     //    빨강을 «세워 둔다» — 픽스가 착지하면 이 줄이 그대로 재검 1행이 된다. 중복 등재 금지.
     await page.keyboard.press("Escape");
     await expect(dialog, "🔴 Esc 가 모달을 닫지 않는다 — 정본 T3-6 ③ 「Esc」 위반").toHaveCount(0, {
+      timeout: 5_000,
+    });
+  });
+
+  /**
+   * 🔴 **D-7 은 «계통»이었다**(리셋 모달 + WO 승인 모달 2종에서 3/3 재현). 그러므로 재검도
+   *    계통이어야 한다 — 한 모달만 초록으로 만들고 「닫힌다」고 적으면 남은 자리가 조용히 남는다.
+   */
+  test("④-b 모달 계통 — WO 승인 확인도 Esc 로 닫힌다 (D-7 재검 · 같은 규칙)", async ({ page }) => {
+    test.setTimeout(180_000);
+    await enter(page);
+    const created = await startRun(page, "live");
+    expect(created.status).toBe(200);
+    const snap = await page.evaluate(async (id) => {
+      const deadline = Date.now() + 120_000;
+      let s: { status?: string; workOrderDraftId?: string } = {};
+      while (Date.now() < deadline) {
+        s = await (await fetch(`/api/runs/${id}`)).json();
+        if (s.status && s.status !== "running") return s;
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      return s;
+    }, created.body.runId);
+    expect(snap.workOrderDraftId, "완주한 live run 이 초안을 내지 않았다 — 승인 모달을 잴 수 없다").toBeTruthy();
+
+    await page.goto(`/work-orders/${snap.workOrderDraftId}`);
+    await expect(page.getByTestId("wo-screen")).toBeVisible({ timeout: 30_000 });
+    const approve = page.getByTestId("wo-approve");
+    await approve.focus();
+    expect(drawsRing(await focusRing(page)), "승인 버튼이 초점을 그리지 않는다").toBe(true);
+    await page.keyboard.press("Enter");
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog, "Enter 로 승인 확인 모달이 열리지 않는다").toBeVisible();
+    // 🔴 같은 대조군 — 엉뚱한 키로는 안 닫힌다
+    await page.keyboard.press("a");
+    await expect(dialog, "다른 키(a)로도 닫힌다 — Esc 축이 공짜가 된다").toHaveCount(1);
+    await page.keyboard.press("Escape");
+    await expect(dialog, "🔴 WO 승인 모달이 Esc 로 닫히지 않는다 — D-7 이 계통으로 남아 있다").toHaveCount(0, {
       timeout: 5_000,
     });
   });

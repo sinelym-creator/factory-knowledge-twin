@@ -94,11 +94,15 @@ def self_check() -> None:
     saved = {k: os.environ.get(k) for k in ("ZZ_T", "FKT_OWNER_PREFIX")}
     try:
         os.environ.pop("ZZ_T", None)
+        # 🔴 `read_base` 는 «import 시점 설정 오류»라 `SystemExit(2)` 로 죽고, `own_container` 는
+        #    호출부가 받아 처리하도록 `Unowned` 를 던진다 — **거절의 «모양»이 둘이다**.
+        #    앞판 자기 검증은 `Unowned` 만 잡아서, 내가 read_base 를 exit 2 로 바꾼 순간
+        #    자기 검증 자신이 죽었다. 문을 고치면 문을 시험하는 눈도 함께 고쳐야 한다.
         for label, fn in (("읽기 미지정", lambda: read_base("ZZ_T", "표본")),
                           ("파괴 미지정", lambda: own_container("ZZ_T", "표본"))):
             try:
                 fn()
-            except Unowned:
+            except (Unowned, SystemExit):
                 continue
             raise RuntimeError(f"자기 검증 실패 — «{label}» 을 통과시킨다")
 
