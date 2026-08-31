@@ -35,6 +35,29 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
   const [asking, setAsking] = useState<"approve" | "reject" | null>(null);
   const [reason, setReason] = useState("");
   /**
+   * 🔴 **부품 이름 칸이 «제어 입력»인 이유**(D-5 · T3-5 ②′ FAIL).
+   *
+   *    앞판은 `defaultValue` 였다. 신규 부품은 서버가 `componentId` 를 주지 않아 행의 유일한
+   *    구별자가 «자리»(index)이고, 신규 2건 중 앞을 지우면 뒤가 그 자리로 올라오면서 React 가
+   *    같은 DOM 노드를 재사용한다. 비제어 입력은 재사용된 노드의 값을 다시 읽지 않으므로,
+   *    서버가 옳게 지운 뒤에도 화면에는 «지운 이름»이 남았다(검증 좌석 2/2 재현).
+   *
+   *    값 축은 온전했지만 이 화면은 사람이 결재하는 마지막 장면이다(§16.4) — 「지운 부품이
+   *    아직 있다」로 읽은 사람이 한 번 더 [삭제] 를 누르면 남아야 할 부품이 지워진다.
+   *    표시의 거짓이 값의 손실로 넘어가는 거리가 한 클릭이라 표시 축으로 접지 않는다.
+   *
+   *    🔴 처방을 «key» 가 아니라 «입력»에 둔 이유: 신규 부품에 줄 안정 id 가 어디에도 없다.
+   *       서버 응답(`parts`)에 신규 원소의 id 가 없고, 저장할 때마다 `setWo(r.data)` 가 배열을
+   *       통째로 갈아 끼우므로 클라이언트가 만든 id 는 왕복을 못 넘는다 — 자리가 곧 정체성인
+   *       목록이다. 그런 목록에서 «안정 key» 는 지어낼 수 있을 뿐 존재하지 않으므로, 노드가
+   *       재사용돼도 값이 다시 그려지는 형태(제어 입력)로 뿌리를 없앤다.
+   *       (신규 부품에 서버 id 를 주는 길도 있으나 그것은 계약 형상 변경이라 이 픽스 밖이다.)
+   *
+   *    편집 중인 «한 칸»만 초안을 든다. 목록 전체를 초안으로 들면 그 초안이 자리로 색인되어
+   *    같은 밀림이 한 층 위에서 되살아난다.
+   */
+  const [editing, setEditing] = useState<{ index: number; value: string } | null>(null);
+  /**
    * 🔴 **이력은 «세션 내»가 전부다.** 조회 라우트가 없고 approve/reject 가 주는 `auditId` 뿐이라
    *    (실측), 새로고침하면 사라진다. 그 한계를 화면이 스스로 말한다 — 남아 있는 척하지 않는다.
    */
@@ -165,7 +188,11 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
               <button
                 type="button"
                 disabled={readOnly}
-                onClick={() => void save({ parts: [...wo.parts, { name: "" }] })}
+                onClick={() => {
+                  // 🔴 목록의 «자리»가 바뀌면 자리로 색인된 초안은 남의 행을 가리킨다.
+                  setEditing(null);
+                  void save({ parts: [...wo.parts, { name: "" }] });
+                }}
                 className="ml-auto rounded border border-edge px-2 py-0.5 text-xs text-muted hover:text-ink disabled:opacity-40"
                 data-testid="wo-part-add"
               >
@@ -184,10 +211,14 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                   )}
                   <input
                     className="min-w-0 flex-1 rounded border border-edge bg-bg px-2 py-1 text-sm disabled:opacity-60"
-                    defaultValue={p.name ?? ""}
+                    // 🔴 값의 출처는 «서버가 준 배열» 하나다. 편집 중인 칸만 초안을 덧댄다 —
+                    //    두 곳에서 값을 만들면 어느 쪽이 참인지 화면이 스스로 답하지 못한다.
+                    value={editing?.index === i ? editing.value : (p.name ?? "")}
                     disabled={readOnly}
                     placeholder="부품 이름"
+                    onChange={(e) => setEditing({ index: i, value: e.target.value })}
                     onBlur={(e) => {
+                      setEditing(null);
                       if (e.target.value === (p.name ?? "")) return;
                       const next = wo.parts.map((q, k) => (k === i ? { ...q, name: e.target.value } : q));
                       void save({ parts: next });
@@ -197,7 +228,10 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                   <button
                     type="button"
                     disabled={readOnly}
-                    onClick={() => void save({ parts: wo.parts.filter((_, k) => k !== i) })}
+                    onClick={() => {
+                      setEditing(null);   // 같은 이유 — 지우면 뒤 행이 이 자리로 올라온다
+                      void save({ parts: wo.parts.filter((_, k) => k !== i) });
+                    }}
                     className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink disabled:opacity-40"
                     data-testid="wo-part-delete"
                   >
