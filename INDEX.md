@@ -41,4 +41,5 @@ size_limit: 4KB
 | `evidence/` | 독립 검증 보고(phase0-verification 등) | 검증 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |
 | `.claude/context/checkpoint.md` | 재개점(로컬 전용·비추적 · 백지 재작성) | 세션 마감 시 |
-| `.workspace/drafts/phase4-5-decomposition-20260831.md` | P4·P5 분해안 상신 초안(로컬 초안·비추적 — 분모 37→46 · 결정 5건 · 관문 산정 · 재가 시 원장 등재 후 docs/plan 승격) | 폐하 재가 시 |
+| `docs/plan/phase4-5-decomposition.md` | P4·P5 분해안(분모 37→46 · 결정 5건 · 관문 산정 · 선택지 ⓑ — 폐하 재가 08-31 09:55/09:57 · 원장 등재 10:05) | 분모·순서 변경 시 |
+| `docs/plan/tickets/T4-1.md` · `T4-2.md` | Phase 4 티켓(공개 형상 골격·Q-37 해소 / Live 보호장치·fallback·queue) — 선작성 · 발주 시 status 갱신 | 발주·완결 시 |
