@@ -24,7 +24,7 @@ size_limit: 4KB
 | `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
 | `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
 | `packages/ontology/` | 온톨로지·투영 버전 정본(`ontology-version.json` §3.3 · `projection-version.json` SemVer+manifest 지문 — T1-4·T1-5) | 스펙·manifest 개정 동반 |
-| `apps/web-console/` | Next.js 웹 콘솔(A안 AppShell·P0 6라우트·세션 가드 proxy·`lib/contract.ts` 단일 fetch 표면·`scripts/contract-surface.mjs` 검사기 — T1-9) | 화면 구현 진행 시 |
+| `apps/web-console/` | Next.js 웹 콘솔(A안 AppShell·P0 6라우트·세션 가드 proxy·`lib/contract.ts` 단일 fetch 표면·`scripts/contract-surface.mjs` 검사기 — T1-9) · **T4-2a 정적 replay**: `lib/static-replay/{index,run-id,visitor-state}.ts`(정적 이벤트 주입·mode 치환·`STATIC-GS-01` 상수·browser storage) · `components/static-visitor.tsx` · `scripts/harvest-static-replay.mjs`(굳히기 도구 · ai-api 읽기만 · 사람 1회) · `scripts/copy-static-replay.mjs`(prebuild/predev · sha256 잠금 · 네트워크 0) · 산출물 `lib/static-replay/generated/` gitignore(PR#216·#220) · `lib/boot-check.ts` = FKT_API_BASE + FKT_PUBLIC_HTTPS 빌드 상수 대조(Q-37·D-4 · PR#222) | 화면 구현 진행 시 |
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
 | `services/indexer/` | 색인 파이프라인(동결 chunk 정책 정본 `FROZEN_POLICY`·probe 도구 2종 — T1-4) | S3 색인 진행 시 |
 | `services/projector/` | Neo4j 투영(manifest 코드 정본 `--check-spec`·build·verify 값 전량 대조 — T1-5) | 스펙 §2.1 개정 동반 |
@@ -34,7 +34,7 @@ size_limit: 4KB
 | `tests/graph/` | 그래프 투영 독립 검증(스펙 독립 파싱 `graph_verify` 18축 · 끊김/변조 드릴 `graph_drill` 22축 · 러너 — T1-5 검증) | 투영 개정 동반 |
 | `tests/web/` | 셸 E2E 검증(playwright 4스펙 · 검사기 드릴 17주입 · 독립 표면 스캔 `surface_scan` · 토큰 프로브 · 라우트 매트릭스 — T1-9 검증) · T4-1 드릴 3종 `t41_csp_walk`(CSP 전 동선 · 자기 검증 2/2) · `t41_live_status_timeout`(상한과 «화면이 말한 시각» 분리 — D-3 검출) · `t41_cors_browser_drill`(닿는다≠읽힌다) + 보조 서버 2종 `_blackhole_server`(응답 없는 API) · `_origin_page_server`(CSP 없는 타 origin 페이지) · `README.md`(회귀 조건 4줄 · PR#218) | 셸 개정 동반 |
 | `tests/api/` | retrieval API 독립 그물(앵커 경계 드릴 — 표기 변형 교차·생존 신호 exit 2 · 경계 직접 probe · 계약 오류 형상 드릴 — T2-1 검증) | retrieval 개정 동반 |
-| `data/replay/` | replay fixture(재생 자산 · 🔴 seed 원천 아님 — README 성문 · JSONL·무가공·LF 고정 — T2-4) | fixture 재녹화 시 |
+| `data/replay/` | replay fixture(재생 자산 · 🔴 seed 원천 아님 — README 성문 · JSONL·무가공·LF 고정 — T2-4) · `static/`(T4-2a · 조회 응답 사본 28건 + `manifest.json`(라우트·apiBuildSha·sha256·queriedBy) · 굳히기 도구 산출 · 원문 무가공 · `.gitattributes eol=lf` · PR#216) | fixture 재녹화 · 정적 사본 재굳힘 시 |
 | `tests/data/` | seed 무결성 probe 28건(C-21~C-28 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 27판정·증분/절대 이축 — G-3·E-7) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
