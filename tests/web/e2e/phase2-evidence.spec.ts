@@ -36,6 +36,27 @@ async function browserDataAlive(page: Page): Promise<boolean> {
   return res.status() === 200;
 }
 
+/**
+ * 🔴 **클릭으로만** ④ 까지 간다 — url 을 손으로 만들면 「사슬이 이어진다」가 언제나 참이 된다.
+ *    Overview 알람 → incident(run) → 완주 → 「작업지시서 초안 보기」 → ④. 돌려주는 것은
+ *    화면이 «실제로 연» 초안 id 다(내가 고른 값이 아니다).
+ */
+async function reachWorkOrderByClicks(page: Page): Promise<string> {
+  await page.goto("/overview");
+  await page.waitForURL(/\/overview$/);
+  await page.getByTestId("start-from-alarm").first().click();
+  await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 30_000 });
+  await expect(page.getByTestId("run-console")).toHaveAttribute("data-status", "completed", {
+    timeout: 180_000,
+  });
+  const link = page.getByTestId("work-order-draft");
+  await expect(link, "완주했는데 「작업지시서 초안 보기」가 없다 — 사슬의 칸이 빈다").toBeVisible();
+  await link.click();
+  await page.waitForURL(/\/work-orders\//, { timeout: 20_000 });
+  await expect(page.getByTestId("wo-screen")).toBeVisible();
+  return decodeURIComponent(new URL(page.url()).pathname.split("/").pop()!);
+}
+
 test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
   test.beforeEach(async () => {
     test.skip(!(await guardLanded()),
@@ -129,10 +150,39 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
     expect(mine.status(), "방금 만든 run 을 내 세션이 못 읽는다").toBe(200);
   });
 
+  /* 🔴 T3-5 착지로 **E-2b 가 깨어났다**(14대). 정직성 행이 이 이름을 대며 채근했고, 채운다.
+   *    red 는 「사슬이 클릭으로 안 이어진다」이다 — url 을 손으로 만들어 넣으면 이 축은
+   *    언제나 초록이 되므로(E-2a 와 같은 규율), **모든 홉을 클릭으로만** 간다. */
   test("E-2b 연쇄 잔여 — 근거 열람 → WO 승인이 클릭으로 이어진다", async ({ page }) => {
-    test.fixme(await stillPlaceholder(page, "/work-orders/WOD-x"),
-      "WO 화면이 자리표시다 — 사슬의 마지막 칸이 아직 없다(T3-5)");
-    await page.goto("/work-orders/WOD-x");
+    test.slow();
+    const woId = await reachWorkOrderByClicks(page);
+
+    // ── 칸 ①: WO 화면이 «그 초안»을 그린다(도착만 재면 빈 화면도 초록이다)
+    await expect(page.getByTestId("wo-header")).toContainText(woId);
+
+    // ── 칸 ②: 근거 열람 — 근거 카드를 «클릭»해서 ③(T3-3)으로 간다
+    const firstEvidence = page.getByTestId("wo-evidence-link").first();
+    const evidenceId = (await firstEvidence.innerText()).trim();
+    await firstEvidence.click();
+    await page.waitForURL(/\/evidence\//, { timeout: 20_000 });
+    expect(
+      decodeURIComponent(new URL(page.url()).pathname),
+      "근거 링크가 다른 자원을 열었다 — 사슬이 id 를 잃었다",
+    ).toBe(`/evidence/${evidenceId}`);
+    // 🔴 도착한 화면이 «못 물어봤다»가 아니어야 한다 — 링크만 맞고 화면이 비면 사슬은 끊긴 것이다
+    await expect(page.getByTestId("screen-unavailable")).toHaveCount(0);
+
+    // ── 칸 ③: 되돌아와 «승인»까지 클릭으로 — 사람이 결재하는 장면(§16.4)이 사슬의 끝이다
+    await page.goBack();
+    await page.waitForURL(new RegExp(`/work-orders/`), { timeout: 20_000 });
+    await page.getByTestId("wo-approve").click();
+    await page.getByTestId("wo-confirm").click();
+    await expect(page.getByTestId("wo-screen")).toHaveAttribute("data-state", "approved");
+    await expect(page.getByTestId("wo-history")).toContainText(/AUD-/);
+
+    // 🔴 화면끼리의 일치는 일치가 아니다 — 서버가 그 결재를 실제로 갖고 있는가
+    const server = await (await page.request.get(`/api/work-orders/${woId}`)).json();
+    expect(server.approvalState, "화면은 승인이라는데 서버는 아니다").toBe("approved");
   });
 
   test("E-3 전략 비교 — 세 score 를 «크기»로 견주지 않는다 (Q-17)", async ({ page }) => {
@@ -207,10 +257,69 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
     //    코드에 분기는 있으나 그것은 화면이 그린다의 증거가 아니라, «못 잼»으로 남긴다.
   });
 
+  /* 🔴 T3-5 착지로 **E-5 가 깨어났다**(14대). red 는 「화면이 지울 수 있다고 «말한다»」이고,
+   *    말하는 방식은 둘이다 — ⓐ 문구가 삭제 가능성을 열어 두거나(조건절 · 「mandatory 인 경우」)
+   *    ⓑ 조작이 실제로 서버까지 나가거나. 둘을 따로 잰다.
+   *    🔴 그리고 «세는 눈»을 대조군으로 증명한다: 같은 눈이 parts 에서는 진짜 삭제를 본다.
+   *       그러지 않으면 이 축의 0 은 「내가 못 본 0」과 구별되지 않는다. */
   test("E-5 R12 — 화면이 안전 조치를 «지울 수 있다»고 말하지 않는다", async ({ page }) => {
-    test.fixme(await stillPlaceholder(page, "/work-orders/WOD-x"),
-      "WO 화면이 자리표시다 — 지울 안전 조치가 아직 없다");
-    await page.goto("/work-orders/WOD-x");
+    test.slow();
+    const writes: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() === "PATCH" && r.url().includes("/api/work-orders/")) writes.push(r.url());
+    });
+    const woId = await reachWorkOrderByClicks(page);
+    const server = await (await page.request.get(`/api/work-orders/${woId}`)).json();
+    expect(
+      server.safetyMeasures.length,
+      "이 초안에 안전 조치가 0건 — 「지울 수 있다고 말하지 않는가」의 표본이 없다",
+    ).toBeGreaterThan(0);
+
+    // ⓐ 문구 — 조건절 없이 «불가»를 말하는가(Q-31: 서버는 mandatory 와 무관하게 잠근다)
+    const safety = page.getByTestId("wo-safety");
+    const text = (await safety.innerText()).replace(/\s+/g, " ");
+    expect(text, "안전 조치 블록이 «불가»를 말하지 않는다").toContain("편집·삭제할 수 없습니다");
+    for (const conditional of ["mandatory", "인 경우", "필수인", "일 때만"]) {
+      expect(text, `문구가 조건절로 삭제 가능성을 열어 둔다: ${conditional}`).not.toContain(conditional);
+    }
+    // 🔴 mandatory 두 값이 «같은» 문구로 잠기는가 — 서버가 그 축으로 가르지 않기 때문이다
+    const flags = await page
+      .getByTestId("wo-safety-item")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-mandatory")));
+    expect(flags.length).toBe(server.safetyMeasures.length);
+
+    // ⓑ 조작 — 편집 칸 0 · 삭제 시도가 서버까지 «안 나간다»
+    expect(await safety.locator("input, textarea, select").count(),
+      "안전 조치 블록에 편집 칸이 있다").toBe(0);
+    const mark = writes.length;
+    await safety.getByTestId("wo-safety-delete").first().click();
+    await expect(page.getByTestId("wo-locked-note")).toBeVisible();
+    expect(writes.slice(mark), "안전 조치 삭제 시도가 서버로 나갔다").toEqual([]);
+
+    // 🔴 대조군 — 같은 눈이 «진짜 삭제»는 본다(parts). 안 보이면 위의 0 은 뜻이 없다.
+    await page.getByTestId("wo-part-add").click();
+    await expect
+      .poll(async () => writes.length, { timeout: 15_000 })
+      .toBeGreaterThan(mark);
+    const mark2 = writes.length;
+    await page.getByTestId("wo-part-delete").last().click();
+    await expect.poll(async () => writes.length, { timeout: 15_000 }).toBeGreaterThan(mark2);
+
+    // 🔴 서버 대조군 — 화면이 막은 그 자리를 서버도 막는가(느슨하게 말하지 않았음의 반쪽)
+    const refused = await page.evaluate(async (id) => {
+      const res = await fetch(`/api/work-orders/${id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ safetyMeasures: [] }),
+      });
+      return { status: res.status, body: await res.json() };
+    }, woId);
+    expect(refused.status).toBe(403);
+    expect(refused.body?.error?.code).toBe("safety_measure_immutable");
+    const after = await (await page.request.get(`/api/work-orders/${woId}`)).json();
+    expect(after.safetyMeasures.length, "안전 조치가 실제로 줄었다").toBe(
+      server.safetyMeasures.length,
+    );
   });
 
   test("E-6 배지 — Live/Replay 를 «두 축의 조합»으로 말한다 (v0.1.3)", async ({ page }) => {
@@ -305,12 +414,13 @@ async function runScreenIsPlaceholder(page: Page): Promise<boolean> {
 
 /** 축 → 그 축의 관문. 🔴 관문은 «그 축이 재려는 화면»이어야 한다 — 다른 화면을 가리키면 거짓 채근이 된다. */
 const AXIS_GATES: ReadonlyArray<readonly [string, (page: Page) => Promise<boolean>]> = [
-  ["E-2b 연쇄 잔여 (WO 승인 · /work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
   // 🔴 E-4 는 T3-3 착지로 **채웠다**(11대) — 미룬 축이 아니므로 이 목록에서 내린다.
   //    채운 축을 여기 남겨 두면 정직성 행이 영영 빨강이고, 그 빨강은 아무 뜻도 없다.
   // 🔴 E-3·E-6 은 **T3-4 착지로 채웠다**(12대). 이 행이 그렇게 채근했고, 채운 뒤 내린다 —
   //    관문을 남겨 둔 채 축만 채우면 정직성 행이 「아직 안 채웠다」고 거짓을 말한다.
-  ["E-5 R12 (/work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
+  // 🔴 E-2b·E-5 는 **T3-5 착지로 채웠다**(14대). 이 행이 「/work-orders 가 자리표시를 벗었다」고
+  //    이름을 대며 채근했고, 그 채근이 옳았다 — 채운 뒤 내린다. 🔴 목록이 비었다고 이 행을
+  //    지우지 않는다: 다음 화면이 자리표시를 벗을 때 여기 한 줄을 더하는 것이 이 파일의 규율이다.
 ];
 
 test("골격 정직성 — «못 잼»을 화면별 조건에 묶는다", async ({ page }) => {
