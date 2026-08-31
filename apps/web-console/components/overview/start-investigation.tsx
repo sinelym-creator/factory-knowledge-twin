@@ -37,7 +37,10 @@ export function StartInvestigation({
     if (!sessionId) return;
     setBusy(true);
     setWhy(null);
-    const r = await startRunBrowser(scenarioId, sessionId);
+    // 🔴 mode 를 «여기서» 명시한다 — 이 버튼이 뜻하는 것은 「지금 조사를 돌린다」이므로
+    //    live 다. 계약이 live 를 못 주면 replay 로 강등해 답하고, ② 화면의 배지가 그 강등을
+    //    그대로 보여 준다(조용한 강등 0). fixture 재생은 이 버튼이 아니라 `?run=` 으로 온다.
+    const r = await startRunBrowser(scenarioId, sessionId, "live");
     if (r.state === "ok") {
       router.push(`/incidents/${encodeURIComponent(r.data.incidentId)}?run=${encodeURIComponent(r.data.runId)}`);
       return;

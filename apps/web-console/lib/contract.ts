@@ -409,16 +409,20 @@ export function startRunBrowser(
   scenarioId: string,
   sessionId: string,
   /**
-   * 🔴 **기본값이 `live` 로 바뀌었다**(T3-4). 앞판은 `"replay"` 상수였다 — 그때는 화면이
-   *    이벤트를 소비하지 않아 어느 모드든 결과가 같았다. 이제 ② 가 실행 축을 그리므로
-   *    「조사가 지금 도는 것」을 보여 주려면 live 를 «요청»해야 한다.
+   * 🔴 **기본값을 두지 않는다 — 호출처가 «명시»한다**(T3-4 · 오케 승인 조건 08-31).
+   *
+   * 앞판은 `"replay"` 상수였다. 그때는 화면이 이벤트를 소비하지 않아 어느 모드든 결과가
+   * 같았지만, 이제 ② 가 실행 축을 그리므로 모드는 «화면이 무엇을 보여 주는가»를 정한다.
+   * 그런 값에 기본값을 두면 호출처는 자기가 무엇을 요청했는지 모른 채 부르게 되고, 기본값을
+   * 바꾸는 날 «부르는 코드는 그대로인데» 화면이 달라진다. 그래서 필수 인자로 둔다 —
+   * 「조사 시작」 버튼 = `"live"`, fixture 재생 경로가 생기면 그 자리에서 `"replay"`.
    *
    * 🔴 요청이지 «단정»이 아니다. 계약은 「live 불가 시 `mode:"replay"` 로 강등 응답」을
    *    정해 두었고(§시나리오·조사 실행), 화면은 **서버가 답한 mode 를 배지로 그대로 보여
    *    준다** — 강등이 조용히 일어나지 않는다. 실측: live 요청 → live 응답(강등 없음) ·
-   *    live 완주 1,0초 · replay 완주 즉시.
+   *    live 완주 0.3초 · replay 완주 즉시.
    */
-  mode: "live" | "replay" = "live",
+  mode: "live" | "replay",
 ): Promise<Reply<{ runId: string; incidentId: string; mode: string }>> {
   return call<{ runId: string; incidentId: string; mode: string }>(
     CONTRACT.startRun(scenarioId),
