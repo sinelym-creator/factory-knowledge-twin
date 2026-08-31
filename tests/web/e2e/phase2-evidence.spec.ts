@@ -31,6 +31,7 @@ async function guardLanded(): Promise<boolean> {
 /** 브라우저가 부르는 API 가 실제로 서는가 — 데이터 축(E-2~E-6)의 선행 조건이다. */
 async function browserDataAlive(page: Page): Promise<boolean> {
   await page.goto("/overview");
+  await page.waitForURL(/\/overview$/); // 입장이 끝난 «뒤에» 묻는다(위 E-1 주석과 같은 자리)
   const res = await page.request.get("/api/scenarios");
   return res.status() === 200;
 }
@@ -44,7 +45,14 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
   test("E-1 세션 가드 — 가드 홉 «뒤»에서 ai-api 세션이 브라우저까지 선다", async ({ page }) => {
     // 🔴 307 만 보고 초록을 내지 않는다. 방문자는 리다이렉트를 «따라가고», 따라간 끝에서
     //    실제로 격리가 서는지는 브라우저 쿠키와 브라우저가 부르는 API 로만 보인다.
+    //
+    // 🔴 **끝까지 따라간 «뒤에» 묻는다**(Q-39 ⓒ · Q-41 에서 잡았다). 입장 발급이 서버 홉에
+    //    있던 동안에는 `goto` 가 돌아온 시점에 이미 쿠키가 있었다. 이제 사슬은
+    //    `307 /overview → 200 /`(클라이언트 마운트) `→ 303 /enter → 200 /overview` 이고,
+    //    `goto` 는 그 «중간»인 `/` 에서 돌아온다. 여기서 바로 물으면 쿠키는 아직 없다 —
+    //    그 빨강은 「가드가 세션을 안 세웠다」가 아니라 「내가 도착 전에 물었다」다.
     await page.goto("/overview");
+    await page.waitForURL(/\/overview$/);
 
     const cookies = await page.context().cookies();
     const shell = cookies.find((c) => c.name === "fkt_session");
