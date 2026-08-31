@@ -160,24 +160,44 @@ test.describe("T3-4 — 조사 실행 축", () => {
     await expect(cursor).toHaveAttribute("data-applied", String(events.length));
   });
 
-  test("🔴 코드 축 — live/replay 렌더 분기 0 (배지 문구 한 곳만 예외)", async () => {
+  /**
+   * 🔴 **red 정의를 정본에 맞춘다**(T4-2a ⑧ · 리바이2 16대). 앞판은 「분기 1곳」이라 못 박았는데,
+   *    T4-2a 티켓 ⓓ 가 **명시로 요구한** Live 복귀 제안(`run-console.tsx:299`)이 두 번째 분기다.
+   *    정본이 시킨 것을 그물이 금지하면 그 빨강은 대상의 것이 아니다 — 넓히는 쪽이 옳다.
+   *
+   * 🔴 허용은 «줄 번호»가 아니라 **그 분기가 그리는 것**(testid)으로 준다. `isStatic` 을 통째로
+   *    허용하면 정적 경로가 분기를 몇 개 더 세워도 이 그물이 못 본다 — 허용 목록은 자기 분기를
+   *    가린다. 그래서 아래 «허용 자리가 실재하는가» 불변식을 함께 둔다: 목록이 아무것도 물지
+   *    않으면 그물이 죽은 것이므로 초록을 내지 않는다.
+   */
+  test("🔴 코드 축 — live/replay 렌더 분기는 허용 목록(testid) 밖 0", async () => {
     const files = [
       "components/incident/run-console.tsx",
       "components/incident/run-panels.tsx",
       "lib/run-events.ts",
     ];
-    const branches: string[] = [];
+    // ttae-replay-note = TTAE 배지 문구 · live-return-offer = T4-2a ⓓ Live 복귀 «제안»(강제 이동 아님).
+    const ALLOW = ["ttae-replay-note", "live-return-offer"];
+    const branches: { at: string; testid: string | null }[] = [];
     for (const rel of files) {
-      const text = readFileSync(join(APP, rel), "utf8");
-      text.split("\n").forEach((line, i) => {
-        if (/mode\s*[=!]==\s*["'](live|replay)["']/.test(line) && !line.trim().startsWith("*")) {
-          branches.push(`${rel}:${i + 1} ${line.trim()}`);
-        }
+      const lines = readFileSync(join(APP, rel), "utf8").split("\n");
+      lines.forEach((line, i) => {
+        if (!/mode\s*[=!]==\s*["'](live|replay)["']/.test(line)) return;
+        if (line.trim().startsWith("*")) return;
+        // 분기가 «여는» 블록의 첫 요소에서 testid 를 읽는다 — 그리는 것으로 가른다.
+        const opened = lines.slice(i + 1, i + 4).join("\n");
+        branches.push({ at: `${rel}:${i + 1} ${line.trim()}`, testid: opened.match(/data-testid="([^"]+)"/)?.[1] ?? null });
       });
     }
-    // 유일하게 허용되는 자리 = TTAE 배지 문구(재생본 · 원 실행 관측치).
-    expect(branches, `모드 분기: ${branches.join(" | ")}`).toHaveLength(1);
-    expect(branches[0]).toContain("run-console.tsx");
+    const outside = branches.filter((b) => b.testid === null || !ALLOW.includes(b.testid));
+    expect(outside.map((b) => b.at), `허용 목록 밖 모드 분기: ${outside.map((b) => b.at).join(" | ")}`).toHaveLength(0);
+    // 🔴 허용 자리가 «실재»해야 한다 — 0 을 물면 규칙이 죽은 것이지 통과가 아니다.
+    for (const id of ALLOW) {
+      expect(
+        branches.filter((b) => b.testid === id).map((b) => b.at),
+        `허용 자리 ${id} 가 실재하지 않는다 — 허용 목록이 아무것도 물지 않았다`,
+      ).toHaveLength(1);
+    }
   });
 
   test("④ graph 근거는 실데이터 체인이다 — 목업 하드코딩 0 · `byRun` 미사용", async ({ page }) => {
