@@ -64,11 +64,32 @@ class Resources:
     # 🔴 프로브는 동시에 여러 개가 돈다(`probe_all` · `/health` 두 번 겹침). 잠그지 않으면
     #    같은 순간에 풀을 두 개 만들고 하나는 주인 없이 남는다(연결 누수).
     _open_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    # 🔴 마지막 프로브 결과와 그 시각(monotonic) — live 시작 판정만 읽는다(위 성문).
+    _probe_cache: dict[str, "DependencyProbe"] | None = None
+    _probe_cache_at: float = 0.0
 
     async def probe_all(self) -> dict[str, DependencyProbe]:
         """두 프로브를 «동시에» 돌린다. 직렬로 돌리면 상한이 합산된다."""
         pg, neo = await asyncio.gather(self.probe_postgres(), self.probe_neo4j())
-        return {"postgres": pg, "neo4j": neo}
+        result = {"postgres": pg, "neo4j": neo}
+        self._probe_cache = result
+        self._probe_cache_at = time.monotonic()
+        return result
+
+    async def probe_all_cached(self, max_age_sec: float) -> dict[str, DependencyProbe]:
+        """`max_age_sec` 안에 잰 값이 있으면 그것을 쓴다 (T4-2b Q-48).
+
+        🔴 **`/health` 는 이 캐시를 쓰지 않는다.** health 는 「지금 어떤가」를 묻는 창구라
+           캐시된 과거를 답하면 그 창구의 뜻이 사라진다. 캐시가 필요한 쪽은 **요청마다 부르는**
+           live 시작 판정이다 — 매번 두 의존에 실제로 붙어 보면 보호장치가 스스로 부하가 된다.
+
+        🔴 **≤5s stale 을 «허용»한다고 계약이 적었다**(v0.1.9 Q-48 절). 그 틈에 시작된 run 은
+           `run.failed` + `fallback:"replay"` 로 받는다 — 여기서 완벽한 최신성을 흉내 내는 대신,
+           틀릴 수 있는 창을 «성문된 크기»로 묶고 그 뒤를 기존 신호로 받는 쪽을 고른다.
+        """
+        if self._probe_cache is not None and (time.monotonic() - self._probe_cache_at) <= max_age_sec:
+            return self._probe_cache
+        return await self.probe_all()
 
     async def probe_postgres(self) -> DependencyProbe:
         # 🔴 물어보는 자리가 곧 «다시 열어 보는» 자리다(Q-52). 열지 못하면 아래에서 그

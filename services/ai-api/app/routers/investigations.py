@@ -27,7 +27,13 @@ from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisco
 from pydantic import BaseModel
 
 from .. import ownership, session_id
-from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
+from ..errors import (
+    NOT_IMPLEMENTED,
+    DependencyUnavailable,
+    LiveCapacityExhausted,
+    NotImplementedRoute,
+    dependency_guard,
+)
 from ..investigation import binding, replay, runner
 from ..investigation.store import RunRecord, RunStore
 from ..reading import factory as factory_reader
@@ -41,6 +47,11 @@ router = APIRouter(tags=["investigation"])
 
 # WebSocket 애플리케이션 종료 코드(4000~4999). 1011(예기치 못한 조건)은 사실과 다르다.
 WS_RUN_NOT_FOUND = 4404
+
+# 🔴 live 시작 판정이 허용하는 프로브 stale — 계약 v0.1.9 가 「≤5s」로 성문했다. 요청마다
+#    실제로 붙어 보면 보호장치가 스스로 부하가 되고, 그 틈에 시작된 run 은 기존 신호
+#    (`run.failed` + `fallback:"replay"`)가 받는다.
+LIVE_PROBE_MAX_AGE_SEC = 5.0
 
 
 class RunRequest(BaseModel):
@@ -68,6 +79,34 @@ def _pool_or_503(request: Request) -> Any:
     if pool is None:
         raise DependencyUnavailable("postgres")
     return pool
+
+
+def _degrade_to_replay(
+    request: Request,
+    scenario_id: str,
+    anchor: Any,
+    session_id: str,
+    which_down: str,
+) -> RunCreated:
+    """의존이 정지했을 때의 live 요청 — 같은 조사를 «재생»으로 답한다 (Q-48 · 계약 v0.1.9).
+
+    🔴 재생 경로는 pool·conn·driver 를 참조하지 않는다(`investigation/replay.py`) — 의존이
+       멈춘 동안에도 이 길이 도는 것이 fixture 축의 값어치다.
+    🔴 재생본이 «없으면» 503 이다. 501(`not_implemented`)을 쓰지 않는 이유: 구현은 있고
+       지금 답할 수 없을 뿐이라, 501 은 사실과 다르다(계약 문면도 503 을 지목한다).
+    """
+    try:
+        events = replay.load(get_settings().replay_fixture_dir, scenario_id)
+    except replay.FixtureMissing as exc:
+        log.info("강등할 재생본이 없다 — %s", exc)
+        raise DependencyUnavailable(which_down) from exc
+    except replay.FixtureBroken as exc:
+        # 서버 자산의 문제다 — 호출자 잘못이 아니므로 5xx 이고 상세는 로그에만(§34.6).
+        log.error("replay fixture 형상이 깨졌다: %s", exc)
+        raise _error(500, "replay_fixture_broken", "replay fixture 를 읽을 수 없다") from exc
+
+    record = replay.start(_store(request), session_id=session_id, anchor=anchor, events=events)
+    return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
 
 def _run_or_404(request: Request, run_id: str) -> RunRecord:
@@ -127,21 +166,50 @@ async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunC
         return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
     resources = _resources(request)
-    if resources.pg_pool is None:
-        raise DependencyUnavailable("postgres")
-    if resources.neo4j_driver is None:
-        # graph 단계를 건너뛰고 «부분 성공»을 내지 않는다 — 대본 S5 가 비면 회귀 판정 FAIL 이다.
-        raise DependencyUnavailable("neo4j")
+    settings = get_settings()
 
-    async with dependency_guard("postgres"):
-        record = await runner.start(
-            _store(request),
-            pool=resources.pg_pool,
-            driver=resources.neo4j_driver,
-            anchor=anchor,
-            session_id=body.sessionId,
-            mode="live",
-        )
+    # --- Q-48 「시작 «전» 판정」 (계약 v0.1.9) --------------------------------
+    #
+    # 🔴 **핸들 유무를 근거로 쓰지 않는다.** 앞판은 `resources.pg_pool is None` 을 봤는데,
+    #    그것은 「객체가 있는가」일 뿐이다 — postgres 가 죽어도 풀 객체는 산다. 그 축으로
+    #    판정하면 의존이 정지한 순간에도 live 가 «시작»되고, 방문자는 중간에 끊긴 조사를 본다.
+    #    근거는 `/health` 가 쓰는 바로 그 프로브 결과다(같은 사실을 두 곳에서 다르게 재지 않는다).
+    probes = await resources.probe_all_cached(LIVE_PROBE_MAX_AGE_SEC)
+    down = sorted(name for name, probe in probes.items() if probe.state != "ok")
+    if down:
+        # 🔴 「부분 성공 0」 — graph 단계를 건너뛴 반쪽 조사를 내지 않는다. 대신 같은 조사를
+        #    재생으로 보여 준다(계약: 강등). 재생본조차 없으면 그때는 답할 수 없다고 말한다.
+        log.info("의존 정지로 live 를 강등한다 — %s", ", ".join(down))
+        return _degrade_to_replay(request, scenarioId, anchor, body.sessionId, down[0])
+
+    # --- ⓐ 자리 잡기 --------------------------------------------------------
+    #
+    # 🔴 판정은 «동기»다(capacity.admit 성문). 여기서 await 를 끼우면 그 사이에 다른 요청이
+    #    같은 마지막 슬롯을 함께 받는다 — 상한이 상한이 아니게 되는 자리.
+    capacity = request.app.state.live_capacity
+    ticket = capacity.admit()
+    if ticket is None:
+        raise LiveCapacityExhausted(settings.live_retry_after_sec)
+
+    try:
+        async with dependency_guard("postgres"):
+            record = await runner.start(
+                _store(request),
+                pool=resources.pg_pool,
+                driver=resources.neo4j_driver,
+                anchor=anchor,
+                session_id=body.sessionId,
+                mode="live",
+                capacity=capacity,
+                ticket=ticket,
+                timeout_sec=settings.run_timeout_sec,
+                queue_wait_max_sec=settings.live_queue_wait_max_sec,
+            )
+    except BaseException:
+        # 🔴 run 이 서지 못했으면 자리도 돌려준다. 안 돌려주면 «아무도 쓰지 않는» 슬롯이
+        #    영구히 물리고, 상한 1 인 형상에서는 그 한 번으로 Live 가 통째로 닫힌다.
+        capacity.release(ticket)
+        raise
     return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
 

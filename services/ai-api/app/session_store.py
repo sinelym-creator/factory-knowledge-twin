@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import secrets
 import time
@@ -127,6 +128,32 @@ class SessionStore:
         for sid in doomed:
             self._sessions.pop(sid, None)
         return len(doomed)
+
+    # --- 정리 ---------------------------------------------------------------
+
+    async def sweep_forever(self, interval_sec: float) -> None:
+        """만료 세션을 «주기적으로» 버린다 (T4-2b ⓔ).
+
+        🔴 **`_sweep()` 을 대체하지 않는다 — 더한다.** 지금까지 정리는 lazy 였다(발급·계수
+           때만 돈다). 그 형태는 「아무도 안 오는 동안」 정확히 아무 일도 하지 않으므로,
+           방문이 끊긴 뒤 만료된 세션은 다음 방문자가 올 때까지 메모리에 남는다. 공개 Tunnel
+           뒤에서 그 「다음 방문자」는 며칠 뒤일 수도 있다.
+
+        🔴 **만료 «판정»은 건드리지 않는다.** 여기서 하는 일은 이미 만료된 것을 버리는 청소뿐이고,
+           `get()` 은 스윕이 돌기 전에도 만료를 만료로 답한다(그래서 이 태스크가 멈춰도
+           만료 세션이 살아나지 않는다). 소유권 은닉(만료·부재·타인 = 같은 404)도 그대로다 —
+           이 절은 그 판정을 지나지 않는다.
+
+        🔴 **버린 것이 있을 때만 로그를 남긴다.** 5분마다 「0건 정리」를 적으면 그 줄은 곧
+           아무도 안 읽는 배경 소음이 되고, 정작 무언가 버려진 날의 한 줄이 그 안에 묻힌다.
+        """
+        if interval_sec <= 0:                       # pragma: no cover — 끄기 경로
+            return
+        while True:
+            await asyncio.sleep(interval_sec)
+            dropped = self._sweep()
+            if dropped:
+                log.info("만료 세션 %d건 정리 — 남은 세션 %d", dropped, len(self._sessions))
 
     # --- 관측 ---------------------------------------------------------------
 
