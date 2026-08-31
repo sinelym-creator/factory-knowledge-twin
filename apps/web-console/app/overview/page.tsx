@@ -44,6 +44,8 @@ export default async function OverviewPage({
       <Unavailable
         screen="① Factory Overview"
         why={plants.state !== "ok" ? plants.why : "공장 목록이 비어 있다"}
+        // 🔴 제목은 세그먼트 레이아웃이 이미 그렸다 — 여기서 또 h1 을 내면 두 개가 된다
+        heading={false}
       />
     );
   }
@@ -54,7 +56,7 @@ export default async function OverviewPage({
     apiGetServer<Scenario[]>(CONTRACT.scenarios, cookieHeader),
   ]);
   if (overview.state !== "ok") {
-    return <Unavailable screen="① Factory Overview" why={overview.why} />;
+    return <Unavailable screen="① Factory Overview" why={overview.why} heading={false} />;
   }
 
   // 🔴 헤드라인 문장은 «가장 심각한 활성 알람 1건»이다 — 정렬은 서버가 했고(계약 v0.1.7-정정)

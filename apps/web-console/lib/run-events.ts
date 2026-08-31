@@ -41,6 +41,16 @@ type Envelope = { runId: string; seq: number; ts: string; mode: string };
 
 export type RunEvent = Envelope &
   (
+    /**
+     * 🔴 **대기열 진입·순위 변동**(계약 v0.1.9 신설 · type 8종 → 9종). 오류가 «아니다» —
+     *    요청은 200 으로 답했고 곧 `run.started` 가 따른다. 이 갈래가 없으면 `reduceEvents`
+     *    는 대기 중인 run 을 `pending` 인 채로 두고, 화면은 「접수됐다」와 「아직 안 보냈다」를
+     *    같은 모습으로 그린다.
+     * 🔴 순위가 바뀌면 «같은 type 이 다시» 온다(seq 는 그때도 증가). 그래서 소비 규칙은
+     *    「마지막 run.queued 가 지금 순위」 하나뿐이다.
+     * 🔴 `estimatedWaitSec` 은 근거가 없으면 `null` 이다 — 화면이 그 자리를 숫자로 채우지 않는다.
+     */
+    | { type: "run.queued"; payload: { position: number; estimatedWaitSec: number | null } }
     | { type: "run.started"; payload: { scenarioId?: string; question?: string } }
     | { type: "plan.updated"; payload: { steps: string[] } }
     | { type: "step.started"; payload: { step: string } }
@@ -84,8 +94,15 @@ export type StepView = {
 
 export type RunFailure = { code: string; message: string; fallback?: "replay" };
 
+export type RunQueue = { position: number; estimatedWaitSec: number | null };
+
 export type RunState = {
-  status: "pending" | "running" | "completed" | "stopped" | "failed";
+  /**
+   * 🔴 `queued` 를 `pending` 에 합치지 않는다. 「아직 아무 말도 못 들었다」와 「접수됐고
+   *    N번째로 기다린다」는 방문자에게 다른 사실이다 — 합치면 화면은 대기 순위를 알면서도
+   *    말하지 않는 상태가 되고, 그 침묵은 고장과 구별되지 않는다.
+   */
+  status: "pending" | "queued" | "running" | "completed" | "stopped" | "failed";
   mode: string | null;
   scenarioId: string | null;
   question: string | null;
@@ -103,6 +120,9 @@ export type RunState = {
   stopNote: string | null;
   /** 마지막으로 반영한 seq — 「어디까지 본 상태인가」를 화면이 말할 수 있게. */
   lastSeq: number | null;
+  /** 🔴 마지막 `run.queued` 의 값. 실행이 시작되면 null 로 «지운다» — 지나간 순위를 남겨 두면
+   *     화면이 이미 도는 조사를 「3번째로 대기 중」이라고 말한다. */
+  queue: RunQueue | null;
 };
 
 const EMPTY: RunState = {
@@ -119,6 +139,7 @@ const EMPTY: RunState = {
   failure: null,
   stopNote: null,
   lastSeq: null,
+  queue: null,
 };
 
 /**
@@ -145,8 +166,16 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
     s.mode = e.mode ?? s.mode;
     s.lastSeq = e.seq;
     switch (e.type) {
+      case "run.queued":
+        s.status = "queued";
+        s.queue = {
+          position: e.payload.position,
+          estimatedWaitSec: e.payload.estimatedWaitSec ?? null,
+        };
+        break;
       case "run.started":
         s.status = "running";
+        s.queue = null;            // 🔴 시작했으면 순위는 «지나간 사실»이다
         s.scenarioId = e.payload.scenarioId ?? null;
         s.question = e.payload.question ?? null;
         break;

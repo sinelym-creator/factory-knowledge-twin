@@ -8,15 +8,28 @@ export function Unavailable({
   screen,
   why,
   kind = "unavailable",
+  heading = true,
 }: {
   screen: string;
   why: string;
   /** `not-found` = 서버가 「그런 것 없다」고 답했다 · `unavailable` = 묻지 못했다. */
   kind?: "not-found" | "unavailable";
+  /**
+   * 🔴 `false` = 「이 화면의 제목은 «이미 밖에» 있다」(T4-2b Q-50 · overview 세그먼트).
+   *
+   *    기본값은 `true` 로 둔다 — 이 컴포넌트를 이미 쓰고 있는 화면들은 제목을 여기서만
+   *    얻으므로, 기본을 바꾸면 그 화면들의 제목이 «요청 밖»에서 조용히 사라진다.
+   *    끄는 쪽은 제목을 자기 레이아웃에 둔 화면뿐이고, 그때도 문장은 남는다(h1 → p).
+   */
+  heading?: boolean;
 }) {
   return (
     <section className="max-w-2xl" data-testid="screen-unavailable" data-kind={kind}>
-      <h1 className="text-lg font-semibold">{screen}</h1>
+      {heading ? (
+        <h1 className="text-lg font-semibold">{screen}</h1>
+      ) : (
+        <p className="text-lg font-semibold">{screen}</p>
+      )}
       <div className="mt-4 rounded border border-warn/40 bg-panel p-4">
         <p className="text-sm text-warn">
           {kind === "not-found"

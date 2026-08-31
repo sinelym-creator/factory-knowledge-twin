@@ -5,7 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CandidateList, EvidenceStrip, RunTimeline } from "@/components/incident/run-panels";
 import { useLiveStatus } from "@/components/live-status";
-import { CONTRACT, type RunSnapshot, apiGetBrowser, stopRunBrowser } from "@/lib/contract";
+import { CONTRACT, type RunSnapshot, apiGetBrowser, runEventsBrowser, stopRunBrowser } from "@/lib/contract";
+import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 import { saveCursor, useStoredCursor } from "@/lib/static-replay/visitor-state";
 import {
   type RunEvent,
@@ -28,8 +29,26 @@ import {
  *    되감을 수 있다. mode 는 배지 문구에만 쓴다.
  *
  * 🔴 **빈 화면 0.** WS 가 못 붙거나 끊기면 `GET /runs/{runId}` 스냅샷으로 후보라도 세운다.
- *    재연결 기전은 이 티켓이 아니다(T4-2) — 여기서는 「끊겼다」를 말하고 마지막 사실을 남긴다.
+ *
+ * 🔴 **끊김에서 «돌아온다»**(T4-2b ⓕ · §17.2). 절단이면 ⓐ 이벤트 열을 `GET /runs/{id}/events`
+ *    로 메우고 ⓑ 스트림을 다시 연다. 두 갈래가 겹쳐도 화면은 한 번만 움직인다 — 병합이
+ *    `seq` 를 보고 이미 본 것을 버리기 때문이다(중복 처리 0 · 아래 `merge`).
+ *
+ * 🔴 **정상 종료는 복구 대상이 아니다.** 조사가 끝나면 서버가 닫는다(1000). 그것을 절단으로
+ *    읽고 다시 열면 끝난 조사마다 재연결이 돌고, 화면은 조용한 무한 재시도를 갖게 된다 —
+ *    「끝났다」와 「끊겼다」를 가르는 것이 이 절의 전부다.
  */
+/**
+ * 재연결 간격(ms) — 🔴 **횟수가 유한하다.** 무한 재시도는 서버가 죽어 있을 때 화면이 그
+ * 사실을 말하지 못하게 만든다: 영원히 「곧 돌아옵니다」이고, 방문자는 기다리면 온다고 믿는다.
+ * 다 쓰고도 안 붙으면 마지막 `closeMessage` 문구가 그대로 남아 「끊겼다」를 말한다.
+ */
+const RECONNECT_BACKOFF_MS = [500, 1_000, 2_000, 4_000] as const;
+const MAX_RECONNECT = RECONNECT_BACKOFF_MS.length;
+
+/** 종단 이벤트 — 이 중 하나가 도착했으면 그 run 은 «끝난» 것이고, 끊김은 복구 대상이 아니다. */
+const TERMINAL_TYPES = new Set(["run.completed", "run.stopped", "run.failed"]);
+
 export function RunConsole({
   runId,
   initialSnapshot,
@@ -88,6 +107,28 @@ export function RunConsole({
   const [fallback, setFallback] = useState<RunSnapshot | null>(initialSnapshot);
   const [stopping, setStopping] = useState(false);
   const [kind, setKind] = useState<string | null>(null);
+  /** 재연결 회차 — 값이 바뀌면 아래 WS effect 가 다시 돈다(스트림을 새로 연다). */
+  const [attempt, setAttempt] = useState(0);
+  /**
+   * 🔴 「이 run 은 이미 끝났는가」를 **ref 로** 든다. `onclose` 는 effect 가 만들어질 때의
+   *    상태를 닫아 두므로(closure), state 를 읽으면 «그 순간의 옛 값»으로 판정하게 된다 —
+   *    끝난 조사를 끊긴 것으로 읽고 재연결을 거는 자리가 바로 거기다.
+   */
+  const settled = useRef(false);
+
+  /**
+   * 이벤트 병합 — 🔴 **중복 처리 0 의 유일한 자리**(ⓕ).
+   *
+   * 세 갈래가 같은 이벤트를 준다: WS 실시간 · 재연결 시 서버가 다시 보내는 백로그(seq 0부터) ·
+   * 끊김 뒤 `GET /runs/{id}/events`. 거르는 곳이 여럿이면 그중 하나가 바뀌는 날 화면에서
+   * 같은 단계가 두 번 서고, 그 화면은 서버가 하지 않은 말을 한다.
+   */
+  const merge = useCallback((incoming: readonly RunEvent[]) => {
+    const fresh = incoming.filter((e) => !seen.current.has(e.seq));
+    if (fresh.length === 0) return;
+    for (const e of fresh) seen.current.add(e.seq);
+    setEvents((prev) => [...prev, ...fresh].sort((a, b) => a.seq - b.seq));
+  }, []);
 
   // ── WS 구독 ────────────────────────────────────────────────────────────────
   // 🔴 runId 가 바뀔 때의 «초기화»는 이 effect 가 하지 않는다 — 부르는 쪽이 `key={run}` 으로
@@ -97,10 +138,14 @@ export function RunConsole({
     // 🔴 정적 경로는 이미 전열을 쥐고 있다 — 열 스트림도, 물을 스냅샷도 없다.
     //    여기서 나가면 AC 「화면 데이터 /api 호출 0」이 이 한 줄에서 깨진다.
     if (isStatic) return;
+    // 🔴 이미 끝난 조사에는 스트림을 열지 않는다. 재연결 회차에서 이 줄이 없으면, 마지막
+    //    재시도가 «끝난 run» 을 다시 열었다가 서버가 곧바로 닫아 또 한 번 재시도를 부른다.
+    if (settled.current) return;
 
     const url = location.origin.replace(/^http/, "ws") + CONTRACT.runStream(runId);
     const ws = new WebSocket(url);
     let closedByUs = false;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
     ws.onmessage = (m) => {
       let e: RunEvent;
@@ -109,11 +154,7 @@ export function RunConsole({
       } catch {
         return; // 🔴 못 읽은 프레임을 «빈 이벤트»로 만들지 않는다 — 없던 사실이 된다
       }
-      // 🔴 **중복 처리 0.** 백로그(seq 0부터)와 실시간이 겹칠 수 있다. 서버도 겹침을 거르지만,
-      //    거르는 쪽이 하나뿐이면 그쪽이 바뀌는 날 화면에서 같은 단계가 두 번 선다.
-      if (seen.current.has(e.seq)) return;
-      seen.current.add(e.seq);
-      setEvents((prev) => [...prev, e].sort((a, b) => a.seq - b.seq));
+      merge([e]);
     };
 
     ws.onclose = (ev) => {
@@ -121,17 +162,35 @@ export function RunConsole({
       // 🔴 정상 종료(1000)는 «사건»이 아니다 — 조사가 끝나면 서버가 닫는다. 문구를 띄우면
       //    완주한 화면이 매번 경고를 달게 된다.
       if (ev.code !== 1000) setNote(closeMessage(ev.code, ev.reason));
-      // 끊겼으면 마지막 사실이라도 남긴다(재연결은 T4-2).
+      // 끊겼으면 마지막 사실이라도 남긴다.
       void apiGetBrowser<RunSnapshot>(CONTRACT.run(runId)).then((r) => {
         if (r.state === "ok") setFallback(r.data);
       });
+
+      // 🔴 **여기서 「끝났다」와 「끊겼다」를 가른다**(ⓕ). 정상 종료이거나 이미 종단
+      //    이벤트를 받은 run 은 복구 대상이 아니다 — 그 자리에서 재시도를 걸면 완주한
+      //    조사마다 조용한 무한 루프가 돈다.
+      if (ev.code === 1000 || settled.current) return;
+
+      // ⓐ 끊긴 동안 서버가 낸 이벤트를 «되감기 정본»으로 메운다. 재연결이 늦어도 화면은
+      //    이 한 번으로 지금 사실까지 온다(그리고 재연결 백로그와 겹쳐도 merge 가 거른다).
+      void runEventsBrowser<RunEvent>(runId).then((r) => {
+        if (r.state === "ok") merge(r.data);
+      });
+
+      // ⓑ 스트림을 다시 연다 — 간격을 늘려 가며 정해진 횟수만. 무한 재시도는 서버가 죽어
+      //    있을 때 화면이 그 사실을 말하지 못하게 만든다(계속 「곧 돌아옵니다」가 된다).
+      if (attempt < MAX_RECONNECT) {
+        retryTimer = setTimeout(() => setAttempt((a) => a + 1), RECONNECT_BACKOFF_MS[attempt]);
+      }
     };
 
     return () => {
       closedByUs = true;
+      if (retryTimer !== undefined) clearTimeout(retryTimer);
       ws.close();
     };
-  }, [runId, isStatic]);
+  }, [runId, isStatic, attempt, merge]);
 
   // ── 방문자 상태(정적 경로) — 되감기 위치를 브라우저에 남긴다 (T4-2a ⓒ) ────────────
   //
@@ -163,6 +222,15 @@ export function RunConsole({
 
   const applied = cursor === null ? events : events.slice(0, cursor);
   const live = useMemo(() => reduceEvents(applied), [applied]);
+
+  /**
+   * 🔴 종결 판정은 «커서와 무관하게» 받은 이벤트 전부로 한다. `live` 는 되감기가 적용된
+   *    상태라, 방문자가 앞으로 되감아 둔 동안 이 값을 쓰면 «끝난 조사»가 진행 중으로 보이고
+   *    재연결이 다시 돈다 — 화면 조작이 네트워크 동작을 바꾸는 자리가 된다.
+   */
+  useEffect(() => {
+    settled.current = events.some((e) => TERMINAL_TYPES.has(e.type));
+  }, [events]);
 
   /**
    * 🔴 스냅샷은 «채우는» 것이지 «덮는» 것이 아니다. 이벤트가 후보를 냈으면 그것이 정본이고,
@@ -207,14 +275,32 @@ export function RunConsole({
           <span className="text-muted" data-testid="run-status">
             {state.status === "running"
               ? "조사중"
-              : state.status === "completed"
-                ? "완료"
-                : state.status === "stopped"
-                  ? "중지됨"
-                  : state.status === "failed"
-                    ? "중단됨"
-                    : "대기"}
+              : state.status === "queued"
+                ? "대기열"
+                : state.status === "completed"
+                  ? "완료"
+                  : state.status === "stopped"
+                    ? "중지됨"
+                    : state.status === "failed"
+                      ? "중단됨"
+                      : "대기"}
           </span>
+
+          {/* 🔴 **순위를 «말한다»**(계약 v0.1.9 run.queued). 접수된 조사를 「대기」로만 그리면
+              방문자는 자기가 줄에 서 있다는 것도, 몇 번째인지도 모른 채 도는 원을 본다.
+              🔴 예상 시간은 서버가 «준 경우에만» 적는다 — null 이면 그 문장을 통째로 뺀다.
+                 화면이 「곧」이나 「약 30초」를 지어내면 그 숫자는 아무 근거가 없다. */}
+          {state.queue && (
+            <span
+              className="rounded border border-edge px-2 py-0.5 text-muted"
+              data-testid="run-queue"
+              data-position={state.queue.position}
+              data-estimated={state.queue.estimatedWaitSec ?? ""}
+            >
+              대기 {state.queue.position}번째
+              {state.queue.estimatedWaitSec !== null && <> · 예상 {state.queue.estimatedWaitSec}초</>}
+            </span>
+          )}
 
           <button
             type="button"
@@ -282,7 +368,25 @@ export function RunConsole({
         {state.failure && (
           <p className="mt-2 rounded border border-warn/40 px-2 py-1.5 text-xs text-warn" role="status" data-testid="run-failed" data-code={state.failure.code}>
             🔴 조사가 중단됐습니다 — {state.failure.message} (<span className="id">{state.failure.code}</span>)
-            {state.failure.fallback === "replay" && " · 서버가 replay 로의 전환을 제안했습니다."}
+            {/* 🔴 **제안은 «동작»이어야 한다**(T4-2b ⓖ · §6.2 빈 화면 0). 앞판은 「서버가
+                replay 로의 전환을 제안했습니다」라는 «문장»이었다 — 방문자는 그 말을 읽고도
+                무엇을 눌러야 할지 모른 채 중단된 화면에 남는다. 정적 재생본은 셸 자산이라
+                (T4-2a) ai-api 가 죽어 있어도 이 링크는 선다: 그것이 이 자리에 쓸 수 있는
+                유일한 «확실히 되는» 다음 수다.
+                🔴 한계를 성문한다 — 정적 자산은 GS-01 한 벌이다. 시나리오가 늘면 이 링크는
+                   그 incident 의 재생본을 가리키도록 «자산 축»과 함께 자라야 한다. */}
+            {state.failure.fallback === "replay" && !isStatic && (
+              <>
+                {" · "}
+                <Link
+                  href={`?run=${encodeURIComponent(STATIC_RUN_ID)}`}
+                  className="underline underline-offset-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+                  data-testid="run-fallback-offer"
+                >
+                  정적 재생본으로 같은 조사 보기 ▸
+                </Link>
+              </>
+            )}
           </p>
         )}
         {state.stopNote && (
