@@ -36,6 +36,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
 NEO4J_CONTAINER = os.environ.get("FKT_NEO4J_CONTAINER", "fkt-levi2-neo4j-1")
@@ -159,6 +160,7 @@ def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
+    _colocation.require()  # 🔴 재기 전에 «저 서버가 이 트리를 읽는가»부터(Q-42)
     cut = "--cut-neo4j" in sys.argv
 
     print(f"대상      : {API_BASE}")

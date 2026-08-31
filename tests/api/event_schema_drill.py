@@ -42,6 +42,7 @@ from typing import Any
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 REPO = Path(__file__).resolve().parents[2]
 SCHEMA = REPO / "packages" / "contracts" / "agent-events-v0.1.schema.json"
@@ -357,6 +358,8 @@ def main() -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
     samples_only = "--samples-only" in sys.argv
+    if not samples_only:
+        _colocation.require()  # 🔴 서버를 만나는 갈래에서만(Q-42)
 
     if not SCHEMA.exists():
         raise DrillError(f"스키마 정본 없음: {SCHEMA}")

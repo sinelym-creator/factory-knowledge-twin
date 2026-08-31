@@ -38,6 +38,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 REPO = Path(__file__).resolve().parents[2]
 CONTRACT = REPO / "packages" / "contracts" / "rest-api-v0.1.md"
@@ -170,6 +171,7 @@ def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
+    _colocation.require()  # 🔴 재기 전에 «저 서버가 이 트리를 읽는가»부터(Q-42)
 
     rules = canon()
     print(f"정본      : {CONTRACT.relative_to(REPO)} v0.1.6 · 코드 "
