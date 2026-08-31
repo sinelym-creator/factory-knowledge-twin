@@ -12,7 +12,7 @@ size_limit: 8KB
 >
 > **단위 분해 트리거**: 티켓이 ⓐ 2일+ 소요 ⓑ 담당 2인 교차 ⓒ 부분 완료 보고 필요 중 하나면 «그 티켓만» 단위 분해(근거 붙일 수 있는 최소 완결 조각) — 분해 시 「분모 N→M」 선행 선언.
 
-## 원장 (진행률 = ✅ 33 / 총 37 — 🔴 **T3-2 완결 08-31 03:07**(재검 PASS · PR#174 — 결함 6건 전건 해소) · 🔴 T3-3 = 구현 착지 + 검증 5축 초록 · D-3 1건 «이 층에서 수리 불가» 실측 확정으로 FAIL 유지 마감(ⓒ 구조 처방 = Q-39 · 재부팅 후 1착) · T3-1 완결 08-30 18:07(독립 검증 PASS · PR#160 착지 4cc02e7) · 분모 31→37 선언(Phase 3 6티켓 등재 08-30 16:05 · 진입 재가 15:58 「승인」 + Phase 2 게이트 통과 동시) · **Phase 2 완결: T2-6 완결 08-30 15:53**(통합 검증 PASS · PR#145 · 오케 통합 판정) · T2-5 완결 08-30 15:18(독립 검증 PASS · PR#137 착지 1146ca4) · T2-4 완결 08-30 09:17(재검 PASS · PR#129) · T2-3 완결 04:30(PR#121) · T2-2 완결 03:17(PR#114) · T2-1 완결 01:41(PR#108) · Phase 2 진입 재가 00:04 · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 25→31 T2-1~T2-6 등재 · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
+## 원장 (진행률 = ✅ 33 / 총 46 — 🔴 **분모 37→46 선언 08-31 10:05**(Phase 4 T4-1~4 + Phase 5 T5-1~5 등재 · 폐하 재가 09:55 결정 5건 + 09:57 「추가 결정 2건 권장안으로 승인」 · 🔴 **Feature Freeze 조기 선언** = T3-4·T3-5 «최소 형상» + P4 병행 · plan §3 Phase 5 별도 재가 동시 · 분해안 = docs/plan/phase4-5-decomposition.md) · 🔴 **T3-2 완결 08-31 03:07**(재검 PASS · PR#174 — 결함 6건 전건 해소) · 🔴 T3-3 = 구현 착지 + 검증 5축 초록 · D-3 1건 «이 층에서 수리 불가» 실측 확정으로 FAIL 유지 마감(ⓒ 구조 처방 = Q-39 · 재부팅 후 1착) · T3-1 완결 08-30 18:07(독립 검증 PASS · PR#160 착지 4cc02e7) · 분모 31→37 선언(Phase 3 6티켓 등재 08-30 16:05 · 진입 재가 15:58 「승인」 + Phase 2 게이트 통과 동시) · **Phase 2 완결: T2-6 완결 08-30 15:53**(통합 검증 PASS · PR#145 · 오케 통합 판정) · T2-5 완결 08-30 15:18(독립 검증 PASS · PR#137 착지 1146ca4) · T2-4 완결 08-30 09:17(재검 PASS · PR#129) · T2-3 완결 04:30(PR#121) · T2-2 완결 03:17(PR#114) · T2-1 완결 01:41(PR#108) · Phase 2 진입 재가 00:04 · Phase 1 완결 08-29 19:05 · 분모 이력: 🔴 37→46 T4-1~4·T5-1~5 등재(08-31 10:05) · 31→37 T3-1~T3-6 등재 · 25→31 T2-1~T2-6 등재 · 24→25 T1-10 등재 · 15→24 Phase 1 분해)
 
 ### 부트스트랩 (완결)
 
@@ -83,9 +83,28 @@ size_limit: 8KB
 | T3-1 | 세션 실체화 — `POST /sessions` 해제(Q-18 성문분) · browser session sandbox · 🔴 세션 가드 전면(Q-16 오케 설계 집행: 전 라우트 가드 + evidence 딥링크 «읽기 전용» 예외 §3:244) · Q-25 결속(초안·승인 세션 소유권) | 구현 | 방문자 격리의 기반 축 — 화면 4장이 이 위에 선다 | T2-6 ✅ | ✅ PASS 08-30 18:07(구현 PR#151 d53bc7f + 🔴 V-1 픽스 PR#159 0628201(쿠키 재직렬화 — 갈래 ⓐ반증/ⓑ확정 «후» 픽스 · 순서 뒤집기 기각·재발 자리 제거) ∥ 독립 검증 리바이2 10대 PR#158+#160 — 가드 7축 전건 PASS(소유권 404 무누설 · 독법 ⓑ 3칸 실증 · reset 실효) · 🔴 V-1은 구현이 «못 잰 축»(브라우저 쿠키 왕복)에서 검증이 적발 → E-1 상시 red가 픽스 완료 기준 = 「완료 기준이 사람이 아니라 코드」 · 셸 재빌드 후 재검 green · 정비 8건+E-05 조건화(「표본을 이름이 아니라 조건으로」) · 계측기 자수 4건 · 회귀 API 21/21·브라우저 39/0 · 판정문 evidence/t3-1-session-guard-verification.md) |
 | T3-2 | Overview·Incident 화면 데이터 결선 + 조회 계층 라우트 해제 판정(`/incidents`·`/plants`·`/equipment` — Q-18 잔여 · 해제 단위 = 화면 소비처 실재 질의 형태만) | 구현 | placeholder 해소 · wireframes ①② | T3-1 구현 착지 ✅(검증 병행) | ✅ PASS 08-31 03:07(구현 센쿠2 13대 PR#162 + 픽스 14대 PR#171 ∥ 검증 리바이2 11대 — 1차 «불합격» PR#168(D-1 안내 1회 위반·재열람 부재 = AC 직결 + D-2·R-1~R-3) → 픽스(세션 결부·hydration 값/형식 두 겹·raised_at·●▲■ 병행·센서 = 알람 행 실값·정정 2차 동반) → 재검 PASS PR#174 — 결함 6건 전건 해소 · 🔴 신설 대조군 「새 세션이면 다시 뜬다」·R-3 거동 축(대조군에서 알람 id 비인용 확인) · 검증 그물 자수 N-9~N-11 · 판정문 evidence/t3-2-screens-verification.md) |
 | T3-3 | Evidence·Documents 화면 — 근거 열람·STALE 배지 표면(Q-20 소비처)·딥링크(Q-16 예외 축 소비) | 구현 | wireframes ③ | T3-1 ✅ | 🔶 구현 착지(PR#167) · 🔴 검증 «불합격 유지» 마감 08-31 04:00(리바이2 11대 PR#172 · 판정문 evidence/t3-3-evidence-screens-verification.md — D-3 = Q-39 실증: 프리페치 세션이 진짜 입장 = 「열람만」 위반. 초록 5축 유지: 인용 항등식 화면까지·🔴 STALE 주입 실증 = Q-20 울음 판정선 통과·Q-34 성문 준수·망축·무접촉). 🔴 픽스 3안(ⓐ accept·ⓑ _rsc·ⓑ' 입장 경로 204) 전건 «실측 기각» — Next가 프리페치 표지(헤더·쿼리)를 proxy 층에 안 넘겨 **그 층에 가를 재료가 없음을 삼중 실측으로 확정**(PR 미제출 = 옳은 산출물 · 전량 원복 · 폐하 재가 ⓐ 경로로 FAIL 유지 마감). 처방 = ⓒ(입장을 클라이언트 실행으로 — Q-39) · 🔴 재부팅 후 1착 → D-3 단축 재검으로 완결(자극 실재 그물 PR#175 선착지) |
-| T3-4 | 조사 실행·전략 비교 화면 — run 타임라인(이벤트 스트림) · replay 재생 UI(Q-27 화면 축 판정) · graph evidence 시각화(`/graph/paths?from&to` 소비처 — Q-26 재판정) | 구현 | wireframes ⑤ + deterministic replay 소비 | T3-1 | 등재 |
-| T3-5 | WO 초안 편집·승인 화면 — R12 툴팁 문구(Q-31) · 근거 툴팁 축(Q-32 판정) | 구현 | wireframes ④ | T3-1 | 등재 |
+| T3-4 | 조사 실행·전략 비교 화면 — run 타임라인(이벤트 스트림) · replay 재생 UI(Q-27 화면 축 판정) · graph evidence 시각화(`/graph/paths?from&to` 소비처 — Q-26 재판정) | 구현 | wireframes ⑤ + deterministic replay 소비 | T3-1 | 등재 · 🔴 **최소 형상**(Feature Freeze 조기 — 폐하 재가 08-31 09:57 ⓑ · 축소 범위 = 티켓 T3-4.md에 성문 · 시각화·폴리시 축은 배포 후 트랙) |
+| T3-5 | WO 초안 편집·승인 화면 — R12 툴팁 문구(Q-31) · 근거 툴팁 축(Q-32 판정) | 구현 | wireframes ④ | T3-1 | 등재 · 🔴 **최소 형상**(동상 — 편집·승인·반려·R12 문구 = 핵심 · 툴팁 확장 축은 배포 후 트랙) |
 | T3-6 | Phase 3 통합 독립 검증 — 🔴 §21 증거 4종(노트북 OFF GS 완주 · 방문자 세션 격리 · 키보드 인터랙션 · desktop viewport QA) + Gate smoke(1~5 축소판) · E2E(playwright) | 검증 | 그물 선행 소조각 즉시 발주(T2-5 패턴) | T3-1~T3-5 | 등재(그물 선행) |
+
+### Phase 4 — Live AI 연결 (S7 · 🔴 진입 재가 08-31 09:57 — 「분모 37→46」 선언과 함께 등재 · P3 잔여와 «병행»(선택지 ⓑ) · 정본 = baseline §21 Phase 4 산출물 5종·완료 증거 4종 · 결정 ①③④⑤ 결속 · 분해안 = docs/plan/phase4-5-decomposition.md)
+
+| # | 티켓 | 좌석 | 근거·범위 | 선결 | 상태 |
+|---|---|---|---|---|---|
+| T4-1 | 공개 형상 골격·env 주입 — compose ai-api 등재 · 배포 빌드(🔴 Q-37 해소 = FKT_API_BASE 빌드 타임 정식화) · CORS allowlist·security header·CSP·HTTPS 가정 · `/live/status` 외부축 bounded timeout | 구현 | §13.1 · §14 · §16.3 · 티켓 T4-1.md | Q-39 ⓒ 착지(셸 안정) | 등재(티켓 선작성 08-31 10:00) |
+| T4-2 | Live 보호장치·fallback·queue — 동시 1~2 + bounded queue · timeout → `run_stopped(timeout)`+Replay 안내 · rate limit 429 · 길이 상한 · session TTL 정리 · WS 재연결/상태 재조회(§17.2) · Live 실패 시 Replay 자동 제안(§6.2) · 결정 ③ 동등 보호 | 구현 | §16.3 · §17.2 · §6.2 · 티켓 T4-2.md | T4-1(lane 분리 병행 가능) | 등재(티켓 선작성 08-31 10:00) |
+| T4-3 | Tunnel·Vercel 공개 RC — Tailscale Funnel(결정 ① 초기 → 최종 Cloudflare Named) · Vercel Hobby 배포(🔴 공개 행위 — 착수 시 운영자 확인 1회 재상신 · 결정 ②) · 노트북 운영 조건 §14.4(자동 시작·재부팅 후 health) · 외부 네트워크+모바일 접속 | 구현 · 🔴 운영자 게이트 | §14.3~14.4 · **Exit = Public RC URL + 외부 접근 E2E PASS(S7)** | T4-1·T4-2 | 등재 |
+| T4-4 | Phase 4 통합 독립 검증 — Gate 6 축소판 8행 장애 매트릭스(외부 축) · §21 완료 증거 4종(외부·모바일 접속 · Live 조사 실행 · 노트북 종료 시 Replay 전환 · 동시 제한·timeout) · 그물 선행 소조각(T2-5 패턴) | 검증 | §32.7 · §21 | T4-1~T4-3(그물 선행) | 등재(그물 선행 가능) |
+
+### Phase 5 — 평가·보안·운영 (🔴 plan §3 「배포 후 트랙 = 별도 재가」 → 08-31 09:57 재가로 등재 · 정본 = baseline §21 Phase 5 산출물 5종·완료 증거 5종 · §18 · §30.9~30.10 · §32 Gate 7 · §34.3)
+
+| # | 티켓 | 좌석 | 근거·범위 | 선결 | 상태 |
+|---|---|---|---|---|---|
+| T5-1 | Evaluation Lab — dataset 40문(§18.3 7유형 · benchmarks/datasets/eval-questions-draft.md 기점) → questions/ground-truth jsonl · 3전략 비교 실행기(T2-1 기반) · deterministic 지표 9종(§18.2) · artifact §30.10 · evaluation report(Target/Actual 분리 · 실패 raw 포함 · 재현 메타 4종 · LLM judge 0) | 구현 | §18 · §30.9~30.10 | T2-1 ✅(즉시 병행 가능) | 등재 |
+| T5-2 | Gate 7 Security·Abuse 그물 + credential scan — 13항 negative test(SQL·Cypher·prompt injection · 임의 tool · 관리자 endpoint · 타 세션 · oversized · rate limit · 잘못된 WS · path traversal · CORS 우회 · trace/env 노출 · 승인 우회) · secret scan(local+CI) · Turnstile(결정 ③ — 계정 가능 시) | 검증 | §32.8 · §16.3 · 기존 injection_surface·credential_leak 드릴 | T4-2(rate limit·CORS) — API 축 선행 가능 | 등재 |
+| T5-3 | CI 게이트 §34.3 — `ci.yml`(FE/PY lint·typecheck·test · API contract · fixture schema · SSOT manifest · ontology · Docker build · Replay E2E smoke) · `security.yml`(CodeQL·dependency audit·container scan·license inventory·public endpoint policy) · `benchmark-smoke.yml`(8~10문) · 결정 ⑤ `.github/**` = 구현 scope | 구현 | §34.3 · Q-30 계보(러너 green 유지) | T5-1 부분(smoke 질문) | 등재 |
+| T5-4 | 운영 runbook·장애 대응·자동 시작 — deployment/runbook(§14.4 · Tunnel/Docker 자동 시작 · 재부팅 후 health check 스크립트) · demo 장애 대응 절차(Gate 6 8행 대응) · clean environment 실행 절차(새 클론 → 1커맨드) | 구현 | §14.4 · §32.7 | T4-3 | 등재 |
+| T5-5 | Phase 5 통합 독립 검증 — Gate 1~8 «전건» 정밀 판정(Gate 5 Live·Replay equivalence 재실증 + audit summary) · restart recovery test · clean env 실행 검증(타 경로 새 클론) · Release checklist §35.1~35.5 사전 점검 | 검증 | §32 · §35 · **Exit = §21 Phase 5 완료 증거 5종 전건** | T5-1~T5-4 | 등재 |
 
 ### 구현 대기열 (소조각 · 미발주 — 원장 분모 밖 · 발주 시 티켓 생성, 티켓化 안 되면 발주문 소조각)
 
