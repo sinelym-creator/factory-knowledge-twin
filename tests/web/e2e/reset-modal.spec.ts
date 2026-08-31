@@ -129,13 +129,50 @@ test.describe("세션 리셋", () => {
       await new Promise((r) => setTimeout(r, 900));
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
     });
+    /* 🔴 «지나가는 상태»를 제때 봐서 잡지 않는다 — 자취를 읽는다 (Q-45 · Q-41 과 같은 병).
+     *
+     * 앞판은 응답을 900ms 늦추고 그 창 «안에서» 잠금·문구를 관측했다. 자극은 벽시계인데
+     * 관측 시점은 부하에 끌려가므로(Q-41 실측: 전체 실행에서 드라이버가 3.4배 느려진다),
+     * 그 여유가 사라지는 날 이 행은 대상이 아니라 부하 때문에 빨강을 낸다.
+     * 응답을 «관측이 끝날 때까지» 잡아 두는 길은 막혀 있다 — 클라이언트 계약 시간초과가
+     * 2s 라 그보다 오래 잡으면 다른 사건(오류)을 재게 된다.
+     * ⇒ 문서가 만들어지기 «전»에 관찰자를 심어 버튼이 거쳐 간 상태를 적는다.
+     */
+    await page.addInitScript(() => {
+      const w = window as unknown as { __resetTrail: [boolean, string][] };
+      w.__resetTrail = [];
+      const push = () => {
+        const btn = document.querySelector('[role="dialog"] button:last-of-type') as
+          | HTMLButtonElement
+          | null;
+        if (!btn) return;
+        const now: [boolean, string] = [btn.disabled, (btn.textContent ?? "").trim()];
+        const last = w.__resetTrail[w.__resetTrail.length - 1];
+        if (!last || last[0] !== now[0] || last[1] !== now[1]) w.__resetTrail.push(now);
+      };
+      new MutationObserver(push).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        characterData: true,
+      });
+      document.addEventListener("DOMContentLoaded", push);
+    });
+
     await enter(page);
     await page.getByTestId("reset-button").click();
     const go = page.getByRole("button", { name: /되돌리기|되돌리는 중/ });
     await go.click();
-    await expect(go).toBeDisabled();
-    await expect(go).toHaveText(/되돌리는 중/);
     await expect(page.getByRole("status").filter({ hasText: "되돌렸습니다" })).toBeVisible();
     expect(n, "리셋 요청이 두 번 나갔다").toBe(1);
+
+    // 🔴 끝 상태만 보면 「잠긴 적이 없어도」 초록이다. 자취가 그 둘을 가른다.
+    const trail = await page.evaluate(
+      () => (window as unknown as { __resetTrail: [boolean, string][] }).__resetTrail,
+    );
+    expect(
+      trail.some(([disabled, text]) => disabled && /되돌리는 중/.test(text)),
+      `버튼이 «잠긴 채 되돌리는 중»인 적이 없다 — 자취: ${JSON.stringify(trail)}`,
+    ).toBe(true);
   });
 });
