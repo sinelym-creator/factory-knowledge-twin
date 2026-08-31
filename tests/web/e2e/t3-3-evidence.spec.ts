@@ -207,13 +207,26 @@ test("🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울�
   const pre = { ev: await badgeState(page, EV), doc: await badgeState(page, DV), ctl: await badgeState(page, CTL) };
   expect(pre, "주입 전 배지가 전부 fresh 가 아니다").toEqual({ ev: "fresh", doc: "fresh", ctl: "fresh" });
 
+  // 🔴 «세는 눈» 선증명 — 귀속 탐침이 이 DB 를 실제로 따라가는지 주입 «전»에 먼저 읽는다.
+  //    false → true 로 갈리지 않으면 탐침이 늘 같은 답을 하는 것이고, 그 초록은 아무것도 못 가른다.
+  const preServed = (await (await page.request.get(`/api/evidence/${enc(TARGET_CHUNK)}`)).json())?.stale;
+  expect(preServed, "귀속 탐침이 주입 전에 이미 stale 이다 — 갈림을 잴 수 없다").toBe(false);
+
   let during: string | null = null;
   let post: Record<string, string | null> = {};
+  let servedStale: unknown = null;
   try {
     psql(
       `UPDATE index_build SET source_sha256='${DUMMY_SHA}' WHERE revision_id='${TARGET_REV}' AND build_id='${build}'`,
     );
     during = freshness();
+    // 🔴 **판정 앞의 귀속**(Q-58 계보 · `tests/api/_colocation.py` 와 같은 규율). 이 스펙은 DB 를
+    //    `FKT_PG_CONTAINER` 로 «이름으로» 고르는데, 화면이 그 DB 를 읽는지는 아무도 묻지 않았다.
+    //    실제로 한 번 물렸다 — 셸은 8004(다른 스택)로 구워져 있었고 주입은 levi2 DB 에 갔다.
+    //    뷰는 STALE 로 전이했으니 「주입이 먹었다」는 참이었고, 화면은 «자기 DB 기준으로» 옳게
+    //    fresh 였다. 그런데 그 초록·빨강이 「화면이 낡음에 침묵한다」로 읽혔다.
+    //    셸은 `/api` 를 자기 API 로 프록시한다 — 그 응답이 곧 「화면이 무엇을 보는가」다.
+    servedStale = (await (await page.request.get(`/api/evidence/${enc(TARGET_CHUNK)}`)).json())?.stale;
     post = { ev: await badgeState(page, EV), doc: await badgeState(page, DV), ctl: await badgeState(page, CTL) };
   } finally {
     psql(
@@ -222,6 +235,11 @@ test("🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울�
   }
 
   expect(during, "뷰가 STALE 로 전이하지 않았다 — 주입이 먹지 않았다(계측기 실패)").toBe("STALE");
+  expect(
+    servedStale,
+    "🔴 귀속 미증명 — 이 셸의 API 가 주입한 DB(FKT_PG_CONTAINER)를 읽지 않는다. " +
+      "화면이 침묵한 것이 아니라 «다른 스택을 흔든 것»이다 — 이 실행의 어떤 색도 대상의 것이 아니다(측정 불가).",
+  ).toBe(true);
   expect(post.ev, "🔴 evidence 화면이 낡음에 침묵한다 — Q-20 울음 판정선 FAIL").toBe("stale");
   expect(post.doc, "🔴 documents 화면이 낡음에 침묵한다 — Q-20 울음 판정선 FAIL").toBe("stale");
   expect(post.ctl, "대조군까지 stale 이 됐다 — 배지가 늘 켜지는 것일 수 있다").toBe("fresh");
