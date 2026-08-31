@@ -148,11 +148,9 @@ export function OverviewBody({
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      {/* 🔴 화면 제목은 «있되 자리를 먹지 않는다». 와이어프레임 §1 은 상단을 헤드라인
-          문장에 주었지만, 제목 없는 문서는 스크린리더가 「여기가 어디인지」를 못 읽는다.
-          앞판 placeholder 에는 h1 이 있었고 실데이터로 갈아 끼우며 내가 떨어뜨렸다 —
-          셸 그물이 그 자리에서 물었다(키보드·스크린리더 축은 눈으로 안 보인다). */}
-      <h1 className="sr-only">① Factory Overview</h1>
+      {/* 🔴 화면 제목(h1)은 이제 «세그먼트 레이아웃»에 있다(`app/overview/layout.tsx`).
+          여전히 있되, Suspense 경계 «밖»이라 스트리밍 교체 창에 두 벌이 되지 않는다.
+          제목을 여기에 «도로» 두지 마라 — 그 순간 두 곳이 같은 제목을 그린다. */}
       {/* ── 상태 헤드라인 (B요소 ①) ─────────────────────────────────────── */}
       <section
         className="flex items-center gap-3 rounded border border-edge bg-panel px-4 py-3"

@@ -341,7 +341,18 @@ export type Reply<T> =
    *    🔴 `why` 는 건드리지 않는다: 기존 화면들이 그 문장을 이미 쓰고 있어, 여기서 값을
    *       바꾸면 이 티켓과 무관한 화면의 문구가 조용히 달라진다(요청 밖 변경).
    */
-  | { state: "unavailable"; why: string; status?: number; detail?: ErrorDetail };
+  /**
+   * 🔴 `retryAfterSec` = 서버가 「언제 다시 오라」고 «말한» 값(계약 v0.1.9 · 429·503 필수 헤더).
+   *    화면이 자기 상수로 「잠시 후」를 그리면 그 숫자는 서버가 하지 않은 말이 되고, 상한이
+   *    바뀌는 날에도 화면만 옛 숫자를 계속 말한다. 없으면 `undefined` — 지어내지 않는다.
+   */
+  | {
+      state: "unavailable";
+      why: string;
+      status?: number;
+      detail?: ErrorDetail;
+      retryAfterSec?: number;
+    };
 
 const TIMEOUT_MS = 2000;
 /**
@@ -382,6 +393,19 @@ export function apiBase(): string {
  * 본문이 없거나 형식이 다르면 `undefined` 다. 여기서 `{code:"unknown"}` 같은 그럴듯한 값을
  * 만들면 화면은 「서버가 사유를 말했다」고 그리는데 실제로는 아무 말도 없었던 것이 된다.
  */
+/**
+ * `Retry-After` 헤더 → 초. 🔴 «정수 초» 형식만 읽는다(계약이 그렇게 성문했다).
+ *
+ * HTTP 표준은 날짜 형식도 허용하지만, 여기서 그것까지 해석하면 화면이 계약에 없는 형식을
+ * 받아들이게 되고 — 서버가 그 형식을 내기 시작해도 아무도 모른다. 못 읽으면 `undefined` 다.
+ */
+function retryAfter(res: Response): number | undefined {
+  const raw = res.headers.get("retry-after");
+  if (!raw) return undefined;
+  const n = Number(raw.trim());
+  return Number.isInteger(n) && n >= 0 ? n : undefined;
+}
+
 async function errorDetail(res: Response): Promise<ErrorDetail | undefined> {
   try {
     const body: unknown = await res.json();
@@ -409,7 +433,13 @@ async function call<T>(
     //    화면에서 사라진다.
     if (res.status === 501) return { state: "unavailable", why: "미구현(501)", status: 501 };
     if (!res.ok) {
-      return { state: "unavailable", why: `HTTP ${res.status}`, status: res.status, detail: await errorDetail(res) };
+      return {
+        state: "unavailable",
+        why: `HTTP ${res.status}`,
+        status: res.status,
+        detail: await errorDetail(res),
+        retryAfterSec: retryAfter(res),
+      };
     }
     const setCookie = res.headers.get("set-cookie") ?? undefined;
     return { state: "ok", data: (await res.json()) as T, setCookie };
