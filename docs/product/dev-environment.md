@@ -53,13 +53,13 @@ size_limit: 12KB
 | **3100** | free | ✅ Next.js dev |
 | 8000 | free | ✅ FastAPI |
 
-전부 `.env`(또는 셸 env)로 덮어쓸 수 있다 — `docker-compose.yml`은 `${VAR:-기본값}` 형태로 `COMPOSE_PROJECT_NAME` · `POSTGRES_PORT` · `NEO4J_HTTP_PORT` · `NEO4J_BOLT_PORT` · `VOLUME_ROOT` · DB 계정 3종을 전부 파라미터로 받는다(D-1 구조 격리 · §4.2).
+전부 `.env`(또는 셸 env)로 덮어쓸 수 있다 — `docker-compose.yml`은 `${VAR:-기본값}` 형태로 `COMPOSE_PROJECT_NAME` · `POSTGRES_PORT` · `NEO4J_HTTP_PORT` · `NEO4J_BOLT_PORT` · `VOLUME_ROOT`(neo4j·models 자리 · 🔴 postgres 는 named volume 이라 해당 없음 — PR#222 D-2) · DB 계정 3종을 전부 파라미터로 받는다(D-1 구조 격리 · §4.2).
 
 ## 3. 구성 파일
 
 | 파일 | 내용 |
 |---|---|
-| `docker-compose.yml` | postgres(+pgvector)·neo4j 2서비스 · healthcheck · 볼륨 = `${VOLUME_ROOT:-./.volumes}/**`(gitignore) · 🔴 `container_name` 고정 없음(D-1) — 이름은 `name: ${COMPOSE_PROJECT_NAME:-fkt}`에서 파생 |
+| `docker-compose.yml` | postgres(+pgvector)·neo4j 2서비스 · healthcheck · 볼륨 = postgres `pgdata`(named · 프로젝트명 파생 · `start_period 40s` — 08-31 D-2) + neo4j·models `${VOLUME_ROOT:-./.volumes}/**`(gitignore) · 🔴 `container_name` 고정 없음(D-1) — 이름은 `name: ${COMPOSE_PROJECT_NAME:-fkt}`에서 파생 |
 | `infra/postgres/init/01-extensions.sql` | 최초 기동 시 `CREATE EXTENSION IF NOT EXISTS vector` 1회 |
 | `.env.example` | 🔴 **키 목록만 · 값 0** (baseline §34.6) — 키마다 1줄 설명 |
 | `.gitignore` | `.volumes/` · `.env` · `.venv/` · `__pycache__/` 추가 |
@@ -111,11 +111,11 @@ $env:COMPOSE_PROJECT_NAME = 'fkt-levi2'      # 컨테이너 이름 접두 → fk
 $env:POSTGRES_PORT        = '5534'
 $env:NEO4J_HTTP_PORT      = '7574'
 $env:NEO4J_BOLT_PORT      = '7587'
-$env:VOLUME_ROOT          = './.volumes-levi2'   # 🔴 같은 워크트리에서 띄울 때 «반드시» 분리
+$env:VOLUME_ROOT          = './.volumes-levi2'   # 🔴 neo4j·models 자리만 분리한다 — postgres 는 프로젝트명으로 자동 분리(named volume)
 docker compose up -d
 ```
 
-🔴 **`VOLUME_ROOT`를 빠뜨리면 두 스택이 같은 bind mount를 물어 데이터가 손상된다.** 서로 다른 워크트리에서 띄우면 경로가 이미 달라 자동으로 분리된다.
+🔴 **`VOLUME_ROOT`를 빠뜨리면 두 스택이 같은 bind mount를 물어 neo4j 데이터가 손상된다**(postgres 는 named volume 이라 해당 없음). 서로 다른 워크트리에서 띄우면 경로가 이미 달라 자동으로 분리된다. 🔴 초기화는 `docker compose down -v` 1커맨드다 — 폴더 삭제로는 postgres 가 초기화되지 않는다(08-31 PR#222 이후 · 기존 프로젝트명으로 새 compose 를 올리면 pg 가 빈 DB 로 새로 뜨므로 seed 재실행).
 
 🔴 **컨테이너를 이름으로 지목하지 않는다** — 이름은 프로젝트명에 따라 바뀐다. 항상 **서비스명**으로 부른다:
 `docker compose exec postgres ...` / `docker compose exec neo4j ...` (`migrate.ps1`도 이 방식이다).
