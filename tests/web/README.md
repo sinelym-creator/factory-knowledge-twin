@@ -11,6 +11,9 @@ T1-9 독립 검증에서 세운 4종. 판정 근거는 `evidence/t1-9-shell-e2e-
 | `route_matrix.sh` | 6라우트 × 쿠키 유무 상태코드 + 가드 matcher 탐침 | 필요 |
 | `q39c_entry_drill.mjs` | 입장 층이 «클라이언트 실행»이 된 뒤에도 v0.1.6 이 서는가 — 🔴 자극 강제 + 세션을 **네 곳에서** 따로(쿠키·Set-Cookie·**ai-api 발급**·`/api/*` 200) | 필요(+ `FKT_API_LOG`) |
 | `e2e/phase2-evidence.spec.ts` | 🔴 **골격** — §21 증거 4종의 «브라우저에서만 보이는» 축(T3-6 선행 · 전건 skip · 축 계획 = `evidence/t3-6-e2e-axis-plan.md`) | 착지 후 |
+| `t41_csp_walk.mjs` | 🔴 **CSP 무해성 전 동선**(T4-1 ④) — 3층 수집(DOM 위반·콘솔 `Refused`·requestfailed) + 자극 계수기 · 일부러 어긴 2절을 못 잡으면 `exit 2` | 필요 |
+| `t41_live_status_timeout.mjs` | 🔴 **상한과 «화면이 말한 시각»을 따로**(T4-1 ⑤ · D-3) — 답하지 않는 API 를 세우고 셸을 그쪽으로 «빌드»해야 성립한다 | 필요(블랙홀 빌드) |
+| `t41_cors_browser_drill.mjs` + `_origin_page_server.mjs` | 🔴 **브라우저가 CORS 를 집행하는가**(T4-1 ③) — 셸에서 재면 CSP 가 먼저 막아 못 가른다 · CSP 없는 맨 origin 2벌 | 필요(allowlist 주입) |
 
 ## 세 가지 규율
 
@@ -47,3 +50,30 @@ node ../../tests/web/contract_surface_drill.mjs # 리포 루트에서 실행
 ```
 
 포트는 `FKT_WEB_BASE` · `FKT_API_BASE` 로 바꾼다.
+
+## T4-1 세 그물의 «준비»가 다르다
+
+세 드릴은 평범한 스펙과 달리 **측정 조건을 손으로 세워야** 성립한다. 조건 없이 돌리면
+초록도 빨강도 대상의 것이 아니다:
+
+```
+# ④ CSP 무해성 — 씨앗 DB 를 보는 ai-api 와 그것으로 «빌드»된 셸이 필요하다
+FKT_WEB_BASE=http://127.0.0.1:3151 node t41_csp_walk.mjs
+
+# ⑤ /live/status 상한 — 「받기만 하고 답하지 않는」 서버가 있어야 상한이 드러난다
+#    (연결 거부는 즉시 실패라 상한을 재지 못한다)
+node _blackhole_server.mjs 8064
+cd apps/web-console && FKT_API_BASE=http://127.0.0.1:8064 pnpm build && pnpm start -p 3155
+FKT_WEB_BASE=http://127.0.0.1:3155 node t41_live_status_timeout.mjs
+
+# ③ 브라우저 CORS — origin 두 벌 + ai-api 에 allowlist 주입
+node _origin_page_server.mjs 8066 &   ;   node _origin_page_server.mjs 8068 &
+FKT_CORS_ORIGINS=http://127.0.0.1:8066 docker compose up -d ai-api
+node t41_cors_browser_drill.mjs
+```
+
+🔴 **이 머신에서 회귀를 돌릴 때(13대 실측)**: `PYTHONIOENCODING=utf-8`(cp949 stdout 이
+드릴의 성공 인쇄에서 죽인다) · `FKT_PYTHON=<정본 리포>/services/ai-api/.venv/Scripts/python.exe`
+(`replay_fixture_drill` 이 자기 uvicorn 을 띄운다) · playwright 는 `FKT_WEB_BASE`·`FKT_API_BASE`
+를 **둘 다** 실을 것 · 브라우저 suite 는 **`--workers=1`**(병렬에서는 실행마다 다른 1~2건이
+부하 timeout 으로 죽었고 단건은 3/3 초록이었다 — 대상의 빨강이 아니다).
