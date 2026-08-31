@@ -1,19 +1,41 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { apiBase, createSession } from "@/lib/contract";
-import { SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
+import { SESSION_COOKIE, parseSession } from "@/lib/session";
 
 /**
  * 🔴 파일 이름이 `proxy.ts`인 이유: Next 16이 `middleware` 파일 규약을 deprecate 했다
  *    (빌드가 경고로 알려 준다). 새로 세우는 파일을 이미 낡은 규약으로 두지 않는다.
  *
- * 세션 가드 + `/` 입장 처리 — wireframes §6.
+ * 세션 «가드» — wireframes §6.
  *
  *   「모든 라우트는 세션 쿠키 없이 진입 시 `/`로 보내 세션을 먼저 만든다(격리 보장).」
- *   「`/` = 세션 생성 후 `/overview` 리다이렉트」
  *
  * 🔴 규칙을 «한 곳»에 둔다. 페이지마다 가드를 넣으면 새 라우트가 생길 때 빠뜨리고,
  *    빠뜨린 라우트는 세션 없이 열리는 «구멍»이 된다 — 화면 목록이 늘어날수록 확실해진다.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * 🔴 **이 파일은 세션을 «만들지 않는다»**(Q-39 ⓒ · 이 티켓이 옮긴 층).
+ *
+ * 있었던 일: 입장 발급이 여기, 즉 «무세션 `/` 로의 서버 홉»에 있었다. 그런데 그 홉은
+ * 방문자만 밟는 자리가 아니다 — 셸 `<Link>` 의 프리페치가 `/overview` 를 긁으면 가드가
+ * 307 로 `/` 를 돌려주고, 프리페치가 그 307 을 따라가면서 **아무도 «입장»하지 않았는데
+ * 세션이 발급됐다.** 딥링크(`/evidence/{id}`)로 「열람만」 들어온 방문자에게 세션이
+ * 생기고, 그 `fkt_sid` 는 ai-api 에서 «진짜로 선다» = 계약 v0.1.6 「열람만」 위반.
+ *
+ * 🔴 **실측(BEFORE · 이 lane 기점 9949a68 · Next 16.3.3 `next start` · 브라우저 축)**:
+ *    딥링크 진입 → 셸 링크 7개 hover → 프리페치 «표지» 요청 **11건** → +3초에
+ *    쿠키 `fkt_sid`·`fkt_session` **2개** · 응답 `Set-Cookie` **4건**(전부 `307 /`) ·
+ *    ai-api 자기 로그의 세션 발급 **4건**. 두 딥링크 라우트에서 같은 값.
+ *
+ * 🔴 **표지로는 못 가른다**(14대 삼중 실측): 이 층에 도달하는 헤더는 7개뿐이고, 프리페치와
+ *    사람의 진짜 방문을 «여기서» 가르는 재료가 없다. 그래서 표지를 갈아 끼우는 대신 층을
+ *    옮겼다 — 입장은 서버 홉이 «지나가다» 하는 일이 아니라, `/` 페이지의 클라이언트
+ *    마운트가 `POST /enter` 로 **명시 호출**하는 일이다(app/enter/route.ts).
+ *    프리페치는 문서를 가져올 뿐 JS 를 실행하지 않으므로, 그 경로에는 부작용이 남지 않는다.
+ *
+ * 🔴 그러니 여기에 `createSession`·`cookies.set` 을 다시 들이지 마라. 들이는 순간
+ *    「지나가기만 해도 입장」이 되살아나고, 그것은 화면에서 조용하다.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 /**
  * 🔴 **읽기 전용 딥링크 예외 — 계약 v0.1.6 의 «화면» 절반**(T3-3).
@@ -38,9 +60,25 @@ import { SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
  */
 const READ_ONLY_DEEP_LINK = /^\/(evidence|documents)\/[^/]+$/;
 
+/**
+ * 🔴 **입장 «표면» = `/` 와 이 핸들러 둘뿐**(Q-39 ⓒ · 오케 승인 조건 ⓐ).
+ *
+ * Next 는 같은 경로에 `page.tsx` 와 `route.ts` 를 함께 둘 수 없다. 그래서 입장 핸들러는
+ * `/` 가 아닌 별도 URL 이 되고, 무세션으로 여기까지 닿아야 입장이 «실행»된다.
+ *
+ * 🔴 `READ_ONLY_DEEP_LINK`(계약이 연 2라우트)는 **넓히지 않았다** — 이것은 계약 표면이
+ *    아니라 셸 내부의 입장 자리다(`/api` 아님 · contract-surface 무영향).
+ * 🔴 위 예외와 «같은 형태»로 잠근다: 긍정형·앵커·문자집합. 부정 전방탐색이 `/incidents/x.svg`
+ *    를 열었던 자리가 이 파일이다(V-1) — 같은 형태를 반복하지 않는다.
+ * 🔴 여기를 지나도 «발급»은 자동이 아니다: 핸들러는 POST 전용이라 프리페치·GET 은 405 로
+ *    끝나고(부작용 0), 세션을 이미 쥔 요청에는 발급 0 으로 답한다(멱등).
+ */
+const ENTRY_HANDLER = /^\/enter$/;
+
 export async function proxy(req: NextRequest) {
   const session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
-  const isEntry = req.nextUrl.pathname === "/";
+  const path = req.nextUrl.pathname;
+  const isEntry = path === "/";
 
   if (session) {
     // 이미 세션이 있으면 `/`는 머무는 곳이 아니라 지나가는 곳이다.
@@ -49,61 +87,18 @@ export async function proxy(req: NextRequest) {
 
   // 🔴 세션이 없어도 딥링크 2라우트는 «그대로» 연다. 여기서 세션을 만들어 주지도 않는다 —
   //    만들어 주면 「열람만」이 아니라 조용한 입장이 되고, 화면은 세션 화면과 구별되지 않는다.
-  if (READ_ONLY_DEEP_LINK.test(req.nextUrl.pathname)) {
+  if (READ_ONLY_DEEP_LINK.test(path)) {
     return NextResponse.next();
   }
 
-  if (!isEntry) {
-    return NextResponse.redirect(new URL("/", req.url));
+  // 🔴 **입장 자리는 그냥 지나보낸다 — 여기서 만들지 않는다.** `/` 는 입장을 «실행하는 화면»
+  //    이고 `/enter` 는 그 화면이 부르는 핸들러다. 이 줄이 예전에는 `createSession` 이었고,
+  //    그래서 프리페치가 대신 입장해 버렸다(위 실측 · Q-39).
+  if (isEntry || ENTRY_HANDLER.test(path)) {
+    return NextResponse.next();
   }
 
-  // 입장 1회: 계약대로 세션을 «발급받아» 본다. 닿지 않으면 pending으로 들어간다.
-  const reply = await createSession(apiBase());
-  const created =
-    reply.state === "ok"
-      ? { id: reply.data.sessionId, origin: "api" as const }
-      : { id: crypto.randomUUID().replace(/-/g, ""), origin: "pending" as const };
-
-  // 🔴 **ai-api가 심은 세션 쿠키를 브라우저까지 그대로 넘긴다**(T3-1 · 계약 v0.1.6).
-  //    입장 요청은 «서버사이드»에서 나가므로, 전달하지 않으면 그 HttpOnly 쿠키는 이 서버의
-  //    fetch에서 끝나고 브라우저는 못 받는다 — 그러면 브라우저가 rewrite로 부르는 `/api/*`가
-  //    전부 401이 된다(가드는 유효 세션을 요구한다). 아래 `fkt_session`은 칩·리셋이 읽는
-  //    «표시용»이고, 실제 격리 키는 이 전달된 쿠키다.
-  //
-  //    🔴 이름을 여기 적지 않는다. 헤더 원문을 그대로 넘겨서 쿠키 «정체성»의 정본이 API
-  //       한 곳에 남게 한다(오케 승인 08-30).
-  //    🔴 `Secure`는 «셸이» https로 서비스될 때 덧붙인다. API는 자기 요청 스킴을 보고 정하는데
-  //       그 요청은 서버간 http라서 Secure가 빠진다 — 브라우저 쪽 조건은 브라우저 쪽에서 안다.
-  const apiCookie =
-    reply.state === "ok" && reply.setCookie
-      ? req.nextUrl.protocol === "https:" && !/;\s*secure/i.test(reply.setCookie)
-        ? `${reply.setCookie}; Secure`
-        : reply.setCookie
-      : null;
-
-  // 🔴 **응답을 «만들 때» 심는다 — 만든 뒤에 append 하지 않는다**(V-1 픽스 · 실측 근거).
-  //    앞판은 `headers.append("set-cookie", …)` 뒤에 `res.cookies.set(…)` 이 왔고, 그
-  //    `cookies.set` 이 자기 쿠키 캐시로 헤더를 **재직렬화하면서 앞의 append 를 지웠다.**
-  //    실측(Node 22 · next 16.3.3): append 직후 set-cookie 1개 → cookies.set 이후 1개인데
-  //    그 1개가 `fkt_session` 뿐이다. 브라우저는 `fkt_sid` 를 못 받고 `/api/*` 가 전건 401.
-  //
-  //    🔴 순서를 뒤집는 것(`cookies.set` 먼저 → append 나중)으로도 «지금은» 고쳐진다.
-  //       그러나 그 형태는 **다음 사람이 `cookies.set` 한 줄을 더 붙이는 날 조용히 되살아난다**
-  //       — 실측으로 확인했다(뒤집기 + set 한 번 더 = fkt_sid 소멸 · 아래 방식 = 생존).
-  //       그래서 초기화 헤더로 넘긴다: ResponseCookies 가 이 값을 자기 목록으로 «읽어 들여»
-  //       이후의 `cookies.set` 이 몇 번 오든 함께 직렬화된다. 고치는 김에 재발 자리를 없앤다.
-  const res = NextResponse.redirect(
-    new URL("/overview", req.url),
-    apiCookie ? { headers: { "set-cookie": apiCookie } } : undefined,
-  );
-
-  res.cookies.set(SESSION_COOKIE, formatSession(created), {
-    path: "/",
-    sameSite: "lax",
-    httpOnly: false, // 세션 칩·리셋이 읽는다. 인증 토큰이 아니라 «격리 키»다(계약 = 인증 없음)
-    maxAge: 60 * 60 * 8,
-  });
-  return res;
+  return NextResponse.redirect(new URL("/", req.url));
 }
 
 export const config = {
