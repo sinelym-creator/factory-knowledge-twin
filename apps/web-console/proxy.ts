@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { isStaticRun } from "@/lib/static-replay/run-id";
 
 /**
  * 🔴 파일 이름이 `proxy.ts`인 이유: Next 16이 `middleware` 파일 규약을 deprecate 했다
@@ -75,6 +76,20 @@ const READ_ONLY_DEEP_LINK = /^\/(evidence|documents)\/[^/]+$/;
  */
 const ENTRY_HANDLER = /^\/enter$/;
 
+/**
+ * 정적 replay 진입 (T4-2a · 오케 판정 R-1·가드레일 ②).
+ *
+ * 🔴 **세션을 만들어 주지 않는다.** 딥링크 2라우트와 같은 자리다 — 지나보내기만 한다.
+ *    서버 세션 쿠키(`fkt_session`·`fkt_sid`)를 정적 방문자 몫으로 «위조하지 않는다»:
+ *    그 이름은 서버가 발급하고 서버가 읽는 이름이라, 정적 경로가 그것을 쓰면 서버 눈에
+ *    「있는 세션」인 척하게 된다. 방문자 상태는 browser storage 가 따로 든다.
+ * 🔴 **통과 표지 = `?run=` 의 «값»이다.** 정규식이 아니라 **상수 일치**로 본다 — 형식으로
+ *    열면 그 형식에 맞는 임의 값이 다 들어오는데, 여는 것은 그 하나뿐이어야 한다.
+ * 🔴 Live 복귀 때는 이 자리가 아무 역할도 하지 않는다 — 정식 입장(`POST /enter`)이 세션을
+ *    만들고, 그때부터 위 `session` 분기가 답한다(T3-1 E-1 회귀 0).
+ */
+const STATIC_REPLAY_SCREEN = /^\/incidents\/[^/]+$/;
+
 export async function proxy(req: NextRequest) {
   const session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
   const path = req.nextUrl.pathname;
@@ -88,6 +103,11 @@ export async function proxy(req: NextRequest) {
   // 🔴 세션이 없어도 딥링크 2라우트는 «그대로» 연다. 여기서 세션을 만들어 주지도 않는다 —
   //    만들어 주면 「열람만」이 아니라 조용한 입장이 되고, 화면은 세션 화면과 구별되지 않는다.
   if (READ_ONLY_DEEP_LINK.test(path)) {
+    return NextResponse.next();
+  }
+
+  // 정적 replay 화면 — 세션 없이 열되 세션을 만들지 않는다(위 성문 참조).
+  if (STATIC_REPLAY_SCREEN.test(path) && isStaticRun(req.nextUrl.searchParams.get("run"))) {
     return NextResponse.next();
   }
 

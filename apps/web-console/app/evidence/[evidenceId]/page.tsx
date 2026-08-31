@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { CitedBody } from "@/components/evidence/cited-body";
 import { DeepLinkNotice } from "@/components/evidence/deep-link-notice";
 import { TrustHeader } from "@/components/evidence/trust-header";
+import { MarkVisited } from "@/components/static-visitor";
 import { Unavailable } from "@/components/unavailable";
 import {
   CONTRACT,
@@ -15,6 +16,7 @@ import {
   documentIdOf,
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
  * ③ Evidence 뷰 (wireframes §3) — 근거를 원문·좌표·신뢰 배지로 되돌린다 (T3-3).
@@ -42,7 +44,15 @@ export default async function EvidencePage({
   // 🔴 세션 유무는 «실제 쿠키»에서 읽는다 — 라우트 성질에서 추정하지 않는다.
   const hasSession = parseSession((await cookies()).get(SESSION_COOKIE)?.value) !== null;
 
-  const reply = await apiGetServer<Evidence>(CONTRACT.evidence(evidenceId), cookieHeader);
+  /**
+   * 🔴 정적 replay 경로(`?run=` 이 정적 고정 id) — 굳혀 둔 사본에서 찾는다(T4-2a).
+   *    Live 와 «같은 계약 경로»로 찾으므로 아래 렌더 코드는 어느 경로인지 모른 채 돈다.
+   *    자산은 여기서만 싣는다(동적 import) — 딥링크로 들어온 Live 방문자는 내려받지 않는다.
+   */
+  const bundle = isStaticRun(run) ? await loadStaticReplay() : null;
+  const reply = bundle
+    ? staticLookup<Evidence>(bundle, CONTRACT.evidence(evidenceId))
+    : await apiGetServer<Evidence>(CONTRACT.evidence(evidenceId), cookieHeader);
 
   if (reply.state !== "ok") {
     const missing = reply.status === 404;
@@ -77,10 +87,9 @@ export default async function EvidencePage({
   //    그 404 를 화면이 「문서를 못 가져왔다」로 그리면 정상 상태가 결함처럼 보인다.
   const doc =
     ev.kind === "doc-chunk" && docId
-      ? await apiGetServer<DocumentPreview>(
-          CONTRACT.document(docId, ev.evidenceId),
-          cookieHeader,
-        )
+      ? bundle
+        ? staticLookup<DocumentPreview>(bundle, CONTRACT.document(docId, ev.evidenceId))
+        : await apiGetServer<DocumentPreview>(CONTRACT.document(docId, ev.evidenceId), cookieHeader)
       : null;
 
   const activeTab = tab === "graph" ? "graph" : "doc";
@@ -112,6 +121,8 @@ export default async function EvidencePage({
       </header>
 
       <DeepLinkNotice hasSession={hasSession} runId={run} />
+      {/* 🔴 열람 이력 — 정적 경로에서만 남긴다(ⓒ). 그리는 것이 없는 부수효과 컴포넌트다. */}
+      <MarkVisited id={ev.evidenceId} run={run} />
 
       {ev.kind === "record" ? (
         <RecordView evidence={ev} />

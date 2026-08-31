@@ -31,6 +31,7 @@ export function SensorTrend({
   source,
   alarm,
   alarmIds,
+  staticSeries,
 }: {
   equipmentId: string;
   sensorId: string;
@@ -40,6 +41,16 @@ export function SensorTrend({
   alarm: ActiveAlarm | null;
   /** incident 가 말하는 알람 목록 — 「왜 못 골랐는가」를 화면이 구별해 말하기 위해 받는다. */
   alarmIds: string[];
+  /**
+   * 정적 replay 경로에서 «미리 받은» 창별 사본 (T4-2a).
+   *
+   * 🔴 **이 값이 있으면 이 컴포넌트는 네트워크를 타지 않는다** — 정적 경로의 허용 호출은
+   *    `/api/live/status` polling 1종뿐이다(AC ① 보정). 여기서 한 번이라도 fetch 가 나가면
+   *    「노트북 OFF 에서도 돈다」는 문장이 그 자리에서 거짓이 된다.
+   * 🔴 굳히지 않은 창은 «키가 없다». 빈 데이터로 채우지 않고 「Live 전용」이라 말한다 —
+   *    없는 것을 그리지 않는다.
+   */
+  staticSeries?: Partial<Record<SeriesWindow, Series>>;
 }) {
   const [window, setWindow] = useState<SeriesWindow>("24h");
   // 🔴 결과에 «어느 요청의 답인가»를 붙여 둔다. 창을 바꾸면 이전 창의 그림이 잠깐 남는데,
@@ -47,11 +58,25 @@ export function SensorTrend({
   //    키가 다르면 안 보여 준다(이전 결과를 지우려고 effect 안에서 setState 하지 않는다).
   const key = `${equipmentId}|${sensorId}|${window}`;
   const [answer, setAnswer] = useState<{ key: string; series?: Series; why?: string } | null>(null);
-  const current = answer?.key === key ? answer : null;
+  /**
+   * 🔴 정적 경로의 답은 **파생이다** — 사본은 props 로 이미 손에 있으니 상태에 «넣을» 이유가
+   *    없다. effect 로 밀어 넣으면 첫 렌더 뒤 한 번 더 렌더가 도는 계단이 생기고, 그 사이
+   *    한 프레임은 「아직 답이 없다」를 그린다(있는 답을 없다고 말하는 프레임이다).
+   * 🔴 굳히지 않은 창은 사유를 그대로 말한다 — 빈 데이터로 채우지 않는다.
+   */
+  const staticAnswer = staticSeries
+    ? staticSeries[window]
+      ? { key, series: staticSeries[window] }
+      : { key, why: "이 창은 Live 전용입니다 — 정적 재생본은 24h 창만 담습니다" }
+    : null;
+  const current = staticAnswer ?? (answer?.key === key ? answer : null);
   const series = current?.series ?? null;
   const why = current?.why ?? null;
 
   useEffect(() => {
+    // 🔴 정적 경로: «나가지 않는다». 답은 위에서 파생으로 이미 서 있다.
+    if (staticSeries) return;
+
     let alive = true;
     apiGetBrowser<Series>(CONTRACT.sensorSeries(equipmentId, sensorId, window)).then((r) => {
       if (!alive) return;
@@ -60,7 +85,7 @@ export function SensorTrend({
     return () => {
       alive = false;
     };
-  }, [key, equipmentId, sensorId, window]);
+  }, [key, equipmentId, sensorId, window, staticSeries]);
 
   return (
     <section

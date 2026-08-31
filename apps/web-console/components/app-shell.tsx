@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 import { FallbackBanner, LiveStatusProvider, ModeBadge } from "@/components/live-status";
 import { ResetButton } from "@/components/reset-button";
+import { StaticVisitorChip } from "@/components/static-visitor";
 import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
 
 /**
@@ -77,6 +78,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="sr-only">안내 다시 보기</span>
               </Link>
               <ModeBadge />
+              {/* 🔴 정적 재생본 방문자 — 서버 세션 칩과 «같은 자리, 다른 사실»이다.
+                  서버 세션이 없을 때만 서므로 두 칩이 동시에 뜨지 않는다(T4-2a ⓒ). */}
+              <StaticVisitorChip />
               {session && (
                 <span
                   className="id rounded border border-edge px-2 py-1 text-xs text-muted"
