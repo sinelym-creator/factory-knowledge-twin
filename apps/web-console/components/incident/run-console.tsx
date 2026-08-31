@@ -141,7 +141,15 @@ export function RunConsole({
             </span>
           )}
           <span className="text-muted" data-testid="run-status">
-            {state.status === "running" ? "조사중" : state.status === "completed" ? "완료" : state.status === "stopped" ? "중지됨" : "대기"}
+            {state.status === "running"
+              ? "조사중"
+              : state.status === "completed"
+                ? "완료"
+                : state.status === "stopped"
+                  ? "중지됨"
+                  : state.status === "failed"
+                    ? "중단됨"
+                    : "대기"}
           </span>
 
           <button
@@ -178,7 +186,17 @@ export function RunConsole({
         {/* ⏱ TTAE 표시행 — 🔴 §2.2 측정-주장 경계 */}
         <p className="mt-2 text-xs text-muted" data-testid="ttae-row" data-elapsed-ms={total} data-confirmed={confirmed}>
           ⏱ 조사 경과 <span className="text-ink">{formatElapsed(total)}</span>{" "}
-          <span className="id">({total.toLocaleString()}ms · {confirmed ? "totalElapsedMs 확정" : "elapsedMs 누적"})</span>
+          {/* 🔴 값의 «성격»을 함께 적는다: 확정(totalElapsedMs) · 진행 중 누적 · 중단 시점까지의 누적.
+              셋은 다른 사실이고, 라벨이 없으면 중단된 조사의 값이 완주 값처럼 읽힌다(D-1). */}
+          <span className="id">
+            ({total.toLocaleString()}ms ·{" "}
+            {confirmed
+              ? "totalElapsedMs 확정"
+              : state.status === "failed" || state.status === "stopped"
+                ? "중단 시점까지 elapsedMs 누적"
+                : "elapsedMs 누적"}
+            )
+          </span>
           {/* 🔴 replay 의 값은 «재생 시간»이 아니라 재생본이 담은 «원 실행의 관측치»다.
               값은 그대로 쓰되(실측이다) 그 성격을 배지 문구로 밝힌다 — 렌더 분기가 아니다. */}
           {state.mode === "replay" && (
@@ -192,6 +210,22 @@ export function RunConsole({
           </span>
           {/* 🔴 단축률(%)은 실측 전에 쓰지 않는다(§2.2). 이 자리에 계산식을 넣지 마라. */}
         </p>
+
+        {/* 🔴 **서버가 «말한» 실패 사유를 그대로 옮긴다**(D-1). 앞판은 이 갈래가 없어 화면이
+            끝난 조사를 「조사중」으로 그렸고, 방문자는 오지 않을 결과를 기다렸다.
+            사유를 요약·번역하지 않는다 — code 는 운영이 검색할 문자열이고, message 는
+            서버가 사람에게 하는 말이다. 둘 다 그대로 둔다. */}
+        {state.failure && (
+          <p className="mt-2 rounded border border-warn/40 px-2 py-1.5 text-xs text-warn" role="status" data-testid="run-failed" data-code={state.failure.code}>
+            🔴 조사가 중단됐습니다 — {state.failure.message} (<span className="id">{state.failure.code}</span>)
+            {state.failure.fallback === "replay" && " · 서버가 replay 로의 전환을 제안했습니다."}
+          </p>
+        )}
+        {state.stopNote && (
+          <p className="mt-2 text-xs text-muted" role="status" data-testid="run-stopped-note">
+            중지됨 — {state.stopNote}
+          </p>
+        )}
 
         {note && (
           <p className="mt-2 text-xs text-warn" role="status" data-testid="run-note">
