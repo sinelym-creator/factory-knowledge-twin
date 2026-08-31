@@ -50,7 +50,14 @@ export type RunEvent = Envelope &
         type: "run.completed";
         payload: { candidates: RunCandidate[]; totalElapsedMs?: number; workOrderDraftId?: string };
       }
-    | { type: "run.stopped"; payload: Record<string, never> }
+    | { type: "run.stopped"; payload: { note?: string } }
+    /**
+     * 🔴 **종단 이벤트다**(계약 agent-events · `{ code, message, fallback? }`).
+     *    앞판은 이 갈래가 없어서 `reduceEvents` 가 상태를 `running` 인 채로 두었고, 화면은
+     *    «끝난 조사»를 「조사중」이라 말했다(D-1). 서버는 사유까지 말해 줬는데 화면이 그것을
+     *    버린 것이라, 방문자는 영영 오지 않을 결과를 기다린다 — §0.2 의 반대 방향이다.
+     */
+    | { type: "run.failed"; payload: { code: string; message: string; fallback?: "replay" } }
   );
 
 /** 「지금 무슨 일이 있었나」를 화면 낱말로. 🔴 서버가 준 stepId 를 «번역»하지 않는다 — 라벨만 붙인다. */
@@ -64,15 +71,21 @@ export const STEP_LABEL: Record<string, string> = {
 
 export type StepView = {
   step: string;
-  state: "pending" | "running" | "done";
+  /**
+   * 🔴 `halted` = 「돌고 있었는데 run 이 끝났다」. `done` 으로 접지 않는다 — 완료하지 않은
+   *    단계를 완료로 그리면 화면이 서버가 하지 않은 말을 한다. 완료·실패·중단은 다른 사실이다.
+   */
+  state: "pending" | "running" | "done" | "halted";
   elapsedMs?: number;
   summary?: string;
   /** 이 단계가 만든 근거 수 — 스트립이 「어디서 왔는지」를 말할 수 있게. */
   evidenceCount: number;
 };
 
+export type RunFailure = { code: string; message: string; fallback?: "replay" };
+
 export type RunState = {
-  status: "pending" | "running" | "completed" | "stopped";
+  status: "pending" | "running" | "completed" | "stopped" | "failed";
   mode: string | null;
   scenarioId: string | null;
   question: string | null;
@@ -84,6 +97,10 @@ export type RunState = {
   /** 완료 시 서버가 확정한 값. 없으면 null — 여기에 누적 합을 대신 넣지 않는다(다른 사실이다). */
   totalElapsedMs: number | null;
   workOrderDraftId: string | null;
+  /** 🔴 서버가 «말한» 실패 사유. 없으면 null — 화면이 사유를 지어내지 않는다. */
+  failure: RunFailure | null;
+  /** `run.stopped` 의 note(있을 때만) — 중지는 실패가 아니라 다른 사건이다. */
+  stopNote: string | null;
   /** 마지막으로 반영한 seq — 「어디까지 본 상태인가」를 화면이 말할 수 있게. */
   lastSeq: number | null;
 };
@@ -99,6 +116,8 @@ const EMPTY: RunState = {
   elapsedMs: 0,
   totalElapsedMs: null,
   workOrderDraftId: null,
+  failure: null,
+  stopNote: null,
   lastSeq: null,
 };
 
@@ -159,12 +178,31 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
         break;
       case "run.stopped":
         s.status = "stopped";
+        s.stopNote = e.payload.note ?? null;
+        halt(steps);
+        break;
+      case "run.failed":
+        s.status = "failed";
+        s.failure = e.payload;
+        halt(steps);
         break;
     }
   }
 
   s.steps = [...steps.values()];
   return s;
+}
+
+/**
+ * 돌고 있던 단계를 «중단»으로 접는다 — 종단 이벤트(`run.failed`·`run.stopped`) 뒤에 부른다.
+ *
+ * 🔴 이것이 없으면 타임라인이 「▶ 진행중…」을 영원히 띄운다. run 은 끝났는데 화면만 안 끝난
+ *    상태이고, 그것은 「기다리면 온다」는 거짓말이다(D-1 의 절반).
+ * 🔴 `done` 으로 접지 않는 이유: 그 단계는 «완료하지 않았다». 완료로 그리면 소요·요약이
+ *    없는 완료 단계가 생기고, 그 빈 자리가 「측정을 못 한 것」인지 「0 이었던 것」인지 갈리지 않는다.
+ */
+function halt(steps: Map<string, StepView>): void {
+  for (const v of steps.values()) if (v.state === "running") v.state = "halted";
 }
 
 /**

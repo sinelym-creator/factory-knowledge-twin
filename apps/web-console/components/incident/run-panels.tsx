@@ -35,7 +35,7 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
         <p className="text-xs text-muted">Agent 타임라인</p>
         {/* 진행 인디케이터 — 목업의 ●●●○○ 를 «실제 단계 수»로 그린다(수를 박지 않는다) */}
         <span className="ml-auto text-xs text-muted" data-testid="run-progress" aria-label={`${done}/${state.steps.length} 단계 완료`}>
-          {state.steps.map((s) => (s.state === "done" ? "●" : s.state === "running" ? "◐" : "○")).join("")}
+          {state.steps.map((s) => (s.state === "done" ? "●" : s.state === "running" ? "◐" : s.state === "halted" ? "◼" : "○")).join("")}
           <span className="ml-1">
             {done}/{state.steps.length}
           </span>
@@ -56,8 +56,18 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
           {state.steps.map((s: StepView) => (
             <li key={s.step} data-testid="run-step" data-step={s.step} data-state={s.state}>
               <p className="text-sm">
-                <span className={s.state === "done" ? "text-ok" : s.state === "running" ? "text-ai" : "text-muted"}>
-                  {s.state === "done" ? "✓" : s.state === "running" ? "▶" : "○"}
+                <span
+                  className={
+                    s.state === "done"
+                      ? "text-ok"
+                      : s.state === "running"
+                        ? "text-ai"
+                        : s.state === "halted"
+                          ? "text-warn"
+                          : "text-muted"
+                  }
+                >
+                  {s.state === "done" ? "✓" : s.state === "running" ? "▶" : s.state === "halted" ? "◼" : "○"}
                 </span>{" "}
                 {STEP_LABEL[s.step] ?? s.step}
                 {/* 🔴 라벨을 못 찾아도 «서버가 준 id» 를 보여 준다 — 화면이 조용히 단계를 감추지 않게. */}
@@ -66,6 +76,8 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
               <p className="mt-0.5 text-xs text-muted">
                 {s.state === "running" && "진행중…"}
                 {s.state === "pending" && "대기"}
+                {/* 🔴 「완료」로 접지 않는다 — 이 단계는 끝나지 않았다(D-1). */}
+                {s.state === "halted" && "중단됨 — 이 단계가 도는 중에 조사가 끝났습니다"}
                 {s.state === "done" && (
                   <>
                     {s.summary ?? "완료"} · <span className="id">{ms(s.elapsedMs)}</span>
@@ -96,7 +108,9 @@ export function CandidateList({
         <p className="mt-2 text-sm text-muted">
           {state.status === "running"
             ? "조사가 아직 후보를 내지 않았습니다 — 종합 단계에서 옵니다."
-            : "이 조사는 후보를 내지 않았습니다."}
+            : state.status === "failed"
+              ? "조사가 중단되어 후보가 나오지 않았습니다 — 위의 사유를 보십시오."
+              : "이 조사는 후보를 내지 않았습니다."}
         </p>
       ) : (
         <ul className="mt-2 space-y-3">
