@@ -1,6 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+
+import { ENTRY_DESTINATION } from "@/lib/session";
 
 /**
  * 입장 «실행» — `/` 화면의 클라이언트 마운트가 `POST /enter` 를 명시 호출한다 (Q-39 ⓒ).
@@ -20,16 +23,51 @@ import { useEffect, useRef } from "react";
  * 🔴 **한 번만 쏜다.** React StrictMode 는 개발에서 effect 를 두 번 돌리고, 사람은
  *    버튼을 두 번 누른다. 핸들러 자체도 멱등이지만(세션 보유 = 발급 0), 요청을 두 번
  *    내지 않는 것이 먼저다 — 「서버가 막아 준다」에 기대면 막는 쪽이 바뀌는 날 조용히 샌다.
+ *
+ * 🔴 **JS 가 있으면 «항해»가 아니라 «요청»으로 쏜다**(D-3 · 2026-08-31).
+ *
+ *    앞판은 `requestSubmit()` 이었다 — 네이티브 form 제출은 곧 **항해**이고, 항해가 걸린
+ *    순간부터 이 문서는 죽은 문서가 된다: 그 뒤에 일어나는 갱신은 계산은 되지만 사람에게
+ *    닿지 않는다. 그래서 ai-api 가 응답하지 않을 때 모드 배지의 첫 tick 이 상한(2s)에
+ *    제때 끝나고 `setState` 까지 돌아도, 화면은 「확인 중」인 채로 남고 «정적 재생 제안»도
+ *    뜨지 않았다 — 방문자는 백엔드가 죽었다는 사실을 «다음 문서»에서야 본다.
+ *
+ *    🔴 이것은 추론이 아니라 대조군이다(블랙홀 자극 · 같은 페이지 · 같은 tick):
+ *       항해를 «대기»시키면 30초 뒤에도 배지가 `checking` 이고, 같은 항해를 **204 로 즉시
+ *       끝내면** 같은 자리에서 3.5초에 `unavailable` + 제안이 뜬다. 다른 것은 그 하나뿐이다.
+ *
+ *    그래서 JS 경로만 «부수 요청»으로 바꾼다. 문서는 `/` 위에 살아 있고, 배지·배너·제안이
+ *    상한 안에 사람에게 닿는다. 이동은 클라이언트 항해라 셸이 «다시 마운트되지 않아»
+ *    첫 tick 이 알아낸 사실이 다음 화면까지 그대로 간다(앞판은 문서가 바뀌며 버려졌다).
+ *
+ *    🔴 Q-39 의 세 규율은 그대로다 — POST 전용(프리페치는 GET 이라 405) · «명시 호출»
+ *       (마운트가 부른다) · 1회. 그리고 **JS 가 없는 방문자에게는 아래 form 이 그대로
+ *       네이티브 제출**이라 303 경로가 살아 있다(그 경로는 항해가 목적이므로 문제가 없다).
+ *    🔴 `redirect: "manual"` 인 이유: 그냥 두면 fetch 가 303 을 따라가 `/overview` **문서를
+ *       통째로** 받아 버리고(그 SSR 이 API 를 기다리는 동안 사람은 아무것도 못 본다) 그
+ *       응답을 버린다. 우리는 쿠키만 필요하고 화면은 클라이언트 항해가 그린다.
  */
 export function EnterForm() {
   const form = useRef<HTMLFormElement>(null);
   const fired = useRef(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (fired.current) return;
     fired.current = true;
-    form.current?.requestSubmit();
-  }, []);
+
+    void (async () => {
+      try {
+        // 🔴 same-origin 이라 응답의 Set-Cookie 는 브라우저가 그대로 심는다 —
+        //    `redirect:"manual"` 이어도 그렇다(쿠키는 항해가 아니라 응답의 일이다).
+        await fetch("/enter", { method: "POST", redirect: "manual", cache: "no-store" });
+      } catch {
+        // 🔴 입장 요청이 실패해도 «화면을 세운다». 세션은 핸들러가 pending 으로 답하거나
+        //    다음 화면의 가드가 다시 물을 일이고, 여기서 멈추면 방문자는 빈 자리에 선다.
+      }
+      router.push(ENTRY_DESTINATION);
+    })();
+  }, [router]);
 
   return (
     <form
