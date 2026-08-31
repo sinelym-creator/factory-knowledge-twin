@@ -7,6 +7,10 @@
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  const { assertApiBaseMatchesBuild } = await import("./lib/boot-check");
+  const { assertApiBaseMatchesBuild, assertPublicHttpsMatchesBuild } = await import(
+    "./lib/boot-check"
+  );
   assertApiBaseMatchesBuild();
+  // 🔴 같은 원칙의 두 번째 축(D-4) — 빌드에 구워지는 값은 전부 여기서 대조한다.
+  assertPublicHttpsMatchesBuild();
 }

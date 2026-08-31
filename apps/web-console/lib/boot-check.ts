@@ -39,3 +39,33 @@ export function assertApiBaseMatchesBuild(): void {
   );
   process.exit(1);
 }
+
+/**
+ * `FKT_PUBLIC_HTTPS` 대조 (D-4 · 2026-08-31) — 🔴 `FKT_API_BASE` 와 **같은 원칙·같은 자리**다.
+ *
+ * 이 값도 «빌드 시점»에 구워진다: `next.config.ts` 의 `headers()` 가 그것을 읽어 HSTS 를
+ * 붙일지 정하고, 그 결정은 빌드 산출물에 남는다. 그래서 `start` 에만 주면 아무 일도
+ * 일어나지 않는다 — HSTS 없이 공개로 나가면서 **화면에는 아무 표시가 없다**(리바이2 13대 실측).
+ * 「켰다고 생각했는데 안 켜진 것」이 이 검사가 막는 유일한 사건이다.
+ *
+ * 🔴 값을 자격 증명처럼 가리지 않는다 — `1`/빈 값 둘 중 하나이고, 운영자가 무엇을 고쳐야
+ *    하는지 알아야 한다. 🔴 실패 방향도 같다: 런타임에 «안 주면» 통과한다(빌드 값이 정본이다).
+ */
+export function assertPublicHttpsMatchesBuild(): void {
+  const built = process.env.FKT_PUBLIC_HTTPS_BUILD;
+  const runtime = process.env.FKT_PUBLIC_HTTPS;
+
+  // 🔴 `built` 가 undefined 인 경우는 이 셸이 D-4 이전 빌드라는 뜻이다 — 그때는 대조할
+  //    정본이 없으므로 통과한다(없는 기준으로 죽이지 않는다).
+  if (runtime === undefined || built === undefined || runtime === built) return;
+
+  console.error(
+    `[FKT] 부팅 중단 — FKT_PUBLIC_HTTPS 가 빌드 값과 다릅니다.\n` +
+      `      빌드(정본): ${built === "" ? "(없음)" : built}\n` +
+      `      런타임    : ${runtime === "" ? "(없음)" : runtime}\n` +
+      `      HSTS 부착은 «빌드 시점»에 결정돼 산출물에 구워집니다(next.config.ts headers).\n` +
+      `      값을 바꾸려면 그 값으로 «재빌드»하십시오 — start 에만 주면 HSTS 가 붙지 않은 채\n` +
+      `      돌고, 그 상태는 화면·응답 어디에도 표시되지 않습니다.`,
+  );
+  process.exit(1);
+}
