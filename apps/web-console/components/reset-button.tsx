@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { resetSession } from "@/lib/contract";
+import { useEscapeToClose } from "@/lib/use-escape-to-close";
 
 /**
  * ⟲ 리셋 (wireframes §0) — 확인 모달 → `POST /api/sessions/{sid}/reset` → 초기 상태 복귀.
@@ -14,6 +15,11 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
   const [asking, setAsking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // 🔴 「닫아도 되는가」 = 열려 있고 «요청이 나가지 않았을 때». 취소 버튼이 `busy` 동안
+  //    잠기므로 Esc 도 같이 잠근다 — 버튼으로는 못 닫는데 키로는 닫히면 같은 화면이 두 규칙을
+  //    갖게 되고, 그때 「되돌리는 중」에 창만 사라져 방문자는 요청이 취소된 줄 안다.
+  useEscapeToClose(asking && !busy, () => setAsking(false));
 
   async function confirm() {
     setBusy(true);
