@@ -394,6 +394,7 @@ def main() -> int:
     print("🔴 파괴 자극 대상 env : " + ", ".join([PG_CONTAINER_ENV, NEO4J_CONTAINER_ENV, API_CONTAINER_ENV])
           + f"  · 선언한 소유 접두 = {os.environ.get('FKT_OWNER_PREFIX') or '🔴 미선언(파괴 행은 서지 않는다)'}")
     print()
+    _ownership.self_check()  # 🔴 Q-62 — 대상을 건드리기 전에 «문»부터. 입구에 안 걸려 있으면 잊는 순간 파괴 축이 그냥 돌아간다
     _colocation.require(API)
     print()
 

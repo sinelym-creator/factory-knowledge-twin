@@ -254,6 +254,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--inject-stale", action="store_true", help="실주입 왕복(쓴다 · 원복 포함)")
     args = parser.parse_args()
+    _ownership.self_check()  # 🔴 Q-62 — 대상을 건드리기 전에 «문»부터. 입구에 안 걸려 있으면 잊는 순간 파괴 축이 그냥 돌아간다
     _colocation.require()  # 🔴 재기 전에 «저 서버가 이 트리를 읽는가»부터(Q-42)
 
     print(f"정본      : {VIEW_SQL.relative_to(REPO)}")

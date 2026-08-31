@@ -266,6 +266,7 @@ def main() -> int:
     print(f"대상      : {BASE} · fixture 없음 {NOFIXTURE_BASE} · 파괴 대상 env = {PG_CONTAINER_ENV}")
     print("정본      : rest-api-v0.1.md :148(Q-48 강등) · :150(TTL·sweep)")
     print()
+    _ownership.self_check()  # 🔴 Q-62 — 대상을 건드리기 전에 «문»부터. 입구에 안 걸려 있으면 잊는 순간 파괴 축이 그냥 돌아간다
     _colocation.require(BASE)
     print()
     print("── ⑤ 세션 수명(모듈 축) ──")
