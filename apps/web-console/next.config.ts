@@ -62,7 +62,12 @@ const nextConfig: NextConfig = {
 
   // 🔴 빌드 타임 상수 — 앱 코드는 «이것만» 읽는다(`lib/contract.ts` apiBase).
   //    런타임 `process.env.FKT_API_BASE` 와 갈리면 instrumentation 이 부팅을 죽인다.
-  env: { FKT_API_BASE_BUILD: API_BASE },
+  //    🔴 `FKT_PUBLIC_HTTPS` 도 같은 이유로 함께 굽는다(D-4): 아래 `headers()` 가 이 값을
+  //       빌드 시점에 읽어 HSTS 부착을 결정하므로, start 에만 주면 «조용히» 무효다.
+  env: {
+    FKT_API_BASE_BUILD: API_BASE,
+    FKT_PUBLIC_HTTPS_BUILD: process.env.FKT_PUBLIC_HTTPS ?? "",
+  },
 
   // 계약 v0.1의 base는 `/api`다(rest-api-v0.1.md). 화면 코드가 그 경로를 «그대로» 부르고,
   // 어디로 나갈지는 여기 한 줄이 정한다 — 포트가 바뀌어도 화면 코드는 바뀌지 않는다.
