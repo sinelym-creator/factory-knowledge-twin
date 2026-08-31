@@ -163,6 +163,11 @@ test.describe("세션 가드", () => {
 
   test("한 번 받은 세션은 이동해도 그대로다 (매 진입마다 새로 발급하지 않는다)", async ({ page }) => {
     await page.goto("/");
+    // 🔴 «입장이 끝난 뒤에» 묻는다. 입장이 서버 홉(307)이면 goto 반환 시점에 이미 쿠키가 있지만,
+    //    입장 층이 클라이언트 실행으로 내려가면(Q-39 ⓒ) 마운트→입장→303 이 goto 반환 «뒤»에 온다.
+    //    그때 여기서 바로 `!` 로 단정하면 그물이 대상보다 낡아 거짓 빨강을 낸다.
+    //    낡은 그물은 뒤집힌 사실로 못박는다 — 「도착했는가」를 먼저 기다리고 그 다음에 쿠키를 읽는다.
+    await page.waitForURL(/\/overview$/);
     const before = (await page.context().cookies()).find((x) => x.name === "fkt_session")!.value;
     for (const r of P0_ROUTES) await page.goto(r);
     const after = (await page.context().cookies()).find((x) => x.name === "fkt_session")!.value;
@@ -173,8 +178,14 @@ test.describe("세션 가드", () => {
     const a = await browser.newContext();
     const b = await browser.newContext();
     try {
-      await (await a.newPage()).goto("/");
-      await (await b.newPage()).goto("/");
+      // 🔴 입장 완료를 «각 페이지에서» 기다린 뒤에 묻는다(Q-39 ⓒ — 입장이 클라이언트 실행으로
+      //    내려가면 goto 반환 시점엔 아직 쿠키가 없다). 페이지 핸들을 버리지 않는 이유가 이것이다.
+      const pa = await a.newPage();
+      const pb = await b.newPage();
+      await pa.goto("/");
+      await pa.waitForURL(/\/overview$/);
+      await pb.goto("/");
+      await pb.waitForURL(/\/overview$/);
       const va = (await a.cookies()).find((x) => x.name === "fkt_session")!.value;
       const vb = (await b.cookies()).find((x) => x.name === "fkt_session")!.value;
       expect(va).not.toBe(vb);
@@ -196,6 +207,9 @@ test.describe("세션 가드", () => {
     })).status === 200;
 
     await page.goto("/");
+    // 🔴 입장이 끝난 뒤에 쿠키를 읽는다 — Q-39 ⓒ 로 입장 층이 클라이언트 실행이 되면
+    //    goto 반환과 쿠키 발급 사이에 창이 생긴다(위 두 칸과 같은 자리).
+    await page.waitForURL(/\/overview$/);
     const c = (await page.context().cookies()).find((x) => x.name === "fkt_session")!;
     const chip = page.getByTestId("session-chip");
 
