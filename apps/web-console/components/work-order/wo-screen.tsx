@@ -10,6 +10,7 @@ import {
   decideWorkOrderBrowser,
   patchWorkOrderBrowser,
 } from "@/lib/contract";
+import { useEscapeToClose } from "@/lib/use-escape-to-close";
 
 /**
  * ④ 작업지시서 편집·승인 (wireframes §4 · T3-5 «최소 형상»).
@@ -34,6 +35,10 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
   const [locked, setLocked] = useState<string | null>(null);
   const [asking, setAsking] = useState<"approve" | "reject" | null>(null);
   const [reason, setReason] = useState("");
+  // 🔴 이쪽 취소 버튼은 잠기지 않는다(승인·반려는 눌러야 나간다) — 그래서 열려 있으면 곧
+  //    Esc 로 닫을 수 있다. 적어 둔 사유는 사라지지 않는다: `reason` 은 대화상자 «밖» 상태라
+  //    다시 열면 그대로 있다(닫기가 «취소»이지 «지우기»가 아니다).
+  useEscapeToClose(asking !== null, () => setAsking(null));
   /**
    * 🔴 **부품 이름 칸이 «제어 입력»인 이유**(D-5 · T3-5 ②′ FAIL).
    *
