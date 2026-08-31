@@ -39,6 +39,32 @@ class Settings(BaseSettings):
     #    바꿀 수 있게 두는 이유는 「fixture 부재」 상태를 시험에서 실제로 만들기 위함이다.
     replay_fixture_dir: str | None = None
 
+    # --- T4-1 공개 형상 ---------------------------------------------------------
+    #
+    # 🔴 **빌드 sha 는 «주입»받는다 — 여기서 git 을 부르지 않는다**(Q-46). 프로세스가 리포
+    #    안에서 돌 거라는 가정을 심으면 컨테이너에서 그 가정이 깨지고, 깨진 자리에서
+    #    「경로를 찾아 올라가는」 코드가 자란다(그 경로가 곧 공개 경계 위반이다 · §34.6).
+    #    안 주면 `unknown` 이다 — 그럴듯한 값을 지어내지 않는다.
+    build_sha: str = "unknown"
+
+    # 🔴 **CORS 는 «비어 있는 것»이 기본이다.** 「전부 허용」을 기본값으로 두면 그 기본값이
+    #    공개 배포까지 따라간다(§16.3 CORS allowlist). 비어 있으면 미들웨어를 «켜지 않는다» —
+    #    같은 origin 으로만 오는 로컬 형상(셸 rewrite 경유)이 정확히 그 상태다.
+    #    값 형식 = 콤마 구분 origin 목록. 와일드카드(`*`)는 받지 않는다(아래 cors_allowlist).
+    cors_origins: str = ""
+
+    # Q-44 — 기동 시 임베딩 모델 warm-up. 🔴 부팅을 «막지» 않는다(main.py 성문 참조).
+    warmup_embedding: bool = True
+
+    @property
+    def cors_allowlist(self) -> list[str]:
+        """설정 문자열 → origin 목록. 🔴 `*` 는 목록에서 «버린다».
+
+        와일드카드를 허용하면 이 한 글자가 allowlist 라는 개념을 없앤다. 필요해 보이면
+        코드가 아니라 baseline §16.3 이 정할 일이다.
+        """
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip() and o.strip() != "*"]
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

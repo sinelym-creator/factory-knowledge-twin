@@ -5,7 +5,7 @@
 # 포트 기본값은 로컬 점유 실측(2026-08-28) 후 선택했다:
 #   5432·5433 = 이미 사용 중 → postgres 기본 5434
 #   7474·7687 = free         → neo4j 기본값 유지
-# ai-api 서비스는 S2에서 추가한다(본 티켓 범위 = 데이터 계층 2종만).
+# ai-api 는 T4-1 에서 등재했다 — 「좌석이 손으로 띄우던 것」을 코드로 옮긴 자리다(baseline §14.2).
 #
 # 🔴 구조 격리(D-1): container_name을 고정하지 않고 프로젝트명·포트를 전부 파라미터화했다.
 #    좌석/워크트리마다 값을 달리 주면 스택이 서로 침범하지 않고 «동시에» 뜬다.
@@ -54,4 +54,66 @@ services:
       timeout: 10s
       retries: 12
       start_period: 30s
+    restart: unless-stopped
+
+  # ── ai-api (T4-1 ⓐ · baseline §14.2 노트북 Live 영역) ────────────────────────────
+  #
+  # 🔴 **자격 증명은 environment variable 로만 들어간다**(§16.3 마지막 줄). compose 파일에
+  #    값을 박지 않고 «셸 환경»에서 받는다 — 기본값을 두면 그 기본값이 커밋된 secret 이 된다.
+  #    로컬 개발 기본값(fkt_local_dev)은 이 리포의 synthetic 스택 전용이며 위의 두 서비스와
+  #    같은 값을 공유한다(다른 값을 쓰면 붙지 않는 것이 «눈에 보인다»).
+  #
+  # 🔴 **`FKT_BUILD_SHA` 는 빌드 인자다**(Q-46). 이미지 안에서 git 을 부르지 않는다.
+  #      docker compose build --build-arg FKT_BUILD_SHA=$(git rev-parse --short HEAD)
+  #    안 주면 `unknown` 이고, /health 가 그렇게 «사실대로» 답한다.
+  ai-api:
+    build:
+      context: ./services/ai-api
+      args:
+        FKT_BUILD_SHA: ${FKT_BUILD_SHA:-unknown}
+    environment:
+      # 🔴 컨테이너 «안»에서의 주소다 — compose 네트워크의 서비스명으로 부른다. 호스트의
+      #    포트 매핑(5538 등)은 밖에서 들어올 때의 이름이고, 안에서는 5432/7687 이 원래 값이다.
+      FKT_POSTGRES_DSN: postgresql://${POSTGRES_USER:-fkt}:${POSTGRES_PASSWORD:-fkt_local_dev}@postgres:5432/${POSTGRES_DB:-fkt}
+      FKT_NEO4J_URI: bolt://neo4j:7687
+      FKT_NEO4J_USER: ${NEO4J_USER:-neo4j}
+      FKT_NEO4J_PASSWORD: ${NEO4J_PASSWORD:-fkt_local_dev}
+      # ⓒ CORS allowlist — 기본은 «셸 origin 만». 비우면 CORS 를 켜지 않는다(같은 origin
+      #    rewrite 경유만 쓰는 로컬 형상이 그렇다) — 「전부 허용」이라는 기본값은 두지 않는다.
+      FKT_CORS_ORIGINS: ${FKT_CORS_ORIGINS:-}
+      # Q-44 — 기동 시 임베딩 모델 warm-up. 🔴 부팅을 «막지» 않는다(아래 성문 참조).
+      FKT_WARMUP_EMBEDDING: ${FKT_WARMUP_EMBEDDING:-1}
+      # 🔴 replay fixture 자리를 «명시»한다. 앞판은 모듈이 `Path(__file__).parents[4]` 로
+      #    리포 루트를 추측했고, 컨테이너에서는 그 위가 없어 import 가 죽었다(실측 crash loop).
+      #    이미지는 리포가 아니다 — 자리는 배포가 정한다.
+      #
+      # 🔴 **이 값은 «리포 트리 바인드»여야 한다 — 귀속 탐침의 전제다**(Q-42 · 오케 조건 08-31).
+      #    검증 좌석의 colocation 탐침은 replay fixture 를 «이 서버가 어느 트리의 것인가»를
+      #    묻는 신원 표식으로 쓴다. 아래 볼륨이 호스트의 `./data/replay` 를 그대로 바인드하므로
+      #    호스트에서 손질한 자국이 컨테이너 안에서 보이고, 그래서 그 탐침이 성립한다.
+      #    fixture 를 이미지에 «구워» 넣으면 그 축이 조용히 죽는다 — 탐침은 여전히 초록인데
+      #    무엇을 맞췄는지가 달라진다. 자리를 옮길 일이 생기면 그 탐침부터 회부한다.
+      FKT_REPLAY_FIXTURE_DIR: /srv/data/replay
+    ports:
+      - "${AI_API_PORT:-8000}:8000"
+    volumes:
+      # 모델 캐시를 볼륨으로 뺀다 — 컨테이너를 다시 만들어도 콜드스타트를 다시 겪지 않는다.
+      - ${VOLUME_ROOT:-./.volumes}/models:/models
+      # 🔴 read-only. 재생본은 «자산»이지 런타임이 쓰는 자리가 아니다 — 쓰기를 열어 두면
+      #    컨테이너가 자산을 바꿀 수 있고, 그러면 「녹화본이 정본」이라는 말이 참이 아니게 된다.
+      - ./data/replay:/srv/data/replay:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      # 🔴 `/health` 는 의존이 죽어도 200 을 낸다(ok = 「이 프로세스가 답하는가」). 그러니
+      #    이 프로브가 «초록»이라고 의존이 살아 있다는 뜻은 아니다 — 그 사실은 응답의
+      #    `status`·`dependencies` 가 말하고, 여기서는 「프로세스가 살아 있는가」만 묻는다.
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
     restart: unless-stopped

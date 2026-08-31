@@ -33,10 +33,24 @@ from typing import Any
 from .binding import ScenarioAnchor
 from .store import RunRecord, RunStore
 
-# services/ai-api/app/investigation/replay.py → repo root
-REPO_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_FIXTURE_DIR = REPO_ROOT / "data" / "replay"
 FIXTURE_SUFFIX = ".events.jsonl"
+
+# 🔴 **리포 안에서 돈다고 «단정»하지 않는다** — 이 줄이 `parents[4]` 였고, 컨테이너에서
+#    모듈이 `/srv/app/investigation/replay.py` 로 놓이자 **import 시점에 IndexError 로
+#    프로세스가 죽었다**(T4-1 실측: 컨테이너 crash loop · uvicorn 이 앱을 못 올린다).
+#    「어디서 도는지」는 배포 형상이 정하는데 그 가정을 모듈 최상단에 굳혀 둔 것이 문제였다.
+#
+# 🔴 그래서 ① 계산을 «쓸 때»로 미루고 ② 위로 못 올라가면 `None` 을 돌려준다. 부재는
+#    「fixture 가 없다」(FixtureMissing)로 드러나야지, 부팅 실패로 드러날 일이 아니다 —
+#    컨테이너에서는 `FKT_REPLAY_FIXTURE_DIR` 로 자리를 «명시»한다(compose 가 그렇게 준다).
+_REPO_RELATIVE_DEPTH = 4   # services/ai-api/app/investigation/replay.py → repo root
+
+
+def _repo_fixture_dir() -> Path | None:
+    here = Path(__file__).resolve()
+    if len(here.parents) <= _REPO_RELATIVE_DEPTH:
+        return None
+    return here.parents[_REPO_RELATIVE_DEPTH] / "data" / "replay"
 
 # 파일명이 되는 값이라 형식을 좁힌다. 라우터가 allowlist(binding)를 먼저 지나므로 실질
 # 도달 경로는 없지만, 「경로가 되는 문자열」의 검증을 호출자에게 맡기지 않는다.
@@ -63,7 +77,12 @@ def fixture_dir(fixture_dir_setting: str | None) -> Path:
     """
     if fixture_dir_setting:
         return Path(fixture_dir_setting)
-    return DEFAULT_FIXTURE_DIR
+    guess = _repo_fixture_dir()
+    if guess is None:
+        # 🔴 리포 밖(컨테이너)이고 설정도 없다 — 「없는 자리」를 돌려주어 부재가 부재로
+        #    드러나게 한다. 여기서 예외를 던지면 fixture 를 안 쓰는 요청까지 함께 죽는다.
+        return Path("/nonexistent/replay-fixtures")
+    return guess
 
 
 def fixture_path(fixture_dir_setting: str | None, scenario_id: str) -> Path:

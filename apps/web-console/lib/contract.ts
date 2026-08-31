@@ -321,7 +321,19 @@ const READ_TIMEOUT_MS = 8000;
  * 화면 코드에 «그대로» 남게 하려는 것이다). 서버·미들웨어에는 상대 경로가 없으므로 base가 필요하다.
  */
 export function apiBase(): string {
-  return process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
+  /**
+   * 🔴 **정본은 «빌드 시점» 값이다**(Q-37 종결 · T4-1 ⓑ).
+   *
+   * 앞판은 `process.env.FKT_API_BASE` 를 «런타임»에 읽었다. 그런데 브라우저가 타는
+   * `next.config.ts` 의 rewrite 는 «빌드»에 구워진다 — 같은 화면이 두 개의 ai-api 를 볼 수
+   * 있었고, 실측에서 실제로 그렇게 됐다(빌드 8003 / start 9999 → 브라우저 경유는 8003 이
+   * 답하고 서버 렌더는 9999 로 나가 미연결 · 세션은 pending).
+   * 🔴 그 상태가 화면에서 «정상처럼» 보였다는 것이 결함의 몸통이다(평상시 Replay fallback 문구).
+   *
+   * 그래서 이 함수는 빌드 상수만 읽는다. 런타임 env 가 달라지면 `instrumentation.ts` 가
+   * 부팅을 죽인다 — 두 층이 갈릴 자리 자체를 없앴다.
+   */
+  return process.env.FKT_API_BASE_BUILD ?? "http://127.0.0.1:8000";
 }
 
 /**

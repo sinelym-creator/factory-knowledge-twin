@@ -260,6 +260,19 @@ class DependencyProbe(BaseModel):
     latencyMs: int | None = None
 
 
+class ModelReadiness(BaseModel):
+    """«모델이 준비됐는가» — Q-44(T3-4 실측: 첫 compare 가 30초+ · warm 이후 0.1초).
+
+    🔴 이 축이 없으면 콜드스타트가 «서버 고장»으로 보고된다. 준비 상태를 프로세스가 스스로
+       말하면, 느린 첫 호출이 결함이 아니라 «아직 안 올라온 것»으로 읽힌다.
+    🔴 상태를 «추정»하지 않는다: `cold` 는 「아직 안 올렸다」이고 `failed` 는 「올리다 실패했다」다.
+       둘을 합치면 화면·운영이 「기다리면 되는가」를 판단할 수 없다.
+    """
+
+    embedding: Literal["ready", "loading", "cold", "failed", "disabled"]
+    detail: str | None = None
+
+
 class HealthResponse(BaseModel):
     """GET /health → 계약의 `{ ok, version }` + 의존 프로브(티켓 T1-8).
 
@@ -273,6 +286,10 @@ class HealthResponse(BaseModel):
     version: str
     status: Literal["ok", "degraded"]
     dependencies: dict[str, DependencyProbe]
+    # 🔴 **짧은 git sha «만»**(Q-46 · §16·§34.6). 경로·절대경로·호스트명·브랜치명을 싣지 않는다 —
+    #    「어느 커밋이 답했나」에 답하는 데 필요한 것은 sha 하나이고, 나머지는 전부 공개 경계다.
+    build: str
+    models: ModelReadiness
 
 
 class LiveStatus(BaseModel):
