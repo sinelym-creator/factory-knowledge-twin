@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { apiBase, createSession } from "@/lib/contract";
-import { SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
+import { ENTRY_DESTINATION, SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
 
 /**
  * 입장 핸들러 — 「입장은 «실행»하는 일이지, 지나가다 생기는 일이 아니다」(Q-39 ⓒ).
@@ -48,7 +48,9 @@ import { SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
 function seeOther(setCookie?: string | null) {
   return new NextResponse(null, {
     status: 303,
-    headers: setCookie ? { location: "/overview", "set-cookie": setCookie } : { location: "/overview" },
+    headers: setCookie
+      ? { location: ENTRY_DESTINATION, "set-cookie": setCookie }
+      : { location: ENTRY_DESTINATION },
   });
 }
 

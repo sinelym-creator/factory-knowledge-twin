@@ -12,6 +12,16 @@
 
 export const SESSION_COOKIE = "fkt_session";
 
+/**
+ * 입장이 끝나면 가는 자리 — 🔴 **한 곳에만 적는다**(D-3).
+ *
+ * 두 층이 같은 목적지를 안다: 핸들러의 303 `Location`(JS 없는 방문자)과 클라이언트의
+ * 항해(JS 있는 방문자). 두 곳에 문자열을 따로 적으면 목적지가 바뀌는 날 한쪽만 바뀌고,
+ * 그때 갈리는 것은 «JS 가 있는 사람과 없는 사람이 서로 다른 화면에 도착한다»는 형태라
+ * 아무도 즉시 알아채지 못한다.
+ */
+export const ENTRY_DESTINATION = "/overview";
+
 export type SessionOrigin = "api" | "pending";
 export type Session = { id: string; origin: SessionOrigin };
 
