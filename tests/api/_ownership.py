@@ -89,6 +89,36 @@ def own_container(env_name: str, what: str) -> str:
     return name
 
 
+def _probe_real_exists(prefix: str) -> str:
+    """⑦ **실물 `_exists` 양면 확인.** 스텁이 아니라 docker 에 «실제로» 묻는 그 함수를 민다.
+
+    🔴 못 재는 자리에서는 초록도 빨강도 내지 않고 **사유와 재관측 좌표를 인쇄하고 건너뛴다** —
+       도달 불가를 「이상 없음」으로 적으면 그 자리에서 공짜 초록이 난다(16대 유언 ②).
+    """
+    if not prefix:
+        return ("  안전장치  ⑦ 실물 실재 확인 = 건너뜀(초록 아님) — `FKT_OWNER_PREFIX` 미선언"
+                " = 읽기 전용 호출 · 재관측 = 파괴 축이 접두를 선언하고 다시 온다")
+    ghost = f"{prefix}zz-selfcheck-ghost"
+    try:
+        if _exists(ghost):
+            raise RuntimeError(f"자기 검증 실패 — 실재 확인이 없는 이름(`{ghost}`)을 «있다»고 답한다")
+        env = dict(os.environ, MSYS_NO_PATHCONV="1")
+        out = subprocess.run(
+            ["docker", "ps", "-a", "--filter", f"name=^{prefix}", "--format", "{{.Names}}"],
+            capture_output=True, text=True, env=env,
+        )
+    except OSError as exc:  # docker 자체가 없다 — 계측기 부재이지 대상의 성질이 아니다
+        return (f"  안전장치  ⑦ 실물 실재 확인 = 🔴 도달 불가(초록 아님) — docker 부재"
+                f"({type(exc).__name__}) · 재관측 = docker 있는 자리에서")
+    names = (out.stdout or "").split()
+    if not names:
+        return (f"  안전장치  ⑦ 음성쪽만 통과(`{ghost}` = 없다) · 🔴 양성쪽 도달 불가(초록 아님) —"
+                f" 접두 `{prefix}` 컨테이너 0본 · 재관측 = 내 스택 up 후")
+    if not _exists(names[0]):
+        raise RuntimeError(f"자기 검증 실패 — 실재 확인이 있는 이름(`{names[0]}`)을 «없다»고 답한다")
+    return f"  안전장치  ⑦ 실물 실재 확인 = 양면 통과(있다 `{names[0]}` / 없다 `{ghost}`)"
+
+
 def self_check() -> None:
     """🔴 문이 «실제로 닫히는가». 판정 앞에 이 문 자신을 먼저 시험한다."""
     saved = {k: os.environ.get(k) for k in ("ZZ_T", "FKT_OWNER_PREFIX")}
@@ -125,10 +155,51 @@ def self_check() -> None:
 
         if read_base("ZZ_UNSET_BASE", "표본", fallback="http://127.0.0.1:8000") != "http://127.0.0.1:8000":
             raise RuntimeError("자기 검증 실패 — 자리표시자 fallback 이 안 선다")
+
+        # 🔴 ⑤⑥ **«막는 것»만 시험하면 아예 안 열리는 문도 여기를 통과한다.** 17대 변이 실측:
+        #    `own_container` 를 «전부 거절»로 바꿔도 위 표본 4종이 그대로 초록이었고,
+        #    `_exists` 를 «전부 있다»로 바꿔도 초록이었다(한 번도 안 불렸다). 즉 앞판의 초록은
+        #    「막을 것을 막는다」만 말했다 — 「**열려야 할 때 열리는가**」는 한 번도 안 쟀다.
+        #    막힘 표본과 통과 표본이 «둘 다» 있어야 이 초록이 무언가를 가른다.
+        os.environ["ZZ_T"] = "fkt-levi2-selfcheck-sample"
+        os.environ["FKT_OWNER_PREFIX"] = "fkt-levi2-"
+        asked: list[str] = []
+        real_exists = globals()["_exists"]
+
+        def _stub(answer: bool):
+            def _fn(name: str) -> bool:
+                asked.append(name)
+                return answer
+            return _fn
+
+        try:
+            globals()["_exists"] = _stub(False)  # ⑤ 실재하지 «않는» 내 이름
+            try:
+                own_container("ZZ_T", "표본")
+            except Unowned:
+                pass
+            else:
+                raise RuntimeError("자기 검증 실패 — «실재하지 않는 이름»을 통과시킨다")
+            if asked != ["fkt-levi2-selfcheck-sample"]:
+                raise RuntimeError("자기 검증 실패 — 실재를 «묻지 않는다»(실재 확인 단이 죽어 있다)")
+
+            globals()["_exists"] = _stub(True)  # ⑥ 🔴 양성 대조군 — 내 것 · 실재 → 통과해야 한다
+            if own_container("ZZ_T", "표본") != "fkt-levi2-selfcheck-sample":
+                raise RuntimeError("자기 검증 실패 — 🔴 내 것·실재하는 대상을 «통과시키지 못한다»")
+        finally:
+            globals()["_exists"] = real_exists
+
+        # 🔴 ⑦ 위 ⑤⑥ 은 `_exists` 를 스텁으로 갈아 끼워 `own_container` 의 «판단»만 갈랐다 —
+        #    docker 에 실제로 묻는 그 함수가 맞게 답하는지는 아직 «안 잰 축»이다. 여기서 양면으로 민다.
+        probe = _probe_real_exists((saved["FKT_OWNER_PREFIX"] or "").strip())
     finally:
         for key, value in saved.items():
             if value is None:
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = value
-    print("  안전장치  표본 4종(읽기 미지정 · 파괴 미지정 · 접두 미선언 · 남의 이름) 전건 막힘 — 문이 닫힌다")
+    print(
+        "  안전장치  표본 6종 전건 기대대로 — 막힘 4(읽기 미지정 · 파괴 미지정 · 접두 미선언 · 남의 이름)"
+        " + 🔴 통과 2(실재 물음 · 내 것 양성 대조군) = 문이 «닫히고, 내 것에는 열린다»"
+    )
+    print(probe)
