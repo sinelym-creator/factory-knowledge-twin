@@ -44,6 +44,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 스택 무접촉)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 REPO = Path(__file__).resolve().parents[2]
@@ -412,6 +413,8 @@ def main() -> int:
     bad += controls(sample, other or sample_doc)
 
     if args.inject_drift:
+        # 🔴 Q-62 — 남의 DB 한 칸이라도 «쓰기» 전에 소유 확인. 원복해도 남의 측정은 이미 흔들린다.
+        _ownership.own_container("FKT_PG_CONTAINER", "한 칸을 손질했다 되돌릴 postgres")
         print("\n  ── ③ 정합 파열 — 좌표는 옳은데 본문에서 못 찾을 때(주입 · 원복한다)")
         target = sorted(chunk_ids)[0]
         control = next(

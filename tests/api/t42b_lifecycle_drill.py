@@ -37,11 +37,15 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 좌석 무접촉)
 import _colocation  # noqa: E402
 
-BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8021")
-NOFIXTURE_BASE = os.environ.get("FKT_T42B_NOFIXTURE_BASE", "http://127.0.0.1:8029")
-PG_CONTAINER = os.environ.get("FKT_T42B_PG_CONTAINER", "fkt-levi2-postgres-1")
+#: 🔴 **Q-62 — 좌석 포트를 기본값으로 두지 않는다.** 예전엔 여기 내 실물 포트가 박혀 있었고,
+#:   다른 좌석이 확인 없이 돌려 «내 계측기»를 두드렸다(창 소모 · 값 오염). 미지정 = exit 2.
+BASE = _ownership.read_base("FKT_API_BASE", "강등 축 서버")
+NOFIXTURE_BASE = _ownership.read_base("FKT_T42B_NOFIXTURE_BASE", "fixture 없음 서버")
+#: 🔴 파괴 대상은 «부수는 자리»에서 늦게 확인한다 — import 만으로 env 를 요구하지 않는다.
+PG_CONTAINER_ENV = "FKT_T42B_PG_CONTAINER"
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 REPO = Path(__file__).resolve().parents[2]
 
@@ -198,9 +202,11 @@ def axis_degrade(rep: Report) -> None:
             f"{before['status']} · mode={(before['body'] or {}).get('mode')}")
     rep.note(f"흔들기 전 프로브 = {probe_state(BASE)}")
 
+    # 🔴 Q-62 — 부수기 «전» 소유 확인. 통과 못 하면 흔들지 않는다(exit 2).
+    pg = _ownership.own_container(PG_CONTAINER_ENV, "멈췄다 되살릴 postgres")
     stopped = False
     try:
-        docker("stop", PG_CONTAINER)
+        docker("stop", pg)
         stopped = True
         # 프로브 최소 간격 5s(PR#222) — 갱신을 기다린다. 🔴 자극이 «프로브에 닿았는지»부터 본다.
         state = {}
@@ -239,7 +245,7 @@ def axis_degrade(rep: Report) -> None:
                  "(pg 를 타는 읽기는 503 잔존 · 원장 Q-56 그대로)")
     finally:
         if stopped:
-            docker("start", PG_CONTAINER)
+            docker("start", pg)
 
     # ⓔ 복구 — 되돌아왔다는 것까지가 측정이다
     state = {}
@@ -257,7 +263,7 @@ def axis_degrade(rep: Report) -> None:
 
 def main() -> int:
     rep = Report()
-    print(f"대상      : {BASE} · fixture 없음 {NOFIXTURE_BASE} · 파괴 대상 컨테이너 {PG_CONTAINER}")
+    print(f"대상      : {BASE} · fixture 없음 {NOFIXTURE_BASE} · 파괴 대상 env = {PG_CONTAINER_ENV}")
     print("정본      : rest-api-v0.1.md :148(Q-48 강등) · :150(TTL·sweep)")
     print()
     _colocation.require(BASE)

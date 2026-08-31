@@ -36,6 +36,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 스택 무접촉)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
@@ -192,7 +193,10 @@ def main() -> int:
 
     if cut:
         print(f"\n  -- 런타임 의존 단절 — {NEO4J_CONTAINER} 정지")
-        docker("stop", NEO4J_CONTAINER)
+        # 🔴 **Q-62 — 부수기 «전» 소유 확인.** 이름 기본값으로 남의 컨테이너를 멈추면
+        #    되돌려도 그 사이 남이 재던 것은 이미 죽는다. 통과 못 하면 손대지 않는다.
+        target = _ownership.own_container("FKT_NEO4J_CONTAINER", "멈췄다 되살릴 neo4j")
+        docker("stop", target)
         time.sleep(2)
         try:
             status, ctype, raw = request(
@@ -210,11 +214,11 @@ def main() -> int:
                 print("  FAIL  E-10x message 에 내부 경로·traceback 이 보인다")
         finally:
             print(f"  -- 되감기 — {NEO4J_CONTAINER} 재기동")
-            docker("start", NEO4J_CONTAINER)
+            docker("start", target)
             health = ""
             for _ in range(40):
                 time.sleep(2)
-                health = docker("inspect", NEO4J_CONTAINER, "--format", "{{.State.Health.Status}}")
+                health = docker("inspect", target, "--format", "{{.State.Health.Status}}")
                 if health == "healthy":
                     break
             status, _, _ = request(

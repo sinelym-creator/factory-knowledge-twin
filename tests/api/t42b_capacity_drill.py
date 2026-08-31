@@ -36,12 +36,15 @@ import urllib.parse
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 좌석 무접촉)
 import _colocation  # noqa: E402
 
-BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8021")
-TIMEOUT_BASE = os.environ.get("FKT_T42B_TIMEOUT_BASE", "http://127.0.0.1:8027")
+#: 🔴 **Q-62 — 좌석 포트를 기본값으로 두지 않는다.** 예전엔 여기 내 실물 포트가 박혀 있었고,
+#:   다른 좌석이 확인 없이 돌려 «내 계측기»를 두드렸다(창 소모 · 값 오염). 미지정 = exit 2.
+BASE = _ownership.read_base("FKT_API_BASE", "동시성 축 서버")
+TIMEOUT_BASE = _ownership.read_base("FKT_T42B_TIMEOUT_BASE", "timeout 축 서버")
 #: 큐 «대기 상한»만 짧게 준 서버. 🔴 갓 뜬 서버여야 est=null 갈래도 함께 잡힌다(완주 이력 0).
-QUEUEWAIT_BASE = os.environ.get("FKT_T42B_QUEUEWAIT_BASE", "http://127.0.0.1:8028")
+QUEUEWAIT_BASE = _ownership.read_base("FKT_T42B_QUEUEWAIT_BASE", "큐 대기 축 서버")
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 
 

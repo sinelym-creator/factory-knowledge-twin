@@ -32,14 +32,27 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import _colocation  # noqa: E402
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 좌석 무접촉)
 
-API = os.environ.get("FKT_GATE6_API_BASE", os.environ.get("FKT_API_BASE", "http://127.0.0.1:8021"))
-WEB = os.environ.get("FKT_GATE6_WEB_BASE", os.environ.get("FKT_WEB_BASE", "http://127.0.0.1:3191"))
-TIMEOUT_API = os.environ.get("FKT_GATE6_TIMEOUT_BASE", "http://127.0.0.1:8027")
-PG_CONTAINER = os.environ.get("FKT_GATE6_PG_CONTAINER", "fkt-levi2-postgres-1")
-NEO4J_CONTAINER = os.environ.get("FKT_GATE6_NEO4J_CONTAINER", "fkt-levi2-neo4j-1")
-API_CONTAINER = os.environ.get("FKT_GATE6_API_CONTAINER", "fkt-levi2-t35-seeded")
+#: 🔴 **Q-62 — 좌석 포트·컨테이너를 기본값으로 두지 않는다.** 예전엔 여기 내 실물 포트가
+#:   박혀 있었고, 다른 좌석이 확인 없이 돌려 «내 계측기»를 두드렸다. 미지정 = exit 2.
+API = _ownership.read_base("FKT_GATE6_API_BASE", "재는 ai-api")
+WEB = _ownership.read_base("FKT_GATE6_WEB_BASE", "재는 셸")
+TIMEOUT_API = _ownership.read_base("FKT_GATE6_TIMEOUT_BASE", "상한 서버(Model timeout 행)")
+#: 🔴 파괴 대상은 «부수는 자리»에서 늦게 확인한다 — import 만으로 env 를 요구하지 않는다.
+PG_CONTAINER_ENV = "FKT_GATE6_PG_CONTAINER"
+NEO4J_CONTAINER_ENV = "FKT_GATE6_NEO4J_CONTAINER"
+API_CONTAINER_ENV = "FKT_GATE6_API_CONTAINER"
+
+# 🔴 공용 전처리(`_session`·`_colocation`)는 `FKT_API_BASE` 를 본다. 이 드릴은 자기 이름의 env 로
+#    대상을 받으므로, 그 값을 «다리 놓아» 주지 않으면 귀속 증명이 세션을 못 얻어 401 로 죽는다 —
+#    그 빨강은 대상이 아니라 내 배선의 것이다(한 번 물렸다).
+os.environ.setdefault("FKT_API_BASE", API)
+
+# 🔴 **다리를 놓은 «뒤»에 불러야 한다.** `_colocation` 은 import 시점에 `_session` 을 통해
+#    대상 base 를 잡는다 — 위 setdefault 보다 먼저 import 하면 그 값을 못 보고 401 로 죽고,
+#    그 빨강은 대상이 아니라 내 import 순서의 것이다(한 번 물렸다).
+import _colocation  # noqa: E402,PLC0415  — 판정 앞의 귀속 증명(Q-42 · Q-40 계보)
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 REPO = Path(__file__).resolve().parents[2]
 
@@ -47,16 +60,12 @@ REPO = Path(__file__).resolve().parents[2]
 #:   같은 DB 를 물고 있던 다른 서버가 낡은 pool 을 든 채 남을 수 있다(Q-52 픽스 «전» 빌드가 그렇다).
 #:   실제로 한 번 물렸다: 8061 이 「the database system is shutting down」을 든 채 남아 화면이
 #:   빈 것을 나는 «폭 때문»으로 읽을 뻔했다. 되돌렸다는 판정은 «전수»여야 성립한다.
-SHARED_BASES = [b for b in os.environ.get(
-    "FKT_GATE6_SHARED_BASES", "http://127.0.0.1:8021",
-).split(",") if b.strip()]
+SHARED_BASES = [b for b in os.environ.get("FKT_GATE6_SHARED_BASES", API).split(",") if b.strip()]
 
 #: 🔴 **판정하지 않고 «세는» 이웃** — 같은 DB 를 물지만 Q-52 재연결 픽스 «전» 빌드라 스스로
 #:   돌아오지 못하는 서버들. 그 지연은 «현 코드의 결함이 아니다» — 그러나 남겨 두면 다음 사람이
 #:   빈 화면을 «다른 이유»로 읽는다. 그래서 판정에서 빼되 **반드시 인쇄한다**(손으로 되살리라고).
-LEGACY_BASES = [b for b in os.environ.get(
-    "FKT_GATE6_LEGACY_BASES", "http://127.0.0.1:8061",
-).split(",") if b.strip()]
+LEGACY_BASES = [b for b in os.environ.get("FKT_GATE6_LEGACY_BASES", "").split(",") if b.strip()]
 
 #: 🔴 §32.7 원문. 손대지 않는다 — red 정의는 이 문면에서 온다.
 CANON = {
@@ -188,8 +197,11 @@ def row_fastapi_off(t: Table) -> None:
     if not net.exists():
         t.skipped("FastAPI OFF", f"그물이 없다: {net.name}")
         return
-    if not API_CONTAINER or "http" in API_CONTAINER:
-        t.skipped("FastAPI OFF", "멈출 ai-api 컨테이너 이름이 없다(외부판에서는 URL 로만 잰다)")
+    # 🔴 Q-62 — 부수기 «전» 소유 확인. 못 세우면 흔들지 않고 «건너뛴다»(외부판은 URL 로만 잰다).
+    try:
+        api_container = _ownership.own_container(API_CONTAINER_ENV, "멈췄다 되살릴 ai-api")
+    except _ownership.Unowned as exc:
+        t.skipped("FastAPI OFF", f"소유 확인을 못 세웠다 — {str(exc).splitlines()[0][:70]}")
         return
 
     before = call(WEB, "GET", "/", timeout=20)
@@ -199,7 +211,7 @@ def row_fastapi_off(t: Table) -> None:
 
     stopped = False
     try:
-        docker("stop", API_CONTAINER)
+        docker("stop", api_container)
         stopped = True
         out = subprocess.run(
             ["node", str(net)],
@@ -216,12 +228,12 @@ def row_fastapi_off(t: Table) -> None:
         t.measured("FastAPI OFF",
                    f"Offline 표시 {'○' if offline else '✕'} · Replay 전환 {'○' if offer else '✕'}",
                    offline and offer and out.returncode == 0,
-                   f"{net.name} rc={out.returncode} · 자극 = {API_CONTAINER} stop")
+                   f"{net.name} rc={out.returncode} · 자극 = {api_container} stop")
     except subprocess.TimeoutExpired:
         t.skipped("FastAPI OFF", "브라우저 그물이 제한 시간을 넘겼다 — 측정 불가")
     finally:
         if stopped:
-            docker("start", API_CONTAINER)
+            docker("start", api_container)
 
 
 def row_postgres_off(t: Table) -> None:
@@ -231,9 +243,10 @@ def row_postgres_off(t: Table) -> None:
     if not (before["status"] == 200 and (before["body"] or {}).get("mode") == "live"):
         t.skipped("PostgreSQL OFF", f"대조군이 안 선다(흔들기 전 {before['status']}) — 흔들 자격이 없다")
         return
+    pg = _ownership.own_container(PG_CONTAINER_ENV, "멈췄다 되살릴 postgres")  # 🔴 Q-62 소유 확인
     stopped = False
     try:
-        docker("stop", PG_CONTAINER)
+        docker("stop", pg)
         stopped = True
         state = wait_probe(API, "postgres", "unavailable")
         if state.get("postgres") != "unavailable":
@@ -248,7 +261,7 @@ def row_postgres_off(t: Table) -> None:
                    f"프로브 {state} · 원인 표시 = mode 강등 · Public UX = 셸 응답 유지")
     finally:
         if stopped:
-            docker("start", PG_CONTAINER)
+            docker("start", pg)
     back = wait_probe(API, "postgres", "ok", 60)
     if back.get("postgres") != "ok":
         raise DrillError(f"되감기 실패 — postgres 가 ok 로 안 돌아왔다 {back}")
@@ -271,9 +284,10 @@ def row_neo4j_off(t: Table) -> None:
                      if e.get("type") == "step.evidence"
                      and ((e.get("payload") or {}).get("evidence") or {}).get("kind") == "graph-path")
 
+    neo = _ownership.own_container(NEO4J_CONTAINER_ENV, "멈췄다 되살릴 neo4j")  # 🔴 Q-62 소유 확인
     stopped = False
     try:
-        docker("stop", NEO4J_CONTAINER)
+        docker("stop", neo)
         stopped = True
         state = wait_probe(API, "neo4j", "unavailable")
         if state.get("neo4j") != "unavailable":
@@ -305,7 +319,7 @@ def row_neo4j_off(t: Table) -> None:
                    f"· 대조군 graph 근거 {base_graph}건(흔들기 전)")
     finally:
         if stopped:
-            docker("start", NEO4J_CONTAINER)
+            docker("start", neo)
     back = wait_probe(API, "neo4j", "ok", 90)
     if back.get("neo4j") != "ok":
         raise DrillError(f"되감기 실패 — neo4j 가 ok 로 안 돌아왔다 {back}")
@@ -377,7 +391,8 @@ def main() -> int:
     t = Table()
     print(f"대상      : ai-api {API} · 셸 {WEB}")
     print(f"정본      : baseline §32.7 (기대 결과 문면 원문 인용) · 값 표 = §0.2 서식")
-    print("🔴 파괴 자극 대상 : " + ", ".join([PG_CONTAINER, NEO4J_CONTAINER, API_CONTAINER]))
+    print("🔴 파괴 자극 대상 env : " + ", ".join([PG_CONTAINER_ENV, NEO4J_CONTAINER_ENV, API_CONTAINER_ENV])
+          + f"  · 선언한 소유 접두 = {os.environ.get('FKT_OWNER_PREFIX') or '🔴 미선언(파괴 행은 서지 않는다)'}")
     print()
     _colocation.require(API)
     print()
