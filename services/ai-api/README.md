@@ -397,3 +397,26 @@ run 이 주장하는 충돌 · live run 인데 본문이 없는 경우). 그 셋
 계약(v0.1 + append 전건)에 그 표면이 없고, 없는 경로를 구현이 지으면 「계약 밖 경로 0」을
 구현이 깬다. 조회는 `ApprovalStore.get_audit`/`audits_for` 로 끝나며, 화면이 이력을 그려야 할
 때 계약 append 가 선행이다.
+
+## 컨테이너로 띄울 때 (T4-1)
+
+```
+docker compose up -d          # postgres · neo4j · ai-api (healthcheck = /api/health)
+```
+
+- 🔴 **이미지는 리포가 아니다.** `app/` 만 들어간다. 모듈이 `Path(__file__).parents[N]` 으로
+  리포 루트를 «추측»하면 컨테이너에서 그 위가 없어 import 가 죽는다 — 실제로 그렇게 죽었고
+  (`replay.py` crash loop), 지금은 자리를 지연 계산하고 없으면 「없는 자리」를 돌려준다.
+  부재는 `501 replay_fixture_missing` 으로 드러나지 부팅 실패로 드러나지 않는다.
+- 🔴 **`FKT_REPLAY_FIXTURE_DIR` = 리포 트리 바인드**(귀속 탐침 전제 · Q-42). 검증 좌석의
+  colocation 탐침이 replay fixture 를 「이 서버가 어느 트리의 것인가」의 표식으로 쓴다.
+  read-only 바인드라 호스트에서 손질한 자국이 컨테이너에서 보이고, 그래서 그 축이 선다.
+  fixture 를 이미지에 구워 넣으면 탐침은 초록인 채로 «다른 것»을 맞추게 된다.
+- 🔴 **`FKT_BUILD_SHA` 는 빌드 인자다**(Q-46). 이미지 안에서 git 을 부르지 않는다 —
+  리포를 이미지에 넣어야 하고 그러면 경로·히스토리가 함께 들어간다.
+  `docker compose build --build-arg FKT_BUILD_SHA=$(git rev-parse --short HEAD)`.
+  안 주면 `/api/health` 가 `"build": "unknown"` 이라고 «사실대로» 답한다.
+- 🔴 **자격 증명은 환경변수로만.** compose 파일·이미지에 DSN·비밀번호를 굽지 않는다(§16.3).
+- 임베딩 warm-up 은 기동 시 «백그라운드»로 돈다(`FKT_WARMUP_EMBEDDING=0` 으로 끈다).
+  준비 여부는 `/api/health` 의 `models.embedding` 이 말한다 — 실측: 콜드 120.8s ·
+  모델 캐시 볼륨이 살아 있으면 14.9s.
