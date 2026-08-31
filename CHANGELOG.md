@@ -17,3 +17,7 @@
 - Phase 1 completed (ledger 25/25), every ticket through independent verification: PG schema/migrations (T1-1), synthetic seed with preserved imperfections (T1-2), document set (T1-3), ingestion/chunk/embedding/pgvector indexing with chunk policy v1 frozen (T1-4), Neo4j projection 309 nodes/448 relations (T1-5), contract harness promotion (T1-6), seed-to-index reproducibility (T1-7), FastAPI async skeleton (T1-8), Next.js shell (T1-9). PR #29~#96.
 - Queue items Q-1~Q-4 closed with implement+verify round trips; freshness/ontology STALE axes landed (migrations 004~008); errata E-4~E-7 recorded.
 - 08-28 groundwork rotated together: repo+baseline+SSOT skeleton, three-seat team boot, T1-0/T1-1 verification, resume-document delivery to operator (non-repo artifact).
+
+## 2026-08-30 (rotated from PROGRESS done)
+
+- T2-1 completed (26/31): three retrieval strategies plus a defect lineage of seven items (V-1~V-5) corrected and re-verified PASS; E-8 recorded; three tests/api drills landed; T2-2 implementation report landed pending verification. PR #98~#108.
