@@ -1,6 +1,7 @@
 # 스자쿠 10대 선작성 발주문 (2026-08-31 23:1x · 트리거 대기 · 팀 채널 발신 시 그대로 붙여넣기 · 11대 승계용)
 
 > 트리거: §A = 센쿠2 18대 D-3 PR 병합 즉시 · §B = §A 발신 직후(센쿠2 18대 완결 보고 착신 시) · §C = 센쿠2 PR-1 착지 시 · §D = 완결마다 · §E = 10대 교대 시.
+> 🔴 **상태(08-31 23:36)**: §A **발신됨**(23:36 · 리바이2 16대 착수 · +«chip·reset 실재» 1행 추가 · 대상 = PR#242 `831af7a` → develop `684aa0a`) · §B **발신됨**(23:36 · 센쿠2 18대 착수 · 기점 `684aa0a`) · §C **대기**(PR-1 착지 시) · §D 사용 중(T4-2a 23:34 적용) · T5 티켓 5본 착지 PR#243.
 > 발주 전 «실물 grep 1회» 완료분(23:07 · develop `ad8b2a3`): `errors.py:66 dependency_unavailable` · `investigations.py:130 resources.pg_pool is None`(판정 근거 아님) · `session_store.py:35 SESSION_TTL_SEC = 8h · :78/:135 lazy _sweep · :125 def _sweep` · 스키마 `agent-events-v0.1.schema.json:24 "run.queued"`(enum 9 · `:38` payload $ref runQueued) · ai-api 코드 내 `run.queued`·`FKT_LIVE_CONCURRENCY`·`FKT_LIVE_QUEUE_MAX`·`FKT_MAX_BODY_BYTES`·`FKT_MAX_QUESTION_CHARS`·`Retry-After` = **0건**(PR-1 이 채운다) · 셸 `run.queued` 0건(PR-2 몫) · tests/api 드릴 = **21종**(`*_drill.py` 20 + `anchor_extraction_probe.py` · 헬퍼 `_colocation.py`·`_session.py` 제외) · 그물 `tests/web/q50_entry_badge_timing.mjs`(11090B) · `tests/web/_blackhole_server.mjs` 실재.
 > 재부팅 후 실측(23:03): compose 컨테이너 자동 복귀 Up healthy · `docker run` 계열 2본 Exited(255) = `fkt-levi2-t35-seeded`(8061) · `fkt-levi2-t41-seeded`(8059) → `docker start` · 셸 4벌·8004·8074·8077 사망 · 8010 생존.
 
