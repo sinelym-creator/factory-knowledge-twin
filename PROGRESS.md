@@ -6,7 +6,8 @@
 
 | Phase | 티켓 | 담당 |
 |---|---|---|
-| 4 | 🔴 T4-1 공개 형상 골격·env 주입 — 구현 중(compose ai-api 등재·Dockerfile·이미지 빌드 ✓ · Q-37 부팅 검사 3케이스 ✓ · 남은 절 = compose up boot · CORS 대조군 · 헤더 · /live/status 경계값 · /health build·models) → 완료 보고 → 검증 발주 | 센쿠2 15대(발주 10:50 · lane/senku2-t4-1-public-shape @ 88a094b) |
+| 4 | 🔴 T4-1 공개 형상 골격·env 주입 — 구현 착지 PR#201(compose ai-api·Dockerfile·Q-37 부팅 실패·CORS/CSP/헤더·/live/status 2s·/health build·models) → **독립 검증 중**(boot · Q-37 · CORS 두 축 · CSP 무해성 · 이미지 secret 0 · 21종) → 완결(36/46) + Q-37·Q-44·Q-46 종결 · 계약 v0.1.8 append(오케) | 센쿠2 15대 구현 → 리바이2 12대 검증(발주 12:15 · Q-45 중간 커밋 후 전환) |
+| 3 | 🔴 T3-5 «최소 형상» — WO 편집·승인 화면(PATCH 자동 저장 · 안전 조치 불변 R12 · 승인/반려 · 근거 패널) | 센쿠2 15대(발주 12:14 · lane/senku2-t3-5-wo-screen @ 57d58ed) |
 | 3 | 그물 구조 부채 2건 — Q-42(HTTP 드릴 귀속 단 공통 전처리 · exit 2 규약) + Q-45(브라우저 그물 시간 의존 행 전수 · workers 실측) · T3-4 검증 착신 시 즉시 전환 | 리바이2 12대 (Q-40 ✅ 09:58 · T3-3 재검 PASS 10:14 · Q-41 ✅ 10:30 PR#187 · suite 65/0/5) |
 
 ## todo
