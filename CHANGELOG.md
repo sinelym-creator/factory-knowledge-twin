@@ -26,3 +26,4 @@
 
 - T2-2 completed (27/31): document and evidence read routes (3), V-6/V-7 corrections (locate_cited single wall, dependency_guard convergence), STALE surface reached (Q-20 closed), 30 security-axis checks, tests/api 8 drills / 172 rows. PR#107, #112-#114 (08-30).
 - T2-3 completed (28/31): LangGraph 5-stage GS-01 full run (0 defects, 176 verdict rows), runs surface 5 + graph/paths + live/status, egress guard, Q-9 closed (rule A), contracts v0.1.2-3. PR#118-121 (08-30).
+- T2-4 completed (29/31): replay fixtures 32 events (unprocessed recording, 2-field substitution, dependency-free replay proven), V-8/V-9 corrections (self-confirming control, Korean word-boundary miss — third V-1 recurrence), recheck-matrix reproducer. PR#124-129 (08-30).
