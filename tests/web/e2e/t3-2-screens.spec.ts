@@ -261,7 +261,11 @@ test.describe("T3-2 ② Incident 조사", () => {
   test("`?run=` 진입이 그 run 을 화면에 싣는다", async ({ page }) => {
     await enterIncident(page);
     const runId = new URL(page.url()).searchParams.get("run")!;
-    await expect(page.getByTestId("ttae-row")).toContainText(runId);
+    // 🔴 **뒤집힌 사실**(T3-4): runId 는 더 이상 TTAE 행에 없다. 실행 축이 서면서 그 자리는
+    //    「경과 · 수작업 대조」 전용이 됐고, run 의 이름표는 컨트롤 줄로 옮겼다. 축의 뜻은
+    //    「그 run 을 화면이 싣는가」이지 「어느 줄에 적히는가」가 아니다 — 자리를 못박아 두면
+    //    대상이 옳게 자란 날 그물이 빨강을 낸다.
+    await expect(page.getByTestId("run-controls")).toContainText(runId);
     // §2.2 측정-주장 경계 — 실측 전 수치에는 꼬리표가 붙는다(단축률 % 금지).
     await expect(page.getByTestId("ttae-row")).toContainText("잠정 목표");
     expect(
@@ -270,10 +274,15 @@ test.describe("T3-2 ② Incident 조사", () => {
     ).toBeNull();
   });
 
-  test("이벤트 상세 패널이 «T3-4 자리»라고 화면이 말한다 (AC)", async ({ page }) => {
+  test("🔵 뒤집힘 — 이벤트 상세 패널이 «T3-4 자리»를 벗고 실물이 됐다 (AC)", async ({ page }) => {
+    // 🔴 앞판은 화면이 「이 자리는 T3-4다」라고 «말하는지»를 AC 로 물었다. T3-4 가 착지하면서
+    //    그 문장은 참이 아니게 됐다 — 자리표시가 사라진 것이 옳은 결과다. 지우기만 하면 축이
+    //    사라지므로, 뒤집힌 사실을 새 기대로 못박는다(8대 계보 「그물이 판정보다 낡는다」).
     await enterIncident(page);
-    await expect(page.getByTestId("timeline-placeholder")).toContainText("T3-4");
-    await expect(page.getByTestId("evidence-strip-placeholder")).toContainText("T3-4");
+    await expect(page.getByTestId("timeline-placeholder")).toHaveCount(0);
+    await expect(page.getByTestId("evidence-strip-placeholder")).toHaveCount(0);
+    await expect(page.getByTestId("run-timeline")).toBeVisible();
+    await expect(page.getByTestId("evidence-strip")).toBeVisible();
   });
 
   test("추세 창 전환이 «실제로 다른 창»을 부르고 캡션이 줄인 사실을 말한다", async ({ page }) => {

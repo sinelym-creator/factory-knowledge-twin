@@ -119,7 +119,9 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
 
     // 🔴 도착한 화면이 «그 id 들을 실제로 그리는가». 이동만 재면 빈 화면도 초록이다.
     await expect(page.getByTestId("incident-header")).toContainText(decodeURIComponent(incidentId));
-    await expect(page.getByTestId("ttae-row")).toContainText(decodeURIComponent(runId));
+    // 🔴 뒤집힌 사실(T3-4): run 의 이름표는 TTAE 행이 아니라 컨트롤 줄에 선다. 축의 뜻은
+    //    「도착한 화면이 그 id 를 실제로 그리는가」이지 「어느 줄에 적히는가」가 아니다.
+    await expect(page.getByTestId("run-controls")).toContainText(decodeURIComponent(runId));
 
     // 🔴 그리고 그 run 은 «내 세션의» run 이어야 한다 — 계약 v0.1.6 소유권. 남의 run id 를
     //    url 에 넣어 같은 화면이 서면, 클릭 연쇄가 아니라 id 를 아는 사람의 통로가 된다.
@@ -134,9 +136,36 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
   });
 
   test("E-3 전략 비교 — 세 score 를 «크기»로 견주지 않는다 (Q-17)", async ({ page }) => {
-    test.fixme(await stillPlaceholder(page, "/compare"),
-      "Compare 가 자리표시다 — 견줄 3열이 아직 없다");
+    /* 🔴 T3-4 착지로 이 축이 깨어났다. red 는 「전략이 다른 score 를 «같은 자»로 재는 것」이다 —
+     *    vector·hybrid·graphrag 의 점수는 서로 다른 공간의 수라 크기를 견주면 화면이 없는
+     *    사실을 만든다(Q-17). 그래서 두 갈래로 묻는다:
+     *      ⓐ 점수가 «자기 열 밖»으로 나와 견줌의 재료가 되지 않는가(차이 요약·각주에 점수 0)
+     *      ⓑ 우열·순위를 말하는 낱말이 화면에 없는가
+     */
+    test.slow();
+    await page.goto("/overview", { waitUntil: "networkidle" });
     await page.goto("/compare");
+    await page.getByTestId("compare-run").click();
+    await expect(page.getByTestId("compare-columns")).toBeVisible({ timeout: 120_000 });
+    const columns = page.getByTestId("compare-column");
+    expect(await columns.count(), "열이 하나뿐이면 «견주지 않는다»를 잴 것이 없다").toBeGreaterThan(1);
+
+    // ⓐ 차이 요약은 «집합 사실»이다 — 거기 점수가 실리는 순간 그것이 크기 비교다.
+    for (const text of await page.getByTestId("compare-diff").allInnerTexts()) {
+      expect(text, `차이 요약에 점수가 실렸다: ${text}`).not.toMatch(/\d\.\d{2,}/);
+    }
+    /* ⓑ 우열 낱말 0 — 🔴 «주장하는 자리»에서만이다. 여기서 한 번 물렸다: 패널 전체를 훑었더니
+     *    각주의 「…전략의 우열을 판정하지 않습니다」가 걸렸다. 극성 없는 정규식이 **부정문을
+     *    긍정문으로 읽은** 것이고, 그 빨강은 대상이 아니라 내 그물의 것이었다.
+     *    ⇒ 주장하는 자리(컨트롤·열)를 보고, 각주는 반대로 «그 말이 있는지»를 잰다. */
+    const asserting = [
+      await page.getByTestId("compare-controls").innerText(),
+      ...(await columns.allInnerTexts()),
+    ].join("\n");
+    expect(asserting, "열·컨트롤이 우열을 말한다").not.toMatch(/우수|더 좋|더 나은|최고|1위|우월|best/i);
+    await expect(page.getByTestId("compare-footnote")).toContainText("우열을 판정하지 않습니다");
+    // 🔴 대조군 — 점수 자체는 «자기 열 안»에 있어야 한다. 아예 없으면 위 두 줄은 아무것도 안 막는다.
+    expect((await columns.first().innerText()).match(/\d\.\d/), "열 안에 점수가 없다 — 금지 축의 표본이 없다").toBeTruthy();
   });
 
   /* 🔴 T3-3 착지로 **E-4 가 깨어났다**(11대). 축 계획 정본의 red 는 두 갈래다:
@@ -194,9 +223,32 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
     //    그리는 화면은 Overview 가 아니라 **incident** 이고 그쪽은 여전히 T3-4 자리다.
     //    관문이 대상과 다른 화면을 가리키면 정직성 행이 «거짓 채근»을 한다(10대가 같은 형태의
     //    잘못된 관문을 한 번 고쳤고, 이것이 그 두 번째다).
-    test.fixme(await runScreenIsPlaceholder(page),
-      "run 을 그리는 화면(incident)이 T3-4 자리표시다 — 조합할 두 번째 축이 아직 없다(게이트 축은 mode-badge.spec.ts 가 덮는다)");
-    await page.goto("/overview");
+    /* 🔴 T3-4 로 두 번째 축이 섰다 — run 화면이 envelope 의 `mode` 를 그린다.
+     *    이제 배지는 «둘»이고, 둘은 서로 다른 원천을 말한다:
+     *      게이트 축  `mode-badge`      ← `/live/status.online`(Live AI 에 닿는가)
+     *      출처 축    `run-mode-badge`  ← 그 run 의 이벤트 봉투 `mode`(이 이벤트가 어디서 왔나)
+     *    🔴 두 값이 «같아도» 축이 하나인 것은 아니다. 그래서 각각을 «자기 원천»과 대조한다 —
+     *       한쪽을 다른 쪽으로 검산하면 그 초록은 「둘이 같다」만 말한다. */
+    test.slow();
+    await page.goto("/overview", { waitUntil: "networkidle" });
+    const start = page.getByTestId("start-from-alarm").first();
+    await start.click();
+    await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 30_000 });
+    const runId = new URL(page.url()).searchParams.get("run")!;
+    await expect(page.getByTestId("run-console")).toHaveAttribute("data-status", "completed", {
+      timeout: 180_000,
+    });
+
+    const gate = await page.evaluate(async () => (await (await fetch("/api/live/status")).json()));
+    const snap = await page.evaluate(
+      async (id) => (await (await fetch(`/api/runs/${id}`)).json()),
+      runId,
+    );
+    await expect(page.getByTestId("mode-badge")).toHaveAttribute(
+      "data-mode",
+      gate.online ? "live" : "replay",
+    );
+    await expect(page.getByTestId("run-mode-badge")).toHaveAttribute("data-mode", snap.mode);
   });
 });
 
@@ -254,11 +306,11 @@ async function runScreenIsPlaceholder(page: Page): Promise<boolean> {
 /** 축 → 그 축의 관문. 🔴 관문은 «그 축이 재려는 화면»이어야 한다 — 다른 화면을 가리키면 거짓 채근이 된다. */
 const AXIS_GATES: ReadonlyArray<readonly [string, (page: Page) => Promise<boolean>]> = [
   ["E-2b 연쇄 잔여 (WO 승인 · /work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
-  ["E-3 전략 비교 (/compare)", (p) => stillPlaceholder(p, "/compare")],
   // 🔴 E-4 는 T3-3 착지로 **채웠다**(11대) — 미룬 축이 아니므로 이 목록에서 내린다.
   //    채운 축을 여기 남겨 두면 정직성 행이 영영 빨강이고, 그 빨강은 아무 뜻도 없다.
+  // 🔴 E-3·E-6 은 **T3-4 착지로 채웠다**(12대). 이 행이 그렇게 채근했고, 채운 뒤 내린다 —
+  //    관문을 남겨 둔 채 축만 채우면 정직성 행이 「아직 안 채웠다」고 거짓을 말한다.
   ["E-5 R12 (/work-orders)", (p) => stillPlaceholder(p, "/work-orders/WOD-x")],
-  ["E-6 배지 두 축 (incident 화면)", runScreenIsPlaceholder],
 ];
 
 test("골격 정직성 — «못 잼»을 화면별 조건에 묶는다", async ({ page }) => {
