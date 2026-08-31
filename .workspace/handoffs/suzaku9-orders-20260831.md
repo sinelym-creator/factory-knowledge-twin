@@ -69,3 +69,13 @@ AC     ① 첫 tick 실패 → «상한(2s)+ε» 안에 배지 미연결 + 정�
 ## D. 리바이2 · T4-2b PR-1 서버 축 독립 검증 (17대 PR-1 착지 시 · 골격)
 
 대상 = PR-1(ⓐ semaphore+queue/run.queued ⓑ timeout ⓒ 429 ⓓ 413/422 ⓔ TTL 주기 정리 + Q-48 시작 전 판정) · 정본 = 티켓 T4-2.md AC ①~⑥·⑧ + 계약 v0.1.9 append(낱말 갈림 0) · 축 = 동시 3요청(2 실행 + 1 큐 → run.queued 형상 · 초과 → 503 live_capacity_exhausted+Retry-After) · timeout env 1s → run_stopped(timeout) + 리소스 전/후 · 429 두 축 각각 + 제외 4종(health·live/status·OPTIONS·WS 핸드셰이크) · 413/422 경계값 · TTL 만료 404 은닉(T3-1 그물 회귀 0) · Q-48 = pg 정지 → 200 mode:replay(fixture 있음) / 503 dependency_unavailable(없음) · 대조군 정상 live · 부분 초록 관측 1행(Q-56 표본) · 회귀 tests/api·T2-3 그물 · 자리 lane/levi2-t4-2b-verify · 판정문 evidence/t4-2b-live-guard-verification.md.
+
+## F. 재부팅 후 «10대» 1착 (폐하 하명 08-31 21:17 「팀 마감하고 재부팅 요청해」 · 9대 마감 21:23~)
+
+0. `git pull origin develop` → checkpoint(9대 마감본 · 로컬 `.claude/context/checkpoint.md` · `.claude` 는 gitignore 라 재부팅 전 로컬 상태 그대로) 1 Read → 착신 큐(팀 5 · 자비스 3) → 순찰 cron 20분 재등록 → 자비스에 기동 회신.
+1. 인프라(자비스 칸 · 1줄씩 확인만): 부팅 시퀀스(boot-sequence rc=1 · boot-notify 전패 = 자비스 상신분) · docker desktop 기동 + **자격 헬퍼 stale**(메모리 docker-cred-helper-stale-after-reboot · build/pull 만 죽고 컨테이너는 정상) · **V3 제외 경로 설정 여부**(폐하 화면 작업 · 안 됐으면 명령 20초대 지속 → timeout 60~600s) · 열쇠 창 23:51~00:11 «조건».
+2. 좌석 wake 2본(자비스 spawn → 좌표 3줄 → 오케 발신 · 🔴 통신 규율(CLAUDE.md §3) + 계보 절 동봉 의무):
+   - **센쿠2 «18대»** = §A(D-3 픽스) 잔여 — 17대 마감 신고(lane `lane/senku2-d3-live-status-first-tick` tip · 진범 여부 · 코드 진행 · 자기 실측 유무)를 «그대로» 동봉 · 대조군 재기동 = ai-api :8004(python · q3 DB pg 5538 / neo4j 7591 · `FKT_WARMUP_EMBEDDING=0` · `FKT_BUILD_SHA`) · 컨테이너 = compose 프로젝트명별 `up -d`(pg named volume 잔존 · 재-up 시 빈 DB 아님) · 표본 무접촉 · 그 뒤 PR-1(ⓐ~ⓔ+Q-48) → PR-2(ⓕ·ⓖ·Q-50).
+   - **리바이2 «16대»** = §E(⑧ 회귀 + 판정문 완성) — 15대 마감 신고 좌표 + 14대 인계 3줄 그대로(lane tip `0d92e9a` 이상 · 셸 4벌 «다른 목적지 빌드» 재기동 = 각 워크트리에서 build+start · 블랙홀 `node _blackhole_server.mjs 8074` · 컨테이너 `up -d`) · 그 뒤 T4-1 ②′(D-3 착지 시) · §D(PR-1 검증).
+3. 완결 순서(각 +1/47 · 현 36): T4-2a(⑧ PASS → +1 · Q-51 종결 · T3-6 증거 ① 측정 가능) · T4-1(D-3 픽스 + ②′ → +1 · Q-37·44·46 종결) → 38/47 · 그 뒤 T4-2b PR-1/PR-2 → §D 검증 → T4-3(Vercel = 오케 직접 · 재가분) · T3-6 · T4-4.
+4. 관문 보고 = 완결마다(삼중 표기 · 시각+제목) · 폐하 결정 대기 = V3 제외 경로 1건(자비스 상신).
