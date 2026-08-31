@@ -600,6 +600,8 @@ WorkOrder REFERENCES SOP
 
 ### 13.1 Public/Live API
 
+> 🔴 **정오(08-31 운영자 재가 · 원장 Q-47)**: 본 표는 초안 명칭이다. Public/Live API 표면의 **정본 = `packages/contracts/rest-api-v0.1.md`(동결 본문 + append 전건 · Phase 1~3 구현·검증 착지분)** — 버전 접두(`/api/v1/…`)·라우트 이름이 다른 곳은 계약이 우선하며, CORS allowlist·공개 노출 경계(§16)도 계약 표면 기준으로 세운다. 표 자체는 원문 보존.
+
 | Method | Endpoint | 설명 |
 |---|---|---|
 | `GET` | `/api/v1/health` | Live engine과 dependency 상태 |
