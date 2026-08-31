@@ -337,7 +337,13 @@ test("화면이 런타임 오류를 내지 않는다 — hydration 불일치 포
       if (m.type() === "error") seen.push(m.text().slice(0, 160));
     });
     await page.goto("/overview", { waitUntil: "networkidle" });
-    await page.waitForTimeout(500);
+    // 🔴 **뒤집힌 사실**(Q-45): 앞판은 500ms 를 «기다려» 「오류 0」을 말했다 — 창이 판정을
+    //    정하던 자리다. 부하가 그 창을 먹으면 늦게 온 오류가 조용히 지워진다(위양성 초록).
+    //    부재는 창이 아니라 **사건 뒤에** 묻는다: 클라이언트가 «실제로 돌았다»는 양의 신호를
+    //    기다린다 — 배지가 `checking` 을 벗는 것은 마운트 effect 가 답까지 받았다는 뜻이고,
+    //    hydration 불일치 오류는 그보다 «앞»에서 난다.
+    await expect(page.getByTestId("mode-badge")).not.toHaveAttribute("data-mode", "checking");
+    await page.waitForLoadState("networkidle");
     await ctx.close();
   }
   expect(seen, `브라우저가 오류를 냈다(${seen.length}/${N} 표본):\n${seen.join("\n")}`).toEqual([]);
