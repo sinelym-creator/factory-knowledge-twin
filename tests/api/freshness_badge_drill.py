@@ -43,6 +43,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 REPO = Path(__file__).resolve().parents[2]
 VIEW_SQL = (
@@ -252,6 +253,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--inject-stale", action="store_true", help="실주입 왕복(쓴다 · 원복 포함)")
     args = parser.parse_args()
+    _colocation.require()  # 🔴 재기 전에 «저 서버가 이 트리를 읽는가»부터(Q-42)
 
     print(f"정본      : {VIEW_SQL.relative_to(REPO)}")
     print(f"대상      : {API_BASE}")

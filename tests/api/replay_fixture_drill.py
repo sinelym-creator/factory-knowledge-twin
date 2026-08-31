@@ -37,6 +37,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · 이 드릴이 물린 자리에서 나왔다)
 
 REPO = Path(__file__).resolve().parents[2]
 # 🔴 시험 대상 서버가 «실제로 읽는» 리포. 그물이 lane 워크트리에 있고 서버가 주 체크아웃에서
@@ -118,48 +119,6 @@ def self_check(recorded: list[dict]) -> None:
         if not divergence(original, mutated):
             raise DrillError(f"자기 검증 실패 — «{what}» 을 같다고 판정한다")
     print("  자기 검증  표본 5종(동일 1 · 어긋남 4: ts·payload·seq·필드추가) 전건 기대대로 — 비교기 살아 있음")
-
-
-def prove_colocation(recorded: list[dict]) -> str:
-    """🔴 «내가 치울 그 파일»을 서버가 실제로 읽는가 — 판정 앞에 오는 귀속 증명(Q-40).
-
-    한 번 물렸다: F-11(fixture 부재 → 501)이 200 을 냈고 그것이 「서버가 없는 것을 있다고
-    말한다」로 읽혔다. 실측해 보니 서버는 «다른 트리»의 fixture 를 읽고 있었다 — 내가 치운
-    파일을 서버는 애초에 보지 않았다. 대상은 멀쩡했고 빨강은 내 것이었다.
-
-    🔴 파일 «내용 대조»(F-03)로는 이걸 못 가른다. 트리마다 같은 커밋의 같은 fixture 라
-       바이트가 같고, 그래서 남의 트리를 읽어도 F-02~F-05 는 전부 초록이다.
-       빈 결과끼리의 일치가 일치가 아니듯, 같은 파일끼리의 일치도 귀속을 증명하지 않는다.
-
-    그래서 «자극»으로 묻는다: 내 파일을 한 칸 고쳐 그 값이 재생본에 나오는가. 안 나오면
-    서버가 보는 fixture 는 내 것이 아니고, 그때 F-11 의 어떤 색도 대상의 것이 아니다 —
-    결과가 아니라 «측정 불가»(exit 2)다. `FKT_SERVER_REPO` 는 그 답을 «주장»할 뿐이고,
-    이 함수는 그것을 «확인»한다.
-    """
-    sentinel = "2020-01-02T03:04:05Z"
-    if recorded[0]["ts"] == sentinel:
-        raise DrillError("자극 표지가 녹화본의 원값과 같다 — 표지를 바꿔라")
-    original = FIXTURE.read_bytes()
-    try:
-        planted = [dict(e) for e in recorded]
-        planted[0]["ts"] = sentinel
-        FIXTURE.write_bytes(
-            ("\n".join(json.dumps(e, ensure_ascii=False) for e in planted) + "\n").encode("utf-8")
-        )
-        _, events = replay_run()
-        seen = events[0].get("ts") if events else None
-    finally:
-        FIXTURE.write_bytes(original)
-        if hashlib.sha256(FIXTURE.read_bytes()).hexdigest() != hashlib.sha256(original).hexdigest():
-            raise DrillError("자극 되감기 실패 — fixture 를 원상으로 되돌리지 못했다")
-    if seen != sentinel:
-        raise DrillError(
-            f"귀속 미증명 — 내 fixture 를 고쳤는데 재생본은 ts={seen!r} 를 냈다. "
-            f"{API_BASE} 의 서버가 읽는 fixture 는 내가 치울 파일이 아니다"
-            f"(FKT_SERVER_REPO={SERVER_REPO}). 측정 불가."
-        )
-    print(f"  귀속 증명  내 fixture 의 손질이 재생본에 나온다 — {API_BASE} 는 이 트리를 읽는다")
-    return sentinel
 
 
 def replay_run() -> tuple[str, list[dict]]:
@@ -278,7 +237,9 @@ def main() -> int:
     print(f"대상      : {API_BASE}\n")
     self_check(recorded)
     # 🔴 자기 검증(비교기가 우는가) 다음은 «귀속»이다 — 내가 재는 것이 저 서버가 보는 것인가.
-    prove_colocation(recorded)
+    #    이 단은 여기서 태어나 `_colocation` 으로 옮겨 갔다(Q-42) — 같은 함정이 HTTP 표면
+    #    드릴 전부에 있었기 때문이다. 여기서는 그 공용 전처리를 그대로 부른다.
+    _colocation.require(API_BASE)
 
     rows: list[tuple[str, str, bool, str]] = []
 
