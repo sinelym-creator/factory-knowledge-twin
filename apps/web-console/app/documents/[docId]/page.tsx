@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { CitedBody } from "@/components/evidence/cited-body";
 import { DeepLinkNotice } from "@/components/evidence/deep-link-notice";
 import { TrustHeader } from "@/components/evidence/trust-header";
+import { MarkVisited } from "@/components/static-visitor";
 import { Unavailable } from "@/components/unavailable";
 import {
   CONTRACT,
@@ -11,6 +12,7 @@ import {
   decodeRouteParam,
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
  * 문서 단건 열람 — 계약 v0.1.6 읽기 예외 2라우트 중 `GET /documents/{docId}` 의 «화면 실체»
@@ -37,10 +39,11 @@ export default async function DocumentPage({
   const cookieHeader = (await headers()).get("cookie") ?? "";
   const hasSession = parseSession((await cookies()).get(SESSION_COOKIE)?.value) !== null;
 
-  const reply = await apiGetServer<DocumentPreview>(
-    CONTRACT.document(docId, highlight),
-    cookieHeader,
-  );
+  // 🔴 정적 replay 경로 — 사본에서 찾는다(T4-2a). highlight 좌표까지 포함해 굳혀 두었다.
+  const bundle = isStaticRun(run) ? await loadStaticReplay() : null;
+  const reply = bundle
+    ? staticLookup<DocumentPreview>(bundle, CONTRACT.document(docId, highlight))
+    : await apiGetServer<DocumentPreview>(CONTRACT.document(docId, highlight), cookieHeader);
 
   const heading = (
     <header className="rounded border border-edge bg-panel px-4 py-3">
@@ -107,6 +110,8 @@ export default async function DocumentPage({
     <div className="flex min-w-0 max-w-4xl flex-col gap-3">
       {heading}
       <DeepLinkNotice hasSession={hasSession} runId={run} />
+      {/* 🔴 열람 이력 — 정적 경로에서만 남긴다(ⓒ). 그리는 것이 없는 부수효과 컴포넌트다. */}
+      <MarkVisited id={d.documentId} run={run} />
 
       <section className="rounded border border-edge bg-panel p-3" data-testid="document-view">
         <div className="flex flex-wrap items-baseline gap-2">

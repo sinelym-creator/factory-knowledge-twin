@@ -10,8 +10,12 @@ import {
   type Incident,
   type Overview,
   type RunSnapshot,
+  type ErrorDetail,
+  type Series,
+  type SeriesWindow,
   apiGetServer,
 } from "@/lib/contract";
+import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
  * incident 의 `alarmIds[]` 를 «알람 행»으로 되돌린다 — 계약 안에서만.
@@ -23,20 +27,28 @@ import {
  *    넓어져야 하고, 그것은 코드가 아니라 계약이 정할 일이다 — 못 찾으면 null 을 돌려주고
  *    화면이 그 사실을 말한다.
  */
-async function resolveAlarm(
-  alarmIds: string[],
-  cookieHeader: string,
-): Promise<ActiveAlarm | null> {
+async function resolveAlarm(alarmIds: string[], get: Getter): Promise<ActiveAlarm | null> {
   if (alarmIds.length === 0) return null;
-  const plants = await apiGetServer<{ plantId: string }[]>(CONTRACT.plants, cookieHeader);
+  const plants = await get<{ plantId: string }[]>(CONTRACT.plants);
   if (plants.state !== "ok" || plants.data.length === 0) return null;
-  const overview = await apiGetServer<Overview>(
-    CONTRACT.plantOverview(plants.data[0].plantId),
-    cookieHeader,
-  );
+  const overview = await get<Overview>(CONTRACT.plantOverview(plants.data[0].plantId));
   if (overview.state !== "ok") return null;
   return overview.data.activeAlarms.find((a) => alarmIds.includes(a.alarmId)) ?? null;
 }
+
+/**
+ * 「계약 경로 하나를 물어 그 답을 받는다」 — 🔴 **답의 출처만 다르고 형태는 같다.**
+ *
+ * Live 는 ai-api 에 묻고, 정적 replay 는 굳혀 둔 사본에서 찾는다(T4-2a). 두 갈래를 이 한
+ * 자리에 모아 두면 아래 렌더 코드는 자기가 어느 경로에 있는지 «몰라도» 된다 — 그것이
+ * 「live/replay 렌더 분기 0」의 실제 모습이다. 분기가 화면 안으로 퍼지면, 한쪽만 고치는 날
+ * 두 경로가 다른 화면을 그리기 시작한다.
+ */
+type Getter = <T>(
+  path: string,
+) => Promise<
+  { state: "ok"; data: T } | { state: "unavailable"; why: string; status?: number; detail?: ErrorDetail }
+>;
 
 /**
  * ② Incident 조사 (wireframes §2) — 컨텍스트 + run 진입 동선 (T3-2).
@@ -60,7 +72,17 @@ export default async function IncidentPage({
   const { run } = await searchParams;
   const cookieHeader = (await headers()).get("cookie") ?? "";
 
-  const incident = await apiGetServer<Incident>(CONTRACT.incident(incidentId), cookieHeader);
+  /**
+   * 🔴 **정적 replay 진입 신호는 `?run=` 값 하나다**(T4-2a · 오케 채택 2026-08-31).
+   *    이 화면의 헤더·설비·추세는 서버 컴포넌트가 만들므로 browser storage 를 볼 수 없다 —
+   *    그래서 진입 표지가 URL 이어야 한다. 셸 내부 규약이며 계약 표면도, 신규 라우트도 아니다.
+   * 🔴 자산은 정적 경로에서만 싣는다(동적 import) — Live 방문자는 내려받지 않는다(§17.1·Q-50).
+   */
+  const bundle = isStaticRun(run) ? await loadStaticReplay() : null;
+  const get: Getter = (path) =>
+    bundle ? Promise.resolve(staticLookup(bundle, path)) : apiGetServer(path, cookieHeader);
+
+  const incident = await get<Incident>(CONTRACT.incident(incidentId));
   if (incident.state !== "ok") {
     // 🔴 「그런 incident 가 없다」와 「지금 못 물어봤다」를 가른다. 서버는 사유 코드를 나눠
     //    답하는데 화면이 둘을 한 모습으로 그리면 그 구분이 화면에서 사라진다.
@@ -75,10 +97,13 @@ export default async function IncidentPage({
   }
 
   const [equipment, snapshot] = await Promise.all([
-    apiGetServer<EquipmentDetail>(CONTRACT.equipment(incident.data.equipmentId), cookieHeader),
+    get<EquipmentDetail>(CONTRACT.equipment(incident.data.equipmentId)),
     // 🔴 `?run=` 이 없으면 «묻지 않는다». 없는 run 을 물어 404 를 받고 그것을 화면에 「오류」로
     //    그리면, 아직 조사를 시작하지 않은 정상 상태가 결함처럼 보인다.
-    run
+    // 🔴 정적 경로에서도 «묻지 않는다» — 정적 runId 는 서버에 없는 id 이고(오케 가드레일 ①),
+    //    그리고 스냅샷은 애초에 「이벤트가 없을 때 자리를 지키는」 물건이다. 정적은 32건 전열을
+    //    처음부터 쥐고 있으므로 채울 빈자리가 없다.
+    run && !bundle
       ? apiGetServer<RunSnapshot>(CONTRACT.run(run), cookieHeader)
       : Promise.resolve({ state: "unavailable", why: "run 미지정" } as const),
   ]);
@@ -101,12 +126,26 @@ export default async function IncidentPage({
    *    그리면 앞판의 병이 이름만 바꿔 되살아난다 — 그래서 아래 `source` 가 화면과 DOM 양쪽에
    *    「이 곡선이 알람의 것인가」를 남긴다(거동으로 물을 수 있게).
    */
-  const alarmRow = await resolveAlarm(incident.data.alarmIds, cookieHeader);
+  const alarmRow = await resolveAlarm(incident.data.alarmIds, get);
   const sensorFromAlarm = alarmRow
     ? (eq?.sensors.find((s) => s.sensorId === alarmRow.sensorId) ?? null)
     : null;
   const alarmSensor = sensorFromAlarm ?? eq?.sensors[0] ?? null;
   const sensorSource: "alarm" | "fallback" = sensorFromAlarm ? "alarm" : "fallback";
+
+  /**
+   * 정적 경로의 창별 센서 사본 — 🔴 **굳힌 창만 담는다.** 없는 창을 빈 배열로 채우면 화면이
+   * 「데이터가 0점이다」와 「그 창을 안 담았다」를 같은 모습으로 그린다. 키가 없으면 차트가
+   * 「Live 전용」이라 말한다(대응표 #10).
+   */
+  let staticSeries: Partial<Record<SeriesWindow, Series>> | undefined;
+  if (bundle && alarmSensor) {
+    staticSeries = {};
+    for (const w of ["24h", "3w"] as const) {
+      const hit = staticLookup<Series>(bundle, CONTRACT.sensorSeries(eq!.equipmentId, alarmSensor.sensorId, w));
+      if (hit.state === "ok") staticSeries[w] = hit.data;
+    }
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
@@ -149,6 +188,7 @@ export default async function IncidentPage({
                 source={sensorSource}
                 alarm={alarmRow}
                 alarmIds={incident.data.alarmIds}
+                staticSeries={staticSeries}
               />
             ) : (
               <p className="rounded border border-edge bg-panel p-4 text-sm text-muted">
@@ -180,7 +220,14 @@ export default async function IncidentPage({
         );
 
         return run ? (
-          <RunConsole key={run} runId={run} initialSnapshot={snapshot.state === "ok" ? snapshot.data : null}>
+          <RunConsole
+            key={run}
+            runId={run}
+            initialSnapshot={snapshot.state === "ok" ? snapshot.data : null}
+            // 🔴 정적 경로는 이벤트 전열을 «미리» 넘겨받는다 — 콘솔은 WS 를 열지 않고,
+            //    그 아래 `reduceEvents`·타임라인·되감기는 한 줄도 달라지지 않는다(AC ⑤).
+            staticEvents={bundle ? bundle.events : undefined}
+          >
             {context}
           </RunConsole>
         ) : (

@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { liveStatus } from "@/lib/contract";
+import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 
 /**
  * 모드 배지 + fallback 배너 (wireframes §0).
@@ -60,6 +62,17 @@ const FACE: Record<Mode, { icon: string; text: string; cls: string }> = {
   unavailable: { icon: "◌", text: "미연결", cls: "text-muted" },
 };
 
+/**
+ * Live 상태를 «읽는» 훅 — 🔴 배지 말고 다른 자리도 이 사실을 필요로 한다(T4-2a ⓓ).
+ *
+ * 정적 재생 화면은 「ai-api 가 돌아왔는가」를 알아야 «Live 로 돌아가기»를 제안할 수 있다.
+ * 상태를 두 번 폴링하지 않고 이 컨텍스트를 나눠 쓴다 — 같은 사실을 두 곳에서 따로 물으면
+ * 두 답이 갈리는 순간이 생기고, 화면은 그 순간 서로 다른 말을 한다.
+ */
+export function useLiveStatus() {
+  return useContext(LiveContext);
+}
+
 export function ModeBadge() {
   const { mode, checkedAt, why } = useContext(LiveContext);
   const face = FACE[mode];
@@ -73,6 +86,65 @@ export function ModeBadge() {
     >
       <span aria-hidden>{face.icon}</span>
       <span>{face.text}</span>
+    </span>
+  );
+}
+
+/**
+ * 정적 replay 제안 (T4-2a ⓑ · §6.2 「Live 실패 시 Replay 제안」).
+ *
+ * 🔴 **«제안»이지 «폴백»이 아니다.** 사람이 눌러야 진입한다 — 화면이 조용히 다른 데이터를
+ *    보여 주기 시작하면, 방문자는 자기가 무엇을 보고 있는지 모른 채 재생본을 실시간으로 읽는다.
+ *
+ * 🔴 **트리거는 「응답 실패」뿐이다**(오케 판정 R-3 · 2026-08-31). `online:false` 는 **참**이고
+ *    (합성 게이트웨이만 없다 · `routers/ops.py` J-1(b)) 그때는 **서버 replay 가 정본**이라
+ *    여기서 제안하면 「닿는데도 안 닿는 척」이 된다. `checking` 중에도 제안하지 않는다 —
+ *    아직 물어보는 중인 것을 실패로 세면, 확인하지 않은 것을 확인한 척하는 것이다.
+ *
+ * 🔴 자산은 **누를 때** 싣는다(동적 import). 앵커 incidentId 도 그 자산이 들고 있으므로,
+ *    이 버튼이 보이는 것만으로 111KB 가 내려오지 않는다(§17.1 · Q-50).
+ */
+function StaticReplayOffer() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [why, setWhy] = useState<string | null>(null);
+
+  async function enter() {
+    setBusy(true);
+    setWhy(null);
+    try {
+      // 🔴 여기서 «처음» 싣는다 — 배너가 보이는 것만으로 자산이 내려오지 않게
+      //    (동적 import · 오케 제약 ①). 앵커 incidentId 도 그 자산이 들고 있다.
+      const { loadStaticReplay } = await import("@/lib/static-replay");
+      const bundle = await loadStaticReplay();
+      const { incidentId } = bundle.manifest.anchors;
+      router.push(
+        `/incidents/${encodeURIComponent(incidentId)}?run=${encodeURIComponent(STATIC_RUN_ID)}`,
+      );
+    } catch (e) {
+      // 🔴 자산이 없거나 깨졌으면 «말한다». 조용히 아무 일도 안 일어나면 방문자는 버튼이
+      //    고장인지 자기가 잘못 눌렀는지 알 수 없다.
+      setBusy(false);
+      setWhy(e instanceof Error ? e.message : "정적 재생본을 싣지 못했습니다");
+    }
+  }
+
+  return (
+    <span className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => void enter()}
+        disabled={busy}
+        className="rounded border border-ai/60 px-2 py-0.5 text-xs text-ai hover:bg-ai/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+        data-testid="static-replay-offer"
+      >
+        {busy ? "재생본 준비 중…" : "정적 재생본으로 GS-01 보기 ▸"}
+      </button>
+      {why && (
+        <span className="text-warn" role="status" data-testid="static-replay-offer-why">
+          {why}
+        </span>
+      )}
     </span>
   );
 }
@@ -104,6 +176,10 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
         [ ! ]
       </span>
       <span className="flex-1">{notice}</span>
+      {/* 🔴 제안은 «응답 실패»에만 붙는다 — `replay`(online:false)는 서버 replay 가 정본이고,
+          `checking` 은 아직 물어보는 중이다. 셋을 한 자리에서 제안하면 살아 있는 Live 를
+          정적이 가로챈다(오케 판정 R-3). */}
+      {mode === "unavailable" && <StaticReplayOffer />}
       <button className="text-muted hover:text-ink" onClick={() => setClosed(true)} aria-label="배너 닫기">
         ✕
       </button>
