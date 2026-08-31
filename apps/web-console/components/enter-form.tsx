@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+import { enterSession } from "@/lib/contract";
 import { ENTRY_DESTINATION } from "@/lib/session";
 
 /**
@@ -58,14 +59,33 @@ export function EnterForm() {
 
     void (async () => {
       try {
-        // 🔴 same-origin 이라 응답의 Set-Cookie 는 브라우저가 그대로 심는다 —
-        //    `redirect:"manual"` 이어도 그렇다(쿠키는 항해가 아니라 응답의 일이다).
-        await fetch("/enter", { method: "POST", redirect: "manual", cache: "no-store" });
+        // 🔴 fetch 자체는 `lib/contract.ts` 안에 있다 — «셀에서 나가는 fetch 는 한 파일»
+        //    불변식(scripts/contract-surface.mjs)을 이 줄로 깨지 않는다. 쿠키를 심는 일·303 을
+        //    따라가지 않는 이유는 그 함수의 머릿말에 적혀 있다.
+        await enterSession();
       } catch {
         // 🔴 입장 요청이 실패해도 «화면을 세운다». 세션은 핸들러가 pending 으로 답하거나
         //    다음 화면의 가드가 다시 물을 일이고, 여기서 멈추면 방문자는 빈 자리에 선다.
       }
       router.push(ENTRY_DESTINATION);
+      // 🔴 **섬을 옳기고 난 뒤, 서버 트리를 한 번 다시 받는다**(D-3 회귀 방지).
+      //
+      // 소프트 항해는 페이지만 다시 가져오고 **루트 레이아웃은 재사용한다** — 그런데
+      // 셀(`AppShell`)은 서버에서 쿠키를 읽어 세션 칩·리셋 버튼을 그린다. 그 레이아웃은
+      // 방문자가 `/` 에 서 있던 순간(아직 쿠키가 없다)에 그려졌으므로, 그대로 두면
+      // 입장에 성공한 방문자의 화면에서 **리셋 버튼과 세션 칩이 사라진다**(P0 11항 중
+      // «세션 격리·리셋» 두 항이 화면에서 없어진다). 앞판이 그런 적이 없던 것은
+      // 네이티브 제출이 문서를 통째로 갈아치워 레이아웃까지 다시 SSR 됐기 때문이다 —
+      // 즉 이 줄은 «새 기능»이 아니라 문서 교체가 공짜로 주던 것을 명시적으로 갚는 자리다.
+      //
+      // 🔴 `refresh()` 는 클라이언트 상태를 버리지 않는다 — 첫 tick 이 알아낸 모드는
+      //    그대로 살아있다. 그 보존이 이 처방의 목적이니, **문서 교체로 되돌리는 것으로는
+      //    고치지 않는다**(그것은 D-3 을 그대로 되살린다).
+      // 🔴 순서가 중요하다 — **push 먼저, refresh 나중.** 먼저 refresh 하면 아직 `/` 위라
+      //    가드(«`/` 는 머무는 곳이 아니다»)가 다시 돌아 항해가 둘로 겹친다.
+      //    그리고 refresh 는 화면을 «막지» 않는다: 이미 그려진 화면 위로 새 트리가 도착할
+      //    때 교체될 뿐이라, 배지·배너가 상한 안에 사람에게 닿는 것은 그대로다(q50 그물로 재측).
+      router.refresh();
     })();
   }, [router]);
 

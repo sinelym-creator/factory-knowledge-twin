@@ -428,6 +428,27 @@ export function createSession(base = ""): Promise<Reply<{ sessionId: string }>> 
   );
 }
 
+/**
+ * 入장 «실행» — 셀 자신의 라우트 `POST /enter` 를 부른다 (Q-39 ⓒ · D-3).
+ *
+ * 🔴 **이것은 계약 v0.1 표면이 아니다.** ai-api 로 나가는 요청이 아니라 이 셀의
+ *    라우트 핸들러를 부르는 same-origin 요청이고, 계약(`POST /api/sessions`)은 그 핸들러
+ *    «안»에서 쓰인다. 그럼에도 이 함수가 여기 있는 이유는 «셀에서 나가는 fetch 는 한
+ *    파일에 모인다»는 불변식(scripts/contract-surface.mjs) 때문이다 — 그 규칙의 값은
+ *    「계약 밖 경로가 어느 컴포넌트에서 조용히 새지 않는다」에 있고, 예외를 컴포넌트
+ *    쪽에 두면 규칙이 그만큼 약해진다(예외를 허용하는 순간 검사기는 「내가 쓴 것 전부
+ *    허용」이 된다).
+ *
+ * 🔴 `call()` 을 쓰지 않는다: 이 응답은 JSON 이 아니라 303 이고, 필요한 것도 본문이
+ *    아니라 «쿠키»다. call() 에 태우면 303 이 `!res.ok` 에 걸려 unavailable 로 접힌다.
+ * 🔴 `redirect:"manual"` 이유: 그냥 두면 fetch 가 303 을 따라가 `/overview` 문서를
+ *    통째로 받아 버리고(그 SSR 이 API 를 기다리는 동안 사람은 아무것도 못 본다) 그 응답을
+ *    버린다. 쿠키는 항해가 아니라 응답의 일이라, 따라가지 않아도 브라우저가 심는다(same-origin).
+ */
+export async function enterSession(): Promise<void> {
+  await fetch("/enter", { method: "POST", redirect: "manual", cache: "no-store" });
+}
+
 export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolean }>> {
   return call<{ ok: boolean }>(CONTRACT.resetSession(sid), { method: "POST" }, base);
 }
