@@ -41,6 +41,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 스택 무접촉)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
 
 API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
@@ -142,7 +143,10 @@ def baseline() -> int:
 def cut_and_measure() -> int:
     bad = 0
     print(f"\n  -- 런타임 의존 단절 — {PG_CONTAINER} 정지")
-    docker("stop", PG_CONTAINER)
+    # 🔴 **Q-62 — 부수기 «전» 소유 확인.** 이름 기본값으로 남의 컨테이너를 멈추면
+    #    되돌려도 그 사이 남이 재던 것은 이미 죽는다. 통과 못 하면 손대지 않는다.
+    target = _ownership.own_container("FKT_PG_CONTAINER", "멈췄다 되살릴 postgres")
+    docker("stop", target)
     time.sleep(2)
     try:
         seen: dict[str, tuple[int, str]] = {}
@@ -173,11 +177,11 @@ def cut_and_measure() -> int:
         print(f"  {'PASS' if served else 'FAIL'}  D-07 /scenarios 는 단절과 무관{'':4} {sstatus} {scode}")
     finally:
         print(f"\n  -- 되감기 — {PG_CONTAINER} 재기동")
-        docker("start", PG_CONTAINER)
+        docker("start", target)
         state = ""
         for _ in range(45):
             time.sleep(2)
-            state = docker("inspect", PG_CONTAINER, "--format", "{{.State.Health.Status}}")
+            state = docker("inspect", target, "--format", "{{.State.Health.Status}}")
             if state == "healthy":
                 break
         time.sleep(2)

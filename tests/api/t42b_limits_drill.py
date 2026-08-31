@@ -33,11 +33,14 @@ import urllib.parse
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 좌석 무접촉)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 귀속 증명
 
-BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8021")
-SESSION_BASE = os.environ.get("FKT_T42B_SESSION_BASE", "http://127.0.0.1:8022")
-IP_BASE = os.environ.get("FKT_T42B_IP_BASE", "http://127.0.0.1:8023")
+#: 🔴 **Q-62 — 좌석 포트를 기본값으로 두지 않는다.** 예전엔 여기 내 실물 포트가 박혀 있었고,
+#:   다른 좌석이 확인 없이 돌려 «내 계측기»를 두드렸다(창 소모 · 값 오염). 미지정 = exit 2.
+BASE = _ownership.read_base("FKT_API_BASE", "기본값 서버(413·422 경계)")
+SESSION_BASE = _ownership.read_base("FKT_T42B_SESSION_BASE", "세션 축 서버")
+IP_BASE = _ownership.read_base("FKT_T42B_IP_BASE", "IP 축 서버")
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 
 MAX_BODY = int(os.environ.get("FKT_T42B_MAX_BODY", "65536"))
