@@ -83,6 +83,38 @@ def _client_ip(scope: Scope, *, trust_forwarded_for: bool) -> str:
     return client[0] if client else "unknown"
 
 
+# 🔴 「기동 경로가 샜다」의 목격자 — 한 프로세스에서 «한 번만» 운다(D-8).
+#    스팸을 내면 그 줄은 배경 소음이 되고, 정작 그 한 번을 아무도 못 읽는다.
+_leak_warned = False
+
+
+def _warn_if_runner_already_resolved(scope: Scope, client_ip: str, *, trust_forwarded_for: bool) -> None:
+    """uvicorn 이 XFF 를 «먼저» 해석했는지 런타임에 알아챈다 (D-8).
+
+    🔴 **왜 코드가 이것을 봐야 하는가.** 처방은 기동 명령의 `--no-proxy-headers` 다 —
+       Dockerfile 과 README 에 적었지만, 사람이 손으로 띄우는 경로가 하나라도 그 플래그를
+       빠뜨리면 「XFF 는 env 스위치 한 곳만 읽는다」가 조용히 거짓이 된다. 조용한 것이 문제다:
+       그때 화면도 로그도 아무 말을 하지 않고, 헤더 한 줄로 IP 축이 우회된다.
+
+    🔴 **판정 근거.** trust 를 껐는데도 `scope["client"]` 가 요청의 XFF 첫 값과 «같다»면,
+       그 값을 넣은 것은 우리가 아니다 — 런너가 이미 덮은 것이다. 우리 코드로는 되돌릴 수
+       없으므로(원본 소켓 주소는 scope 에 남지 않는다) 고치는 것이 아니라 **말한다**.
+    """
+    global _leak_warned
+    if _leak_warned or trust_forwarded_for:
+        return
+    xff = _header(scope, b"x-forwarded-for")
+    if not xff:
+        return
+    if xff.split(",")[0].strip() != client_ip:
+        return
+    _leak_warned = True
+    log.warning(
+        "X-Forwarded-For 를 런너가 이미 해석했다 — 기동에 --no-proxy-headers 가 빠졌다(D-8). "
+        "이 상태에서는 FKT_TRUST_FORWARDED_FOR 가 꺼져 있어도 IP 축이 헤더로 우회된다"
+    )
+
+
 class _Window:
     """키 하나의 슬라이딩 창 — 요청 시각만 담는다."""
 
@@ -171,6 +203,7 @@ class RateLimitMiddleware:
         checks: Iterable[tuple[_Axis, str]] = ()
         sid = _cookie(scope, SESSION_COOKIE)
         ip_key = _client_ip(scope, trust_forwarded_for=self._trust_xff)
+        _warn_if_runner_already_resolved(scope, ip_key, trust_forwarded_for=self._trust_xff)
         checks = ((self._ip, ip_key),) if sid is None else (
             (self._ip, ip_key),
             (self._session, sid),
