@@ -47,6 +47,15 @@ const ALLOWED = [
   /^\/api\/evidence\/\$\{[^}]+\}$/,
   /^\/api\/documents\/\$\{[^}]+\}$/,
   /^\/api\/documents\/\$\{[^}]+\}\?highlight=\$\{[^}]+\}$/,
+  // --- T3-4 실행·재생·전략 비교 -----------------------------------------------------
+  // 🔴 넷 다 계약 «동결 본문»에 이미 있는 라우트다(runs 표면 5 + WS + /retrieval/compare).
+  //    새로 연 표면이 아니라, 화면이 이제야 소비하기 시작한 표면이다 — 대응표 실측으로 확인했고
+  //    신규 해제 소요는 0 이었다.
+  /^\/api\/runs\/\$\{[^}]+\}\/stop$/,
+  /^\/api\/runs\/\$\{[^}]+\}\/events$/,
+  /^\/api\/retrieval\/compare$/,
+  // 🔴 WS 는 계약 표기(`/ws/runs/{runId}`)에 base `/api` 가 붙은 형태가 «실재»다(실측 101).
+  /^\/api\/ws\/runs\/\$\{[^}]+\}$/,
 ];
 
 const ROOTS = ["app", "components", "lib", "proxy.ts", "next.config.ts"];

@@ -45,6 +45,22 @@ export const CONTRACT = {
     chunkId
       ? `/api/documents/${encodeURIComponent(docId)}?highlight=${encodeURIComponent(chunkId)}`
       : `/api/documents/${encodeURIComponent(docId)}`,
+  // --- T3-4 실행·재생·전략 비교(계약 §시나리오·조사 실행 · §검색) --------------------
+  stopRun: (runId: string) => `/api/runs/${encodeURIComponent(runId)}/stop`,
+  /** 되감기 정본 — 전체 이벤트를 seq 순으로 준다(실측 32건 · seq 0~31). */
+  runEvents: (runId: string) => `/api/runs/${encodeURIComponent(runId)}/events`,
+  compare: "/api/retrieval/compare",
+  /**
+   * 🔴 **WS 경로에 `/api` 가 붙는다.** 계약 표기는 `WS /ws/runs/{runId}` 이고 그 표의 base 가
+   *    `/api` 다 — 실측(ai-api :8003)에서 `/ws/runs/{id}` 는 **403**, `/api/ws/runs/{id}` 는 **101**.
+   *    🔴 그 403 은 「세션이 없다」가 아니라 **Starlette 이 «매칭 안 된» WS 경로에 주는 답**이었다.
+   *       FKT 코드가 0 인 맨 WS 앱을 같은 스택으로 띄운 대조군이 갈랐다(존재 경로 101 · 없는 경로 403).
+   *       403 을 서버의 사실로 받았으면 없는 결함을 보고했을 자리다.
+   * 🔴 브라우저는 «셸 origin» 으로 붙는다 — Next 의 rewrite 가 WS 업그레이드를 그대로 프록시한다
+   *    (실측: 셸 :3130 경유 101 · ai-api 직결 101). 그래서 API base 를 브라우저에 노출하지 않고,
+   *    세션 쿠키도 same-origin 으로 자동으로 실린다.
+   */
+  runStream: (runId: string) => `/api/ws/runs/${encodeURIComponent(runId)}`,
 } as const;
 
 /** 계약 표면 대조용 — 이 셸이 부르는 경로 «전수»(테스트·검수가 이 목록을 계약과 맞춘다). */
@@ -62,6 +78,10 @@ export const CONTRACT_SURFACE = [
   "GET /api/runs/{runId}",
   "GET /api/evidence/{evidenceId}",
   "GET /api/documents/{docId}",
+  "POST /api/runs/{runId}/stop",
+  "GET /api/runs/{runId}/events",
+  "POST /api/retrieval/compare",
+  "WS /api/ws/runs/{runId}",
 ] as const;
 
 // --- 계약 v0.1.7(+정정) 응답 형상 ------------------------------------------------
@@ -164,6 +184,10 @@ export type Incident = {
 };
 
 export type Scenario = { scenarioId: string; title: string; questions: string[] };
+
+/** `POST /retrieval/compare` — 실측: 전략별 hits 5건 · hit 키 = evidenceId/score/excerpt. */
+export type CompareHit = { evidenceId: string; score: number; excerpt: string };
+export type CompareResult = { strategy: string; hits: CompareHit[]; elapsedMs: number };
 
 export type RunSnapshot = {
   status: string;
@@ -280,6 +304,15 @@ export type Reply<T> =
   | { state: "unavailable"; why: string; status?: number; detail?: ErrorDetail };
 
 const TIMEOUT_MS = 2000;
+/**
+ * 전략 비교 상한 — 🔴 «콜드스타트를 결함으로 만들지 않는다».
+ *
+ * 실측(ai-api :8003): 첫 호출 30초+ (임베딩 모델을 그때 적재한다 · 서버 로그에 HF 적재가 남는다) ·
+ * warm 이후 왕복 100ms. 상한을 8초로 두면 첫 방문자에게만 «서버 고장»이 보이고, 그 빨강은
+ * 「검색이 죽었다」로 보고된다. 그래서 상한을 콜드스타트보다 길게 두고, 화면은 그동안
+ * 「준비 중」이라고 말한다(빈 화면 0). 준비 축 자체는 Q-44(T4-1 warm-up)로 회부돼 있다.
+ */
+const COMPARE_TIMEOUT_MS = 120000;
 /** 조회 계층은 SSOT를 훑는다 — 세션 발급보다 여유를 준다(스파크라인 12장이 붙는 화면). */
 const READ_TIMEOUT_MS = 8000;
 
@@ -375,6 +408,17 @@ export function apiGetBrowser<T>(path: string): Promise<Reply<T>> {
 export function startRunBrowser(
   scenarioId: string,
   sessionId: string,
+  /**
+   * 🔴 **기본값이 `live` 로 바뀌었다**(T3-4). 앞판은 `"replay"` 상수였다 — 그때는 화면이
+   *    이벤트를 소비하지 않아 어느 모드든 결과가 같았다. 이제 ② 가 실행 축을 그리므로
+   *    「조사가 지금 도는 것」을 보여 주려면 live 를 «요청»해야 한다.
+   *
+   * 🔴 요청이지 «단정»이 아니다. 계약은 「live 불가 시 `mode:"replay"` 로 강등 응답」을
+   *    정해 두었고(§시나리오·조사 실행), 화면은 **서버가 답한 mode 를 배지로 그대로 보여
+   *    준다** — 강등이 조용히 일어나지 않는다. 실측: live 요청 → live 응답(강등 없음) ·
+   *    live 완주 1,0초 · replay 완주 즉시.
+   */
+  mode: "live" | "replay" = "live",
 ): Promise<Reply<{ runId: string; incidentId: string; mode: string }>> {
   return call<{ runId: string; incidentId: string; mode: string }>(
     CONTRACT.startRun(scenarioId),
@@ -383,10 +427,44 @@ export function startRunBrowser(
       headers: { "content-type": "application/json" },
       // 🔴 본문 `sessionId`는 «동결 계약의 잔존 표기»다. 인증 운반은 쿠키다(v0.1.6 판정
       //    append) — 그래서 이 값은 쿠키와 «같아야» 하고, 다르면 서버가 422로 거절한다.
-      body: JSON.stringify({ sessionId, mode: "replay" }),
+      body: JSON.stringify({ sessionId, mode }),
       cache: "no-store",
     },
     "",
     READ_TIMEOUT_MS,
+  );
+}
+
+/** 조사 중지 — 🔴 브라우저가 부른다(세션이 이 동선을 통과하는지 화면에서 보이게). */
+export function stopRunBrowser(runId: string): Promise<Reply<{ status: string }>> {
+  return call<{ status: string }>(CONTRACT.stopRun(runId), { method: "POST", cache: "no-store" });
+}
+
+/** 되감기 정본 — WS 가 끊겼을 때도 이 축으로 «빈 화면 0» 을 만든다. */
+export function runEventsBrowser<T>(runId: string): Promise<Reply<T[]>> {
+  return call<T[]>(CONTRACT.runEvents(runId), { cache: "no-store" }, "", READ_TIMEOUT_MS);
+}
+
+/**
+ * 전략 비교 — 🔴 본문 `sessionId` 는 «쿠키와 같아야» 한다.
+ *
+ * 실측: 다르면 422(`invalid_request` 「어느 쪽을 뜻하는지 서버가 고르지 않는다」) · 본문 단독은 401.
+ * 운반은 쿠키이고 본문 표기는 동결 잔존이다(계약 v0.1.6 판정 append) — startRunBrowser 와 같은 규율.
+ */
+export function compareBrowser(
+  sessionId: string,
+  question: string,
+  strategies: string[],
+): Promise<Reply<CompareResult[]>> {
+  return call<CompareResult[]>(
+    CONTRACT.compare,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ sessionId, question, strategies }),
+      cache: "no-store",
+    },
+    "",
+    COMPARE_TIMEOUT_MS,
   );
 }
