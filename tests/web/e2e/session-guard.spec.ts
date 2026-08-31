@@ -128,10 +128,13 @@ test.describe("세션 가드", () => {
        * ⇒ 표지 요청을 세고, **0 건이면 초록도 빨강도 내지 않는다**(측정 불가).
        */
       const prefetches: string[] = [];
+      const settling: Promise<unknown>[] = [];
       page.on("request", (r) => {
         const h = r.headers();
         if (h["next-router-prefetch"] || h["rsc"] || r.url().includes("_rsc=")) {
           prefetches.push(new URL(r.url()).pathname);
+          // 🔴 «한 사건»은 요청이 아니라 그 응답까지다 — 세션은 응답 헤더로 심긴다.
+          settling.push(r.response().catch(() => null));
         }
       });
 
@@ -143,7 +146,26 @@ test.describe("세션 가드", () => {
       //    🔴 그리고 그것은 **늦게** 생긴다(11대 실측: networkidle 직후 0 → +2초에 2개).
       //       프리페치가 `/` 홉을 긁기 때문이다 — 그래서 «기다린 뒤에» 묻는다.
       //       기다리지 않고 물으면 이 축은 언제나 초록이다.
-      await page.waitForTimeout(4000);
+      //
+      /* 🔴 **뒤집힌 사실**(Q-45): 앞판은 그 「뒤」를 **+4초라는 창**으로 정했다. 부재를 창으로
+       *    정하면 부하가 그 창을 먹는 날 **있는 결함이 지워진다**(위양성 «초록» — 눈에 안 띄어
+       *    더 오래 산다). 창이 아니라 **사건 뒤에** 묻는다.
+       *
+       * 🔴 그런데 「사건 뒤에」로 바꾸기만 하면 **더 나빠진다** — 대조군이 그걸 잡았다.
+       *    아직 아무 표지도 안 왔으면 사슬이 «비어 있어» 즉시 끝나고, 앞판보다 **더 일찍**
+       *    묻게 된다(BEFORE 빌드에서 두 행이 빨강 대신 «자극 0 = 측정 불가»로 빠졌다).
+       *    ⇒ 자극을 **우연에 맡기지 않는다**: 셸 링크에 hover 해 프리페치를 «만든» 뒤,
+       *      그 사슬의 응답이 전부 돌아오고 새 표지가 더 안 생길 때까지 기다린다.
+       */
+      for (const link of (await page.locator("a[href^='/']").all()).slice(0, 12)) {
+        await link.hover({ timeout: 1000, force: true }).catch(() => undefined);
+      }
+      for (let round = 0; round < 5; round += 1) {
+        const before = settling.length;
+        await Promise.all(settling.slice());
+        await page.waitForLoadState("networkidle").catch(() => undefined);
+        if (settling.length === before) break; // 응답이 새 표지를 낳지 않았다 = 사슬의 끝
+      }
 
       const cookies = (await ctx.cookies()).map((c) => c.name);
       const stimulated = prefetches.length > 0;
