@@ -25,8 +25,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from .errors import install_error_handlers
 from .investigation.approvals import ApprovalStore
 from .investigation.guards import enforce_no_telemetry
+from .investigation.capacity import LiveCapacity
 from .investigation.store import RunStore
 from .probes import close_resources, open_resources
+from .protection import BodyLimitMiddleware, RateLimitMiddleware
 from .retrieval import embedding
 from .routers import factory, investigations, knowledge, ops, sessions, work_orders
 from .session_guard import audit_guard_coverage, session_guard
@@ -60,6 +62,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.session_store = SessionStore()
     # run·이벤트·WO 초안 저장소 — 프로세스 안 · 세션 스코프 · SSOT 쓰기 0(오케 판정 J-3).
     app.state.run_store = RunStore()
+    # 🔴 Live 동시 실행·대기열의 «유일한 계수기»(T4-2b ⓐ). 라우터가 각자 세면 두 라우트가
+    #    서로 다른 「지금 몇 개 도는가」를 갖게 되고, 상한은 그 순간 상한이 아니게 된다.
+    app.state.live_capacity = LiveCapacity(
+        concurrency=settings.live_concurrency,
+        queue_max=settings.live_queue_max,
+    )
     # 🔴 승인 원장은 run 저장소와 «따로» 둔다 — run 은 상한(MAX_RUNS)에 걸리면 버려지고,
     #    그 안에 원장을 두면 「승인했다」는 사실이 초안과 함께 사라진다(approvals.py 머리말).
     app.state.approval_store = ApprovalStore()
@@ -77,9 +85,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.warmup_embedding:
         warm = asyncio.create_task(embedding.warm_up())
 
+    # 🔴 만료 세션 «주기» 정리(T4-2b ⓪). lazy 스윕은 방문이 있을 때만 도므로, 방문이
+    #    끊긴 뒤 만료된 세션은 다음 방문자가 올 때까지 남는다 — 공개 Tunnel 뒤에서 그
+    #    「다음 방문자」는 며칠 뒤일 수 있다. 만료 «판정»은 그대로다(session_store 성문).
+    sweeper: asyncio.Task[None] | None = None
+    if settings.session_sweep_sec > 0:
+        sweeper = asyncio.create_task(
+            app.state.session_store.sweep_forever(settings.session_sweep_sec)
+        )
+
     try:
         yield
     finally:
+        if sweeper is not None and not sweeper.done():
+            sweeper.cancel()
         # 🔴 돌고 있는 조사를 먼저 접는다. 남겨 두면 의존이 닫힌 뒤 질의가 나가 「닫힌 풀에
         #    쓴다」는 애먼 예외가 종료 로그를 덮는다.
         if warm is not None and not warm.done():
@@ -117,7 +136,24 @@ def create_app() -> FastAPI:
     #       아예 달지 않는다 — 「열려 있는데 비어 있는 문」을 만들지 않는다.
     #    🔴 `allow_credentials=True` 는 allowlist 와 «짝»이다. 와일드카드와 함께 쓰면 브라우저가
     #       거부하고, 그 거부는 CORS 설정이 아니라 서버 오류처럼 보인다.
-    allowlist = get_settings().cors_allowlist
+    settings = get_settings()
+
+    # 🔴 **미들웨어 순서는 «바깥 → 안»이 add 의 «역순»이다**(Starlette 은 새로 더한 것을 앞에
+    #    꽂는다). 그래서 아래 세 줄은 실제로 CORS → rate limit → body limit 순으로 선다:
+    #      · CORS 가 가장 바깥인 이유 — 429·413 응답에도 CORS 헤더가 붙어야 브라우저가 그
+    #        응답을 «읽을 수» 있다. 안쪽에 두면 보호장치가 발동한 순간 화면은 이유를 모른 채
+    #        네트워크 오류만 본다(공개 형상에서 셸과 origin 이 갈릴 때 실제로 갈리는 자리).
+    #      · rate limit 이 body limit 보다 바깥인 이유 — 넘친 요청의 본문을 읽지 않고 끊는다.
+    app.add_middleware(BodyLimitMiddleware, max_bytes=settings.max_body_bytes)
+    app.add_middleware(
+        RateLimitMiddleware,
+        ip_per_min=settings.rate_limit_ip_per_min,
+        session_per_min=settings.rate_limit_session_per_min,
+        trust_forwarded_for=settings.trust_forwarded_for,
+        floor_retry_after_sec=settings.rate_limit_retry_after_sec,
+    )
+
+    allowlist = settings.cors_allowlist
     if allowlist:
         app.add_middleware(
             CORSMiddleware,

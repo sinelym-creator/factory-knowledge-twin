@@ -23,6 +23,7 @@ from .. import session_id
 from ..errors import DEPENDENCY_ERRORS, DependencyUnavailable
 from ..probes import Resources
 from ..schemas import CompareRequest, CompareResult
+from ..settings import get_settings
 from . import allowlist, graphrag, hybrid, vector
 from .embedding import MODEL_ID, EmbeddingMismatch, embed_query, ensure_ready
 
@@ -53,6 +54,18 @@ def _error(status: int, code: str, message: str) -> HTTPException:
 async def compare(res: Resources, body: CompareRequest) -> list[CompareResult]:
     if not _SESSION_RE.match(body.sessionId):
         raise _error(422, "invalid_session_id", "sessionId 형식이 아니다(영숫자·-·_ 8~64자)")
+
+    # 🔴 **길이 상한이 allowlist 대조 «앞»이다**(계약 v0.1.9 ⓓ). 순서가 뒤면 상한을 훌쩍 넘는
+    #    문자열이 먼저 정규화·해시를 지나고, 그 비용은 「승인 목록에 없다」로 끝날 요청이
+    #    이미 다 쓴 뒤다. 형식 위반(422)은 내용 판정(400)보다 먼저 답하는 것이 맞다.
+    #    🔴 바이트 축(413)은 이보다 더 앞, 미들웨어에 있다 — 두 축이 겹치면 413 이 먼저다.
+    limit = get_settings().max_question_chars
+    if len(body.question) > limit:
+        raise _error(
+            422,
+            "question_too_long",
+            f"질문이 상한({limit}자)을 넘었다",
+        )
 
     qid = allowlist.resolve(body.question)
     if qid is None:

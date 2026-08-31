@@ -51,6 +51,10 @@ class RunRecord:
     # graph 단계가 밟은 경로 — `GET /graph/paths?byRun={runId}` 의 유일한 원천(Q-18 해제분).
     graphPaths: list[dict[str, Any]] = field(default_factory=list)
     stop_requested: bool = False
+    # 🔴 «누가 멈췄는가»를 취소 «전에» 적어 두는 자리(T4-2b ⓑ). `asyncio.CancelledError` 는
+    #    세션 리셋으로 취소된 것과 timeout 으로 끊긴 것이 **같은 모습**이라, 사유를 여기서
+    #    미리 정하지 않으면 timeout 이 `reset` 이라는 «정확한 문장으로 말한 거짓»이 된다.
+    stop_reason: Literal["user", "timeout", "reset"] | None = None
     task: asyncio.Task[Any] | None = None
     _subscribers: set[asyncio.Queue[dict[str, Any] | None]] = field(default_factory=set)
 

@@ -51,6 +51,50 @@ def contract_error(status: int, code: str, message: str) -> StarletteHTTPExcepti
     return StarletteHTTPException(status_code=status, detail={"code": code, "message": message})
 
 
+def contract_json_response(
+    status: int,
+    code: str,
+    message: str,
+    headers: dict[str, str] | None = None,
+) -> JSONResponse:
+    """계약 오류 envelope 을 «미들웨어에서» 직접 내보낸다 (T4-2b).
+
+    🔴 **왜 raise 가 아니라 응답인가.** Starlette 의 미들웨어 스택에서 사용자 미들웨어는
+       `ExceptionMiddleware` 보다 «바깥»에 있다 — 거기서 `HTTPException` 을 raise 하면
+       계약 형상으로 바꿔 주는 핸들러(`install_error_handlers`)를 지나지 못하고
+       `ServerErrorMiddleware` 의 500 이 된다. 보호장치가 «자기 응답 형상을 깨는» 형태다.
+
+    🔴 **그래서 형상 조립은 이 한 함수만 한다.** 미들웨어(429·413 선검사)와 예외 핸들러가
+       각자 dict 를 쓰면 같은 사실이 표면마다 달라진다 — 소비자는 「어떤 오류든 이 형상」을
+       전제로 파싱하는데, 하필 «보호장치가 발동한» 순간에만 형상이 다르면 화면은 그 순간을
+       오류로도 인식하지 못한다(V-2 계보).
+    """
+    return JSONResponse(
+        status_code=status,
+        content=ErrorResponse(error=ErrorBody(code=code, message=message)).model_dump(),
+        headers=headers,
+    )
+
+
+class PayloadTooLarge(StarletteHTTPException):
+    """요청 본문이 상한을 넘었다 — 계약 v0.1.9 `413 payload_too_large`.
+
+    🔴 이 예외는 **본문을 읽는 도중**(라우트 핸들러 안쪽)에서 던져진다. 그 자리는 앱 «안»이라
+       `install_error_handlers` 가 잡아 계약 형상으로 바꾼다. 미들웨어의 `Content-Length`
+       선검사는 앱 밖이라 같은 형상을 `contract_json_response` 로 «직접» 낸다 — 두 경로가
+       한 함수를 지나므로 형상이 갈리지 않는다.
+    """
+
+    def __init__(self, limit: int) -> None:
+        super().__init__(
+            status_code=413,
+            detail={
+                "code": "payload_too_large",
+                "message": f"요청 본문이 상한({limit} 바이트)을 넘었다",
+            },
+        )
+
+
 class DependencyUnavailable(StarletteHTTPException):
     """의존(PostgreSQL·Neo4j)에 닿지 못했다 — «서비스 결함»과 구분되는 사건이다.
 
@@ -66,6 +110,29 @@ class DependencyUnavailable(StarletteHTTPException):
                 "code": "dependency_unavailable",
                 "message": f"{which} 에 연결할 수 없다 — 잠시 후 다시 시도하라",
             },
+        )
+
+
+class LiveCapacityExhausted(StarletteHTTPException):
+    """동시 실행 슬롯과 대기열이 «둘 다» 찼다 — 계약 v0.1.9 `503 live_capacity_exhausted`.
+
+    🔴 `Retry-After` 는 계약이 «필수»로 적은 헤더다. 숫자 없이 「나중에」라고만 말하면 화면과
+       클라이언트는 각자 다른 간격으로 다시 두드리고, 그 폭주가 이미 찬 자리를 더 조인다.
+    🔴 `message` 에 Replay 안내를 담는다 — 거절만 하고 다음 수를 안 주면 방문자는 빈 화면에
+       선다(§6.2). 🔴 다만 화면이 «분기»하는 것은 `code` 다: 문구는 구현의 것이고 바뀔 수 있다.
+    """
+
+    def __init__(self, retry_after_sec: int) -> None:
+        super().__init__(
+            status_code=503,
+            detail={
+                "code": "live_capacity_exhausted",
+                "message": (
+                    "지금은 Live 조사를 시작할 자리가 없다 — 잠시 후 다시 시도하거나 "
+                    "Replay 로 같은 조사를 볼 수 있다"
+                ),
+            },
+            headers={"Retry-After": str(retry_after_sec)},
         )
 
 

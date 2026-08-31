@@ -101,6 +101,10 @@ class AgentEvent(BaseModel):
     ts: datetime
     mode: Literal["live", "replay"]
     type: Literal[
+        # 🔴 계약 v0.1.9 신설 — 대기열 진입·순위 변동(오류 아님 · 응답은 200 그대로).
+        #    이 «수기 사본»은 정본(packages/contracts/agent-events-v0.1.schema.json)을 따라간다:
+        #    두 곳이 갈리면 서버는 자기가 낸 이벤트를 자기 스키마로 거절한다.
+        "run.queued",
         "run.started",
         "plan.updated",
         "step.started",

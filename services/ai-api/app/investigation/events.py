@@ -96,7 +96,24 @@ class Emitter:
         self._sink(event)
         return event
 
-    # --- 스키마 type 8종 -------------------------------------------------------
+    # --- 스키마 type 9종 -------------------------------------------------------
+
+    def run_queued(self, position: int, estimated_wait_sec: int | None) -> dict[str, Any]:
+        """대기열 진입·순위 변동 — 계약 v0.1.9 신설 type(8종 → 9종).
+
+        🔴 **이것은 오류가 아니다.** 요청은 200 으로 이미 답했고, 이 이벤트는 「네 차례가
+           몇 번째인가」를 말할 뿐이다. 슬롯이 나면 곧 `run.started` 가 따른다.
+
+        🔴 **순위가 바뀌면 같은 type 을 다시 낸다**(계약 문면 · `seq` 는 그때도 증가한다).
+           새 type 을 만들지 않는 이유: 소비자는 「마지막 run.queued 가 지금 순위」라는 한
+           규칙만 알면 되고, 그 규칙은 처음 진입과 순위 변동을 가르지 않아도 성립한다.
+
+        🔴 `estimatedWaitSec` 은 근거가 없으면 **null** 이다(계약 `int|null`). 표본 없이
+           그럴듯한 상수를 적으면 화면은 그것을 «측정된 값»으로 그린다.
+        """
+        return self._emit(
+            "run.queued", {"position": position, "estimatedWaitSec": estimated_wait_sec}
+        )
 
     def run_started(self, scenario_id: str, question: str) -> dict[str, Any]:
         return self._emit("run.started", {"scenarioId": scenario_id, "question": question})
