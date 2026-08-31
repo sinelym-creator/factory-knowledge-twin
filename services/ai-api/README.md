@@ -14,7 +14,10 @@ FastAPI 서비스. **계약 v0.1(`packages/contracts/`)이 약속한 API 표면�
 cd services/ai-api
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt        # 실측·도구까지: requirements-dev.txt
-.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
+# 🔴 --no-proxy-headers: XFF 는 앱 env 스위치(FKT_TRUST_FORWARDED_FOR) 한 곳만 읽는다 (D-8).
+#    빼면 uvicorn 이 먼저 X-Forwarded-For 를 해석해 scope["client"] 를 덮고, 그 순간
+#    「기본은 안 믿는다」가 거짓이 된다(헤더 한 줄로 IP 축 우회).
+.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 --no-proxy-headers
 # 확인: http://localhost:8000/api/health   ← 🔴 계약의 base = /api (아래 §정합 메모)
 ```
 

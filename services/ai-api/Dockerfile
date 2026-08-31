@@ -34,4 +34,9 @@ RUN useradd --system --create-home --uid 10001 fkt && chown -R fkt:fkt /srv && m
 USER fkt
 
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 🔴 **`--no-proxy-headers`** — uvicorn 이 `X-Forwarded-For` 를 «먼저» 해석해 `scope["client"]`
+#    를 덮지 못하게 한다(D-8). 켜져 있으면(그것이 uvicorn 기본이다) 앱의 `FKT_TRUST_FORWARDED_FOR`
+#    스위치는 켜든 끄든 결과가 같아지고, 「기본은 안 믿는다」는 우리 문장이 조용히 거짓이 된다 —
+#    실측으로 확인한 자리다: trust 를 끈 채로 XFF 두 개를 보냈더니 «각자» 상한을 가졌다.
+#    원칙 = **XFF 는 앱 env 스위치 «한 곳»만 읽는다.**
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-proxy-headers"]

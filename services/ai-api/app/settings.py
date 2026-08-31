@@ -80,7 +80,11 @@ class Settings(BaseSettings):
     #    🔴 기본값을 넉넉히 둔다. 낮은 기본값은 우리 자신의 그물(tests/api·브라우저 suite)을
     #       먼저 잡고, 그러면 「처방이 도는가」를 우리 도구로 확인할 수 없게 된다.
     #       실측은 이 값을 낮춰서 낸다 — 기본값을 실측 편의에 맞추지 않는다.
-    rate_limit_ip_per_min: int = 600
+    # 🔴 600 → 6000 (Q-60). IP 축은 셸(rewrite)이 프록시하는 형상에서 **방문자별 상한이 아니라
+    #    총량 차단기**로 동작한다 — ai-api 가 보는 주소가 셸 한 대이기 때문이다. 그 성질 자체는
+    #    결함이 아니라 이 배치의 사실이고(방문자별 방어는 세션 축이 맡는다), 다만 값이 낮으면
+    #    우리 자신의 그물이 먼저 걸린다(실측: 브라우저 suite 가 429 를 78건 맞고 13행이 빨강).
+    rate_limit_ip_per_min: int = 6000
     rate_limit_session_per_min: int = 300
     rate_limit_retry_after_sec: int = 60
     # 🔴 프록시 뒤의 «IP» 를 X-Forwarded-For 첫 값으로 읽을지. 기본은 «안 믿는다» —
