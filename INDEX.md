@@ -32,13 +32,13 @@ size_limit: 4KB
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
 | `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
 | `tests/graph/` | 그래프 투영 독립 검증(스펙 독립 파싱 `graph_verify` 18축 · 끊김/변조 드릴 `graph_drill` 22축 · 러너 — T1-5 검증) | 투영 개정 동반 |
-| `tests/web/` | 셸 E2E 검증(playwright 4스펙 · 검사기 드릴 17주입 · 독립 표면 스캔 `surface_scan` · 토큰 프로브 · 라우트 매트릭스 — T1-9 검증) · T4-1 드릴 3종 `t41_csp_walk`(CSP 전 동선 · 자기 검증 2/2) · `t41_live_status_timeout`(상한과 «화면이 말한 시각» 분리 — D-3 검출) · `t41_cors_browser_drill`(닿는다≠읽힌다) + 보조 서버 2종 `_blackhole_server`(응답 없는 API) · `_origin_page_server`(CSP 없는 타 origin 페이지) · `README.md`(회귀 조건 4줄 · PR#218) | 셸 개정 동반 |
+| `tests/web/` | 셸 E2E 검증(playwright 9스펙 — shell·session-guard·reset-modal·mode-badge·phase2-evidence·t3-2-screens·t3-3-evidence·t3-4-run-screen·t3-5-wo-screen(PR#225) · 검사기 드릴 17주입 · 독립 표면 스캔 `surface_scan` · 토큰 프로브 · 라우트 매트릭스 — T1-9 검증) · T4-1 드릴 3종 `t41_csp_walk`(CSP 전 동선 · 자기 검증 2/2) · `t41_live_status_timeout`(상한과 «화면이 말한 시각» 분리 — D-3 검출) · `t41_cors_browser_drill`(닿는다≠읽힌다) + 보조 서버 2종 `_blackhole_server`(응답 없는 API) · `_origin_page_server`(CSP 없는 타 origin 페이지) · `README.md`(회귀 조건 4줄 · PR#218) | 셸 개정 동반 |
 | `tests/api/` | retrieval API 독립 그물(앵커 경계 드릴 — 표기 변형 교차·생존 신호 exit 2 · 경계 직접 probe · 계약 오류 형상 드릴 — T2-1 검증) | retrieval 개정 동반 |
 | `data/replay/` | replay fixture(재생 자산 · 🔴 seed 원천 아님 — README 성문 · JSONL·무가공·LF 고정 — T2-4) · `static/`(T4-2a · 조회 응답 사본 28건 + `manifest.json`(라우트·apiBuildSha·sha256·queriedBy) · 굳히기 도구 산출 · 원문 무가공 · `.gitattributes eol=lf` · PR#216) | fixture 재녹화 · 정적 사본 재굳힘 시 |
 | `tests/data/` | seed 무결성 probe 28건(C-21~C-28 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 27판정·증분/절대 이축 — G-3·E-7) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
-| `evidence/` | 독립 검증 보고(phase0-verification 등) | 검증 시 |
+| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-1 · t3-5-wo-screen = PR#225) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 | 검증 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |
 | `.claude/context/checkpoint.md` | 재개점(로컬 전용·비추적 · 백지 재작성) | 세션 마감 시 |
 | `docs/plan/phase4-5-decomposition.md` | P4·P5 분해안(분모 37→46 · 결정 5건 · 관문 산정 · 선택지 ⓑ — 폐하 재가 08-31 09:55/09:57 · 원장 등재 10:05) | 분모·순서 변경 시 |
