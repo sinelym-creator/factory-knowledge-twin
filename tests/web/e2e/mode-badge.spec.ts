@@ -138,8 +138,9 @@ test.describe("모드 배지", () => {
     const badge = page.getByTestId("mode-badge");
     await expect(badge).toHaveAttribute("data-mode", "replay");
     await expect(badge).toContainText("REPLAY");
-    // rewrite 를 지나 ai-api 까지 «닿아» 온 답이라는 것 — 배너가 replay 문구로 선다.
-    await expect(page.getByTestId("fallback-banner")).toContainText("Replay로 전환");
+    // rewrite 를 지나 ai-api 까지 «닿아» 온 답이라는 것 — 배너가 online:false 문구로 선다.
+    // 🔴 「끊겼다·전환했다」가 아니라 «게이트 없음»이다(Q-69 · baseline §0.2).
+    await expect(page.getByTestId("fallback-banner")).toContainText("Live AI 게이트가 없습니다");
   });
 
   test("배지는 색 없이도 읽힌다 — 아이콘+텍스트 병행(§10·§11.3)", async ({ page }) => {

@@ -158,7 +158,7 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
   //    아무 말도 하지 않고, 서버가 아직 모르는 세션이라는 «지금 아는 사실»만 말한다.
   const notice =
     mode === "replay"
-      ? "Live AI 연결이 끊겨 Replay로 전환했습니다. 화면 흐름은 동일합니다."
+      ? "Live AI 게이트가 없습니다 — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다."
       : mode === "unavailable"
         ? `Live 상태를 확인하지 못했습니다(${why ?? "미연결"}). 백엔드가 아직 연결되지 않았습니다 — 오류가 아닙니다.`
         : sessionPending
