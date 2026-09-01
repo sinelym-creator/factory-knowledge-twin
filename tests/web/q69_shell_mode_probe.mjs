@@ -174,6 +174,28 @@ if (await box.count().then((n) => n > 0).catch(() => false)) {
   log.stimulus = { skipped: "입력 후보 0 — 이 vantage 에서 질문을 보낼 자리를 못 찾았다" };
 }
 
+// 자극이 끝난 «뒤» 화면이 방문자에게 무엇을 말하는가 — 문면 원문을 남긴다(판정 아님).
+log.afterScreen = await page
+  .evaluate(() => {
+    const t = (el) => (el?.textContent ?? "").replace(/s+/g, " ").trim();
+    const badge = document.querySelector("[data-testid=mode-badge]");
+    const body = t(document.body);
+    return {
+      url: location.pathname + location.search,
+      badge: t(badge) || "(없음)",
+      offer: !!document.querySelector("[data-testid=static-replay-offer]"),
+      banner: !!document.querySelector("[data-testid=fallback-banner]"),
+      bannerText: t(document.querySelector("[data-testid=fallback-banner]")).slice(0, 400),
+      offerText: t(document.querySelector("[data-testid=static-replay-offer]")).slice(0, 400),
+      alerts: [...document.querySelectorAll('[role=alert], [data-testid*=error], [data-testid*=fail]')]
+        .map((el) => ({ testid: el.getAttribute("data-testid"), text: t(el).slice(0, 300) }))
+        .slice(0, 10),
+      chars: body.replace(/s+/g, "").length,
+      bodyHead: body.slice(0, 1200),
+    };
+  })
+  .catch((e) => ({ error: String(e) }));
+
 // 이벤트 스트림의 «분기»는 브라우저 세션 안에서만 읽힌다(밖에서는 401 session_required).
 log.runEvents = await page
   .evaluate(async () => {
