@@ -21,6 +21,7 @@ exit: 0 = 잰 행 전건 기대대로 · 1 = 어긋남 1건 이상 · 2 = 측정
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import subprocess
@@ -108,8 +109,12 @@ def call(base: str, method: str, path: str, body: dict | None = None, cookie: st
         except json.JSONDecodeError:
             parsed = {"_raw": raw[:200]}
         return {"status": exc.code, "body": parsed, "set_cookie": None}
-    except urllib.error.URLError as exc:
-        return {"status": None, "body": {"_why": str(exc)[:120]}, "set_cookie": None}
+    except (OSError, http.client.HTTPException) as exc:
+        # 🔴 `URLError` 만 잡으면 «TCP 는 accept 되는데 HTTP 응답은 없는» 창에서
+        #    `RemoteDisconnected` 가 그대로 새어 드릴이 traceback 으로 죽는다 — 그 죽음은
+        #    「대상이 답을 안 한다」가 아니라 «그물이 그 창을 모른다»는 뜻이다(D-4 계보:
+        #    중단 창 동안 TCP accept + HTTP 0). `URLError` 는 `OSError` 의 자손이라 함께 걸린다.
+        return {"status": None, "body": {"_why": f"{type(exc).__name__}: {str(exc)[:100]}"}, "set_cookie": None}
 
 
 def session(base: str) -> tuple[str, str]:
@@ -124,6 +129,20 @@ def docker(*args: str) -> str:
     env = dict(os.environ, MSYS_NO_PATHCONV="1")
     out = subprocess.run(["docker", *args], capture_output=True, text=True, env=env)
     return (out.stdout or out.stderr).strip()
+
+
+def wait_http(base: str, secs: int = 150) -> bool:
+    """🔴 `docker start` 는 «되살렸다»이지 «받는다»가 아니다.
+
+    이 이미지는 부팅에 embedding warm-up 이 붙어 있어, 그 사이 TCP 는 accept 되는데 HTTP 응답은
+    없다(D-4 가 기록한 그 창). 되살린 다음 행이 곧바로 두드리면 그 창에 걸려 **다음 행이 대상의
+    성질이 아닌 이유로 죽는다** — 실제로 물렸다. 그래서 «답할 때까지» 기다리는 것까지가 되감기다.
+    """
+    for _ in range(secs):
+        if call(base, "GET", "/api/health", timeout=10)["status"] == 200:
+            return True
+        time.sleep(1)
+    return False
 
 
 def probe(base: str) -> dict:
@@ -234,6 +253,9 @@ def row_fastapi_off(t: Table) -> None:
     finally:
         if stopped:
             docker("start", api_container)
+            # 🔴 되감기는 «답할 때까지»다. 안 기다리면 다음 행이 부팅 창에 걸린다.
+            if not wait_http(API):
+                print(f"  🔴 되감기 경고  {api_container} 를 되살렸으나 {API} 가 제한 시간 안에 답하지 않았다")
 
 
 def row_postgres_off(t: Table) -> None:
