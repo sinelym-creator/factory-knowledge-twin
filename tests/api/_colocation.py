@@ -30,6 +30,7 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import os
 import sys
@@ -165,19 +166,102 @@ def prove(api_base: str | None = None, *, quiet: bool = False) -> None:
         print(f"  귀속 증명  내 fixture 의 손질이 재생본에 나온다 — {base} 는 이 트리를 읽는다")
 
 
-def require(api_base: str | None = None, *, quiet: bool = False) -> None:
-    """드릴이 한 줄로 부르는 자리. 증명 못 하면 그 자리에서 `exit 2`(측정 불가)."""
+def _raw_call(base: str, method: str, path: str, body: dict | None = None,
+              cookie: str | None = None) -> tuple[int, object, str | None]:
+    """세션 어댑터를 타지 «않는» 호출 — 외부 모드는 쿠키를 내가 직접 나른다."""
+    data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
+    headers = {"Content-Type": "application/json"} if data else {}
+    if cookie:
+        headers["Cookie"] = cookie
+    req = urllib.request.Request(base + path, data=data, headers=headers, method=method)
     try:
-        prove(api_base, quiet=quiet)
+        with urllib.request.urlopen(req, timeout=60) as res:
+            raw = res.read().decode("utf-8", "replace")
+            try:
+                parsed = json.loads(raw)
+            except json.JSONDecodeError:
+                parsed = {"_text": raw[:200]}
+            return res.status, parsed, res.getheader("Set-Cookie")
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8", "replace")
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            parsed = {"_raw": raw[:200]}
+        return exc.code, parsed, None
+    except (OSError, http.client.HTTPException) as exc:
+        raise Unproven(f"{base}{path} 에 닿지 못했다: {type(exc).__name__}: {exc}") from exc
+
+
+def prove_external(base: str, local_probe: str, *, quiet: bool = False) -> None:
+    """🔴 **외부 모드 귀속 — 쓰기 0.** 묻는 것이 로컬 모드와 «다르다».
+
+    로컬 모드가 묻는 것은 「저 서버가 **이 트리**를 읽는가」이고, 그 답을 fixture 한 줄에
+    표지를 심어 받아 낸다. 공개 대상에는 그 자극을 쓸 수 없다 — 폐하의 시연 자산을 몇 초간
+    흔드는 «쓰기» 이기 때문이다(「외부 대상은 부수지 않는다」).
+
+    그래서 외부 모드는 **다른 것을 묻는다**: 「내가 두드리는 그 URL 이 **어느 프로세스**인가」.
+    자극은 «내가 만든 run» 이고 표지는 그 run 의 id 다 — 공개 경로로 만든 run 을 로컬 포트가
+    알면 그 두 주소는 **같은 프로세스**다. 아무것도 안 고친다.
+
+    🔴 **양면으로 민다.** 「안다」만 보면 «전부 안다고 답하는 서버» 도 이 문을 통과한다 —
+    17대가 안전장치에서 물린 그 모양이다. 그래서 «없는 run» 을 하나 지어 물어 **모른다** 는
+    답까지 받는다. 한쪽만 서면 귀속이 아니라 «응답이 있다» 를 잰 것이다.
+
+    🔴 **한계(판정문에 그대로 적는다)**: 이 증명은 「같은 프로세스」까지다. 「그 프로세스가
+    **어느 트리의 fixture** 를 읽는가」는 여기서 «안 잰다» — 그 축은 `docker inspect` 의
+    bind 실측(E1 · 자극 아님)으로만 안다. 못 잰 것과 안 잰 것을 섞지 않는다.
+    """
+    status, created, set_cookie = _raw_call(base, "POST", "/api/sessions")
+    if status != 200 or not set_cookie:
+        raise Unproven(f"외부 귀속 — {base} 세션 발급이 {status} 였다: {str(created)[:140]}")
+    cookie = set_cookie.split(";", 1)[0]
+    sid = cookie.split("=", 1)[1]
+
+    status, run, _ = _raw_call(base, "POST", f"/api/scenarios/{SCENARIO}/runs",
+                               {"sessionId": sid, "mode": "replay"}, cookie)
+    if status != 200 or not isinstance(run, dict) or not run.get("runId"):
+        raise Unproven(f"외부 귀속 — {base} 의 replay 생성이 {status} 였다: {str(run)[:140]}")
+    run_id = run["runId"]
+
+    # ① 양성 — 공개 경로로 만든 그 run 을 로컬 주소가 «안다»
+    status, seen, _ = _raw_call(local_probe, "GET", f"/api/runs/{run_id}", cookie=cookie)
+    if status != 200 or not isinstance(seen, dict) or not seen.get("status"):
+        raise Unproven(
+            f"귀속 미증명 — {base} 로 만든 {run_id} 를 {local_probe} 가 모른다({status}). "
+            f"두 주소가 같은 프로세스라는 근거가 없다. 측정 불가."
+        )
+
+    # ② 🔴 음성 대조군 — «없는 run» 은 몰라야 한다(전부 안다고 답하면 위 초록은 빈 초록이다)
+    ghost = "RUN-000000000000"
+    status_g, _, _ = _raw_call(local_probe, "GET", f"/api/runs/{ghost}", cookie=cookie)
+    if status_g == 200:
+        raise Unproven(
+            f"귀속 미증명 — {local_probe} 가 없는 run(`{ghost}`)도 200 으로 답한다. "
+            f"「안다」가 아무것도 가르지 못한다. 측정 불가."
+        )
+
+    if not quiet:
+        print(f"  귀속 증명  외부 모드(쓰기 0) — {base} 로 만든 {run_id} 를 {local_probe} 가 안다"
+              f"(status={seen.get('status')}) · 음성 대조군 `{ghost}` = {status_g}"
+              f" -> 두 주소 = 같은 프로세스")
+        print("  🔴 한계     「그 프로세스가 어느 트리의 fixture 를 읽는가」는 이 증명이 «안 잰» 축이다"
+              " — bind 실측(E1)으로만 안다")
+
+
+def require(api_base: str | None = None, *, quiet: bool = False) -> None:
+    """드릴이 한 줄로 부르는 자리. 증명 못 하면 그 자리에서 `exit 2`(측정 불가).
+
+    🔴 외부 모드는 **명시로만** 켜진다(`FKT_COLOCATION_LOCAL_PROBE`). 기본값을 두지 않는 이유는
+       Q-62 와 같다 — 기본값이 어느 자리를 가리키면 확인 없이 돌린 사람이 그 자리를 잰다.
+    """
+    probe_base = os.environ.get("FKT_COLOCATION_LOCAL_PROBE", "").strip()
+    base = api_base or os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+    try:
+        if probe_base:
+            prove_external(base, probe_base, quiet=quiet)
+        else:
+            prove(api_base, quiet=quiet)
     except Unproven as exc:
-        print(f"\n측정 불가 — {exc}", file=sys.stderr)
+        print("\n측정 불가 — " + str(exc), file=sys.stderr)
         raise SystemExit(2) from exc
-
-
-if __name__ == "__main__":
-    # 자기 검증: 맞춘 트리면 통과, 어긋난 트리면 exit 2.
-    for stream in (sys.stdout, sys.stderr):
-        if hasattr(stream, "reconfigure"):
-            stream.reconfigure(encoding="utf-8", errors="replace")
-    require()
-    print("귀속 증명 통과 — 이 서버는 이 트리를 읽는다")
