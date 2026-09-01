@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "contract:surface": "node scripts/contract-surface.mjs",
+    "retry:drill": "node --experimental-strip-types scripts/retry-drill.mjs",
     "prebuild": "node scripts/copy-static-replay.mjs",
     "predev": "node scripts/copy-static-replay.mjs",
     "static-replay:harvest": "node scripts/harvest-static-replay.mjs",
