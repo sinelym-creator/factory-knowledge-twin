@@ -265,7 +265,14 @@ def row_postgres_off(t: Table) -> None:
     if not (before["status"] == 200 and (before["body"] or {}).get("mode") == "live"):
         t.skipped("PostgreSQL OFF", f"대조군이 안 선다(흔들기 전 {before['status']}) — 흔들 자격이 없다")
         return
-    pg = _ownership.own_container(PG_CONTAINER_ENV, "멈췄다 되살릴 postgres")  # 🔴 Q-62 소유 확인
+    # 🔴 Q-62 소유 확인. 못 세우면 «죽지» 않고 건너뛴다 — 외부판(내가 소유하지 않는 공개 대상)
+    #    에서는 이게 **정상 경로**다. 문이 거절한 것을 크래시로 만들면, 「부수지 않았다」가
+    #    「측정을 못 했다」가 아니라 「그물이 깨졌다」로 남는다(`row_fastapi_off` 와 같은 처리).
+    try:
+        pg = _ownership.own_container(PG_CONTAINER_ENV, "멈췄다 되살릴 postgres")
+    except _ownership.Unowned as exc:
+        t.skipped("PostgreSQL OFF", f"소유 확인을 못 세웠다 — {str(exc).splitlines()[0][:70]}")
+        return
     stopped = False
     try:
         docker("stop", pg)
@@ -306,7 +313,12 @@ def row_neo4j_off(t: Table) -> None:
                      if e.get("type") == "step.evidence"
                      and ((e.get("payload") or {}).get("evidence") or {}).get("kind") == "graph-path")
 
-    neo = _ownership.own_container(NEO4J_CONTAINER_ENV, "멈췄다 되살릴 neo4j")  # 🔴 Q-62 소유 확인
+    # 🔴 Q-62 소유 확인 — 위 행과 같은 이유로 «건너뜀»이지 크래시가 아니다.
+    try:
+        neo = _ownership.own_container(NEO4J_CONTAINER_ENV, "멈췄다 되살릴 neo4j")
+    except _ownership.Unowned as exc:
+        t.skipped("Neo4j OFF", f"소유 확인을 못 세웠다 — {str(exc).splitlines()[0][:70]}")
+        return
     stopped = False
     try:
         docker("stop", neo)

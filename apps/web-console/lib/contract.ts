@@ -364,8 +364,24 @@ const TIMEOUT_MS = 2000;
  * 「준비 중」이라고 말한다(빈 화면 0). 준비 축 자체는 Q-44(T4-1 warm-up)로 회부돼 있다.
  */
 const COMPARE_TIMEOUT_MS = 120000;
-/** 조회 계층은 SSOT를 훑는다 — 세션 발급보다 여유를 준다(스파크라인 12장이 붙는 화면). */
+/** 조회 계층은 SSOT를 훑는다(스파크라인 12장이 붙는 화면). */
 const READ_TIMEOUT_MS = 8000;
+/**
+ * 입장(세션 발급) 상한 — 🔴 **`TIMEOUT_MS`(2s)를 쓰지 않는다.**
+ *
+ * 앞판은 이 호출에 기본 상한 2초를 줬고, 그 근거는 「발급은 조회보다 가볍다」였다.
+ * 그 전제는 «로컬 형상»의 것이었다. 공개 배포에서 이 호출은 셸 서버(Vercel `iad1`)에서
+ * 출발해 Funnel(ts.net)을 지나 한국 노트북까지 갔다 온다 — 콜드 회차가 2초를 넘긴다.
+ *
+ * 실측(2026-09-01 · 공개 URL · curl 6회): 첫(콜드) `POST /enter` **3.06s** → 발급 실패 →
+ * `pending` 세션. 이어진 5회는 2.16 / 0.86 / 1.01 / 0.82 / 0.65s 로 전건 성공(`api`).
+ * 즉 «느린 회차만» 죽었고, 죽은 회차의 방문자는 아래 `route.ts` 의 고착까지 함께 맞았다.
+ *
+ * 🔴 상한을 늘리는 것이 「느려도 참는다」가 아니다 — 2초는 **이 배치에서 정상 왕복도 자르는**
+ *    값이었다. 조회와 같은 8초로 맞춘다(발급이 조회보다 무겁다는 뜻이 아니라, 두 축이 같은
+ *    사슬을 지나므로 같은 예산을 받아야 한다는 뜻이다).
+ */
+const ENTER_TIMEOUT_MS = 8000;
 
 /**
  * 브라우저는 상대 경로를 쓴다(next.config.ts의 rewrite가 ai-api로 넘긴다 — 계약 경로가
@@ -455,6 +471,7 @@ export function createSession(base = ""): Promise<Reply<{ sessionId: string }>> 
     CONTRACT.createSession,
     { method: "POST", cache: "no-store" },
     base,
+    ENTER_TIMEOUT_MS,
   );
 }
 

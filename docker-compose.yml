@@ -120,6 +120,19 @@ services:
       #    🔴 기본값을 «비움»(`:-`)이 아니라 `false` 로 둔 이유(실측 E1): 빈 문자열은 bool 로
       #    파싱되지 않아 Settings() 가 ValidationError 로 죽는다 — 위 CORS 는 문자열이라
       #    비워도 되지만 이 축은 아니다. 「기본은 안 믿는다」는 문장은 그대로 유지된다.
+      #
+      # 🔴 **켜도 되는가 — 쟀다(T4-3 · 2026-09-01 · E2).** Tailscale 프록시는 들어온
+      #    `X-Forwarded-*` 를 «전부 덮어쓴다»: 합성 헤더(`XFF: 203.0.113.7` · `XFP: http` ·
+      #    `XFH: evil.example`)를 실어 보냈더니 되비친 값이 헤더 없이 보낸 대조군과 «바이트 동일»
+      #    이었다. 지어낸 값이 하나도 살아남지 않는다 = **위조 경로 0** → 배포에서 `1` 로 켜도 된다.
+      #    (등급 E2 인 이유 = 임의 헤더를 실으려고 tailnet 경로로 쟀다. Funnel 외부 표본과 정합하나
+      #     Funnel 경로에서 «직접» 잰 값은 아니다 — infra/tailscale-funnel-runbook.md §5-bis)
+      #
+      # 🔴 **다만 켠다고 「방문자별 IP 축」이 서지는 않는다.** 덮어쓰기라서, 셸(Vercel) rewrite 가
+      #    대신 부르는 공개 트래픽에서는 첫 값이 «방문자»가 아니라 «셸의 egress» 다 — 셸이 실어
+      #    보낸 방문자 IP 는 이 프록시에서 사라진다. 즉 셸 경유 축은 켜나 끄나 「몇 통」이고,
+      #    방문자별 방어는 세션 축이 맡는다(Q-60 성문의 발현). 직접 :8443 을 치는 클라이언트만
+      #    방문자별로 선다. 이 한계는 설정 실수가 아니라 형상의 성질이다.
       FKT_TRUST_FORWARDED_FOR: ${FKT_TRUST_FORWARDED_FOR:-false}
       # Q-44 — 기동 시 임베딩 모델 warm-up. 🔴 부팅을 «막지» 않는다(아래 성문 참조).
       FKT_WARMUP_EMBEDDING: ${FKT_WARMUP_EMBEDDING:-1}

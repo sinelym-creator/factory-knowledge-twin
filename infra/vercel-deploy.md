@@ -18,8 +18,8 @@
 
 | 설정 | 값 | 왜 |
 |---|---|---|
-| **Root Directory** | `apps/web-console` | 리포 루트에 `package.json` 이 **없다**. 루트로 두면 Vercel 이 프레임워크를 못 찾는다 |
-| **Include files outside the Root Directory** | 🔴 **켠다** | prebuild 가 리포 루트의 `data/replay/**` 를 읽는다(§3) |
+| **Root Directory** | `apps/web-console` | 리포 루트에 `package.json` 이 **없다**. 루트로 두면 Vercel 이 프레임워크를 못 찾는다 · ✅ 첫 배포에서 이 값으로 섰다 |
+| **Include files outside the Root Directory** | 🔴 **켠다** | prebuild 가 리포 루트의 `data/replay/**` 를 읽는다(§3) · ✅ 첫 배포에서 `Enabled` 확인 |
 | Framework Preset | Next.js | `vercel.json` 에도 적었다 |
 | Node.js Version | 20.x 이상 | Next 16.3.3 요구. 리포에 버전 핀(`.nvmrc`·`engines`)이 **0건**이라 대시보드 기본값을 쓴다(로컬 실측 v22.20.0) |
 
@@ -38,6 +38,8 @@
   Root Directory 를 바꾸면 **이 파일도 함께 옮겨야 하고**, 안 옮기면 «조용히 무시»된다.
   확인법 = 첫 배포의 빌드 로그에 `pnpm install --frozen-lockfile` 문자열이 실제로 찍히는지 본다.
   안 찍히면 이 파일은 안 읽힌 것이다(대시보드 Install/Build Command 로 같은 값을 옮긴다).
+  ✅ **확인됨**(E1 · §5-bis ①): 로그에 `Running "install" command: pnpm install --frozen-lockfile` 이
+  찍혔다 — 이 파일은 Root Directory 기준으로 읽힌다.
 
 ## 3. prebuild 는 «Root Directory 밖»을 읽는다 — 이 배포의 유일한 구조적 함정
 
@@ -70,11 +72,11 @@
 | 써 봐야 아무 일도 안 일어나는 이름 | 실체 |
 |---|---|
 | `HTTPS_PUBLIC` | `next.config.ts:56` 의 **로컬 const 식별자**다. 셸 env 로 주는 코드는 리포에 **0건**. 대시보드에 넣으면 무시된다 — 정본 키는 `FKT_PUBLIC_HTTPS` 이고 값은 `"true"`·`"yes"` 가 아니라 **`"1"`** 이어야 한다 |
-| `NEXT_PUBLIC_API_BASE` | 루트 `.env.example:24` 에 남아 있는 **유령 키**다. 이 이름을 읽는 코드가 리포에 없다(참조 = 그 한 줄뿐) |
+| `NEXT_PUBLIC_API_BASE` | 옛 유령 키. 이 이름을 읽는 코드는 리포에 **0건**이었고, 루트 `.env.example` 에서 **제거했다**(T4-3 ⓖ). 옛 문서를 보고 이 이름을 대시보드에 넣는 일이 없도록 이름만 남겨 둔다 |
 
-🔴 **회부 1건**: 루트 `.env.example` 에 `FKT_API_BASE`·`FKT_PUBLIC_HTTPS`·`FKT_CORS_ORIGINS`·
-`FKT_TRUST_FORWARDED_FOR`·`FKT_RESTART_POLICY` 가 **없고**, 대신 유령 키가 있다.
-그 파일은 이 좌석의 write scope 밖이라 손대지 않았다 — 오케 판단.
+✅ **회부 종결(T4-3 ⓖ)**: 루트 `.env.example` 에 `FKT_API_BASE`·`FKT_PUBLIC_HTTPS`·`FKT_CORS_ORIGINS`·
+`FKT_TRUST_FORWARDED_FOR`·`FKT_RESTART_POLICY` 5키를 «빈 값 + 층·시점 + 읽는 좌표»로 추가하고
+유령 키를 제거했다. 🔴 그 파일은 **로더가 아니라 목록**이다 — ai-api 는 `.env` 를 읽지 않는다.
 
 ### 4-2. 부팅 가드 — 「런타임에도 같이 넣어도 되는가」
 
@@ -97,13 +99,41 @@ Preview 빌드는 기본값(`http://127.0.0.1:8000`)으로 구워진다 — 그�
 게이트 3 의 절차가 «Preview 로 먼저 1회»이므로 이 자리가 실제로 걸린다.
 → 두 키 다 **Production · Preview 양쪽에** 건다. Development 는 로컬 갈래라 안 건다.
 
-## 5. 배포 직후 확인 3줄 (이 순서로 · 각각 다른 사실이다)
+### 4-4. 🔴 rewrite 가 방문자 IP 를 «지운다» — 배포 전에 알고 있어야 할 한계
+
+`FKT_TRUST_FORWARDED_FOR` 는 **Vercel env 가 아니다**(ai-api 쪽 스위치다 — 대시보드에 넣지 마라).
+다만 이 배포 형상이 그 스위치의 «효과»를 정하므로 여기에 적는다.
+
+실측(E2 · 2026-09-01 · `infra/tailscale-funnel-runbook.md` §5-bis): Tailscale 프록시는 들어온
+`X-Forwarded-*` 를 **전부 덮어쓴다**. 그래서 사슬이 이렇게 된다:
+
+```
+브라우저 ──▶ Vercel 셸(rewrite = 셸 «서버»가 새로 부른다) ──▶ Funnel ──▶ ai-api
+                                                    ↑ 여기서 XFF 가 덮어써진다
+```
+
+- 좋은 쪽: 클라이언트가 XFF 를 지어내도 **버려진다** — 위조 경로 0. 그래서 `=1` 로 켜도 안전하다.
+- 나쁜 쪽: 프록시가 보는 «직접 클라이언트»는 브라우저가 아니라 **셸의 egress** 다.
+  셸이 실어 보낸 방문자 IP 는 거기서 **사라진다**.
+
+| 경로 · 스위치 | ai-api 가 보는 첫 값 | IP 축 | 등급 |
+|---|---|---|---|
+| 셸 경유 · 스위치 **켬**(= 배포 현재 · E1 확인) | 셸 egress | «몇 통» — 방문자별 아님 | 🔶 **E2+E3** — Funnel replace 실측 + egress 추론. 🔴 관측점이 없어 E1 아님 |
+| (참고) 접속 로그의 client | `172.22.0.1` transport peer | — | E1이지만 **IP 축 키가 아니다**(§5-ter) |
+| Funnel 직접 타격(curl · 외부 드릴) | 그 클라이언트 | 방문자별로 선다 | E1(§5-bis · runbook §5-bis) |
+
+🔴 **이 배치에서 「셸 경유 방문자별 IP rate limit」은 구조적으로 불가능하다.** 설정 실수가 아니라
+형상의 성질이고, 방문자별 방어는 **세션 축**이 맡는다(Q-60 성문의 발현).
+바꾸려면 판정을 「첫 값」이 아니라 「끝에서 n번째」로 옮겨야 하고, 그건 별 티켓이다.
+
+## 5. 배포 직후 확인 4줄 (이 순서로 · 각각 다른 사실이다)
 
 | # | 무엇 | 통과 기준 |
 |---|---|---|
 | 1 | 빌드 로그 | `pnpm install --frozen-lockfile` 이 찍혔다(= `vercel.json` 이 읽혔다) · `[static-replay] 동봉 …건` 이 찍혔다(= prebuild 가 리포 루트를 봤다) |
 | 2 | 응답 헤더 | `curl -sI <배포 URL>` 에 `strict-transport-security` **있다**(= `FKT_PUBLIC_HTTPS=1` 이 빌드에 들어갔다) |
 | 3 | 목적지 | `curl -s <배포 URL>/api/health` 의 **본문**이 노트북 ai-api 의 것인가 — `dependencies` 에 postgres·neo4j 가 있고 build sha 가 그 컨테이너 값과 같다 |
+| 4 | 🔴 IP 귀속 | 셸 경유로 `/api/health` 1회 → ai-api 로그의 client ip 와 XFF 첫 값. **예측을 먼저 적어 둔다**: client = 도커 브리지 peer(`172.22.0.1` 류) · XFF 첫 값 = Vercel egress 대역(`76.76.x` 류). 다르면 §4-4 의 표가 틀린 것이므로 **회부**한다(재고 나서 이유를 만들지 않는다) |
 
 🔴 2번을 «화면이 뜨는가»로 대신하지 않는다. HSTS 누락은 화면에 아무 표시도 남기지 않는다 —
 헤더를 직접 봐야 갈린다.
@@ -113,14 +143,133 @@ Preview 빌드는 기본값(`http://127.0.0.1:8000`)으로 구워진다 — 그�
 「목적지가 맞았는가」는 응답 «본문»이 노트북의 것인지로만 갈린다. 같은 이유로 이 확인을
 로컬 dev 에서 대신 하지 않는다(로컬은 rewrite 목적지가 다르다 — 「주장하는 그 경로에서 재라」).
 
-같은 구조가 §6 의 CORS 행을 결정한다: 브라우저가 부르는 것은 언제나 셸 origin 이므로
-**교차 origin 이 성립하지 않고, 그래서 `FKT_CORS_ORIGINS` 는 비운 채로 시작한다.**
+### 🔴 5-3-a. CORS — 추정이었고, 이제 «닫혔다»(E1)
+
+앞판은 여기서 「브라우저는 셸 origin 만 부르므로 CORS 는 필요 없을 것」이라고 **추정(E3)** 했다.
+그 문장은 결론이 맞았고 등급만 낮았다. 두 축으로 확정한다:
+
+| 축 | 확인 | 결과 |
+|---|---|---|
+| 코드(E1) | 절대 URL(`apiBase()`) 참조 전수 | **2곳뿐이고 둘 다 서버** — `app/enter/route.ts` · `lib/contract.ts`(`apiGetServer`) |
+| 코드(E1) | 브라우저 헬퍼의 base 인자 | `compareBrowser`·`apiGetBrowser`·`startRunBrowser`·`runEvents`·work-order 계열 **전건 `""`(상대)** |
+| 코드(E1) | 클라이언트 컴포넌트의 자체 `fetch(` | **0건**(`scripts/contract-surface.mjs` 불변식대로 전부 `lib/contract.ts` 경유) |
+| 코드(E1) | WebSocket | `components/incident/run-console.tsx` = `location.origin` → 같은 origin |
+| 런타임(E1) | 공개 배포 브라우저 콘솔의 CORS 오류 | **0건**(검증 좌석 실측) |
+
+⇒ **브라우저는 교차 출처 호출을 하지 않는다.** 따라서 `FKT_CORS_ORIGINS` 는 이 형상에서
+**필수가 아니다.**
+
+🔴 그럼에도 배포 컨테이너에는 구체 allowlist 가 들어가 있다(2026-09-01 11:13). **무해하고 유지한다** —
+`*` 가 아니라 origin 하나이고, 브라우저가 직접 부르는 형상으로 바뀌는 날 미리 서 있다.
+다만 **「allowlist 가 없어서 화면이 깨진다」는 문장은 참이 아니다** — 그렇게 적으면 다음 사람이
+없는 인과를 좇는다. 실제 원인은 §7 이다.
+
+## 5-bis. 첫 배포 실측 착지 (E1 · 2026-09-01 11:03 KST)
+
+배포 = production · 빌드 26s · READY `02:02:01Z` · 공개 URL `factory-knowledge-twin.vercel.app`.
+
+🔴 이 URL 은 **일부러 공개하는 제품의 얼굴**이라 그대로 적는다. 반대로 ts.net 호스트명은
+«기반 시설의 신원»이라 계속 placeholder 다 — 둘을 같은 규칙으로 다루지 않는다.
+
+| # | 잰 것 | 결과 |
+|---|---|---|
+| ① | 빌드 로그의 install 명령 | `Running "install" command: pnpm install --frozen-lockfile` ✅ → **`vercel.json` 은 Root Directory 기준으로 읽힌다**(§2 의 미확정이 이 줄로 닫혔다) |
+| | 부수 | Vercel CLI 59.3.0 · pnpm 10.32.1 · Next.js 16.3.3(Turbopack) · Root Directory `apps/web-console` · **Include files outside root = Enabled** |
+| ② | prebuild | `[static-replay] 동봉 28건 + 이벤트 32건 → lib/static-replay/generated/ (파일 3개)` · fixture sha `3eb624c237db` · 「서버가 막은 자리 6건은 막힌 채로」 ✅ → 리포 루트 접근이 실제로 열렸다 |
+| ③ | 응답 헤더 | 200 · `Strict-Transport-Security: max-age=31536000; includeSubDomains` ✅ · `X-Content-Type-Options: nosniff` → `FKT_PUBLIC_HTTPS=1` 이 **빌드에** 들어갔다 |
+| ④ | 목적지 귀속 | 셸 경유 `/api/health` → 200 · 본문이 **노트북의 것**(build `792470d` · pg ok · neo4j ok · embedding ready) ✅ → 사슬 전체가 섰다 |
+
+## 5-ter. 🔴 B⑦ — 예측의 «절반»만 확인됐다
+
+§5-4 는 두 값을 예측했다. 하나는 맞았고, 하나는 **이 형상에서 잴 수 없었다.**
+
+| 예측 | 실측 |
+|---|---|
+| client = 도커 브리지 peer(`172.22.0.1` 류) | 접속 로그의 client = **`172.22.0.1`** — 일치 ✅ |
+| XFF 첫 값 = Vercel egress(`76.76.x` 류) | 🔴 **못 쟀다** — 앱이 XFF 를 로그에 남기지 않는다(관측점 0) |
+
+🔴 **예측 문장 자체가 두 가지를 뭉뚱그렸다**(자기 정정): 「ai-api 가 보는 client」는
+접속 로그의 **transport peer** 일 수도, rate limit 이 실제로 쓰는 **IP 축 키** 일 수도 있다.
+관측된 것은 **앞의 것뿐**이고, 판정에 필요한 것은 **뒤의 것**이다.
+
+### 그래서 무엇이 «확정»됐고 무엇이 아닌가
+
+- ✅ **확정(E1)**: 배포 컨테이너는 스위치가 **켜져 있다**(`FKT_TRUST_FORWARDED_FOR=1` ·
+  `docker inspect` 의 `Config.Env` 로 확인).
+- ✅ **확정(E1)**: 그 «켜진» 상태에서도 접속 로그의 client 는 `172.22.0.1` 이다. 즉
+  **이 로그는 IP 축 키를 관측하지 못한다** — 스위치와 무관하게 언제나 transport peer 를 찍는다.
+  이 관측이 답하는 것은 그것뿐이다.
+- 🔶 **여전히 미확정**: 「셸 경유는 방문자별이 아니다」는 **Funnel replace 실측(E2) + 셸 egress
+  구조 추론(E3)** 으로 서 있다. 🔴 **이 로그로는 E1 로 올릴 수 없다** — 관측점 코드가 생긴 뒤다.
+
+🔴 앞판(이 문서 초판)은 바로 이 자리에서 「스위치가 꺼진 지금 = 한 통(E1)」이라고 적었다.
+두 겹으로 틀렸다: 스위치는 켜져 있었고, 설령 꺼져 있었어도 **그 로그는 그 질문에 답하지 못한다**.
+아래 「안 되는 길」을 스스로 적어 놓고 그 길로 결론을 낸 셈이다 —
+**측정이 답하지 못하는 것을 답했다고 적지 않는다.**
+
+### 🔴 이 축을 재려는 다음 세대에게 — 되는 길과 안 되는 길
+
+- **안 되는 길**: uvicorn access log 를 보는 것. 그 줄의 client 는 **transport peer** 라
+  `FKT_TRUST_FORWARDED_FOR` 를 켜도 **바뀌지 않는다**. 스위치를 켜 놓고 그 로그를 보면
+  「켜도 안 변한다 = 스위치가 고장」이라는 **틀린 결론**이 나온다.
+- **되는 길**: `services/ai-api/app/protection.py` 의 `_client_ip` 가 «무엇을 골랐는지»를 한 줄
+  남기는 것. 그게 유일한 관측점이고, **코드 변경 = 별 티켓**이다.
+
+「안 잰 것」이 아니라 **「관측점이 없어서 못 잰 것」**이다 — 처방이 다르다.
 
 ## 6. 못 잰 것 (이 좌석이 잴 수 없었던 것)
 
 | 항목 | 왜 | 무엇이 채우는가 |
 |---|---|---|
-| 실제 Vercel 빌드 통과 여부 | 배포 = 게이트 3 | 첫 배포 로그(§5-1) |
-| `vercel.json` 이 Root Directory 기준으로 읽히는지 | 배포해야 갈린다 | §5-1 · 안 읽히면 대시보드로 이관 |
-| 외부 망·모바일 첫 화면 시간 | 공개 URL 부재 | T4-3 자기 실측 표 · T4-4 |
-| CORS allowlist 에 Vercel origin 을 넣어야 하는지 | 구조상 **필요 없을 것**이다(§5-3 — rewrite 가 같은 origin 을 유지한다 · `FKT_CORS_ORIGINS` 기본 = 빈 값). 다만 이것은 **구조 추론(E3)** 이고 배포 형상에서 잰 값이 아니다 | 배포 후 브라우저 콘솔에 CORS 오류가 «0건»인지 1회 확인. 🔴 0건을 확인하기 전에는 「필요 없다」를 결론으로 적지 않는다 |
+| 🔴 스위치를 «켰을 때» 의 XFF 첫 값 | **관측점이 없다** — 앱이 XFF 를 로그에 안 남긴다(§5-ter) | 코드로 관측점을 만드는 별 티켓. 🔴 access log 로는 영원히 못 잰다 |
+| Preview 환경에도 두 키가 걸렸는가 | 첫 preview 는 루트 설정 «전» 빌드라 404 였다 | 다음 develop push 의 preview. 🔴 대시보드에 «넣었다»는 설정 실측이고, «빌드에 들어갔다»는 아직 아니다 — 둘은 다른 사실이다 |
+| 외부 망·모바일 첫 화면 시간 | 값 측정은 T4-4 몫 | T4-3 자기 실측 표 · T4-4 |
+
+---
+
+## 7. 🔴 D-10 — 공개 셸 «콜드 입장»이 세션을 굳힌다 (2026-09-01 실측 · 처방 착지)
+
+### 증상
+
+공개 URL 의 `/compare` 가 「승인 질문 목록을 가져오지 못했습니다」를 띄운다.
+같은 세션에서 `/overview` 도 함께 죽는다(둘은 같이 산다).
+
+### 원인
+
+`POST /enter` 의 세션 발급 호출이 **2초 상한**을 쓰고 있었다(`lib/contract.ts` 의 기본 `TIMEOUT_MS`).
+공개 형상에서 그 호출은 셸 서버(Vercel `iad1`) → Funnel(ts.net) → 한국 노트북 왕복이라
+**콜드 회차가 2초를 넘는다**. 넘으면 핸들러가 `pending` 세션(브라우저가 지어낸 uuid)을 심는데,
+ai-api 는 그 id 를 발급한 적이 없어 그 방문자의 `/api/*` 가 **전건 401** 이 된다.
+
+그리고 그 상태는 **스스로 풀리지 않았다** — `/enter` 는 「쿠키가 있으면 발급 0」이었고
+`pending` 도 쿠키였다. maxAge **8시간** 동안 같은 방문자는 계속 깨진 화면을 본다.
+
+### 실측 (공개 URL · curl · 컨테이너 무접촉)
+
+| | 값 |
+|---|---|
+| 콜드 `POST /enter` | **3.06s** → `fkt_session=pending:…` · `fkt_sid` **없음** |
+| 이어진 5회 | 2.16 / 0.86 / 1.01 / 0.82 / 0.65s → **전건** `api` · `fkt_sid` 있음 |
+| pending 쿠키로 `/compare` | 실패 문구 1건 · `<select>` **0건** |
+| pending 쿠키로 `/overview` | FAC-A 렌더 **0** · 오류 문구 3건 |
+| `api` 쿠키로 두 화면 | `<select>` 1건 · FAC-A 렌더 ✅ |
+| pending 으로 `/enter` **재호출**(옛 코드) | 303 · **0.40s** · 같은 pending · 발급 0 = 고착 |
+
+🔴 원천은 결백하다: 로컬 `:8010` 에 세션을 받아 부르면 `/api/scenarios` 는 **GS-01 · 질문 4건**을
+그대로 답한다. 마운트·시드·CORS 어느 것도 이 증상의 원인이 아니다.
+
+### 처방 (착지)
+
+1. **입장 전용 상한** `ENTER_TIMEOUT_MS = 8000`(조회와 동일) — 2초는 이 배치의 정상 왕복도 잘랐다.
+2. **`pending` 은 재발급 대상** — `/enter` 는 `origin === "api"` 일 때만 발급 0 으로 돌아간다.
+   실패하면 «있던» pending 을 그대로 둔다(id 를 갈아치우지 않는다).
+3. **고착 방문자가 그 재발급에 닿는 길** — 가드가 `pending` 을 `/` 에서 되돌려보내지 않는다.
+   `/` 의 입장 마운트가 곧 재시도다(새 화면·새 버튼 0). 되돌이는 없다 — `/overview` 는 `/` 로
+   되돌려보내지 않으므로 순환이 성립할 변이 없다.
+
+### 남는 축
+
+콜드 왕복이 8초마저 넘으면 여전히 `pending` 이 된다. 다만 이제 **다음 입장에서 회복한다** —
+「한 번 실패 = 8시간 고착」이 「한 번 실패 = 그 회차만 실패」로 바뀌었다.
+근본(콜드 지연 자체)은 warm-up·리전 배치의 문제이고 이 티켓의 범위가 아니다.
+
