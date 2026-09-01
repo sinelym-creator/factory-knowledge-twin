@@ -19,7 +19,7 @@
 
 ## blocked (운영자)
 
-없음.
+| 🚨 **D-13 배포 DB 바인드 볼륨 삭제(P0 · 오케 정리 발주 게이트 결함 · 15:49)** — postgres Exited · neo4j 삭제 inode 로 생존 · ai-api degraded · 구조(`docker cp`) 진행 · **재구성(고정 경로 볼륨 + synthetic 재시드 + 컨테이너 재기동) = 폐하 재가 대기(15:55 상신)** |
 
 ## done
 
