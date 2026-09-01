@@ -347,7 +347,9 @@ export type Reply<T> =
    *    바뀌는 날에도 화면만 옛 숫자를 계속 말한다. 없으면 `undefined` — 지어내지 않는다.
    */
   /**
-   * 🔴 `retried` = 아래 `call()` 이 «실제로» 1회 재시도한 회차에만 붙는다(D-11 완화 C).
+   * 🔴 `retried` = 재시도가 «실제로» 돈 회차에만 붙는다 — 아래 `call()` 의 1회(D-11 완화 C) ·
+   *    `createSession()` 의 미도달 재시도(D-12 완화). 두 축 다 「돌았다」만 말하고 횟수는 말하지
+   *    않는다(횟수를 세는 자리는 D-12 의 `console.warn` 이다 — 회차마다 한 줄).
    *    없으면 필드 자체가 없다 — `false` 를 지어내지 않는다(이 파일의 `detail`·`retryAfterSec` 규율과 같다).
    *    이 축이 없으면 재시도 규칙은 「넣었다」만 남고 «도는가»는 아무도 세지 못한다.
    */
@@ -592,14 +594,71 @@ export async function proxyApiRequest(req: Request, opts: { https: boolean }): P
   return new Response(upstream.body, { status: upstream.status, headers: out });
 }
 
-export function createSession(base = ""): Promise<Reply<{ sessionId: string }>> {
+/**
+ * 🔴 **D-12 완화 — 「미도달」 회차에 한해 세션 발급을 되묻는다. 뿌리 해결이 아니다.**
+ *
+ * 증상(E1 · 14대 실측 · Production): `POST /enter` 가 «뭉쳐서» 실패했다 — 13:26~13:35 의
+ * 35/35 가 `fkt_session=pending`(fkt_sid 없음)이었고 13:42 이후로는 30/30 · 5/5 전건 성공.
+ * 같은 창의 ai-api 로그에 그 35건의 `createSession` 도달은 **0** 이다(같은 창 프록시 경유
+ * `POST /api/sessions` 는 3/3 200). 반환은 0.7~3s 라 `ENTER_TIMEOUT_MS`(8s) 타임아웃도
+ * 아니었다 — fetch 가 «새 연결»에서 즉시 실패했고, 그 사유는 아래 `attempt()` 의 catch 축
+ * (`{state:"unavailable", why:e.name}` · status 없음)으로 접혀 어디에도 남지 않았다.
+ *
+ * 🔴 **뿌리는 우리 층이 아니다**(E3): Vercel 함수 → ts.net 새 연결이 간헐적으로 서지 않는
+ *    자리다(D-11 과 한 뿌리로 보이나 이 코드가 확인하지 못한다). 프록시 람다는 keep-alive
+ *    재사용이라 같은 창에도 건강해 보였다. 그래서 이것은 «완화 + 관측»이다 — 이 상수들이
+ *    실패를 없애지 않는다. 없애는 것처럼 적으면 다음 사람이 진짜 뿌리를 찾지 않는다.
+ *
+ * 사정거리를 좁게 못 박는다:
+ *   ① **미도달 축만**(`state==="unavailable" && status===undefined`). 서버가 «답한»
+ *      4xx/5xx 는 되묻지 않는다 — 다시 물어도 같은 답이고, 그 요청은 서버가 이미 받았다.
+ *   ② **중복 발급 부작용 0 의 근거가 ①에 걸려 있다.** POST 재시도가 위험한 이유는 「서버가
+ *      이미 받았을 수 있다」인데, 이 축은 요청이 서버에 닿지 않은 것이 관측된 자리다
+ *      (도달 0). `status` 가 하나라도 있으면 그 전제가 깨지므로 그 자리에서 반환한다.
+ *   ③ **`ENTER_TIMEOUT_MS` 는 그대로다.** 값이 아니라 횟수만 는다 — 최악 체감은
+ *      `3×상한 + 1.2s`, 다만 이 축은 상한에 닿기 전(0.7~3s)에 실패해 온 축이다.
+ *   ④ **재시도는 `call()` 이 아니라 여기서 돈다.** `call()` 의 규칙(D-11 C)은 GET · 상대
+ *      경로 · 502/503 이고, 그 사정거리를 넓히면 이 티켓과 무관한 POST 축들이 함께 되묻게
+ *      된다(조사 시작이 두 run, 승인이 두 감사 기록). 처방은 증상이 난 한 호출에만 준다.
+ */
+const ENTER_RETRY_DELAYS_MS = [400, 800];
+
+export async function createSession(base = ""): Promise<Reply<{ sessionId: string }>> {
   // 🔴 `no-store` — 세션 발급 응답은 캐시에 남을 물건이 아니다(쿠키가 실려 있다).
-  return call<{ sessionId: string }>(
-    CONTRACT.createSession,
-    { method: "POST", cache: "no-store" },
-    base,
-    ENTER_TIMEOUT_MS,
-  );
+  const once = () =>
+    call<{ sessionId: string }>(
+      CONTRACT.createSession,
+      { method: "POST", cache: "no-store" },
+      base,
+      ENTER_TIMEOUT_MS,
+    );
+
+  let reply = await once();
+  let attempt = 1;
+  let retried = false;
+  const attempts = ENTER_RETRY_DELAYS_MS.length + 1;
+
+  for (;;) {
+    if (reply.state === "ok") return retried ? { ...reply, retried: true } : reply;
+
+    /**
+     * 🔴 **실패 «회차마다» 한 줄** — 최종 실패 회차도 남긴다.
+     *    `why`(= `e.name`: `TypeError`·`TimeoutError`…)는 이 줄이 없으면 어디에도 남지
+     *    않는다. 반환값의 `why` 는 화면 문구로만 쓰이고 서버 로그에는 안 실린다 — 즉
+     *    Vercel 런타임 로그에서 「DNS 인가 TLS 인가 타임아웃인가」를 가르는 유일한 E1 축이
+     *    이 한 줄이다. 세션 id·쿠키는 찍지 않는다(공개 경계 §15.2).
+     */
+    console.warn("[enter] createSession failed", reply.why, `attempt=${attempt}/${attempts}`);
+
+    // 서버가 «답한» 실패 — 되묻지 않는다(①).
+    if (reply.status !== undefined) return retried ? { ...reply, retried: true } : reply;
+    if (attempt >= attempts) return retried ? { ...reply, retried: true } : reply;
+
+    await sleep(ENTER_RETRY_DELAYS_MS[attempt - 1]);
+    attempt += 1;
+    retried = true;
+    reply = await once();
+  }
 }
 
 /**
