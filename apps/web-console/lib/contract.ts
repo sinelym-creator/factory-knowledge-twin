@@ -332,7 +332,7 @@ export function decodeRouteParam(raw: string): string {
 export type ErrorDetail = { code: string; message: string };
 
 export type Reply<T> =
-  | { state: "ok"; data: T; setCookie?: string }
+  | { state: "ok"; data: T; setCookie?: string; retried?: true }
   /**
    * 🔴 `detail` = 서버가 «사유 코드»로 나눠 답한 것을 화면까지 옮기는 자리(T3-3).
    *    ai-api 는 같은 400 을 `highlight_mismatch`(이 문서의 것이 아니다)와
@@ -346,12 +346,18 @@ export type Reply<T> =
    *    화면이 자기 상수로 「잠시 후」를 그리면 그 숫자는 서버가 하지 않은 말이 되고, 상한이
    *    바뀌는 날에도 화면만 옛 숫자를 계속 말한다. 없으면 `undefined` — 지어내지 않는다.
    */
+  /**
+   * 🔴 `retried` = 아래 `call()` 이 «실제로» 1회 재시도한 회차에만 붙는다(D-11 완화 C).
+   *    없으면 필드 자체가 없다 — `false` 를 지어내지 않는다(이 파일의 `detail`·`retryAfterSec` 규율과 같다).
+   *    이 축이 없으면 재시도 규칙은 「넣었다」만 남고 «도는가»는 아무도 세지 못한다.
+   */
   | {
       state: "unavailable";
       why: string;
       status?: number;
       detail?: ErrorDetail;
       retryAfterSec?: number;
+      retried?: true;
     };
 
 const TIMEOUT_MS = 2000;
@@ -436,11 +442,71 @@ async function errorDetail(res: Response): Promise<ErrorDetail | undefined> {
   return undefined;
 }
 
+/**
+ * 🔴 **D-11 완화 (C) — 「간헐 502/503」을 «멱등 축에서만» 1회 되묻는다.**
+ *
+ * 증상(E1 · 2026-09-01 12:19~): Production 의 `/api/*` 가 Vercel **엣지 rewrite** 층에서
+ * 간헐적으로 502 `DNS_HOSTNAME_EMPTY` 를 낸다(7회 중 4회). 같은 시각 «함수» 경로
+ * (`POST /enter`)는 5/5 정상이었다 — 즉 이것은 **우리 층의 결함이 아니고**, 이 상수들이
+ * 고치는 것도 아니다. 근본(엣지를 지나지 않게 하는 것)은 별 티켓 (B) 다.
+ *
+ * 🔴 그래서 이 규칙의 «사정거리»를 좁게 못 박는다:
+ *   ① **GET 만.** POST/PATCH 를 되물으면 서버가 «이미 받은» 요청이 두 번 실행될 수 있다
+ *      (조사 시작이 두 run, 승인이 두 감사 기록). 502 는 「서버가 못 받았다」의 증거가
+ *      아니다 — 프록시가 답을 못 가져왔을 뿐, 원본은 처리했을 수 있다.
+ *   ② **상대 경로(`base === ""`) 만.** 절대 URL 축(`apiGetServer`)은 함수에서 나가는
+ *      길이라 이 증상이 없다(5/5). 증상이 없는 곳에 재시도를 넣으면 «진짜» 장애 때
+ *      지연만 두 배가 된다 — 경보의 사정거리는 처방의 사정거리와 같아야 한다.
+ *   ③ **502·503 만.** 429 는 서버가 「그만 와라」라고 «말한» 것이라 되묻는 것이 틀린
+ *      대응이고, 4xx·501 은 다시 물어도 같은 답이다. 타임아웃·연결 거부(catch 축)도
+ *      제외한다 — 상한을 바꾸지 않기로 한 티켓에서 체감 상한만 두 배가 된다.
+ *
+ * 🔴 각 시도의 `timeoutMs` 는 **바꾸지 않았다**. 다만 재시도가 도는 회차의 «총» 체감은
+ *    최대 `2×timeoutMs + 지연` 이 된다 — 값이 아니라 횟수가 1 늘어난 결과다.
+ */
+const RETRY_STATUSES = new Set([502, 503]);
+const RETRY_DELAY_MS = 300;
+/** 🔴 서버가 `Retry-After` 로 「언제 오라」고 말했으면 그 값이 우선한다 — 단 이 상한까지만. */
+const RETRY_DELAY_MAX_MS = 2000;
+
+/** 되물어도 «같은 요청»이 되는 축인가 — GET + 상대 경로(브라우저 축). */
+function isRetryableCall(init: RequestInit | undefined, base: string): boolean {
+  if (base !== "") return false;
+  return (init?.method ?? "GET").toUpperCase() === "GET";
+}
+
+function retryDelayMs(reply: Reply<unknown>): number {
+  if (reply.state === "ok") return RETRY_DELAY_MS;
+  const said = reply.retryAfterSec;
+  if (said === undefined) return RETRY_DELAY_MS;
+  return Math.min(said * 1000, RETRY_DELAY_MAX_MS);
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
 async function call<T>(
   path: string,
   init?: RequestInit,
   base = "",
   timeoutMs = TIMEOUT_MS,
+): Promise<Reply<T>> {
+  const first = await attempt<T>(path, init, base, timeoutMs);
+  if (first.state === "ok") return first;
+  if (first.status === undefined || !RETRY_STATUSES.has(first.status)) return first;
+  if (!isRetryableCall(init, base)) return first;
+
+  await sleep(retryDelayMs(first));
+  const second = await attempt<T>(path, init, base, timeoutMs);
+  // 🔴 재시도 «뒤에도» 실패하면 그대로 돌려준다 — 화면이 읽는 문면은 달라지지 않는다.
+  if (second.state === "ok") return { ...second, retried: true };
+  return { ...second, retried: true };
+}
+
+async function attempt<T>(
+  path: string,
+  init: RequestInit | undefined,
+  base: string,
+  timeoutMs: number,
 ): Promise<Reply<T>> {
   try {
     const res = await fetch(base + path, { ...init, signal: AbortSignal.timeout(timeoutMs) });
