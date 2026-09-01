@@ -1,0 +1,8 @@
+# 문서 원문은 개행을 LF로 고정한다 — 체크아웃 설정에 따라 CRLF가 되면 content_sha256이 플랫폼마다 달라진다
+data/documents/*.md text eol=lf
+# replay fixture도 동일 사정거리 — sha256 대조가 플랫폼 무관이어야 한다 (T2-4 J-I)
+data/replay/*.jsonl text eol=lf
+# 정적 replay 조회 사본도 같은 사정거리 — 빌드가 sha256 으로 잠그므로 체크아웃이 개행을
+# 바꾸면 빌드가 멈춘다. 지금 자산은 전부 한 줄(서버가 minified JSON 을 준다)이라 우연히
+# 무사하지만, 그 형식은 우리가 정하는 축이 아니다 (T4-2a)
+data/replay/static/*.json text eol=lf

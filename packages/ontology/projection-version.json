@@ -1,0 +1,11 @@
+{
+  "projection_version": "0.1.0",
+  "manifest": "services/projector/manifest.py",
+  "manifest_sha256": "687448cb00f0bc1e8087861bafc012a7dc90113560d2b49a005963b56ec6d06a",
+  "spec": "docs/product/data-ontology-spec.md",
+  "spec_version": "v0.1",
+  "projected_relations": 23,
+  "excluded_relations": ["R05", "R25"],
+  "node_labels": 14,
+  "note": "그래프 투영 «규칙»의 정본(오케 판정 2026-08-29 · T1-5 게이트 ④ B안). SemVer = 사람이 읽는 축, manifest_sha256 = 잊을 수 없는 축 — build_projection.py가 manifest 지문과 이 값을 대조해 어긋나면 멈춘다(004 ontology 거울 선례). 원장 기록 문자열 = {projection_version}+{지문 8자}. 관계·노드·속성을 바꾸면 지문이 먼저 어긋나므로, minor를 올리고 지문을 함께 갱신한다."
+}

@@ -1,0 +1,91 @@
+{
+  "name": "T1-1 스키마 제약 재현 표본 — «거부돼야 하는데 통과하는가»",
+  "target": "services/ai-api/db/migrations/001_core_schema.sql",
+  "note": "구현 좌석이 이미 실측한 단일 칼럼 제약 7종(ID 패턴·NOT NULL·PK 중복·FK·status CHECK·승인자 누락·sha256 형식)은 넣지 않았다. 자기 실측의 복창은 검증이 아니다. 여기 있는 것은 그가 시험하지 않은 방향 — «칼럼 사이의 정합»이다.",
+  "expectSemantics": "expect=reject : 스키마가 막아야 한다(막지 못하면 결함). expect=accept : 통과하는 것이 «설계»다 — 대조군(P-8)이거나, 오케가 비강제로 확정한 축이다. 🔴 accept가 늘어난다고 표본이 무뎌진 것은 아니지만, «무엇이 대신 지키는가»가 why에 적혀 있지 않은 accept는 눈감기다.",
+  "revision": {
+    "at": "2026-08-28",
+    "by": "검증(리바이2) · 오케 판정 승인",
+    "what": "P-5·P-6을 tests/data로 이관하고 P-3·P-4의 기대를 재설정했다. 그 전까지 이 표본은 4/8·exit 1로 «확정된 설계»를 결함으로 계속 보고했다 — 도구가 영구 red면 아무도 읽지 않는다.",
+    "basis": "evidence/t1-2-seed-verification.md §1"
+  },
+  "relocated": [
+    {
+      "id": "P-5",
+      "gap": "G-4b ID 구성요소 정합 (component)",
+      "to": "tests/data/seed-integrity.sql C-10",
+      "why": "T1-1 처방표가 «CHECK로 불가 · T1-2 seed 생성 시 검증»으로 이관한 축이다. 스키마 표본에 두면 영원히 FAIL이고, 실제로 지켜지는지는 데이터에서만 볼 수 있다. T1-2 실측 = 불일치 0/24."
+    },
+    {
+      "id": "P-6",
+      "gap": "G-4b ID 구성요소 정합 (sensor)",
+      "to": "tests/data/seed-integrity.sql C-11",
+      "why": "P-5와 같은 계열. T1-2 실측 = 불일치 0/30."
+    }
+  ],
+  "isolation": "probe 1건 = 트랜잭션 1개(BEGIN … ROLLBACK). 준비 행까지 전부 되감기므로 대상 DB에 아무것도 남지 않는다 — 타 좌석 스택에서도 안전하게 돌릴 수 있다.",
+  "commonSetup": [
+    "INSERT INTO factory (id,name,site_code) VALUES ('FAC-P','probe','P')",
+    "INSERT INTO production_line (id,factory_id,name,line_no) VALUES ('LN-P-01','FAC-P','probe',1)",
+    "INSERT INTO equipment (id,line_id,name,equipment_class,model,installed_on) VALUES ('EQ-CNC-901','LN-P-01','probe','CNC','m','2026-01-01')",
+    "INSERT INTO equipment (id,line_id,name,equipment_class,model,installed_on) VALUES ('EQ-CNC-902','LN-P-01','probe','CNC','m','2026-01-01')",
+    "INSERT INTO document (id,doc_type,title,owner_role,current_revision_no) VALUES ('DOC-SOP-9001','SOP','probe','qa',1)",
+    "INSERT INTO document (id,doc_type,title,owner_role,current_revision_no) VALUES ('DOC-MAN-9002','MANUAL','probe','qa',1)"
+  ],
+  "probes": [
+    {
+      "id": "P-1",
+      "expect": "reject",
+      "gap": "G-4 ID 구성요소 정합",
+      "label": "revision id가 자신의 document_id·revision_no와 어긋남",
+      "why": "스펙 §3.1: id = {document_id}@r{N}. 패턴만 검사하므로 «다른 문서의 revision id»를 붙여도 통과한다 — 인용 추적이 조용히 어긋난다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-0014@r2','DOC-MAN-9002',7,'0000000000000000000000000000000000000000000000000000000000000000','x','2026-01-01','approved','qa')"
+    },
+    {
+      "id": "P-2",
+      "expect": "reject",
+      "gap": "G-1 superseded 종료시각",
+      "label": "superseded인데 effective_to가 비어 있음",
+      "why": "스펙 §3.3: 새 revision 승인 시 «직전 revision은 superseded + effective_to 기입». 종료 시각이 없으면 «언제까지 유효했는가»를 답할 수 없다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r1','DOC-SOP-9001',1,'1111111111111111111111111111111111111111111111111111111111111111','x','2026-01-01','superseded','qa')"
+    },
+    {
+      "id": "P-3",
+      "expect": "accept",
+      "gap": "G-2 동시 유효 revision — 🔴 비강제 «확정»(오케 판정)",
+      "label": "같은 문서에 유효 기간이 겹치는 approved revision 2건 (스키마는 막지 않는다)",
+      "why": "겹치면 «지금 인용할 revision»이 2개가 되어 T0-8 Q-DIRECT-003의 «정답 1건» 전제가 깨진다. 그러나 README D절 원칙(스키마는 사실만 담고 판정은 질의/서비스 계층)에 따라 «막지 않기로 확정»했다 — 여기서 통과하는 것이 설계다. 🔴 대신 지키는 것 = tests/data C-21(전 45문서의 «지금 인용 가능 revision»이 정확히 1건) + C-22(approved 유효구간 겹침 문서 = 0). 그 두 그물이 살아 있다는 실측 = tests/data/net-liveness.sql L-21·L-22. 🔴 2026-08-29 정정(T1-7 A단 ③): 그전까지 이 자리는 「tests/data C-4가 본다(45문서 전부 인용 가능 revision 1건 실측)」였다. C-4 실물은 DOC-SOP-0014 «한 문서»만 본다 — 45문서라는 사실은 맞았으나 그것을 «지키는 검사»는 없었다. 주장이 그물보다 넓은 accept는 눈감기다(expectSemantics).",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,effective_to,approval_state,approved_by) VALUES ('DOC-SOP-9001@r2','DOC-SOP-9001',2,'2222222222222222222222222222222222222222222222222222222222222222','x','2026-01-01','2027-01-01','approved','qa'), ('DOC-SOP-9001@r3','DOC-SOP-9001',3,'3333333333333333333333333333333333333333333333333333333333333333','x','2026-06-01','2027-06-01','approved','qa')"
+    },
+    {
+      "id": "P-4",
+      "expect": "accept",
+      "gap": "G-3 전이 방향 — 🔴 비강제 «확정»(오케 판정)",
+      "label": "approved → draft 역방향 전이 (스키마는 막지 않는다)",
+      "why": "스펙 §3.3은 «역방향 없음»이지만 값 CHECK로는 전이를 막을 수 없고, 같은 D절 원칙에 따라 트리거를 두지 않기로 확정했다 — 여기서 통과하는 것이 설계다. 🔴 «전이 자체»를 보는 그물은 아직 없다 — 스냅숏은 이력을 볼 수 없다. 상태 전이는 쓰기 경로가 생기는 시점(서비스 계층)에 강제해야 하며, 그때까지 이 표본은 그 부채를 눈에 보이게 남겨 두는 자리다. 🔴 2026-08-29 실측 보강(T1-7 A단 ③): 전이의 «관측 가능한 결과»는 tests/data C-21이 잡는다 — approved 상태를 draft로 내리면 그 문서의 인용 가능 revision이 0건이 되고 C-21이 운다(net-liveness.sql L-21이 바로 그 주입으로 실측). 「전이를 막는다」와 「망가진 결과를 적발한다」는 다르므로 부채 자체는 존치한다. 🔴 2026-08-29 정정(G-3 전이 그물): 위 「«전이 자체»를 보는 그물은 아직 없다 — 스냅숏은 이력을 볼 수 없다」는 절반만 참이었다. 전이는 잔여열(approved_by·effective_to)과 문서 내 승계 배치에 «흔적»을 남긴다. 그 흔적을 보는 그물 5종(tests/data C-23~C-27)을 신설했고, 역방향 6쌍 × 흔적 보존/삭제 2변형 13주입 중 11건이 적발된다(신설 전 4건 · 전수 계수 = tests/data/transition-net.sql). 잔여 미탐지 2건 = «중간 revision의 retired→superseded» — 두 상태의 잔여열 요건이 같아 스냅숏에 남는 차이가 실제로 «없다»(최상위 revision에서는 C-27이 잡는다). 🔴 그래도 부채는 존치한다 — 그물은 «적발»하고 스키마·서비스 계층은 «금지»한다. 이 표본의 expect=accept는 그대로다.",
+      "setup": [
+        "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r1','DOC-SOP-9001',1,'1111111111111111111111111111111111111111111111111111111111111111','x','2026-01-01','approved','qa')"
+      ],
+      "sql": "UPDATE document_revision SET approval_state='draft' WHERE id='DOC-SOP-9001@r1'"
+    },
+    {
+      "id": "P-7",
+      "expect": "reject",
+      "gap": "G-4 ID 구성요소 정합",
+      "label": "chunk id의 revision이 소속 revision과 다름",
+      "why": "스펙 §3.1: {revision_id}#{NNN}. 인용 chunk가 다른 revision을 가리키면 citation validity가 근본에서 깨진다.",
+      "setup": [
+        "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-SOP-9001@r2','DOC-SOP-9001',2,'2222222222222222222222222222222222222222222222222222222222222222','x','2026-01-01','approved','qa')"
+      ],
+      "sql": "INSERT INTO document_chunk (id,revision_id,chunk_index,text,token_count,chunk_sha256) VALUES ('DOC-MAN-0021@r1#001','DOC-SOP-9001@r2',1,'t',10,'4444444444444444444444444444444444444444444444444444444444444444')"
+    },
+    {
+      "id": "P-8",
+      "expect": "accept",
+      "gap": "대조군",
+      "label": "정상 revision 1건은 통과해야 한다",
+      "why": "reject만 있는 표본은 «전부 막는 스키마»와 «올바른 스키마»를 구분하지 못한다.",
+      "sql": "INSERT INTO document_revision (id,document_id,revision_no,content_sha256,body_uri,effective_from,approval_state,approved_by) VALUES ('DOC-MAN-9002@r1','DOC-MAN-9002',1,'5555555555555555555555555555555555555555555555555555555555555555','x','2026-01-01','approved','qa')"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "Name": "fkt-a-postgres-1",
+    "State": "running",
+    "Image": "pgvector/pgvector:pg16",
+    "Networks": [
+      "fkt-a_default"
+    ]
+  },
+  {
+    "Name": "fkt-a-neo4j-1",
+    "State": "running",
+    "Image": "neo4j:5-community",
+    "Networks": [
+      "fkt-a_default"
+    ]
+  },
+  {
+    "Name": "fkt-a-ai-api",
+    "State": "running",
+    "Image": "fkt-b-ai-api:latest",
+    "Networks": [
+      "fkt-a_default"
+    ]
+  },
+  {
+    "Name": "fkt-b-postgres-1",
+    "State": "exited",
+    "Image": "pgvector/pgvector:pg16",
+    "Networks": [
+      "fkt-b_default"
+    ]
+  },
+  {
+    "Name": "fkt-b-neo4j-1",
+    "State": "exited",
+    "Image": "neo4j:5-community",
+    "Networks": [
+      "fkt-b_default"
+    ]
+  },
+  {
+    "Name": "fkt-b-ai-api",
+    "State": "exited",
+    "Image": "fkt-c-ai-api:latest",
+    "Networks": [
+      "fkt-b_default"
+    ]
+  }
+]

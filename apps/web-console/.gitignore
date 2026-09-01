@@ -1,0 +1,46 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# 정적 replay 동봉물 — 🔴 생성물이다. 원본 = data/replay/(+ static/) 이고
+# prebuild(`scripts/copy-static-replay.mjs`)가 sha 검증과 함께 다시 만든다.
+# 커밋하면 원본과 두 벌이 되어 어느 쪽이 정본인지 갈린다.
+/lib/static-replay/generated/

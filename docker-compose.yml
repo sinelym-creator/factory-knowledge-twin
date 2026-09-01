@@ -1,0 +1,168 @@
+# Factory Knowledge Twin — 로컬 개발 인프라 (T1-0 골격)
+# 🔴 데이터는 전부 synthetic · 볼륨은 .gitignore 경로 또는 named volume(리포에 미포함 — §34.6)
+# 기동: docker compose up -d   /   중지+볼륨 삭제: docker compose down -v
+#
+# 🔴 **postgres 데이터만 named volume 이다**(D-2 · 2026-08-31). 나머지(neo4j·models)는
+#    여전히 `VOLUME_ROOT` 아래 bind mount 다. 그래서 초기화 방법이 자리마다 다르다:
+#      postgres        →  docker compose down -v      (폴더를 지워도 «초기화되지 않는다»)
+#      neo4j·models    →  VOLUME_ROOT 폴더 삭제 또는 down -v
+#      전부 한 번에    →  docker compose down -v      ← 재현용 1커맨드
+#    왜 옮겼는가(실측 E1): Windows bind mount 에서 첫 `initdb` 가 무부하 32.8~58.1초,
+#    부하 중에는 분 단위로 늘어난다. pg healthcheck 예산(interval 5s x retries 12 = 60s)이
+#    그 분포를 못 덮어 첫 부팅이 unhealthy 로 떨어지고, `depends_on: service_healthy` 를
+#    보는 ai-api 가 함께 안 뜬다. named volume 대조군은 같은 자리에서 1.76초였다(18.6배).
+#    재부팅 직후 `global/pg_filenode.map: Input/output error` 도 이 축에서 관측됐다.
+#
+# 포트 기본값은 로컬 점유 실측(2026-08-28) 후 선택했다:
+#   5432·5433 = 이미 사용 중 → postgres 기본 5434
+#   7474·7687 = free         → neo4j 기본값 유지
+# ai-api 는 T4-1 에서 등재했다 — 「좌석이 손으로 띄우던 것」을 코드로 옮긴 자리다(baseline §14.2).
+#
+# 🔴 구조 격리(D-1): container_name을 고정하지 않고 프로젝트명·포트를 전부 파라미터화했다.
+#    좌석/워크트리마다 값을 달리 주면 스택이 서로 침범하지 않고 «동시에» 뜬다.
+#      COMPOSE_PROJECT_NAME=fkt-levi2  POSTGRES_PORT=5534  NEO4J_HTTP_PORT=7574
+#      VOLUME_ROOT=./.volumes-levi2      ← 🔴 같은 워크트리에서 병렬로 띄울 때는 이것도 달리 준다
+#                                          (bind mount 경로가 같으면 두 스택이 같은 데이터를 물어 손상된다)
+#    🔴 postgres 는 이제 이 값에 «영향받지 않는다» — named volume 이 프로젝트명에서 파생되므로
+#       `COMPOSE_PROJECT_NAME` 만 다르면 자동으로 분리된다. VOLUME_ROOT 를 빠뜨렸을 때
+#       두 스택이 pg 데이터를 함께 물는 사고는 이 변경으로 사라졌다(neo4j 는 여전히 해당).
+#    컨테이너를 지목할 때는 이름 대신 «서비스명»을 쓴다:  docker compose exec postgres ...
+
+name: ${COMPOSE_PROJECT_NAME:-fkt}
+
+services:
+  postgres:
+    # pgvector 확장이 미리 빌드된 공식 이미지 — 별도 CREATE EXTENSION 빌드 불필요
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fkt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fkt_local_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-fkt}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      # 🔴 **named volume**(D-2). bind mount 는 Windows 에서 첫 initdb 가 수십 초~분
+      #    단위로 걸려 healthcheck 예산을 넘겼다 — 자리를 옮기는 것이 예산을 늘리는 것보다
+      #    근본이다(대조군 1.76s). 🔴 대신 「폴더를 지우면 초기화」가 pg 에는 참이 아니게
+      #    되므로 위 머리말에 초기화 커맨드를 적어 두었다.
+      - pgdata:/var/lib/postgresql/data
+      # 초기화 스크립트는 «리포의 자산»이라 그대로 bind 다(읽기 전용 · 데이터가 아니다).
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fkt} -d ${POSTGRES_DB:-fkt}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      # 🔴 첫 부팅의 initdb 구간을 «실패로 세지 않는다»(D-2). neo4j(30s)·ai-api(40s)에는
+      #    이미 있었고 postgres 에만 없었다 — 그래서 가장 느린 자리가 예산이 가장 좁았다.
+      #    named volume 으로 옮겨 시간이 크게 줄었지만, 부하 중 첫 부팅을 위해 남겨 둔다.
+      start_period: 40s
+    # 🔴 기본은 «안 되살린다»(T4-3 ⓒ). 앞판은 세 줄 다 `unless-stopped` 였고, 그래서
+    #    「지금 전건 restart=no 다」는 상태가 `docker compose up` 한 번에 되감겼다 —
+    #    파일이 선언하는 값이 정본이지 마지막으로 돌린 `docker update` 가 정본이 아니다.
+    #    배포 3본을 «되살아나게» 하려면 배포 셸에서 한 줄로 명시한다(그 자리가 runbook 이다):
+    #      $env:FKT_RESTART_POLICY = "unless-stopped"
+    #    확인법 = `docker inspect ... .HostConfig.RestartPolicy.Name` 의 unless-stopped 계수
+    #    가 «배포 3본과 정확히 같은 수»여야 통과(0 도 초과도 실패).
+    restart: ${FKT_RESTART_POLICY:-no}
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-fkt_local_dev}
+      NEO4J_server_memory_heap_max__size: 1G
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"   # browser·HTTP API
+      - "${NEO4J_BOLT_PORT:-7687}:7687"   # bolt driver
+    volumes:
+      - ${VOLUME_ROOT:-./.volumes}/neo4j/data:/data
+      - ${VOLUME_ROOT:-./.volumes}/neo4j/logs:/logs
+    healthcheck:
+      # HTTP 엔드포인트 200 확인 — 이미지에 curl/wget이 없어 cypher-shell로 대체
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-fkt_local_dev} 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    # 🔴 재시작 정책 — 근거·확인법은 위 postgres 주석 참조.
+    restart: ${FKT_RESTART_POLICY:-no}
+
+  # ── ai-api (T4-1 ⓐ · baseline §14.2 노트북 Live 영역) ────────────────────────────
+  #
+  # 🔴 **자격 증명은 environment variable 로만 들어간다**(§16.3 마지막 줄). compose 파일에
+  #    값을 박지 않고 «셸 환경»에서 받는다 — 기본값을 두면 그 기본값이 커밋된 secret 이 된다.
+  #    로컬 개발 기본값(fkt_local_dev)은 이 리포의 synthetic 스택 전용이며 위의 두 서비스와
+  #    같은 값을 공유한다(다른 값을 쓰면 붙지 않는 것이 «눈에 보인다»).
+  #
+  # 🔴 **`FKT_BUILD_SHA` 는 빌드 인자다**(Q-46). 이미지 안에서 git 을 부르지 않는다.
+  #      docker compose build --build-arg FKT_BUILD_SHA=$(git rev-parse --short HEAD)
+  #    안 주면 `unknown` 이고, /health 가 그렇게 «사실대로» 답한다.
+  ai-api:
+    build:
+      context: ./services/ai-api
+      args:
+        FKT_BUILD_SHA: ${FKT_BUILD_SHA:-unknown}
+    environment:
+      # 🔴 컨테이너 «안»에서의 주소다 — compose 네트워크의 서비스명으로 부른다. 호스트의
+      #    포트 매핑(5538 등)은 밖에서 들어올 때의 이름이고, 안에서는 5432/7687 이 원래 값이다.
+      FKT_POSTGRES_DSN: postgresql://${POSTGRES_USER:-fkt}:${POSTGRES_PASSWORD:-fkt_local_dev}@postgres:5432/${POSTGRES_DB:-fkt}
+      FKT_NEO4J_URI: bolt://neo4j:7687
+      FKT_NEO4J_USER: ${NEO4J_USER:-neo4j}
+      FKT_NEO4J_PASSWORD: ${NEO4J_PASSWORD:-fkt_local_dev}
+      # ⓒ CORS allowlist — 기본은 «셸 origin 만». 비우면 CORS 를 켜지 않는다(같은 origin
+      #    rewrite 경유만 쓰는 로컬 형상이 그렇다) — 「전부 허용」이라는 기본값은 두지 않는다.
+      FKT_CORS_ORIGINS: ${FKT_CORS_ORIGINS:-}
+      # 🔴 프록시(Funnel·rewrite) 뒤의 «IP» 를 X-Forwarded-For 첫 값으로 읽을지(D-8 · T4-3 ⓐ).
+      #    새 스위치가 아니다 — 이미 있던 한 스위치(settings.py:93 `trust_forwarded_for` →
+      #    main.py:152 RateLimitMiddleware · protection.py:114 런너 선점 경보 · Dockerfile:42
+      #    CMD `--no-proxy-headers`)에 «배포 경로»를 이어 준다. 이 줄이 없으면 셸 환경에서 무엇을
+      #    켜든 컨테이너 안에는 닿지 않아 코드 기본값(False)에 고정된다.
+      #    🔴 기본값을 «비움»(`:-`)이 아니라 `false` 로 둔 이유(실측 E1): 빈 문자열은 bool 로
+      #    파싱되지 않아 Settings() 가 ValidationError 로 죽는다 — 위 CORS 는 문자열이라
+      #    비워도 되지만 이 축은 아니다. 「기본은 안 믿는다」는 문장은 그대로 유지된다.
+      FKT_TRUST_FORWARDED_FOR: ${FKT_TRUST_FORWARDED_FOR:-false}
+      # Q-44 — 기동 시 임베딩 모델 warm-up. 🔴 부팅을 «막지» 않는다(아래 성문 참조).
+      FKT_WARMUP_EMBEDDING: ${FKT_WARMUP_EMBEDDING:-1}
+      # 🔴 replay fixture 자리를 «명시»한다. 앞판은 모듈이 `Path(__file__).parents[4]` 로
+      #    리포 루트를 추측했고, 컨테이너에서는 그 위가 없어 import 가 죽었다(실측 crash loop).
+      #    이미지는 리포가 아니다 — 자리는 배포가 정한다.
+      #
+      # 🔴 **이 값은 «리포 트리 바인드»여야 한다 — 귀속 탐침의 전제다**(Q-42 · 오케 조건 08-31).
+      #    검증 좌석의 colocation 탐침은 replay fixture 를 «이 서버가 어느 트리의 것인가»를
+      #    묻는 신원 표식으로 쓴다. 아래 볼륨이 호스트의 `./data/replay` 를 그대로 바인드하므로
+      #    호스트에서 손질한 자국이 컨테이너 안에서 보이고, 그래서 그 탐침이 성립한다.
+      #    fixture 를 이미지에 «구워» 넣으면 그 축이 조용히 죽는다 — 탐침은 여전히 초록인데
+      #    무엇을 맞췄는지가 달라진다. 자리를 옮길 일이 생기면 그 탐침부터 회부한다.
+      FKT_REPLAY_FIXTURE_DIR: /srv/data/replay
+    ports:
+      - "${AI_API_PORT:-8000}:8000"
+    volumes:
+      # 모델 캐시를 볼륨으로 뺀다 — 컨테이너를 다시 만들어도 콜드스타트를 다시 겪지 않는다.
+      - ${VOLUME_ROOT:-./.volumes}/models:/models
+      # 🔴 read-only. 재생본은 «자산»이지 런타임이 쓰는 자리가 아니다 — 쓰기를 열어 두면
+      #    컨테이너가 자산을 바꿀 수 있고, 그러면 「녹화본이 정본」이라는 말이 참이 아니게 된다.
+      - ./data/replay:/srv/data/replay:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      # 🔴 `/health` 는 의존이 죽어도 200 을 낸다(ok = 「이 프로세스가 답하는가」). 그러니
+      #    이 프로브가 «초록»이라고 의존이 살아 있다는 뜻은 아니다 — 그 사실은 응답의
+      #    `status`·`dependencies` 가 말하고, 여기서는 「프로세스가 살아 있는가」만 묻는다.
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    # 🔴 재시작 정책 — 근거·확인법은 위 postgres 주석 참조.
+    restart: ${FKT_RESTART_POLICY:-no}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🔴 named volume 선언 (D-2). 이름은 프로젝트명에서 파생되므로
+#    `COMPOSE_PROJECT_NAME` 이 다른 스택끼리 자동으로 분리된다.
+#    지우려면: docker compose down -v   (또는 docker volume rm <프로젝트명>_pgdata)
+# ─────────────────────────────────────────────────────────────────────────────
+volumes:
+  pgdata:

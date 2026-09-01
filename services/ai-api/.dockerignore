@@ -1,0 +1,8 @@
+# 🔴 이미지에 «들어가면 안 되는 것»부터 적는다(§16.3 · §34.6 공개 경계).
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+db/
+tools/
+README.md

@@ -1,0 +1,293 @@
+{
+  "harvestedAt": "2026-08-31T05:22:01.472Z",
+  "apiBuildSha": "47133a0",
+  "scenarioId": "GS-01",
+  "harvestRunIdVolatile": true,
+  "queriedBy": {
+    "lookups": "session without any run (static visitor condition)",
+    "anchorOnly": "separate session · POST /scenarios/{id}/runs mode=replay"
+  },
+  "fixture": {
+    "file": "gs-01.events.jsonl",
+    "events": 32,
+    "sha256": "3eb624c237dbeaac5c7630086f3f3e05e153739abf17d4ae5a94c72163d0aa78"
+  },
+  "anchors": {
+    "incidentId": "INC-2026-014",
+    "equipmentId": "EQ-CNC-204",
+    "plantId": "FAC-A",
+    "sensorId": "SN-204-VIB",
+    "sensorSource": "alarm",
+    "alarmIds": [
+      "AL-20260826-0041"
+    ]
+  },
+  "counts": {
+    "harvested": 28,
+    "skipped": 6
+  },
+  "files": [
+    {
+      "file": "plants.json",
+      "route": "GET /api/plants",
+      "path": "/api/plants",
+      "status": 200,
+      "bytes": 81,
+      "sha256": "78fade894ef4c687a0c7468cabf2ffcf26514979faf79ea8fa9cc9eb889db244"
+    },
+    {
+      "file": "plants_FAC-A_overview.json",
+      "route": "GET /api/plants/{plantId}/overview",
+      "path": "/api/plants/FAC-A/overview",
+      "status": 200,
+      "bytes": 2271,
+      "sha256": "bae7e6f42f5ed03eae334c7ffb3aa8ea6428e6a0cbe9fb424dcdfeda4a5c0cab"
+    },
+    {
+      "file": "scenarios.json",
+      "route": "GET /api/scenarios",
+      "path": "/api/scenarios",
+      "status": 200,
+      "bytes": 1515,
+      "sha256": "2ea6857a05d8922f46c869bdf8ec6523b627083b0d0fb076308c7db406b53b96"
+    },
+    {
+      "file": "incidents_INC-2026-014.json",
+      "route": "GET /api/incidents/{incidentId}",
+      "path": "/api/incidents/INC-2026-014",
+      "status": 200,
+      "bytes": 233,
+      "sha256": "9edcd8d79617f24dfbfceb098d2f5bc7de49fb552fc53ce5e5e4df51be5aea43"
+    },
+    {
+      "file": "equipment_EQ-CNC-204.json",
+      "route": "GET /api/equipment/{equipmentId}",
+      "path": "/api/equipment/EQ-CNC-204",
+      "status": 200,
+      "bytes": 1463,
+      "sha256": "f79f579f7192e94721dbae994c9c6e93158d75fdab57cbcc81fef27c6a7cea3b"
+    },
+    {
+      "file": "equipment_EQ-CNC-204_sensors_SN-204-VIB_series__window_24h.json",
+      "route": "GET /api/equipment/{equipmentId}/sensors/{sensorId}/series",
+      "path": "/api/equipment/EQ-CNC-204/sensors/SN-204-VIB/series?window=24h",
+      "status": 200,
+      "bytes": 27231,
+      "sha256": "81c739a672861ee0d6a40d89cd4f01cd54a109382356cc3afbe30794cae3979d"
+    },
+    {
+      "file": "evidence_EQ-CNC-204.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/EQ-CNC-204",
+      "status": 200,
+      "bytes": 557,
+      "sha256": "0f5203530f037dbc2748207025c109aed32660fbb649d7e0519e1d18c57fce71"
+    },
+    {
+      "file": "evidence_SN-204-CUR.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/SN-204-CUR",
+      "status": 200,
+      "bytes": 535,
+      "sha256": "6d355e8fc6946c573d1e881c43f72b74f7f4bc766cda52aa34507371582833f5"
+    },
+    {
+      "file": "evidence_SN-204-TEMP.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/SN-204-TEMP",
+      "status": 200,
+      "bytes": 544,
+      "sha256": "af8d66c462e0f8327e4399cd8cbbad5ed4de12ce9d430aef673a321f36516afb"
+    },
+    {
+      "file": "evidence_SN-204-VIB.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/SN-204-VIB",
+      "status": 200,
+      "bytes": 537,
+      "sha256": "a3328ffe3b9cebb307df9b70adef541cd017a470006669f07def9c82dc0e1c26"
+    },
+    {
+      "file": "evidence_AL-20260826-0041.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/AL-20260826-0041",
+      "status": 200,
+      "bytes": 696,
+      "sha256": "cceca0e1df3e604c6694a1395ac18190eac00d48a2dcb415db1604e63a15b0e6"
+    },
+    {
+      "file": "evidence_MR-2026-0006.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/MR-2026-0006",
+      "status": 200,
+      "bytes": 675,
+      "sha256": "b37c62914cd2d3835cae72f14ecb3d1976a287b16a95ffbabd0634ae564fb56a"
+    },
+    {
+      "file": "evidence_MR-2025-0095.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/MR-2025-0095",
+      "status": 200,
+      "bytes": 667,
+      "sha256": "e568a5c537493fd447430ca974b13df0b2ec223988e5286f1edbe38cc4b76c7c"
+    },
+    {
+      "file": "evidence_MR-2025-0087.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/MR-2025-0087",
+      "status": 200,
+      "bytes": 882,
+      "sha256": "525f590df1abd97327ec92ca3950905f9633610c83a351bc0f05c4c1b25d2918"
+    },
+    {
+      "file": "evidence_MR-2024-0004.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/MR-2024-0004",
+      "status": 200,
+      "bytes": 675,
+      "sha256": "401088444dbb1a55f41f7ffd3578b4cb10454a7cdbdbb933ff373e4338ad6103"
+    },
+    {
+      "file": "evidence_DOC-MAN-0021_40r1_23005.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/DOC-MAN-0021%40r1%23005",
+      "status": 200,
+      "bytes": 1870,
+      "sha256": "7b50dc25e002891b7a00a1d2b2293868a9fcddd73dabd465e8b9e0290cf87f63"
+    },
+    {
+      "file": "evidence_DOC-MAN-0021_40r1_23006.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/DOC-MAN-0021%40r1%23006",
+      "status": 200,
+      "bytes": 2098,
+      "sha256": "085cdaefa233cbccf4494ca3ec5e3b997b51d2b0cf5da3da5a3ff3ae89e9b938"
+    },
+    {
+      "file": "evidence_DOC-MAN-0028_40r1_23000.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/DOC-MAN-0028%40r1%23000",
+      "status": 200,
+      "bytes": 1095,
+      "sha256": "a3c7cf85224ec55c06d43212b51fee25203e2a174d3ca57bd300ce5fd413df84"
+    },
+    {
+      "file": "evidence_DOC-MAN-0022_40r1_23003.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/DOC-MAN-0022%40r1%23003",
+      "status": 200,
+      "bytes": 2070,
+      "sha256": "3619018ce4f10131eef423f9a541708d70954b0a173aa8add5bfbac439299913"
+    },
+    {
+      "file": "evidence_DOC-MAN-0021_40r1_23001.json",
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/DOC-MAN-0021%40r1%23001",
+      "status": 200,
+      "bytes": 1595,
+      "sha256": "11b539a5af625b5d804f441d775250a6285a074c0d25571f340510ab625b490c"
+    },
+    {
+      "file": "documents_DOC-MAN-0021__highlight_DOC-MAN-0021_40r1_23005.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0021?highlight=DOC-MAN-0021%40r1%23005",
+      "status": 200,
+      "bytes": 11171,
+      "sha256": "1cab6ef4905bb1735b733d1740fa97ea0a7be979be699eddfab3b281c57f8f3f"
+    },
+    {
+      "file": "documents_DOC-MAN-0021.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0021",
+      "status": 200,
+      "bytes": 11118,
+      "sha256": "4a09941bc645bbd6f5a5d8aa9deeba95c226369277b320c7ed0d66ef2be50ef0"
+    },
+    {
+      "file": "documents_DOC-MAN-0021__highlight_DOC-MAN-0021_40r1_23006.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0021?highlight=DOC-MAN-0021%40r1%23006",
+      "status": 200,
+      "bytes": 11171,
+      "sha256": "bf7200113d89e4f16a3f31e351f6d4ecf4c89d60493ea260ba927db0a071b598"
+    },
+    {
+      "file": "documents_DOC-MAN-0028__highlight_DOC-MAN-0028_40r1_23000.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0028?highlight=DOC-MAN-0028%40r1%23000",
+      "status": 200,
+      "bytes": 1128,
+      "sha256": "392b840fea9b6c92900fff0888b53ca21cb61e8919d822bbe2352bff78a6f47e"
+    },
+    {
+      "file": "documents_DOC-MAN-0028.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0028",
+      "status": 200,
+      "bytes": 1079,
+      "sha256": "ecdab21ed88d878132c8c7c02b08e121ed4a8df9167e7a857731611c7f0597af"
+    },
+    {
+      "file": "documents_DOC-MAN-0022__highlight_DOC-MAN-0022_40r1_23003.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0022?highlight=DOC-MAN-0022%40r1%23003",
+      "status": 200,
+      "bytes": 6870,
+      "sha256": "ee79ee4d5b698a08b5f5a96bed375c96d91aeb0df251d09194ee5590f3eccf47"
+    },
+    {
+      "file": "documents_DOC-MAN-0022.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0022",
+      "status": 200,
+      "bytes": 6817,
+      "sha256": "8df6df78033b70a96f9e5f54d52237eb277549f5cf88d074bb5927b065fcae29"
+    },
+    {
+      "file": "documents_DOC-MAN-0021__highlight_DOC-MAN-0021_40r1_23001.json",
+      "route": "GET /api/documents/{docId}",
+      "path": "/api/documents/DOC-MAN-0021?highlight=DOC-MAN-0021%40r1%23001",
+      "status": 200,
+      "bytes": 11170,
+      "sha256": "6f1363f429ce80891155700907e3787c659064134a306e4b025902c477a94c45"
+    }
+  ],
+  "skipped": [
+    {
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/GP-7e4cfd025422-00",
+      "status": 404,
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-00 를 찾을 수 없다\"}}"
+    },
+    {
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/GP-7e4cfd025422-01",
+      "status": 404,
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-01 를 찾을 수 없다\"}}"
+    },
+    {
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/GP-7e4cfd025422-02",
+      "status": 404,
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-02 를 찾을 수 없다\"}}"
+    },
+    {
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/GP-7e4cfd025422-03",
+      "status": 404,
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-03 를 찾을 수 없다\"}}"
+    },
+    {
+      "route": "GET /api/evidence/{evidenceId}",
+      "path": "/api/evidence/GP-7e4cfd025422-04",
+      "status": 404,
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-04 를 찾을 수 없다\"}}"
+    },
+    {
+      "route": "GET /api/work-orders/{woId}",
+      "path": "/api/work-orders/WOD-eaa4fce81c0b",
+      "status": 404,
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"작업지시 초안 WOD-eaa4fce81c0b 를 찾을 수 없다\"}}"
+    }
+  ]
+}

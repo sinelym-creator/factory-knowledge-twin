@@ -1,6 +1,8 @@
 # secrets / credentials — never commit (baseline §34.6)
 .env
 .env.*
+# 예시 파일은 키 목록만·값 0 이므로 커밋 대상 (baseline §34.6)
+!.env.example
 *.pem
 *.key
 credentials*
@@ -36,3 +38,13 @@ models/
 # os / editor
 .DS_Store
 Thumbs.db
+
+# T1-0 — 로컬 인프라 볼륨(리포 미포함) · D-1 VOLUME_ROOT 파라미터화 대응(D-3): 변형 경로 전부 차단
+.volumes*/
+
+# T1-0 — python venv
+.venv/
+__pycache__/
+
+# tests/graph/graph_verify.py 가 GRAPH_DUMP_DIR 미지정 시 cwd 에 떨구는 덤프(러너는 임시 폴더를 준다)
+graph-dump.txt

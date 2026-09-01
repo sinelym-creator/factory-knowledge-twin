@@ -1,0 +1,15 @@
+# projector 의존 — 버전은 Python 3.14 wheel 실측으로 고정한다(`--only-binary :all:` 설치 확인).
+#
+# 무엇을 위해 들이는가:
+#   neo4j    : 그래프 투영의 적재·조회 드라이버(bolt). dev-environment §1.1이 `--dry-run`으로
+#              「해결 가능」까지만 증명해 둔 것을 여기서 «실제 설치»로 올린다(E1).
+#              🔴 6.x 드라이버 + neo4j:5-community 서버 조합으로 실측했다 — 연결·트랜잭션·
+#              카운터(nodes_created·relationships_deleted) 전부 이 조합에서 확인한 값이다.
+#   psycopg  : 정본(PostgreSQL)을 읽는 동기 드라이버. indexer와 «같은» 드라이버·같은 접속
+#              규칙(dsn_from_env)을 쓴다 — 좌석별 병렬 스택에서 포트만 달리 주면 되게.
+#              [binary]로 받아 libpq 빌드 도구 없이 설치된다(indexer 선례와 동일 버전).
+#
+# 🔴 임베딩·토크나이저 계열은 여기 없다. 투영은 본문을 다루지 않는다(P4) — 그래서 이 서비스는
+#    torch를 필요로 하지 않는다. indexer의 1.2GB venv를 빌려 쓰지 않고 별도 venv를 세운 이유다.
+neo4j==6.3.0
+psycopg[binary]==3.3.4

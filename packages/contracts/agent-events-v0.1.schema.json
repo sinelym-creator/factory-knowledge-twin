@@ -20,7 +20,8 @@
         "step.completed",
         "run.completed",
         "run.stopped",
-        "run.failed"
+        "run.failed",
+        "run.queued"
       ]
     },
     "payload": { "type": "object" }
@@ -33,7 +34,8 @@
     { "if": { "properties": { "type": { "const": "step.completed" } } },"then": { "properties": { "payload": { "$ref": "#/$defs/stepCompleted" } } } },
     { "if": { "properties": { "type": { "const": "run.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runCompleted" } } } },
     { "if": { "properties": { "type": { "const": "run.stopped" } } },   "then": { "properties": { "payload": { "$ref": "#/$defs/runStopped" } } } },
-    { "if": { "properties": { "type": { "const": "run.failed" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runFailed" } } } }
+    { "if": { "properties": { "type": { "const": "run.failed" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runFailed" } } } },
+    { "if": { "properties": { "type": { "const": "run.queued" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runQueued" } } } }
   ],
   "$defs": {
     "stepId": {
@@ -57,7 +59,7 @@
       "allOf": [
         {
           "if": { "properties": { "kind": { "const": "doc-chunk" } } },
-          "then": { "required": ["evidenceId", "kind", "sourceId", "revisionId", "contentHash"] }
+          "then": { "required": ["evidenceId", "kind", "sourceId", "revisionId", "contentHash", "stale"] }
         }
       ]
     },
@@ -150,6 +152,16 @@
         "message": { "type": "string" },
         "fallback": { "enum": ["replay"], "description": "live 실패 시 replay 강등 신호" }
       }
+    },
+    "runQueued": {
+      "type": "object",
+      "required": ["position"],
+      "additionalProperties": false,
+      "properties": {
+        "position": { "type": "integer", "minimum": 1, "description": "bounded queue 안의 순위(1 = 다음 실행)" },
+        "estimatedWaitSec": { "type": ["integer", "null"], "minimum": 0, "description": "예상 대기 초 · 모르면 null(지어내지 않는다)" }
+      },
+      "description": "v0.1.9 append(T4-2b) — 동시 Live 상한에 걸려 큐에 «진입»한 run 의 신호(오류 아님 · 200 RunCreated 뒤 첫 이벤트 가능 · 순위 변동 시 같은 type 재발행 · 슬롯이 나면 run.started). replay fixture 에는 나오지 않는다"
     }
   }
 }

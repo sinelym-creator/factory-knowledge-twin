@@ -1,0 +1,233 @@
+"""LangGraph 조사 워크플로우 — 5단계 plan (T2-3).
+
+`structured → vector → graph → synthesize → draft_work_order` 를 LangGraph 로 세운다.
+노드 이름은 `events.STEP_IDS` 와 **같은 문자열**이다 — 「노드 ↔ step 이벤트」 대조표를 따로
+두면 그 표가 낡는다.
+
+🔴 **egress 를 먼저 막고 langgraph 를 import 한다**(아래 순서가 규율이다). langchain 계열은
+   설정을 import 시점에 읽어 캐시하므로, 나중에 끄면 늦다(`guards.py` 성문 · 오케 승인 J-5).
+
+🔴 **단계 실패는 «보이게» 실패한다.** 어느 노드가 터지면 그 자리에서 멈추고 `run.failed` 가
+   어느 단계였는지 코드에 담아 나간다 — 다른 전략의 결과로 조용히 채우지 않는다(T2-1 계보).
+   스키마에 `step.failed` 타입이 없어 run 을 실패시키는 형태를 골랐다(계약 개정 없이).
+
+🔴 **정직한 소견**: 이 plan 은 직선이라 LangGraph 의 분기·재시도·조건부 경로를 쓰지 않는다.
+   지금 얻는 것은 「단계가 선언되고 순서대로 흐르며 각 단계가 이벤트를 낸다」는 구조이고,
+   분기(예: 근거 부족 시 재검색)가 생길 때 값이 커진다. 지금 상태를 「LangGraph 라서 좋아졌다」로
+   보고하면 그건 측정-주장 경계를 넘는 말이다(§0.2).
+"""
+
+from __future__ import annotations
+
+import time
+from dataclasses import dataclass, field
+from typing import Any, TypedDict
+
+from .guards import enforce_no_telemetry
+
+# 🔴 순서 고정 — 강제가 먼저, import 가 나중.
+enforce_no_telemetry()
+
+from langgraph.graph import END, START, StateGraph  # noqa: E402 — 위 강제 뒤에 와야 한다
+
+from ..reading import evidence as evidence_reader  # noqa: E402
+from ..retrieval import graphrag  # noqa: E402
+from ..retrieval.embedding import MODEL_ID, embed_query, ensure_ready  # noqa: E402
+from ..retrieval import vector as vector_mod  # noqa: E402
+from ..retrieval.vector import search as vector_search  # noqa: E402
+from . import structured as structured_reader  # noqa: E402
+from . import synthesize as synth  # noqa: E402
+from . import work_order as wo  # noqa: E402
+from .binding import ScenarioAnchor  # noqa: E402
+from .events import STEP_IDS, Emitter, evidence_ref  # noqa: E402
+
+
+class StopRequested(Exception):
+    """사용자가 중지를 눌렀다 — 실패가 아니라 «중지»다(스키마 run.stopped)."""
+
+
+class StepFailed(Exception):
+    """어느 단계가 터졌다. 어느 단계인지 담아 위로 올린다."""
+
+    def __init__(self, step: str, cause: BaseException) -> None:
+        super().__init__(f"{step}: {cause.__class__.__name__}")
+        self.step = step
+        self.cause = cause
+
+
+class State(TypedDict, total=False):
+    """노드 사이를 흐르는 데이터. 의존 핸들은 여기 담지 않는다(ctx 가 들고 있다)."""
+
+    structuredEvidence: list[dict[str, Any]]
+    citations: dict[str, str]
+    graphTargets: dict[str, int]
+    graphPaths: list[dict[str, Any]]
+    candidates: list[dict[str, Any]]
+    workOrderDraft: dict[str, Any] | None
+    evidenceIds: list[str]
+
+
+@dataclass
+class Context:
+    """한 run 이 쓰는 것 전부 — 노드는 이것을 «닫아» 들고 있다(state 를 더럽히지 않는다)."""
+
+    pool: Any
+    driver: Any
+    anchor: ScenarioAnchor
+    emitter: Emitter
+    should_stop: Any                       # () -> bool
+    evidence_ids: list[str] = field(default_factory=list)
+    # synthesize 가 세운 후보. 🔴 초안 단계가 «다시 세우지» 않게 여기 둔다 — 두 번 세우면
+    #    두 답이 갈릴 수 있고, 갈리면 화면의 후보와 초안의 대상이 어긋난다.
+    candidates: list[Any] = field(default_factory=list)
+
+
+def _step(ctx: Context, name: str):
+    """노드 하나를 감싼다 — 중지 확인 · step 이벤트 · 실패 승격을 한 자리에서."""
+
+    def wrap(fn):
+        async def node(state: State) -> State:
+            if ctx.should_stop():
+                raise StopRequested(name)
+            ctx.emitter.step_started(name)
+            started = time.perf_counter()
+            try:
+                patch, summary = await fn(state)
+            except StopRequested:
+                raise
+            except Exception as exc:                      # noqa: BLE001 — 어느 단계인지 실어 올린다
+                raise StepFailed(name, exc) from exc
+            ctx.emitter.step_completed(
+                name, int((time.perf_counter() - started) * 1000), summary=summary
+            )
+            return patch
+
+        return node
+
+    return wrap
+
+
+def build_graph(ctx: Context):
+    """5단계 그래프를 세워 컴파일한다."""
+
+    @_step(ctx, "structured")
+    async def structured_node(_: State):
+        result = await structured_reader.collect(ctx.pool, ctx.anchor.equipmentId)
+        for ref in result.evidence:
+            ctx.emitter.step_evidence("structured", ref)
+            ctx.evidence_ids.append(ref["evidenceId"])
+        return {"structuredEvidence": result.evidence}, result.summary()
+
+    @_step(ctx, "vector")
+    async def vector_node(_: State):
+        # 🔴 **질의와 색인이 같은 공간인지 먼저 확인한다** — compare(T2-1)가 하는 그 확인을
+        #    조사도 한다. 건너뛰면 다른 모델의 벡터로 검색해 「오류 없이 순위만 조용히 나쁜」
+        #    결과가 나오고, 그 조사는 근거를 가진 채로 틀린다.
+        signature = await vector_mod.index_signature(ctx.pool)
+        if signature.model != MODEL_ID:
+            raise RuntimeError(f"색인 모델 {signature.model} ≠ 질의 모델 {MODEL_ID} — 같은 공간이 아니다")
+        await ensure_ready(signature.dim)
+        hits = await vector_search(ctx.pool, await embed_query(ctx.anchor.question))
+        citations: dict[str, str] = {}
+        for hit in hits:
+            # 🔴 doc-chunk 는 스키마가 revision 3필드를 «요구»한다. 그 값의 정본은 T2-2
+            #    `/evidence` 가 보는 것과 같은 자리여야 한다 — 여기서 따로 조회해 만들면
+            #    같은 근거가 두 표면에서 다른 신뢰 배지를 달 수 있다.
+            detail = await evidence_reader.fetch(ctx.pool, hit.evidenceId)
+            if detail is None or detail.kind != "doc-chunk":
+                # 검색이 낸 근거를 읽기 표면이 풀지 못한다 = 두 층이 어긋났다. 조용히 빼지 않는다.
+                raise RuntimeError(f"검색 결과 {hit.evidenceId} 를 evidence 표면이 풀지 못한다")
+            ref = evidence_ref(
+                evidence_id=hit.evidenceId,
+                kind="doc-chunk",
+                source_id=detail.revisionId or hit.evidenceId,
+                excerpt=hit.excerpt,
+                score=hit.score,
+                revision_id=detail.revisionId,
+                content_hash=detail.contentHash,
+                stale=detail.stale,
+            )
+            ctx.emitter.step_evidence("vector", ref)
+            ctx.evidence_ids.append(hit.evidenceId)
+            citations[hit.evidenceId] = detail.text
+        return {"citations": citations}, f"인용 후보 {len(citations)}건"
+
+    @_step(ctx, "graph")
+    async def graph_node(_: State):
+        if ctx.driver is None:
+            raise RuntimeError("neo4j 드라이버가 없다 — 그래프 단계를 건너뛰지 않는다")
+        paths = await graphrag.traverse(ctx.driver, ctx.anchor.question)
+        targets: dict[str, int] = {}
+        stored: list[dict[str, Any]] = []
+        for index, path in enumerate(paths):
+            target = str(path["targetId"])
+            # 🔴 evidenceId 는 «경로»의 것이다. 종단 노드 ID 를 그대로 쓰면 같은 ID 를
+            #    `/evidence` 는 record 로, 이벤트는 graph-path 로 부르게 된다 — 한 근거는
+            #    한 종류다(structured 단계 성문과 같은 규율). 종단은 sourceId 로 가리킨다.
+            evidence_id = f"GP-{ctx.emitter.run_id.removeprefix('RUN-')}-{index:02d}"
+            walk = " → ".join(str(n) for n in path["nodes"])
+            ref = evidence_ref(
+                evidence_id=evidence_id,
+                kind="graph-path",
+                source_id=target,
+                excerpt=f"[{path['label']} · {path['hops']}-hop] {walk}",
+                score=float(path["score"]),
+            )
+            ctx.emitter.step_evidence("graph", ref)
+            ctx.evidence_ids.append(evidence_id)
+            stored.append({"evidenceId": evidence_id, "targetId": target, **{k: path[k] for k in ("label", "hops", "nodes", "edges")}})
+            targets[target] = int(path["hops"])
+        return (
+            {"graphTargets": targets, "graphPaths": stored},
+            f"경로 {len(stored)}건 · 종단 {sorted(targets)}",
+        )
+
+    @_step(ctx, "synthesize")
+    async def synthesize_node(state: State):
+        candidates = await synth.build_candidates(
+            ctx.pool,
+            ctx.anchor,
+            structured_ids=[e["evidenceId"] for e in state.get("structuredEvidence", [])],
+            citation_texts=state.get("citations", {}),
+            graph_targets=state.get("graphTargets", {}),
+        )
+        if not candidates:
+            # 🔴 후보 0건은 «성공한 조사»가 아니다. 스키마도 candidates 최소 1건을 요구한다.
+            raise RuntimeError(f"{ctx.anchor.alarmId} 에서 원인 후보를 하나도 세우지 못했다")
+        ctx.candidates = candidates
+        payload = synth.to_payload(candidates)
+        axis = synth.resolve_synthesizer()
+        gateway = "live" if axis == "live" else "결정적 집계(로컬 합성 게이트웨이 미도달)"
+        return (
+            {"candidates": payload},
+            f"후보 {len(payload)}건 · 1순위 {payload[0]['failureModeId']} · 합성 축 = {gateway}",
+        )
+
+    @_step(ctx, "draft_work_order")
+    async def draft_node(_: State):
+        draft = await wo.draft(
+            ctx.pool,
+            equipment_id=ctx.anchor.equipmentId,
+            incident_id=ctx.anchor.incidentId,
+            top=ctx.candidates[0],
+            evidence_ids=list(dict.fromkeys(ctx.evidence_ids)),
+        )
+        safety = len(draft["safetyMeasures"])
+        gaps = f" · 🔴 결손 {len(draft['gaps'])}건" if draft["gaps"] else ""
+        return ({"workOrderDraft": draft}, f"초안 1건 · 안전 조치 {safety}건{gaps}")
+
+    graph = StateGraph(State)
+    nodes = {
+        "structured": structured_node,
+        "vector": vector_node,
+        "graph": graph_node,
+        "synthesize": synthesize_node,
+        "draft_work_order": draft_node,
+    }
+    for name in STEP_IDS:
+        graph.add_node(name, nodes[name])
+    graph.add_edge(START, STEP_IDS[0])
+    for earlier, later in zip(STEP_IDS, STEP_IDS[1:]):
+        graph.add_edge(earlier, later)
+    graph.add_edge(STEP_IDS[-1], END)
+    return graph.compile()

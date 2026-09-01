@@ -1,0 +1,49 @@
+# ai-api 런타임 의존 (T1-0 부팅 → T1-8 계약 표면 골격)
+# 버전 고정 이유: Python 3.14 로컬 환경에서 wheel 제공 여부를 실측으로 확정하기 위함.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# T1-8 추가 — 무엇을 위해 들이는가:
+#   pydantic-settings : 설정을 환경변수로만 받고 자격 증명을 코드 기본값에서 몰아내기 위해.
+#   asyncpg           : §7 「완전 비동기 경로」. 동기 드라이버를 섞으면 그 호출 동안 이벤트
+#                       루프가 멈추고 WebSocket 진행 스트림이 함께 멈춘다.
+#   neo4j             : 같은 이유로 async 드라이버. /health 의 graph 프로브가 이것을 쓴다.
+#
+# 🔴 asyncpg 는 0.31.0 이다 — 0.30.0 은 Python 3.14(cp314) wheel 이 없어 소스 빌드로 떨어지고
+#    MSVC 빌드 도구를 요구한다(실측: 이 환경에서 설치 실패). 0.31.0 은 cp314 wheel 을 제공한다.
+#    「최신이라서」가 아니라 「3.14에서 설치되는 최초 버전이라서」 고른 값이다.
+pydantic-settings==2.7.1
+asyncpg==0.31.0
+neo4j==5.27.0
+
+# T2-1 추가 — 질의 임베딩(retrieval vector·hybrid 축):
+#   sentence-transformers · torch : 🔴 «색인과 같은 구현체»여야 한다. 색인(services/indexer)이
+#                  sentence-transformers 로 만든 벡터와 같은 공간에 질문을 넣어야 검색이
+#                  뜻을 갖는다. 다른 런타임(fastembed/ONNX)으로 같은 모델을 돌리면 값이
+#                  근사할 뿐 «동일»하지 않고, 어긋나도 오류 없이 순위만 조용히 나빠진다.
+#                  버전은 indexer/requirements.txt 와 맞춘다(3.14 wheel 실측 선례 계승).
+#
+#   🔴 무게 소견(오케 판정 대기 사안 — dev-environment §8 E2): torch 는 설치 용량이 크고
+#      ai-api 컨테이너화(Phase 4)의 이미지 크기에 직결한다. 「indexer 는 컨테이너화 비대상」
+#      판정의 근거가 그것이었는데, 질의 임베딩 때문에 ai-api 가 같은 무게를 지게 됐다.
+#      Phase 4 에서 «임베딩만 떼어낸 경량 경로»를 재론할 값어치가 있다(T2-1 완료 보고 병기).
+sentence-transformers==6.0.0
+torch==2.13.0
+
+# T2-3 추가 — LangGraph 조사 워크플로우(오케 승인 J-6):
+#   langgraph : 5단계 plan(structured→vector→graph→synthesize→draft_work_order)의 실행기.
+#               전이 의존 21건이 함께 들어오고 그중 네이티브가 7건이다.
+#
+#   🔴 네이티브 7건(orjson·ormsgpack·xxhash·zstandard·uuid_utils·charset-normalizer, 그리고
+#      아래 websockets)은 이 개발 머신의 앱 제어 정책(WinError 4551) 대상이 «아니다» — 버리는
+#      venv 에 먼저 설치해 import 로 실측했다(08-30 · 전건 OK). 그 벽은 scipy/sklearn/torch
+#      계열의 사실이지 신규 네이티브 일반의 사실이 아니다.
+#
+#   🔴 **websockets 가 17.1 → 16.1.1 로 «내려간다»**: langgraph-sdk 가 `websockets<17` 을
+#      못박는다. uvicorn[standard]==0.34.0 은 `websockets>=10.4` 라 충족되고, 강등 후
+#      WS 경로를 실측했다(close code 4501 정상 · contract_surface PASS). 「최신이라서」가
+#      아니라 「해결기가 고른 유일한 값이라서」 이 값이다 — 올리면 langgraph 가 깨진다.
+#
+#   🔴 langsmith 텔레메트리는 `app/investigation/guards.py` 가 부팅에서 «강제로» 끈다.
+#      의존이 들어온 것과 데이터가 나가는 것은 다른 문제라, 끄는 것을 문서가 아니라 코드가 한다.
+langgraph==1.2.11

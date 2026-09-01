@@ -20,11 +20,14 @@ jobs:
           test -f LICENSE
           test -f docs/baseline/poc-baseline-v0.2.md
 
+      - name: contract tests (packages/contracts ↔ tests/contract)
+        run: node tests/contract/run.js --quiet --strict-coverage
+
       - name: public boundary scan (baseline §34.6)
         run: |
           set -e
-          # 추적 파일에 env·키·크리덴셜 파일이 섞이면 실패
-          if git ls-files | grep -E '(^|/)\.env(\.|$)|\.(pem|key)$|credentials|secrets'; then
+          # 추적 파일에 env·키·크리덴셜 파일이 섞이면 실패 (.env.example = 키 목록 템플릿·값 0 — 허용, §34.6)
+          if git ls-files | grep -E '(^|/)\.env(\.|$)|\.(pem|key)$|credentials|secrets' | grep -vE '(^|/)\.env\.example$'; then
             echo '::error::tracked credential-like file detected'; exit 1; fi
           # 시크릿 토큰 패턴 (이 워크플로 자신은 제외)
           if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)' -- ':!.github/workflows/'; then

@@ -1,0 +1,380 @@
+##### 🔴 08-30 리바이2 10대 — 이 캡처 로그의 절대경로 1건을 `{REPO}` 로 가렸다(§34.6 공개 경계 · 그 값 외 본문 무수정). 뿌리는 드릴 출력에서 닫았다 — replay_fixture_drill 이 정본 경로를 리포 상대로 찍는다.
+##### anchor_extraction_probe.py
+  자기 검증  정정 전 형상(`\b` 종단)을 8건에서 잡는다 — 표가 살아 있다
+             예: 조사 부착 — 설비 · 중복 — 등장 순 1회
+
+  PASS  조사 부착 — 설비                   'EQ-CNC-204의 상태'
+  PASS  조사 부착 — 알람                   'AL-20260826-0041이 발생했다'
+  PASS  조사 부착 — 작업지시                 'WO-2026-0113을 수행'
+  PASS  조사 부착 — SOP                  'SOP-BRG-INSP-014에 따라'
+  PASS  조사 부착 — 부품                   'CP-204-BRG-01는 스핀들'
+  PASS  백틱 감쌈(정본 표기)                 '`EQ-CNC-204`의'
+  PASS  공백 뒤 조사                      'EQ-CNC-204 의 상태'
+  PASS  괄호 인접                        'SOP-BRG-INSP-014(베어링)'
+  PASS  문장부호 인접                      'EQ-CNC-204, SN-204-VIB.'
+  PASS  한글이 «앞»에 붙음                  '설비EQ-CNC-204의'
+  PASS  ID 형상 연장 — 자르지 않는다           'EQ-CNC-204X 는'
+  PASS  두 ID 연속                      'EQ-CNC-204와 CP-204-BRG-01의'
+  PASS  중복 — 등장 순 1회                 'EQ-CNC-204의 EQ-CNC-204는'
+  PASS  소문자 — ID 아님                  'eq-cnc-204의'
+  PASS  접두 밖 — ID 아님                 'ZZ-CNC-204의'
+  PASS  ID 없음                        '임계값은 얼마인가?'
+
+결과: 16/16 기대대로 · 어긋남 0건
+##### EXIT=0
+##### anchor_boundary_drill.py
+정본      : benchmarks\datasets\eval-questions-draft.md
+대상      : http://127.0.0.1:8000/api/retrieval/compare · 문항 10건 × 전략 3
+
+  자기 검증  Q-DIRECT-001 ≠ Q-MULTIHOP-001 확인 — 비교기 살아 있음
+
+  PASS  Q-DIRECT-001     [조사인접]
+  PASS  Q-DIRECT-002     [인접없음]
+  PASS  Q-DIRECT-003     [조사인접]
+  PASS  Q-MULTIHOP-001   [조사인접]
+  PASS  Q-MULTIHOP-002   [조사인접]
+  PASS  Q-MULTIHOP-003   [조사인접]
+  PASS  Q-SAFETY-001     [인접없음]
+  PASS  Q-SAFETY-002     [조사인접]
+  PASS  Q-UNANS-001      [조사인접]
+  PASS  Q-UNANS-002      [조사인접]
+
+결과: 문항 10 · 갈림 0건 · 동치류 밖 skip 0건
+  생존 신호 — 기준 표기가 받은 hits 총 145건 (0이면 초록이 아니라 고장이다)
+  코퍼스 축 — ID 뒤 조사 «인접» 문항 0/8 갈림 · «인접 없음» 문항 0/2 갈림
+  전 변형이 같은 hits — 승인한 「같은 질문」이 같은 답을 낸다
+##### EXIT=0
+##### citation_roundtrip_drill.py --inject-drift
+정본      : benchmarks\datasets\eval-questions-draft.md
+대상      : http://127.0.0.1:8000 · 문항 10건 × 전략 3
+
+  수집      고유 evidenceId 38건 (chunk 형상 23 · record 형상 15)
+
+  ── ① 왕복 — 낸 근거를 펴고, 인용이 원문의 그 문장인가
+  왕복 38/38 기대대로 · 어긋남 0건
+
+  자기 검증  DOC-MAN-0021@r1#000 의 앞머리를 DOC-MAN-0021@r1#001 본문에 걸면 어긋남으로 잡는다 — 비교기 살아 있음
+
+  ── ② 대조군 — 없는 것을 없다고 말하는가 · 조용히 버리지 않는가
+  PASS  C-01 없는 revision 의 chunk              404 not_found  (기대 404)
+  PASS  C-02 있는 revision · 없는 index           404 not_found  (기대 404)
+  PASS  C-03 없는 record                        404 not_found  (기대 404)
+  PASS  C-04 화이트리스트 밖 prefix                  404 not_found  (기대 404)
+  PASS  C-05 없는 문서                            404 not_found  (기대 404)
+  PASS  C-06 highlight 형식 위반                  400 highlight_mismatch  (기대 400)
+  PASS  C-07 highlight = 있는 revision · 없는 index 400 highlight_not_found  (기대 400)
+  PASS  C-08 highlight = chunk 없는 낡은 revision 400 highlight_not_found  (기대 400)
+  PASS  C-09 highlight = 타 문서 chunk           400 highlight_mismatch  (기대 400)
+
+  ── ③ 정합 파열 — 좌표는 옳은데 본문에서 못 찾을 때(주입 · 원복한다)
+  대상    document_chunk[DOC-MAN-0021@r1#000].text (510자)
+  원값    🔴 저장했다 — 실패해도 이 값으로 되돌린다
+  주입 전  /documents 강조 있음 · freshness=FRESH
+  주입 후  /documents → 500 citation_integrity_broken
+  PASS  I-01 /documents 조용한 200 이 아니다
+  PASS  I-02 /documents 5xx 로 운다(오케 판정 ③)
+  PASS  I-03 /documents 구분 코드다(internal_error 아님)
+  PASS  I-04 /documents 내부 경로·traceback 비노출
+  주입 후  /evidence → 500 citation_integrity_broken
+  PASS  I-05 /evidence 조용한 200 이 아니다
+  PASS  I-06 /evidence 5xx 로 운다(오케 판정 ③)
+  PASS  I-07 /evidence 구분 코드다(internal_error 아님)
+  PASS  I-08 /evidence 내부 경로·traceback 비노출
+  PASS  I-09 한 사건을 한 코드로 말한다 — /documents 500 citation_integrity_broken · /evidence 500 citation_integrity_broken
+  PASS  I-10 freshness 는 이 drift 를 못 본다 — FRESH (배지만으로는 잡히지 않는 파열이라 ③ 이 필요하다)
+  PASS  I-11 무접촉 대조군은 그대로다 — DOC-MAN-0022@r1#001 /documents 200 · /evidence 200
+  PASS  I-0 되감기 — 원문 일치 True · 강조 복귀 200
+
+결과: 어긋남 0건
+##### EXIT=0
+##### scenario_allowlist_drill.py
+정본      : benchmarks\datasets\eval-questions-draft.md · 문항 10건
+대상      : http://127.0.0.1:8000
+
+  ── ① 이원화 — 정본 · /scenarios · compare 승인이 한 벌인가
+  시나리오  GS-01(10문)
+  PASS  집합 일치 — 정본에만 0건 · /scenarios 에만 0건
+
+  ── ② 화면이 받은 문자열 그대로 compare 에 보낸다
+  PASS   1 200 hits=5                          EQ-CNC-204의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과
+  PASS   2 200 hits=5                          SOP-BRG-INSP-014(베어링 점검 절차)가 요구하는 필수 공구와
+  PASS   3 200 hits=5                          SOP-BRG-INSP-014에 대해 지금 인용할 수 있는 revisio
+  PASS   4 200 hits=5                          알람 AL-20260826-0041이 발생했다. 이 알람에서 출발해 관련
+  PASS   5 200 hits=5                          EQ-CNC-204에 과거 유사한 정비 이력이 있는가? 있다면 그 이력이
+  PASS   6 200 hits=5                          EQ-CNC-204와 연결된 고장 모드 중 대응 SOP가 매핑되지 않은 
+  PASS   7 200 hits=5                          CP-204-BRG-01 베어링 점검·교체 작업을 시작하기 전에 반드시 
+  PASS   8 200 hits=5                          작업지시서 WO-2026-0113이 참조하는 절차에 근거해, 이 작업지시
+  PASS   9 200 hits=5                          작업지시서 WO-2026-0113을 수행하는 데 드는 비용은 얼마인가?
+  PASS  10 200 hits=5                          EQ-CNC-999의 최근 진동 추세는 어떠한가?
+  생존 신호 — 승인 질문이 받은 hits 총 50건 (0이면 초록이 아니라 고장이다)
+
+  ── ③ 교차 대조군 — 목록 «밖»은 거부되는가 (관문이 닫혀 있는가)
+  PASS  끝 낱말 교체          400 question_not_approved
+  PASS  접두 부분문자열         400 question_not_approved
+  PASS  접미 추가            400 question_not_approved
+  PASS  공백만              400 question_not_approved
+  PASS  SQL 조각           400 question_not_approved
+  PASS  Cypher 조각        400 question_not_approved
+
+결과: 어긋남 0건
+##### EXIT=0
+##### freshness_badge_drill.py --inject-stale
+정본      : services\ai-api\db\migrations\007_freshness_unverified_and_integrity.sql
+대상      : http://127.0.0.1:8000
+실주입    : 켬 — index_build 1칸 · 원복한다
+
+  ── ① 배지 매핑 상태표(쓰기 없음)
+  정본 뷰 상태 6종: NOT_INDEXED · SKIPPED · BUILD_FAILED · STALE · ONTOLOGY_UNVERIFIED · FRESH
+  자기 검증  정정 전 매핑(「STALE 만 true」)을 4건에서 잡는다 — 표가 살아 있다
+             예: NOT_INDEXED · ONTOLOGY_UNVERIFIED
+
+  PASS  NOT_INDEXED            stale=True  기대=True
+  PASS  SKIPPED                stale=True  기대=True
+  PASS  BUILD_FAILED           stale=True  기대=True
+  PASS  STALE                  stale=True  기대=True
+  PASS  ONTOLOGY_UNVERIFIED    stale=True  기대=True
+  PASS  FRESH                  stale=False 기대=False
+  PASS  값 없음(None)             stale=True  기대=True
+
+  상태표: 7/7 기대대로 · 어긋남 0건
+
+  ── ② 실주입 왕복 — 낡음이 표면까지 오는가
+  대상    index_build[DOC-SOP-0014@r2 · levi2-run2].source_sha256
+  원값    59457442ce3f642b2cf711218ee088fd604afe9ee81a5c3010ec4847ef77f5e8   ← 🔴 실패해도 이 값으로 되돌린다
+  주입 전  freshness=FRESH · 배지 {'evidence': False, 'documents': False} · 대조군 {'evidence': False, 'documents': False}
+  주입 후  freshness=STALE · 배지 {'evidence': True, 'documents': True} · 대조군 {'evidence': False, 'documents': False}
+
+  PASS  뷰가 STALE 로 바뀐다
+  PASS  /evidence 배지가 false→true
+  PASS  /documents 배지가 false→true
+  PASS  대조군 /evidence 는 false 로 머문다
+  PASS  대조군 /documents 는 false 로 머문다
+
+  PASS  되감기 — freshness=FRESH · /evidence stale=False
+
+결과: 어긋남 0건
+##### EXIT=0
+##### injection_surface_drill.py
+대상      : http://127.0.0.1:8000
+적대 입력 : 10종 × 문 3 = 30건
+
+  자기 검증  표본 5종(막힘 2 · 이탈 3) 전건 기대대로 — 판정자 살아 있음
+
+  기준선    DOC-SOP-0014 본문 1376자 — 던지기 전 크기
+
+  ── GET /evidence/{id}
+  PASS  EV-01 SQL 주석 종결          404 not_found
+  PASS  EV-02 SQL union          404 not_found
+  PASS  EV-03 SQL drop           404 not_found
+  PASS  EV-04 시스템 테이블 지정         404 not_found
+  PASS  EV-05 경로 traversal       404 http_404
+  PASS  EV-06 인코딩 traversal      404 not_found
+  PASS  EV-07 널바이트               404 not_found
+  PASS  EV-08 초장문(4KB)           404 not_found
+  PASS  EV-09 유니코드 방향 제어         404 not_found
+  PASS  EV-10 chunk 형상 + 주석      404 not_found
+  ── GET /documents/{id}
+  PASS  DC-01 SQL 주석 종결          404 not_found
+  PASS  DC-02 SQL union          404 not_found
+  PASS  DC-03 SQL drop           404 not_found
+  PASS  DC-04 시스템 테이블 지정         404 not_found
+  PASS  DC-05 경로 traversal       404 http_404
+  PASS  DC-06 인코딩 traversal      404 not_found
+  PASS  DC-07 널바이트               404 not_found
+  PASS  DC-08 초장문(4KB)           404 not_found
+  PASS  DC-09 유니코드 방향 제어         404 not_found
+  PASS  DC-10 chunk 형상 + 주석      404 not_found
+  ── ?highlight={chunkId}
+  PASS  HL-01 SQL 주석 종결          400 highlight_mismatch
+  PASS  HL-02 SQL union          400 highlight_mismatch
+  PASS  HL-03 SQL drop           400 highlight_mismatch
+  PASS  HL-04 시스템 테이블 지정         400 highlight_mismatch
+  PASS  HL-05 경로 traversal       400 highlight_mismatch
+  PASS  HL-06 인코딩 traversal      400 highlight_mismatch
+  PASS  HL-07 널바이트               400 highlight_mismatch
+  PASS  HL-08 초장문(4KB)           400 highlight_mismatch
+  PASS  HL-09 유니코드 방향 제어         400 highlight_mismatch
+  PASS  HL-10 chunk 형상 + 주석      400 highlight_mismatch
+
+  관측(판정 아님)  오류 message 가 요청 문자열을 되비친 건수 28/30
+
+  PASS  대상 생존 — DOC-SOP-0014 본문 1376자 (던지기 전 1376자)
+
+결과: 어긋남 0건
+##### EXIT=0
+##### error_shape_drill.py --cut-neo4j
+대상      : http://127.0.0.1:8000
+의존 단절 : 켬 — fkt-levi2-neo4j-1 정지 후 되돌린다
+
+  자기 검증  표본 4종(계약 형상 1 · 이탈 3) 전건 기대대로 — 검사기 살아 있음
+
+  PASS  E-01 sessionId 형식 위반        422  invalid_session_id
+  PASS  E-02 승인 목록 밖 질문             400  question_not_approved
+  PASS  E-03 계약 밖 전략명               422  invalid_request
+  PASS  E-04 필수 필드 누락               422  invalid_request
+  PASS  E-05 미구현 라우트(501)           501  not_implemented
+  PASS  E-06 없는 경로(404)             404  http_404
+  PASS  E-07 없는 근거(404)             404  not_found
+  PASS  E-08 없는 문서(404)             404  not_found
+  PASS  E-09 강조 좌표 불일치(400)         400  highlight_mismatch
+
+  -- 런타임 의존 단절 — fkt-levi2-neo4j-1 정지
+  PASS  E-10 neo4j 단절 중 compare  503  dependency_unavailable
+  -- 되감기 — fkt-levi2-neo4j-1 재기동
+  PASS  E-0 되감기 — health healthy · compare 200
+
+결과: 11/11 계약 형상 · 이탈 0건
+##### EXIT=0
+##### dependency_code_drill.py --cut-postgres
+대상      : http://127.0.0.1:8000
+의존 단절 : 켬 — fkt-levi2-postgres-1 정지 후 되돌린다
+
+  자기 검증  표본 4종(기대 형상 1 · 이탈 3) 전건 기대대로 — 판정자 살아 있음
+
+  ── 기준선 — 의존이 살아 있을 때
+  PASS  D-01 POST /retrieval/compare    200 
+  PASS  D-02 GET /evidence/{id}         200 
+  PASS  D-03 GET /documents/{id}        200 
+  PASS  D-04 GET /scenarios          200 
+
+  -- 런타임 의존 단절 — fkt-levi2-postgres-1 정지
+  PASS  D-01 POST /retrieval/compare    503 dependency_unavailable
+  PASS  D-02 GET /evidence/{id}         503 dependency_unavailable
+  PASS  D-03 GET /documents/{id}        503 dependency_unavailable
+  PASS  D-05 한 사건을 한 코드로 말한다          D-01=503 dependency_unavailable · D-02=503 dependency_unavailable · D-03=503 dependency_unavailable
+  PASS  D-06 /health 가 단절을 말한다            status=degraded postgres=unavailable
+  PASS  D-07 /scenarios 는 단절과 무관     200 
+
+  -- 되감기 — fkt-levi2-postgres-1 재기동
+  PASS  D-01 POST /retrieval/compare    200 
+  PASS  D-02 GET /evidence/{id}         200 
+  PASS  D-03 GET /documents/{id}        200 
+  PASS  D-04 GET /scenarios          200 
+  PASS  D-0 되감기 — health healthy
+
+결과: 어긋남 0건
+##### EXIT=0
+##### run_surface_drill.py
+대상      : http://127.0.0.1:8000 · 시나리오 GS-01
+
+  자기 검증  기준 run 이 뜬다 — 대상 살아 있음
+
+  PASS  R-01 POST /runs → {runId, incidentId, mode}               {'runId': 'RUN-3552a303b75b', 'incidentId': 'INC-2026-014', 'mode': 'live'}
+  PASS  R-02 실행 run 의 mode 는 live (v0.1.3 — 이벤트 출처 축)             mode=live
+  PASS  R-03 GET /runs → {status, candidates[], workOrderDraftId?} status=completed
+  PASS  R-04 완주 후 candidates 가 비어 있지 않다                           2건
+  PASS  R-05 GET /events 가 이벤트 배열을 준다                             32건
+  PASS  R-06 배열 순서 == seq 순서                                      
+  PASS  R-07 replay 요청 = 200 · mode=replay (fixture 착지 · T2-4)    200 replay
+  PASS  R-08 게이트 축은 /live/status.online 이 말한다(공개 스택 = false 가 참)  online=False
+  PASS  R-09 POST /stop → {status:'stopped'}                      {'status': 'stopped'}
+  PASS  R-10 🔴 타임라인도 닫힌다 — run.stopped 이벤트(F-3b)                  ['plan.updated', 'run.stopped']
+  PASS  R-11 graph-path 소비처 /graph/paths?byRun 가 경로를 준다           5건
+  PASS  R-12 고정 template 형상(노드·엣지·라벨)                             
+  PASS  R-13 대조군 — 없는 시나리오 → 404                                  404 not_found
+  PASS  R-14 대조군 — 없는 run 조회 → 404                                404 not_found
+  PASS  R-15 대조군 — 없는 run 이벤트 → 404                               404 not_found
+  PASS  R-16 대조군 — 없는 run 중지 → 404                                404 not_found
+  PASS  R-17 대조군 — 없는 byRun 경로 → 404                              404 not_found
+
+  🔴 못 잰 열 — 합성 게이트웨이 도달 가능(`/live/status.online=true`)에서의 거동.
+     운영자 로컬 전용이 설계의 참이라 이 스택에서 만들 수 없다(데모 리허설 결속).
+
+결과: 어긋남 0건
+##### EXIT=0
+##### event_schema_drill.py
+정본      : packages\contracts\agent-events-v0.1.schema.json
+대상      : http://127.0.0.1:8000
+
+  자기 검증  표본 11종(계약 형상 1 · 이탈 10) 전건 기대대로 — 검증기 살아 있음
+
+  run     RUN-2ac9c057b2ea · status=completed
+  PASS  S-01 이벤트 32건 전건 스키마 준수
+  PASS  S-02 seq 단조 증가 · 유일 — [0, 1, 2, 3, 4, 5]…
+  PASS  S-03 한 run 의 이벤트만 — ['RUN-2ac9c057b2ea']
+  PASS  S-04 어휘 통일 — kind ['doc-chunk', 'graph-path', 'record']
+  PASS  S-05 타임라인이 열리고 닫힌다 — 처음 run.started · 끝 run.completed
+  PASS  S-06 WS 스트림 ≡ /events — WS 32건 · REST 32건
+
+결과: 어긋남 0건
+##### EXIT=0
+##### scenario_script_drill.py
+정본      : 스키마 stepId 5단계 · 대본 유력 후보 FM-BRG-WEAR
+대상      : http://127.0.0.1:8000 · 시나리오 GS-01
+
+  run       RUN-0775bfc7705d · 이벤트 32건 · status=completed
+  PASS  P-01 선언한 plan == 스키마 stepId 전 단계                    ['structured', 'vector', 'graph', 'synthesize', 'draft_work_order']
+  PASS  P-02 선언한 단계가 전부 완료로 닫힌다                             완료 ['structured', 'vector', 'graph', 'synthesize', 'draft_work_order']
+  PASS  P-STR structured 단계가 근거를 낸다(0건 통과 금지)                9건
+  PASS  P-VEC vector 단계가 근거를 낸다(0건 통과 금지)                    5건
+  PASS  P-GRA graph 단계가 근거를 낸다(0건 통과 금지)                     5건
+  PASS  P-03 synthesize 결론 — 후보가 비어 있지 않다                   2건
+  PASS  P-04 draft_work_order 결론 — 초안 id 가 있다               WOD-4e4474670874
+  PASS  P-05 🔴 근거 0건인 채 완료된 검색 단계 없음                        []
+  PASS  P-06 어휘 통일 — alarm·sensor-series 미발행(판정 08-30)      kind ['doc-chunk', 'graph-path', 'record']
+  PASS  P-07 record·doc-chunk → GET /evidence 로 열린다         14건 · 전건 200
+  PASS  P-08 graph-path → /graph/paths?byRun 로 열린다          5건 · 전건 있음
+  PASS  P-09 vector 단계 근거가 compare 로 재현된다(새 검색 경로 없음)       run 5건 · compare 5건 · 밖 []
+  PASS  P-10 대본 §3 — 유력 후보가 FM-BRG-WEAR                     rank1=FM-BRG-WEAR
+  PASS  P-11 대본 S6 — 후보 2개 이상                               [(1, 'FM-BRG-WEAR'), (2, 'FM-TOOL-IMB')]
+  PASS  P-12 후보마다 근거 묶음이 붙는다(S6)                            
+
+  관측(판정 아님)  graph 경로 hop 분포 [2, 3, 4] · 종단 ['CP-204-BRG-01', 'FM-BRG-WEAR', 'MR-2024-0004', 'SOP-BRG-INSP-014', 'SAF-LOTO-01']
+     대본 S5 는 «4-hop · Component 경유 · SAF-LOTO-01 까지»를 기대 evidence 로 적는다 —
+     실물과의 대조는 판정문에서 다룬다(대본 재바인딩 여부 = 오케 판정 사안).
+
+결과: 어긋남 0건
+##### EXIT=0
+##### ssot_write_drill.py --run
+대상 DB   : fkt-levi2-postgres-1/fkt
+run 실행  : 켬 — 1회 돌리고 전후를 센다
+
+  자기 검증  표본 3종(무변 1 · 증가 1 · 신설 1) 전건 기대대로 — 비교기 살아 있음
+  대상 동일성  API 와 DB 가 같은 문서를 같은 해시로 말한다 — DOC-SOP-0014@r2 59457442ce3f…
+  지문      테이블 29개 · 총 950372행
+  run       RUN-857b2de34cbf
+  PASS  W-01 run 전후 SSOT 무변 — 변화 0
+
+결과: 어긋남 0건
+##### EXIT=0
+##### replay_fixture_drill.py --no-deps
+정본      : {REPO}\data\replay\gs-01.events.jsonl · 32줄 · sha256 3eb624c237dbeaac…
+대상      : http://127.0.0.1:8000
+
+  자기 검증  표본 5종(동일 1 · 어긋남 4: ts·payload·seq·필드추가) 전건 기대대로 — 비교기 살아 있음
+  PASS  F-01 LF 고정 — 워킹트리 sha256 == git blob sha256             blob 3eb624c237dbeaac…
+  PASS  F-02 재생 이벤트 수 == fixture 줄 수(seq↔줄 1:1)                 32 vs 32
+  PASS  F-03 🔴 치환 2필드 제외 전 필드 동일(J-C 판정식)                       어긋남 0
+  PASS  F-04 치환값 규정대로 — mode=replay 전건 · runId 는 새 run 1종       ['replay'] · 1종
+  PASS  F-05 ts 는 녹화 시각 그대로(무손질)                                2026-08-29T20:22:52.410Z
+  PASS  F-06 녹화본은 손대지 않았다 — fixture 는 mode=live · 원 runId       RUN-7e4cfd025422
+  PASS  F-07 WS ≡ /events                                       WS 32 · REST 32
+  PASS  F-08 replay run 의 ?byRun = 501 replay_path_source_absent(J-G) 501 replay_path_source_absent
+
+  PASS  F-09 fixture 공개 경계 심사 재실행 — exit 0
+  FAIL  F-10 🔴 심사기가 «운다» — 심은 표본 5종
+        잡음 ['자격 이름표', 'Authorization 헤더', '벤더 이름']
+        🔴 못 잡음 ['Anthropic 키 «값»만', '범용 토큰 «값»만'] — 이름표는 보는데 «값의 형상»은 안 본다
+
+  PASS  F-11 fixture 부재 → 501 replay_fixture_missing(J-F)       501 replay_fixture_missing
+  PASS  F-0 되감기 — fixture 복원 · sha 동일 · replay 200             200 · sha 3eb624c237db…
+
+  PASS  N-01 의존 없이 뜬다 — 전 의존 unconfigured                       ['postgres', 'neo4j']
+  PASS  N-02 같은 프로세스에서 replay 는 200                             200
+  PASS  N-03 같은 프로세스에서 live 는 503 dependency_unavailable        503 dependency_unavailable
+
+결과: 어긋남 1건
+##### EXIT=1
+##### credential_leak_drill.py --log
+정본      : packages\contracts\rest-api-v0.1.md · 경로 22건
+대상      : http://127.0.0.1:8000
+
+  자기 검증  표본 7종(깨끗 2 · 누출 5) 전건 기대대로 — 스캐너 살아 있음
+
+  ── 응답 면 — 계약 경로 전수(변수는 있는 것·없는 것 둘 다)
+  PASS  L-01 응답 14건 누출 0건 (미해제 skip 11건)
+  PASS  L-03 이벤트 면 32건 — 누출 0
+  PASS  L-02 로그 면 api6.log — 누출 0
+
+결과: 누출 0건
+##### EXIT=0
