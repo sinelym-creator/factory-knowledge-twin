@@ -72,6 +72,15 @@ rm -f /tmp/q.json
 }
 
 # ── 1. 입력 로드 + «입력 자체» 검증 ──────────────────────────────────────────
+# 🔴 «파일이 없다»는 적재 실패가 아니라 **측정 불가**다 — 예외 스택이 아니라 rc 2 로 말한다.
+#    기본 경로는 «리포의 형제» 를 가리키므로, 워크트리에서 돌리면 한 단계가 어긋난다(그때는 -RescueDir).
+$missing = @($NodesFile, $RelsFile, $SchemaFile | Where-Object { -not (Test-Path (Join-Path $RescueDir $_)) })
+if ($missing.Count -gt 0) {
+    Write-Host "🔴 구조본을 못 찾았다 — RescueDir='$RescueDir' · 없는 파일: $($missing -join ', ')" -ForegroundColor Red
+    Write-Host "   -RescueDir <경로> 로 구조본 위치를 지정하라(적재는 시작하지 않았다)."
+    exit 2
+}
+
 $nodesRaw = Get-Content (Join-Path $RescueDir $NodesFile) -Raw | ConvertFrom-Json
 $relsRaw = Get-Content (Join-Path $RescueDir $RelsFile) -Raw | ConvertFrom-Json
 $schemaRaw = Get-Content (Join-Path $RescueDir $SchemaFile) -Raw
