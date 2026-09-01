@@ -1,0 +1,44 @@
+# security — CodeQL 정적 분석 (T5-3 최소본)
+#
+# 최소본 · 보류 항목: dependency audit · container scan · license · endpoint policy ·
+#   benchmark-smoke · release-evidence (별건 티켓 — 원장은 오케스트레이터가 관리한다).
+#
+# 경계(baseline §34.4): self-hosted runner 등록 금지 — GitHub-hosted(ubuntu-latest) 만 쓴다.
+# 판정(baseline §32.1): CI 는 게이트지 acceptance 판정이 아니다 —
+#   초록은 「막지 않았다」일 뿐, 독립 검증 PASS + E2E 통합 PASS 를 대체하지 않는다.
+# build-mode: none — 빌드 단계 0 · 새 의존성 0.
+
+name: security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # 한 언어 실패가 다른 언어를 취소하지 않게 한다(언어별 결론 분리)
+      matrix:
+        language: [javascript-typescript, python]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }} # 언어별 SARIF 분리 — 미지정 시 서로 덮어쓴다
