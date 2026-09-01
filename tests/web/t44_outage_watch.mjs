@@ -61,6 +61,7 @@ async function hit(path, init = {}) {
       status: res.status,
       ms: Math.round(performance.now() - t0),
       vercelId: res.headers.get("x-vercel-id"),
+      tsHeaders: [...res.headers.keys()].filter((k) => k.startsWith("tailscale-")),
       sid: cookies.some((c) => c.startsWith("fkt_sid=")),
       body,
     };
@@ -84,6 +85,7 @@ function screen() {
         rc: code,
         offline: /Offline 표시[^\n]*:\s*(\d+)/.exec(out)?.[1] ?? null,
         offlineSeen: !/관측 안 됨/.test(out),
+        chars: (out.match(/빈 화면 아님[^:]*: *([0-9]+)자/) || [])[1] ?? null,
         replayMs: /Replay 전환[^\n]*:\s*(\d+)/.exec(out)?.[1] ?? null,
         badges: badge.slice(-3),
         raw: out.slice(-800),

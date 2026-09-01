@@ -1,0 +1,269 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "label": "fastapi-off",
+ "cycles": [
+  {
+   "cycle": 1,
+   "at": "18:40:33",
+   "health": {
+    "ok": true,
+    "status": 502,
+    "ms": 2030,
+    "vercelId": "icn1::iad1::mh5dr-1788255632624-100bbaf379ed",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 2856,
+    "vercelId": "icn1::iad1::sdzf8-1788255632621-401f2584ac9f",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 502,
+    "ms": 1917,
+    "vercelId": "icn1::iad1::fvrrv-1788255632623-a332257279e4",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "3158",
+    "offlineSeen": true,
+    "chars": "193",
+    "replayMs": "2433",
+    "badges": [
+     "◌확인 중",
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      434 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     2433 ms  url=/overview  제안=없음 배너=있음  \"◌확인 중\"\n     3158 ms  url=/overview  제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 3158ms\nⓑ Replay 전환(제안·배너)  : 2433ms\n대조군 빈 화면 아님        : 193자\n\n결과: 기대대로\n"
+   }
+  },
+  {
+   "cycle": 2,
+   "at": "18:41:03",
+   "health": {
+    "ok": true,
+    "status": 502,
+    "ms": 1266,
+    "vercelId": "icn1::iad1::g5j7n-1788255662601-1628b502647a",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1130,
+    "vercelId": "icn1::iad1::d949s-1788255662605-39ee04d04e68",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 502,
+    "ms": 1277,
+    "vercelId": "icn1::iad1::ddppc-1788255662601-2864d6a96d9d",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "1776",
+    "offlineSeen": true,
+    "chars": "193",
+    "replayMs": "1715",
+    "badges": [
+     "◌확인 중",
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      345 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1715 ms  url=/overview  제안=없음 배너=있음  \"◌확인 중\"\n     1776 ms  url=/overview  제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 1776ms\nⓑ Replay 전환(제안·배너)  : 1715ms\n대조군 빈 화면 아님        : 193자\n\n결과: 기대대로\n"
+   }
+  },
+  {
+   "cycle": 3,
+   "at": "18:41:33",
+   "health": {
+    "ok": true,
+    "status": 502,
+    "ms": 1692,
+    "vercelId": "icn1::iad1::gz8qj-1788255692602-d4999190b6cf",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1225,
+    "vercelId": "icn1::iad1::lhcrv-1788255692602-d8390f83e4b0",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 502,
+    "ms": 1685,
+    "vercelId": "icn1::iad1::gz8qj-1788255692602-df0a14be7b26",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "2818",
+    "offlineSeen": true,
+    "chars": "193",
+    "replayMs": "1753",
+    "badges": [
+     "◌확인 중",
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      353 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1753 ms  url=/overview  제안=없음 배너=있음  \"◌확인 중\"\n     2818 ms  url=/overview  제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 2818ms\nⓑ Replay 전환(제안·배너)  : 1753ms\n대조군 빈 화면 아님        : 193자\n\n결과: 기대대로\n"
+   }
+  },
+  {
+   "cycle": 4,
+   "at": "18:42:03",
+   "health": {
+    "ok": true,
+    "status": 502,
+    "ms": 1187,
+    "vercelId": "icn1::iad1::kj2sd-1788255722612-007d94f3509a",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1018,
+    "vercelId": "icn1::iad1::pb56t-1788255722611-d129e9cae7a8",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 502,
+    "ms": 1149,
+    "vercelId": "icn1::iad1::6cfmw-1788255722611-a92034075e60",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "1816",
+    "offlineSeen": true,
+    "chars": "193",
+    "replayMs": "1693",
+    "badges": [
+     "◌확인 중",
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      359 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1693 ms  url=/overview  제안=없음 배너=있음  \"◌확인 중\"\n     1816 ms  url=/overview  제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 1816ms\nⓑ Replay 전환(제안·배너)  : 1693ms\n대조군 빈 화면 아님        : 193자\n\n결과: 기대대로\n"
+   }
+  },
+  {
+   "cycle": 5,
+   "at": "18:42:33",
+   "health": {
+    "ok": true,
+    "status": 502,
+    "ms": 1286,
+    "vercelId": "icn1::iad1::lhcrv-1788255752616-57c5cb798a32",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1317,
+    "vercelId": "icn1::iad1::mrkzb-1788255752613-307398a231ca",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 502,
+    "ms": 913,
+    "vercelId": "icn1::iad1::js2x5-1788255752620-3c6260f5ce62",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "2697",
+    "offlineSeen": true,
+    "chars": "193",
+    "replayMs": "1709",
+    "badges": [
+     "◌확인 중",
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      350 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1709 ms  url=/overview  제안=없음 배너=있음  \"◌확인 중\"\n     2697 ms  url=/overview  제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 2697ms\nⓑ Replay 전환(제안·배너)  : 1709ms\n대조군 빈 화면 아님        : 193자\n\n결과: 기대대로\n"
+   }
+  },
+  {
+   "cycle": 6,
+   "at": "18:43:03",
+   "health": {
+    "ok": true,
+    "status": 502,
+    "ms": 891,
+    "vercelId": "icn1::iad1::kj2sd-1788255782610-34ab8a1b1e17",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 995,
+    "vercelId": "icn1::iad1::72hhc-1788255782612-97eadf748703",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 502,
+    "ms": 873,
+    "vercelId": "icn1::iad1::fvrrv-1788255782610-be80d5ac5ffb",
+    "tsHeaders": [],
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "1633",
+    "offlineSeen": true,
+    "chars": "217",
+    "replayMs": "1633",
+    "badges": [
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      348 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1633 ms  url=/          제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 1633ms\nⓑ Replay 전환(제안·배너)  : 1633ms\n대조군 빈 화면 아님        : 217자\n\n결과: 기대대로\n"
+   }
+  }
+ ]
+}
