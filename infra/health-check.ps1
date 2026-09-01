@@ -17,20 +17,36 @@
       pwsh -File infra/health-check.ps1 -Project fkt-senku2-t15 -ApiBase http://127.0.0.1:8010
       pwsh -File infra/health-check.ps1 ... -PublicBase https://<host>.ts.net:8443 -WebBase https://<app>.vercel.app
 
+      # 🔴 `-Containers` 는 «부르는 방식마다 모양이 다르다». 둘 다 되게 만들어 두었다(Q-66):
+      #   -File   → 인자가 전부 «문자열»이라 콤마로 잇는다(공백 없이)
+      pwsh -File infra/health-check.ps1 -Project fkt-senku2-t15 -ApiBase http://127.0.0.1:8010 `
+           -Containers fkt-deploy-ai-api,fkt-deploy-caddy
+      #   -Command → pwsh 가 파싱하므로 «진짜 배열»을 준다
+      pwsh -Command "& ./infra/health-check.ps1 -Containers @('fkt-deploy-ai-api','fkt-deploy-caddy')"
+
     종료 코드:
       0 = 잰 행이 1개 이상이고 전부 PASS
       1 = FAIL 이 1개 이상
       2 = 잰 행이 0개(= 계측기가 없다 · 「통과」가 아니다)
+          또는 `-Containers` 를 «줬는데» 정규화 결과가 0본(= 인자가 오다 부서졌다 · Q-66)
 #>
 [CmdletBinding()]
 param(
     # compose 프로젝트명. 비우면 컨테이너 층을 «건너뛴다»(SKIP — 통과가 아니다).
-    # 🔴 이 필터는 compose 가 붙인 라벨을 본다. 그래서 `docker run` 으로 띄운 컨테이너는
-    #    여기에 «한 건도» 안 잡힌다(실측: `fkt-levi2-t35-seeded` 가 running 인데 안 보였다).
-    #    배포 형상의 ai-api 가 바로 그 경우다 — 그래서 -Containers 가 따로 있다.
+    #
+    # 🔴 **이 필터가 보는 것은 «이미지에 구워진» 라벨이지 「지금 어느 스택에 속하는가」가 아니다.**
+    #    앞판 주석은 「`docker run` 으로 띄운 컨테이너는 한 건도 안 잡힌다」였는데 **실측과 다르다**
+    #    (리바이2 #302 · E1): compose 로 빌드한 이미지에는 `com.docker.compose.project` 라벨이
+    #    구워져 있고, 그 이미지를 `docker run` 으로 띄우면 컨테이너가 그 라벨을 «상속»한다 —
+    #    즉 안 잡히는 게 아니라 **이미지가 태어난 프로젝트 이름으로 잡힌다**
+    #    (`fkt-deploy-ai-api` 의 라벨 3개 = 그 이미지의 라벨과 동일).
+    # 🔴 위험의 모양은 「0건」이 아니라 «엉뚱한 건수»다: `-Project fkt-senku2-t15` 로 재면 2건이
+    #    잡혀 아래 「0건 = FAIL」 가드가 울리지 않고, 그 사이 배포 ai-api 가 조용히 빠진다.
+    #    그래서 `-Containers` 가 «필요 집합»으로 따로 있다 — 이름으로 못 박는 자리다.
     [string]   $Project    = $env:COMPOSE_PROJECT_NAME,
     # 🔴 «이름으로» 반드시 있어야 하는 컨테이너들. 없으면 FAIL 이다(SKIP 아니다) —
     #    「있어야 한다」고 적어 놓고 안 보이는 것은 건너뛸 일이 아니라 실패다.
+    # 🔴 `-File` 로 부르면 콤마로 이은 «한 문자열»이 온다 — 아래 정규화가 두 모양을 다 받는다(Q-66).
     [string[]] $Containers = @(),
     # ai-api 의 «호스트» 포트. 🔴 컨테이너 안의 8000 이 아니라 게시된 포트다.
     [string] $ApiBase    = $(if ($env:FKT_API_BASE) { $env:FKT_API_BASE } else { 'http://127.0.0.1:8000' }),
@@ -44,12 +60,55 @@ param(
 $ErrorActionPreference = 'Stop'
 $rows = [System.Collections.Generic.List[object]]::new()
 
+# ── 층 -1. 계기 자신 : 「받은 인자가 내가 생각한 모양인가」 ────────────────────
+#
+# 🔴 **`-File` 로 부르면 pwsh 는 인자를 «전부 문자열»로 넘긴다.** `-Containers a,b,c` 가
+#    `[string[]]` 에 1-원소 `@('a,b,c')` 로 들어오고(실측: `raw-count=1 raw0=[a,b,c]`),
+#    그 통짜 문자열을 «이름»으로 물으면 「없는 컨테이너」가 되어 3본이 다 서 있는데도 FAIL 이
+#    난다(오케 14:15 실측 · 위양성). 🔴 그것은 **대상의 사실이 아니라 계기의 사실**이었다.
+# 🔴 `-Command` 축은 pwsh 가 파싱해 «진짜 배열»을 주므로 콤마가 없다 — 이 한 줄이 두 모양을
+#    다 받는다(콤마로 가르고, 다듬고, 빈 원소를 버리고, 평탄화한다).
+$containersGiven = $PSBoundParameters.ContainsKey('Containers')
+$containersRaw = @($Containers)
+$Containers = @($containersRaw |
+    ForEach-Object { "$_" -split ',' } |
+    ForEach-Object { $_.Trim() } |
+    Where-Object { $_ })
+
+# 🔴 **파라미터 이름이 pwsh «자동변수»와 겹치면 바인딩이 조용히 어긋난다**($Host·$Error·$Args…).
+#    「지금은 안 겹친다」로 두지 않고 매번 «센다» — 이름은 다음 사람이 늘리고, 그때 이 검사가
+#    없으면 어긋남은 값이 이상해진 «대상»의 얼굴로 나타난다.
+$autoVarNames = @('Host', 'Error', 'Args', 'Input', 'Matches', 'This', 'PSItem', 'Profile',
+                  'Pwd', 'Home', 'PID', 'Event', 'Sender', 'StackTrace', 'ExecutionContext')
+$paramClash = @($MyInvocation.MyCommand.Parameters.Keys | Where-Object { $autoVarNames -contains $_ })
+
+# 표 «앞»에 찍는 한 줄 — 초록이든 빨강이든 「무엇을 받아서 잰 것인가」가 먼저 보여야 한다.
+$argLine = "args: -Containers 원문 $($containersRaw.Count)개 → 정규화 $($Containers.Count)본" +
+           $(if ($Containers.Count) { " [$($Containers -join ', ')]" } else { '' }) +
+           " · param↔자동변수 충돌 $($paramClash.Count)" +
+           $(if ($paramClash.Count) { " [$($paramClash -join ', ')]" } else { '' })
+
+# 🔴 «줬는데 0본» = 계기가 부서진 것이다. 이때 컨테이너 층을 그냥 건너뛰면 화면은 조용한
+#    초록이 되고, 정작 「있어야 한다」고 선언한 것들은 아무도 안 본 채로 지나간다.
+#    대상을 의심하기 전에 계기부터 의심한다 — rc 2(측정 실패)이지 rc 1(대상 나쁨)이 아니다.
+if ($containersGiven -and $Containers.Count -eq 0) {
+    Write-Host $argLine
+    Write-Host 'VERDICT: NO-MEASUREMENT — -Containers 를 줬는데 정규화 결과가 0본이다 (인자가 오다 부서졌다).'
+    exit 2
+}
+
 function Add-Row {
     param([string]$Layer, [string]$Check, [string]$Verdict, [string]$Detail)
     $rows.Add([pscustomobject]@{ Layer = $Layer; Check = $Check; Verdict = $Verdict; Detail = $Detail })
 }
 
 # ── 층 0. 계측기 자체 ────────────────────────────────────────────────────────
+# 🔴 이름 충돌은 «있을 때만» 행이 된다 — 없는 것을 초록 행으로 세면 measured 가 부풀고,
+#    「잰 행 수」가 곧 판정인 이 스크립트에서 그것은 계수를 흐리는 일이다(검산 줄에는 항상 찍힌다).
+if ($paramClash.Count -gt 0) {
+    Add-Row 'instrument' 'param name clash' 'FAIL' "pwsh 자동변수와 겹치는 파라미터: $($paramClash -join ', ')"
+}
+
 # 🔴 도구가 없는 것을 대상의 결함으로 적지 않는다.
 $dockerOk = $null -ne (Get-Command docker -ErrorAction SilentlyContinue)
 if (-not $dockerOk) {
@@ -217,6 +276,9 @@ if ($null -eq $ts) {
 }
 
 # ── 판정 ────────────────────────────────────────────────────────────────────
+# 🔴 표 «앞»에 계기 줄을 먼저 놓는다 — 아래 행들이 「무엇을 받아서」 잰 것인지 모르면
+#    초록도 빨강도 읽을 수 없다(Q-66 의 위양성은 정확히 그 자리에서 났다).
+Write-Host $argLine
 $rows | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
 
 $pass = @($rows | Where-Object Verdict -eq 'PASS').Count

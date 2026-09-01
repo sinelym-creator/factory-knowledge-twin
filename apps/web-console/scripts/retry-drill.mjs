@@ -5,6 +5,13 @@
  *                                        실패 회차마다 `console.warn` 한 줄을 남긴다 (⑨~⑪)
  *   ③ D-12b       · `causeCodeOf()`    : undici 예외의 «속»에서 코드 토큰만 꺼내 warn 에 싣고,
  *                                        호스트명·주소는 싣지 않는다 · errors[] 는 전건 병기 (⑫~⑯)
+ *   ④ D-12c/Q-68  · `allowedCodeOf()`  : 출처를 `code` 필드로 좁히고 전체 일치 + 형태 허용목록,
+ *                                        밖은 `OTHER` 로 접는다 (⑮ · ⑰)
+ *
+ * 🔴 Q-68 의 «반대 방향»(뚫리는 표본)은 이 파일이 아니라 검증 좌석 그물이 든다 —
+ *    `tests/web/d12b_cause_redaction_probe.mjs`(리바이2 · A~I 9행 · 심은 호스트로 판정).
+ *    여기에 같은 표본을 재구성해 두면 정본이 둘이 되고, 둘이 갈리는 날 어느 쪽이 참인지
+ *    아무도 모른다. 이 파일은 「막는 쪽」만 든다.
  *
  *   node --experimental-strip-types scripts/retry-drill.mjs
  *   (pnpm retry:drill)
@@ -41,6 +48,7 @@
 import {
   apiGetBrowser,
   apiGetServer,
+  CAUSE_OTHER,
   createSession,
   liveStatus,
   startRunBrowser,
@@ -101,6 +109,8 @@ let warnLinesSeen = 0;
 /** D-12b 축 계수 — cause 코드가 «실제로 뽑힌» 회차 · 호스트 누출을 «실제로 본» 회차. */
 let causeSeen = 0;
 let hostLeakChecked = 0;
+/** Q-68 축 계수 — 허용목록 «밖» 코드가 `OTHER` 로 접힌 회차. 0건이면 그 분기는 죽은 채 초록이다. */
+let otherFoldSeen = 0;
 const lines = [];
 
 function check(name, cond, detail) {
@@ -326,8 +336,10 @@ async function timed(fn) {
   );
 }
 
-// ── ⑮ 🔴 호스트명은 로그에 나오지 않는다 (공개 경계 §15.2) ────────────────
-//    실제 형태가 `getaddrinfo ENOTFOUND <host>` 라 «메시지 그대로» 실으면 호스트가 샌다.
+// ── ⑮ 🔴 message 는 «읽지 않는다» — 코드도 호스트도 거기서 나오지 않는다 (Q-68 ①)
+//    앞판(D-12b)은 이 표본에서 `ENOTFOUND` 를 집어냈다. 그 방식은 호스트가 소문자라는
+//    «환경의 우연»에 기대고 있었다 — 대문자 호스트면 조각이 함께 남는다(⑰ B·C).
+//    그래서 message 를 아예 안 본다: 이 표본은 이제 «코드 없음»이 정답이다.
 {
   const host = "fkt-secret-host.ts.net";
   stage(
@@ -335,19 +347,16 @@ async function timed(fn) {
     ok({ sessionId: "s-6" }),
   );
   const [r] = await timed(() => createSession("http://api.test"));
-  if (/ENOTFOUND/.test(warns[0] ?? "")) causeSeen += 1;
   const line = warns[0] ?? "";
   hostLeakChecked += 1;
   check(
-    "⑮ 코드만 남고 호스트명은 안 남는다",
+    "⑮ message 는 읽지 않는다(코드도 호스트도 안 남는다)",
     r.state === "ok" &&
       warns.length === 1 &&
-      /ENOTFOUND/.test(line) &&
+      line === "[enter] createSession failed TypeError attempt=1/3" &&
       !line.includes(host) &&
-      !line.includes("ts.net") &&
-      // 🔴 「메시지 원문이 통째로 실렸는가」를 잡는 축이다(`syscall=getaddrinfo` 는 별개 · ⑫).
-      !line.includes("getaddrinfo ENOTFOUND"),
-    `warn 「${line}」(호스트 「${host}」 미포함이어야 한다)`,
+      !line.includes("ts.net"),
+    `warn 「${line}」(D-12b 에서는 여기서 ENOTFOUND 를 집었다 — 지금은 코드 자체가 없어야 한다)`,
   );
 }
 
@@ -383,6 +392,27 @@ async function timed(fn) {
   );
 }
 
+// ── ⑰ 허용목록 «밖» 코드 : 값 대신 OTHER 로 접힌다 (Q-68 ③) ──────────────
+//
+// 🔴 이 한 건은 «반대 표본»이 아니라 **발동 계수**다. 뚫리는 표본의 정본은 검증 좌석 그물
+//    (`tests/web/d12b_cause_redaction_probe.mjs`)이고, 거기서는 D·H 가 전체 일치(②)에서
+//    이미 걸려 ③ 이 도는 회차가 «0» 이다. 그러면 허용목록 분기는 죽어 있어도 두 그물 다
+//    초록이다 — 새 규칙은 자기 발동을 세야 한다.
+{
+  stage(unreachable("TypeError", { code: "HARRY" }), ok({ sessionId: "s-8" }));
+  const [r] = await timed(() => createSession("http://api.test"));
+  const line = warns[0] ?? "";
+  if (line.includes(CAUSE_OTHER)) otherFoldSeen += 1;
+  check(
+    "⑰ 허용목록 밖 코드 = OTHER 접힘",
+    r.state === "ok" &&
+      warns.length === 1 &&
+      line.includes(CAUSE_OTHER) &&
+      !line.includes("HARRY"),
+    `warn 「${line}」(값은 안 남고 「모르는 코드가 왔다」만 남아야 한다)`,
+  );
+}
+
 // 🔴 계측기 원복 — 아래 결과 출력은 «가로채지 않은» console 로 나가야 한다.
 console.warn = realWarn;
 
@@ -395,21 +425,23 @@ const total = pass + failed;
  *    처방 절반(관측)이 없는 것이다.
  */
 const selfOk =
-  total >= 16 &&
+  total >= 17 &&
   retriedSeen >= 1 &&
   enterRetriedSeen >= 1 &&
   warnLinesSeen >= 5 &&
-  causeSeen >= 4 &&
-  hostLeakChecked >= 2;
+  causeSeen >= 3 &&
+  hostLeakChecked >= 2 &&
+  otherFoldSeen >= 1;
 
 console.log(
   "retry-drill — D-11 (C) `call()` + D-12 `createSession()` + D-12b cause · lib/contract.ts 를 그대로 돌린다\n",
 );
 console.log(lines.join("\n"));
 console.log(
-  `\n  자기 검증  케이스 ${total}건(기대 ≥16) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
+  `\n  자기 검증  케이스 ${total}건(기대 ≥17) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
     `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) · ` +
-    `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥4) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥2) → ${selfOk ? "PASS" : "FAIL"}`,
+    `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥3) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥2) · ` +
+    `OTHER 접힘이 «실제로 돈» 회차 ${otherFoldSeen}건(기대 ≥1) → ${selfOk ? "PASS" : "FAIL"}`,
 );
 console.log(`\n결과: ${pass}/${total} 통과 · 실패 ${failed}건`);
 

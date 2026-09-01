@@ -532,11 +532,25 @@ async function call<T>(
  * (UND_ERR_CONNECT_TIMEOUT) · 인증서(CERT_*) 를 **가르지 못한다**. 재시도 횟수·간격을 바꿀
  * 근거도 이 코드가 나와야 생긴다 — 그래서 이 티켓은 값을 건드리지 않고 «무엇이라 우는지»만 연다.
  *
- * 🔴 **자유 문장은 버린다 — 호스트명이 거기 있다**(공개 경계 §15.2). 실제 형태가
- *    `getaddrinfo ENOTFOUND fkt-xxxx.ts.net` 처럼 «메시지 안»에 호스트를 담아 온다. 그래서
- *    `message` 를 그대로 싣지 않고 «대문자 코드 토큰»만 집는다 — 호스트명은 소문자·점·
- *    하이픈이라 이 패턴에 걸리지 않는다. `Error`·`TypeError`·`AggregateError` 같은 «이름»도
- *    연속 대문자가 아니라 자연히 걸러진다(이름은 코드가 아니다).
+ * 🔴 **자유 문장은 보지 않는다 — 호스트명이 거기 있다**(공개 경계 §15.2 · D-12c/Q-68).
+ *
+ *    앞판은 `code`·`name`·`message` 를 차례로 훑어 «대문자 토큰»을 **substring 으로** 집었다.
+ *    그 형태는 「이 배치의 호스트가 소문자다」에 기대고 있었고, 그것은 코드의 성질이 아니라
+ *    **지금 환경의 우연**이다. 리바이2 반대 표본 6행 중 4행이 실제로 조각을 남겼다(E1 회부):
+ *      · `message` 에 대문자 호스트(`… ENOTFOUND HARRY.tail…`) → `HARRY` 가 남는다
+ *      · 대문자 라벨(`FKT-…`)의 앞 조각이 남는다
+ *      · `code` 자체가 호스트 문자열인 표본
+ *      · `AggregateError` **안쪽** `message` 로 같은 일이 반복된다
+ *    🔴 §15.2 는 「지금은 안 샌다」가 아니라 **「안 샌다」**를 요구한다. 그래서 세 겹으로 좁힌다:
+ *      ① **출처는 `code` 필드만** — 바깥 `cause.code` 와 `cause.errors[].code`. `name`·
+ *         `message`·문자열 cause 는 «읽지 않는다»(뽑을 자리 자체를 없앤다).
+ *      ② **전체 일치**(`^…$`) — substring 탐색을 하지 않는다. 문장 안에서 조각을 집는 일이
+ *         구조적으로 불가능해진다.
+ *      ③ **접두 허용목록 밖은 값 대신 `OTHER`** — 「무엇인지 모르는 코드가 왔다」는 사실은
+ *         남기고 그 «값»은 남기지 않는다. 계수는 살고 내용은 죽는다.
+ *    🔴 **알려진 한계**: ③ 은 형태로 막는 규칙이라 `E…`·`ERR_…` 로 시작하는 «대문자 호스트»
+ *       (예: `EDGE1`)가 `code` 자리에 오면 통과한다. 값을 아는 방법이 없는 층에서 형태로
+ *       거르는 이상 남는 잔여이고, 그것을 안다고 적어 둔다(모르는 척하지 않는다).
  * 🔴 **없으면 만들지 않는다** — 코드가 안 나오면 `undefined` 이고 필드 자체가 없다.
  *    `"unknown"` 같은 값을 지어내면 로그 계수가 「가르지 못했다」와 「가를 게 없었다」를
  *    도로 합친다(이 파일의 `detail`·`retryAfterSec` 규율과 같다).
@@ -546,26 +560,50 @@ async function call<T>(
  *
  * 🔴 `/g` 를 붙이지 않는다(`scripts/contract-surface.mjs` D-13 규칙 · lastIndex 가 남아 샌다).
  */
-const CAUSE_CODE = /\b[A-Z][A-Z0-9_]{2,}\b/;
+/** 🔴 **전체 일치**다 — 문장 안에서 조각을 집지 않는다(Q-68 ②). */
+const CAUSE_CODE = /^[A-Z][A-Z0-9_]{2,40}$/;
+/**
+ * 🔴 **형태 허용목록**(Q-68 ③) — 근거는 Node `errno` 코드(`E…`) · undici(`UND_ERR_…`) ·
+ *    Node 공통(`ERR_…`) · OpenSSL/TLS 검증 코드(`CERT_…`·`…_CERT…`·`DEPTH_ZERO_…`·
+ *    `SELF_SIGNED_…`·`UNABLE_TO_…`·`HOSTNAME_MISMATCH`) 의 «형태»다.
+ *    여기 없는 값은 버리지 않고 `OTHER` 로 접는다 — 「모르는 코드가 왔다」는 계수는 살리고
+ *    그 «값»만 죽인다. 값을 그대로 남기면 `code` 자리에 호스트가 오는 표본에서 그것이 샌다.
+ */
+const CAUSE_ALLOW: readonly RegExp[] = [
+  /^E[A-Z0-9_]+$/,
+  /^UND_ERR_[A-Z0-9_]+$/,
+  /^ERR_[A-Z0-9_]+$/,
+  /^CERT_[A-Z0-9_]+$/,
+  /^[A-Z0-9_]*_CERT[A-Z0-9_]*$/,
+  /^DEPTH_ZERO_[A-Z0-9_]+$/,
+  /^SELF_SIGNED_[A-Z0-9_]+$/,
+  /^UNABLE_TO_[A-Z0-9_]+$/,
+  /^HOSTNAME_MISMATCH$/,
+];
+/** 허용목록 밖 코드가 접히는 자리 — 값이 아니라 «있었다»만 남는다. */
+export const CAUSE_OTHER = "OTHER";
 /** `syscall` 은 `getaddrinfo`·`connect` 같은 소문자 낱말만 허용한다 — 점이 있는 것은 호스트다. */
 const CAUSE_SYSCALL = /^[a-z_]{3,20}$/;
 
+/**
+ * 🔴 **읽는 자리는 `code` «필드» 하나뿐이다**(Q-68 ①). `name`·`message` 는 보지 않는다 —
+ *    호스트는 언제나 그 두 곳으로 들어왔다. 안 읽는 것이 「거르는 것」보다 강하다.
+ */
+function allowedCodeOf(x: unknown): string | undefined {
+  if (x === null || typeof x !== "object") return undefined;
+  const raw = (x as { code?: unknown }).code;
+  if (typeof raw !== "string" || !CAUSE_CODE.test(raw)) return undefined;
+  return CAUSE_ALLOW.some((re) => re.test(raw)) ? raw : CAUSE_OTHER;
+}
+
 function causeCodeOf(x: unknown, depth = 0): string | undefined {
-  if (typeof x === "string") return CAUSE_CODE.exec(x)?.[0];
   if (x === null || typeof x !== "object") return undefined;
   const o = x as {
-    code?: unknown;
-    name?: unknown;
-    message?: unknown;
     syscall?: unknown;
     errno?: unknown;
     errors?: unknown;
   };
-  let head: string | undefined;
-  for (const v of [o.code, o.name, o.message]) {
-    head = typeof v === "string" ? CAUSE_CODE.exec(v)?.[0] : undefined;
-    if (head) break;
-  }
+  const head = allowedCodeOf(x);
 
   /**
    * 🔴 **`errors[]` 는 «전건» 병기한다 — 첫 원소만 보면 주소마다 다른 사유가 사라진다.**
@@ -574,8 +612,9 @@ function causeCodeOf(x: unknown, depth = 0): string | undefined {
    *    없음)를 내고 주소별 사유를 `errors[]` 에 담는다 — 한 주소는 ECONNREFUSED, 다른
    *    주소는 ETIMEDOUT·ENETUNREACH 일 수 있다. 첫 것만 남기면 「IPv4 는 거부, IPv6 는
    *    닿지도 않음」 같은 갈림이 로그에서 사라진다.
-   * 🔴 **코드만 병기한다** — 각 원소의 주소·포트는 `message` 안에 있고(`connect
-   *    ECONNREFUSED 100.x.x.x:8443`) 코드 토큰만 뽑히므로 남지 않는다. 중복은 접는다.
+   * 🔴 **안쪽에서도 읽는 것은 `code` 필드뿐이다**(Q-68 ①) — 각 원소의 주소·포트는
+   *    `message` 안에 있고(`connect ECONNREFUSED 100.x.x.x:8443`) 그 자리를 아예 보지
+   *    않는다. 안쪽 `code` 가 없으면 그 원소는 «아무것도 남기지 않는다». 중복은 접는다.
    */
   const nested =
     depth === 0 && Array.isArray(o.errors)
