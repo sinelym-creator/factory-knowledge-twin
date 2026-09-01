@@ -64,6 +64,7 @@ pwsh -NoProfile -Command "& ./infra/health-check.ps1 `
 | `ai-api(local)` | 호스트 포트로 `/api/health` 200 · `status` · 의존 2종 |
 | `ai-api(funnel)` | **로컬과 다른 축**이다 — 로컬 200 + Funnel 실패 = 터널 문제 · 둘 다 실패 = 서비스 문제 |
 | `web` | 공개 셸 200 |
+| `retrieval` | 🔴 **pgvector 색인이 비어 있지 않은가**(D-16) — chunk 전건 임베딩 · 단일 모델. `-PgContainer` 를 줘야 잰다 |
 | `laptop` | 절전·최대절전 진입값 · Tailscale 서비스 |
 
 **종료 코드** — 「안 쟀다」와 「재 봤더니 나쁘다」를 같은 칸에 쓰지 않는다:
@@ -89,6 +90,17 @@ SKIP 1 = `fkt-deploy-ai-api` 의 **healthcheck 미정의** — 🔴 PASS 가 아
 `docker run` 형상인 한 계속 SKIP 이다.
 
 🔴 **17 PASS 는 「재부팅이 아무것도 안 깨뜨렸다」가 아니다.** 이 계측기가 재는 층만 초록이다.
+
+🔴 **그 문장이 D-16 에서 실제로 값을 치렀다**(E1 · 2026-09-01 16:26~19:11). 위 17 PASS 에는
+`retrieval` 행이 **없었다** — D-13 재구성이 seed 는 되살렸는데 T1-4 색인을 다시 돌리지 않아
+`document_chunk` 임베딩이 **0 건**이었고, 컨테이너·healthcheck·`/api/health` 200·seed 계수·
+neo4j 대조가 전부 초록인 채로 공개 Live 경로만 죽었다(`retrieval/vector.py:67`). 그래서
+`retrieval` 층을 계측기에 넣었다. **`-PgContainer` 를 안 주면 이 층은 SKIP 이고, SKIP 은
+`measured` 에 안 들어간다 — 안 준 채로 난 rc 0 은 「색인이 성하다」는 뜻이 아니다.**
+
+`retrieval` 행의 판정은 **기대 «건수»를 박지 않는다**(오늘의 59 는 seed 가 늘면 낡는다).
+검색이 요구하는 불변식만 본다 — `임베딩 > 0` · `임베딩 = chunk` · `모델 1종`. 이 셋이
+`vector.py:67`(0건)·`:70`(모델 섞임)이 우는 조건과 **같다**.
 
 ---
 
@@ -158,12 +170,17 @@ tailscale funnel status                      # 8443 = Funnel on · 기존 :3000 
 
 ### 4-1. 🔴 「1커맨드」는 아직 **없다**
 
-지금 서 있는 것은 **3단**이고, 순서가 규칙이다(migrate 가 seed 보다 «먼저»):
+지금 서 있는 것은 **4단**이고, 순서가 규칙이다(migrate 가 seed 보다 «먼저», seed 가 색인보다 «먼저»):
 
 ```powershell
 docker compose up -d                          # 1) 스택
 pwsh services/ai-api/db/migrate.ps1           # 2) 스키마 (001~005 순차)
 pwsh data/seed.ps1                            # 3) synthetic seed 생성 → 적재 → 검증
+# 4) 🔴 파생 색인 (T1-4) — seed 가 만들지 «않는다». 이 단이 빠지면 검색·Live 경로만 죽는다
+$env:PYTHONUTF8='1'
+$env:PGPORT='<이 스택의 게시 포트>'           # 🔴 아래 「포트 명시 의무」
+services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py
+services\indexer\.venv\Scripts\python.exe services\indexer\verify_index.py
 ```
 
 - **멱등**: `migrate.ps1` 은 `schema_migration` 이력을 읽어 적용분을 **건너뛴다**. 🔴 「전부 다시
@@ -171,6 +188,38 @@ pwsh data/seed.ps1                            # 3) synthetic seed 생성 → 적
   파일의 결과를 되감고 죽는다(실측 exit 1). 처음부터 세우려면 **DB 를 새로 만들고** 돌린다.
 - `seed.ps1` 은 seed 테이블 24종을 **TRUNCATE 후 재적재**한다 — 손으로 넣은 데이터는 사라진다.
   생성분은 random seed·기준 시각이 고정이라 같은 CSV 가 나온다(`data/generated/manifest.sha256`).
+
+#### 4단이 «왜» 따로 서 있는가 (D-16)
+
+`document_chunk.embedding` 은 seed 가 적재하는 **권위 원본이 아니라 파생 색인**이다(스펙 §4:
+PostgreSQL = 권위 원본 · pgvector = 파생). 그래서 `seed.ps1` 이 아무리 초록이어도 벡터는 0 일
+수 있고, **2026-09-01 에 실제로 그랬다**(D-13 재구성 뒤 16:26~19:11 공개 Live 경로 실패).
+「seed 계수 · neo4j 대조 · health ok」 **셋 다 벡터 0 을 못 본다** — 원본을 세는 축과 파생을
+세는 축이 다르기 때문이다.
+
+- 🔴 **포트 명시 의무.** `build_index.py` 의 DSN 기본 포트는 **5434**(`dsn_from_env`)이고 compose 는
+  `"${POSTGRES_PORT:-5434}:5432"` 다. 병렬 스택에서 포트를 안 주면 **다른 스택을 색인한다** —
+  실패하지 않고 «엉뚱한 DB 가 초록이 된다». `PGPORT`(또는 `--dsn`)를 반드시 명시하고, 값은
+  `docker port <postgres 컨테이너>` 로 **실측해서** 넣는다. 집행 사례: `PGPORT=5536`.
+- 🔴 **호스트에서 돈다.** ai-api 이미지에는 indexer 소스가 없다(`Dockerfile` 은 `COPY app ./app`
+  뿐) — 컨테이너 안 `python -m …` 형태는 **없다**. 호스트의 `services/indexer/.venv` 를 쓴다.
+- **부작용**: `DELETE FROM document_chunk` → 전량 INSERT 를 **단일 트랜잭션**으로 한다(UPDATE 아님).
+  중복 위험 0 · 커밋 전까지 옛 상태가 보이므로 추가 다운타임 없음. `index_build` 원장만 실행마다
+  append 된다(감사 기록이라 정상). 벡터 인덱스는 HNSW 라 재빌드 뒤 별도 작업이 필요 없다.
+- **검증 SQL 1줄** — 실행 «전후» 같은 줄을 돌려 값이 바뀌는지 본다:
+
+  ```sql
+  SELECT count(*) chunks, count(embedding) embedded, count(DISTINCT embedding_model) models FROM document_chunk;
+  ```
+
+  | | 기대 |
+  |---|---|
+  | 색인 전(재구성 직후) | `0 · 0 · 0` |
+  | 색인 후 | **`59 · 59 · 1`** (2026-09-01 집행 실측: 59/59 · success 45 · skipped 15 · 23s) |
+
+  🔴 **59 는 오늘의 seed 값이지 불변식이 아니다.** 판정으로 삼을 것은 숫자가 아니라
+  `embedded > 0` · `embedded = chunks` · `models = 1` 이다(`verify_index.py` 와
+  `infra/health-check.ps1` 의 `retrieval` 행이 그 형태로 본다).
 
 ### 4-2. 볼륨 자리 — 🔴 워크트리 «안»에 두지 않는다 (D-13)
 
@@ -187,6 +236,21 @@ VOLUME_ROOT=<리포 밖 고정 경로>/.volumes-<좌석>
 
 🔴 postgres 는 **named volume** 이라 `COMPOSE_PROJECT_NAME` 만 달라도 자동 분리된다. **neo4j·models 는
 아직 bind** 라 `VOLUME_ROOT` 를 빠뜨리면 두 스택이 같은 데이터를 문다.
+
+#### 재구성(D-13 형) 게이트 — 🔴 **벡터 계수 행을 반드시 센다** (D-16)
+
+볼륨을 잃고 다시 세운 뒤에는 아래를 **행으로** 확인한다. 앞 세 줄이 전부 초록이어도 넷째 줄이
+빨강일 수 있다 — 2026-09-01 이 그 실증이다.
+
+| # | 무엇을 센다 | 이 행이 «못» 보는 것 |
+|---|---|---|
+| 1 | seed 계수 | 파생 색인 — seed 는 `document_chunk.embedding` 을 만들지 않는다 |
+| 2 | neo4j 대조 | 같음 (그래프 축이라 벡터를 안 본다) |
+| 3 | `/api/health` 200 · health-check rc 0 | `-PgContainer` 를 안 줬으면 색인 층이 **SKIP** 이라 역시 못 본다 |
+| 4 | 🔴 **벡터 계수** — `SELECT count(*), count(embedding), count(DISTINCT embedding_model) FROM document_chunk` | — (이 행이 그 축이다) |
+
+**🔴 「seed 계수 · neo4j 대조 · health ok」 셋은 벡터 0 을 못 본다.** 재구성 뒤 4단(§4-1)을
+돌리지 않으면 위 1~3 이 초록인 채로 검색·Live 경로만 죽는다(16:26~19:11 공개 Live 실패 · E1).
 
 ### 4-3. 초기화
 
@@ -230,6 +294,8 @@ main 승격도 못 한다** — 데모 전날에 배포를 몰아 쓰지 않는�
 | Gate 6 6행(FastAPI·PG·Neo4j·Tunnel OFF · Model timeout · 동시 요청 초과) | **미실측** | 외부 대상 파괴 불가 · 관측자 축 설계 미정 · 앞 회차 근거 미확인 |
 | 재부팅 후 **Funnel 설정 복원** | **미실측** | 재부팅 «후» `funnel status` 를 확인한 적이 없다 |
 | 재부팅 실측 횟수 | **1회** | 1회는 «되더라»이지 «된다»가 아니다 |
-| 「새 클론 → 1커맨드」 | **미실재** | 지금은 3단(§4-1). 부트스트랩 1본은 아직 없다 |
+| 「새 클론 → 1커맨드」 | **미실재** | 지금은 4단(§4-1). 부트스트랩 1본은 아직 없다 |
+| `retrieval` 행을 **실제 컨테이너에 대고** 울려 본 것 | **미실측** | 이 개정은 컨테이너 무접촉 조건에서 썼다 — `docker exec` 를 한 번도 하지 않았다. 판정식은 «참»(`59\|59\|1`→PASS)과 «거짓»(`59\|0\|0`·`0\|0\|0`·`59\|58\|1`·`59\|59\|2`→FAIL)·«계측 실패»(빈 문자열·psql 오류→SKIP)로 따로 울려 확인했고 파일은 parse OK 다. 남은 것은 실환경 1회 |
+| 4단을 **새 클론에서 처음부터** 돌린 실측 | **미실측** | 오늘 집행은 이미 선 스택에 4단만 다시 돌린 것이다(59/59/45 · 23s) |
 | clean environment 를 **다른 경로**에서 실제로 세운 실측 | **미실측** | T5-5 범위 |
 | ai-api 컨테이너 healthcheck | **정의 없음** | `docker run` 형상이라 계측기가 SKIP 을 낸다 — 「초록」이 아니다 |
