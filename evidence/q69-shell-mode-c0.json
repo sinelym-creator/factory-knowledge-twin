@@ -1,0 +1,226 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "startedAt": "2026-09-01T09:58:03.979Z",
+ "question": "지난 24시간 설비 이상 신호를 요약해줘",
+ "api": [
+  {
+   "ms": 3705,
+   "url": "/api/live/status",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5097,
+   "url": "/enter",
+   "status": 303,
+   "type": null
+  },
+  {
+   "ms": 9233,
+   "url": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 9795,
+   "url": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 9800,
+   "url": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 9895,
+   "url": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 9930,
+   "url": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10745,
+   "url": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10758,
+   "url": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10795,
+   "url": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10797,
+   "url": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10843,
+   "url": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10847,
+   "url": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 10847,
+   "url": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 19128,
+   "url": "/api/live/status",
+   "status": 200,
+   "type": "application/json"
+  }
+ ],
+ "ws": [],
+ "flips": [
+  {
+   "ms": 1977,
+   "tag": "entry",
+   "badge": "◌확인 중",
+   "offer": false,
+   "banner": false,
+   "url": "/"
+  },
+  {
+   "ms": 3751,
+   "tag": "entry",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/"
+  },
+  {
+   "ms": 5896,
+   "tag": "entry",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/overview"
+  }
+ ],
+ "liveStatus": {
+  "status": 200,
+  "body": {
+   "online": false,
+   "checkedAt": "2026-09-01T09:58:22.903097Z"
+  }
+ },
+ "consoleCandidates": {
+  "url": "/overview",
+  "inputs": [],
+  "buttons": [
+   {
+    "tag": "button",
+    "testid": "reset-button",
+    "ph": null,
+    "type": null,
+    "text": "⟲ 세션 리셋",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": null,
+    "text": "✕",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": "start-from-headline",
+    "ph": null,
+    "type": "button",
+    "text": "조사 시작 ▸",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "전체 (12대)",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 1 (4대)LN-A-01",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 2 (4대)LN-A-02",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 3 (4대)LN-A-03",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "✕",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": "start-from-alarm",
+    "ph": null,
+    "type": "button",
+    "text": "조사 시작 ▸",
+    "disabled": false
+   }
+  ],
+  "links": [
+   "/overview",
+   "/incidents/INC-2025-019",
+   "/compare",
+   "/overview",
+   "/incidents/INC-2025-019",
+   "/compare",
+   "/overview?intro=1"
+  ]
+ },
+ "stimulus": {
+  "skipped": "입력 후보 0 — 이 vantage 에서 질문을 보낼 자리를 못 찾았다"
+ },
+ "tsHeaderHits": [],
+ "notes": [
+  "첫 응답 200 1969ms · x-vercel-id=icn1::iad1::72hhc-1788256683625-6caec82a2c59"
+ ],
+ "endedAt": 19149
+}
