@@ -24,11 +24,11 @@ size_limit: 4KB
 | `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
 | `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
 | `packages/ontology/` | 온톨로지·투영 버전 정본(`ontology-version.json` §3.3 · `projection-version.json` SemVer+manifest 지문 — T1-4·T1-5) | 스펙·manifest 개정 동반 |
-| `apps/web-console/` | Next.js 웹 콘솔(A안 AppShell·P0 6라우트·세션 가드 proxy·`lib/contract.ts` 단일 fetch 표면·`scripts/contract-surface.mjs` 검사기 — T1-9) · **T4-2a 정적 replay**: `lib/static-replay/{index,run-id,visitor-state}.ts`(정적 이벤트 주입·mode 치환·`STATIC-GS-01` 상수·browser storage) · `components/static-visitor.tsx` · `scripts/harvest-static-replay.mjs`(굳히기 도구 · ai-api 읽기만 · 사람 1회) · `scripts/copy-static-replay.mjs`(prebuild/predev · sha256 잠금 · 네트워크 0) · 산출물 `lib/static-replay/generated/` gitignore(PR#216·#220) · `lib/boot-check.ts` = FKT_API_BASE + FKT_PUBLIC_HTTPS 빌드 상수 대조(Q-37·D-4 · PR#222) | 화면 구현 진행 시 |
+| `apps/web-console/` | Next.js 웹 콘솔(A안 AppShell·P0 6라우트·세션 가드 proxy·`lib/contract.ts` 단일 fetch 표면·`scripts/contract-surface.mjs` 검사기 — T1-9) · **T4-2a 정적 replay**: `lib/static-replay/{index,run-id,visitor-state}.ts`(정적 이벤트 주입·mode 치환·`STATIC-GS-01` 상수·browser storage) · `components/static-visitor.tsx` · `scripts/harvest-static-replay.mjs`(굳히기 도구 · ai-api 읽기만 · 사람 1회) · `scripts/copy-static-replay.mjs`(prebuild/predev · sha256 잠금 · 네트워크 0) · 산출물 `lib/static-replay/generated/` gitignore(PR#216·#220) · `lib/boot-check.ts` = FKT_API_BASE + FKT_PUBLIC_HTTPS 빌드 상수 대조(Q-37·D-4 · PR#222) | 화면 구현 진행 시 · `vercel.json`(T4-3 ⓓ · Root Directory 기준 · install/build 명령 고정 — PR#268) |
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
 | `services/indexer/` | 색인 파이프라인(동결 chunk 정책 정본 `FROZEN_POLICY`·probe 도구 2종 — T1-4) | S3 색인 진행 시 |
 | `services/projector/` | Neo4j 투영(manifest 코드 정본 `--check-spec`·build·verify 값 전량 대조 — T1-5) | 스펙 §2.1 개정 동반 |
-| `infra/` | 로컬 인프라 보조(postgres init SQL 등) | 환경 변경 시 |
+| `infra/` | 로컬 인프라 보조(postgres init SQL) · **T4-3 배포 운영 자산(PR#268·#270·#273)**: `tailscale-funnel-runbook.md`(Funnel 절차·헤더 실측 E1/E2·외부 vantage 판별) · `vercel-deploy.md`(Root Directory·env 갈래·배포 후 확인 3줄) · `laptop-operating-conditions.md`(§14.4 노트북 조건·재부팅 확인법·§4-bis 감시) · `health-check.ps1`(4상태 rc · `-Containers` 실물 이름) · `container-budget-watch.ps1`(예산 계기 · 망 단위 벌 · rc 0/1/2/3) + `fixtures/budget-watch/*.json`(자기 계측 표본 4) | 배포 형상·운영 규칙 변경 시 |
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
 | `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
 | `tests/graph/` | 그래프 투영 독립 검증(스펙 독립 파싱 `graph_verify` 18축 · 끊김/변조 드릴 `graph_drill` 22축 · 러너 — T1-5 검증) | 투영 개정 동반 |
