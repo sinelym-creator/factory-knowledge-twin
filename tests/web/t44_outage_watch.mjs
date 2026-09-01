@@ -35,13 +35,26 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const now = () => new Date().toTimeString().slice(0, 8);
 
+/**
+ * 경로별 클라 상한. 🔴 **상한은 관측창이지 판정선이 아니다** — 상한에 걸린 값은
+ * 「대상이 그만큼 걸렸다」가 아니라 「내가 거기서 그만뒀다」다(21대 창의 `/enter` 20.0s 가
+ * 정확히 그 모양이었고, 그래서 Q-70 의 진짜 값을 못 봤다).
+ * Q-70 재실측은 «≤8s 인가»를 물으므로, 처방이 안 먹은 세계의 값(≈25s)까지 담을 수 있어야
+ * 「빠르다」와 「내 상한에 잘렸다」가 갈린다 — 그래서 `/enter` 만 45s 로 연다(발주 ≥40s).
+ * 나머지 두 경로는 20s 유지: 21대 실측 최대가 11.0s 라 창을 넓힐 이유가 없고, 넓히면
+ * 사이클이 gap 을 넘겨 창 자체가 흐려진다.
+ */
+const CLIENT_CAP_MS = { "/enter": 45000, default: 20000 };
+
 async function hit(path, init = {}) {
+  const cap = CLIENT_CAP_MS[path] ?? CLIENT_CAP_MS.default;
   const t0 = performance.now();
+  const startedAt = now();
   try {
     const res = await fetch(BASE + path, {
       redirect: "manual",
       cache: "no-store",
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(cap),
       ...init,
     });
     const cookies = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
@@ -60,13 +73,26 @@ async function hit(path, init = {}) {
       ok: true,
       status: res.status,
       ms: Math.round(performance.now() - t0),
+      // 🔴 자취 — 자극은 벽시계인데 관측은 부하에 끌려간다. 「언제 묻기 시작했나」가 없으면
+      //    창을 걸친 사이클을 어느 쪽에도 귀속시키지 못한다.
+      startedAt,
+      capMs: cap,
       vercelId: res.headers.get("x-vercel-id"),
       tsHeaders: [...res.headers.keys()].filter((k) => k.startsWith("tailscale-")),
       sid: cookies.some((c) => c.startsWith("fkt_sid=")),
       body,
     };
   } catch (e) {
-    return { ok: false, ms: Math.round(performance.now() - t0), error: `${e.name}: ${e.message}` };
+    // 🔴 상한에 걸린 실패는 「대상의 값」이 아니다 — 그 사실을 값 옆에 적어 둔다.
+    const ms = Math.round(performance.now() - t0);
+    return {
+      ok: false,
+      ms,
+      startedAt,
+      capMs: cap,
+      cappedOut: e.name === "TimeoutError" && ms >= cap - 500,
+      error: `${e.name}: ${e.message}`,
+    };
   }
 }
 
@@ -104,11 +130,21 @@ for (let i = 1; i <= CYCLES; i++) {
     hit("/api/live/status"),
   ]);
   const s = await screen();
-  const rec = { cycle: i, at: startedAt, health: h, enter: e, live: l, screen: s };
+  const endedAt = now();
+  const rec = {
+    cycle: i,
+    at: startedAt,
+    endedAt,
+    durationMs: Date.now() - t0,
+    health: h,
+    enter: e,
+    live: l,
+    screen: s,
+  };
   cycles.push(rec);
   console.log(
-    `${LABEL} #${i} ${startedAt}  health=${h.ok ? h.status : h.error} ${h.ms}ms` +
-      ` | enter=${e.ok ? (e.sid ? "ISSUED" : e.status) : e.error} ${e.ms}ms` +
+    `${LABEL} #${i} ${startedAt}→${endedAt}  health=${h.ok ? h.status : h.error} ${h.ms}ms` +
+      ` | enter=${e.ok ? (e.sid ? "ISSUED" : e.status) : e.error} ${e.ms}ms${e.cappedOut ? "(상한컷)" : ""}` +
       ` | live=${l.ok ? l.status : l.error} ${l.ms}ms` +
       ` | 미연결=${s.offlineSeen ? "있음" : "없음"} 배지=${s.badges.join(",") || "-"}`,
   );
