@@ -3,6 +3,8 @@
  *   ① D-11 완화 (C) · `call()`         : GET · 상대 경로 · 502/503 만 1회 되묻는다 (①~⑧)
  *   ② D-12 완화   · `createSession()`  : «미도달»(status 없음) 만 400·800ms 로 2회 되묻고,
  *                                        실패 회차마다 `console.warn` 한 줄을 남긴다 (⑨~⑪)
+ *   ③ D-12b       · `causeCodeOf()`    : undici 예외의 «속»에서 코드 토큰만 꺼내 warn 에 싣고,
+ *                                        호스트명은 싣지 않는다 (⑫~⑮)
  *
  *   node --experimental-strip-types scripts/retry-drill.mjs
  *   (pnpm retry:drill)
@@ -71,6 +73,8 @@ function stage(...responses) {
     if (r.throws) {
       const e = new Error("fetch failed");
       e.name = r.throws;
+      // 🔴 undici 는 «속»에 사유를 넣어 던진다 — 겉껍질은 언제나 `TypeError` 다(D-12b).
+      if (r.cause !== undefined) e.cause = r.cause;
       throw e;
     }
     const headers = { "content-type": "application/json", ...(r.headers ?? {}) };
@@ -81,8 +85,11 @@ function stage(...responses) {
 
 const ok = (body) => ({ status: 200, body });
 const fail = (status, headers) => ({ status, headers });
-/** 미도달(연결 실패) — `attempt()` 의 catch 축으로 접힌다: `why = e.name` · status 없음. */
-const unreachable = (name = "TypeError") => ({ throws: name });
+/**
+ * 미도달(연결 실패) — `attempt()` 의 catch 축으로 접힌다: `why = e.name` · status 없음.
+ * `cause` 를 주면 undici 가 «속»에 사유를 넣어 던지는 형태를 재현한다(D-12b).
+ */
+const unreachable = (name = "TypeError", cause) => ({ throws: name, cause });
 
 // ── 판정 ────────────────────────────────────────────────────────────────
 let pass = 0;
@@ -91,6 +98,9 @@ let retriedSeen = 0;
 /** D-12 축 계수 — `call()` 의 재시도(위)와 «따로» 센다. 한쪽이 다른 쪽을 증명하지 않는다. */
 let enterRetriedSeen = 0;
 let warnLinesSeen = 0;
+/** D-12b 축 계수 — cause 코드가 «실제로 뽑힌» 회차 · 호스트 누출을 «실제로 본» 회차. */
+let causeSeen = 0;
+let hostLeakChecked = 0;
 const lines = [];
 
 function check(name, cond, detail) {
@@ -265,6 +275,82 @@ async function timed(fn) {
   );
 }
 
+// ── ⑫ cause 가 코드를 들고 온다 : warn 이 «무엇이라» 우는지 말한다 ────────
+{
+  stage(
+    unreachable("TypeError", { code: "ENOTFOUND", syscall: "getaddrinfo", errno: -3008 }),
+    ok({ sessionId: "s-3" }),
+  );
+  const [r] = await timed(() => createSession("http://api.test"));
+  if (/ENOTFOUND/.test(warns[0] ?? "")) causeSeen += 1;
+  check(
+    "⑫ cause 코드가 warn 에 실린다",
+    r.state === "ok" &&
+      warns.length === 1 &&
+      /TypeError ENOTFOUND/.test(warns[0]) &&
+      /syscall=getaddrinfo/.test(warns[0]) &&
+      /errno=-3008/.test(warns[0]) &&
+      /attempt=1\/3/.test(warns[0]),
+    `warn 「${warns[0] ?? "-"}」`,
+  );
+}
+
+// ── ⑬ cause 가 없으면 «지어내지 않는다» : 문면이 D-12 그대로다 ────────────
+{
+  stage(unreachable("TypeError"), ok({ sessionId: "s-4" }));
+  const [r] = await timed(() => createSession("http://api.test"));
+  check(
+    "⑬ cause 없음 = 붙이지 않는다",
+    r.state === "ok" &&
+      warns.length === 1 &&
+      warns[0] === "[enter] createSession failed TypeError attempt=1/3",
+    `warn 「${warns[0] ?? "-"}」(코드 토큰이 없어야 한다)`,
+  );
+}
+
+// ── ⑭ AggregateError : 코드가 `errors[]` 안에 있어도 꺼낸다 ───────────────
+{
+  stage(
+    unreachable("TypeError", {
+      name: "AggregateError",
+      errors: [{ code: "ECONNREFUSED", syscall: "connect", errno: -111 }],
+    }),
+    ok({ sessionId: "s-5" }),
+  );
+  const [r] = await timed(() => createSession("http://api.test"));
+  if (/ECONNREFUSED/.test(warns[0] ?? "")) causeSeen += 1;
+  check(
+    "⑭ AggregateError 속 코드",
+    r.state === "ok" && warns.length === 1 && /ECONNREFUSED/.test(warns[0]),
+    `warn 「${warns[0] ?? "-"}」(바깥 code 는 비어 있고 errors[0] 에만 있다)`,
+  );
+}
+
+// ── ⑮ 🔴 호스트명은 로그에 나오지 않는다 (공개 경계 §15.2) ────────────────
+//    실제 형태가 `getaddrinfo ENOTFOUND <host>` 라 «메시지 그대로» 실으면 호스트가 샌다.
+{
+  const host = "fkt-secret-host.ts.net";
+  stage(
+    unreachable("TypeError", { message: `getaddrinfo ENOTFOUND ${host}` }),
+    ok({ sessionId: "s-6" }),
+  );
+  const [r] = await timed(() => createSession("http://api.test"));
+  if (/ENOTFOUND/.test(warns[0] ?? "")) causeSeen += 1;
+  const line = warns[0] ?? "";
+  hostLeakChecked += 1;
+  check(
+    "⑮ 코드만 남고 호스트명은 안 남는다",
+    r.state === "ok" &&
+      warns.length === 1 &&
+      /ENOTFOUND/.test(line) &&
+      !line.includes(host) &&
+      !line.includes("ts.net") &&
+      // 🔴 「메시지 원문이 통째로 실렸는가」를 잡는 축이다(`syscall=getaddrinfo` 는 별개 · ⑫).
+      !line.includes("getaddrinfo ENOTFOUND"),
+    `warn 「${line}」(호스트 「${host}」 미포함이어야 한다)`,
+  );
+}
+
 // 🔴 계측기 원복 — 아래 결과 출력은 «가로채지 않은» console 로 나가야 한다.
 console.warn = realWarn;
 
@@ -276,15 +362,22 @@ const total = pass + failed;
  *    서로를 대신 증명하지 못한다. warn 줄 수도 함께 센다 — 관측 축이 0줄이면 이 티켓의
  *    처방 절반(관측)이 없는 것이다.
  */
-const selfOk = total >= 11 && retriedSeen >= 1 && enterRetriedSeen >= 1 && warnLinesSeen >= 5;
+const selfOk =
+  total >= 15 &&
+  retriedSeen >= 1 &&
+  enterRetriedSeen >= 1 &&
+  warnLinesSeen >= 5 &&
+  causeSeen >= 3 &&
+  hostLeakChecked >= 1;
 
 console.log(
-  "retry-drill — D-11 완화 (C) `call()` + D-12 완화 `createSession()` · lib/contract.ts 를 그대로 돌린다\n",
+  "retry-drill — D-11 (C) `call()` + D-12 `createSession()` + D-12b cause · lib/contract.ts 를 그대로 돌린다\n",
 );
 console.log(lines.join("\n"));
 console.log(
-  `\n  자기 검증  케이스 ${total}건(기대 ≥11) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
-    `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) → ${selfOk ? "PASS" : "FAIL"}`,
+  `\n  자기 검증  케이스 ${total}건(기대 ≥15) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
+    `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) · ` +
+    `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥3) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥1) → ${selfOk ? "PASS" : "FAIL"}`,
 );
 console.log(`\n결과: ${pass}/${total} 통과 · 실패 ${failed}건`);
 
