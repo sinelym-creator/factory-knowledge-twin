@@ -28,7 +28,7 @@ size_limit: 4KB
 | `services/ai-api/` | FastAPI 백엔드(+ db/migrations) | S2~ 구현 |
 | `services/indexer/` | 색인 파이프라인(동결 chunk 정책 정본 `FROZEN_POLICY`·probe 도구 2종 — T1-4) | S3 색인 진행 시 |
 | `services/projector/` | Neo4j 투영(manifest 코드 정본 `--check-spec`·build·verify 값 전량 대조 — T1-5) | 스펙 §2.1 개정 동반 |
-| `infra/` | 로컬 인프라 보조(postgres init SQL) · **T4-3 배포 운영 자산(PR#268·#270·#273)**: `tailscale-funnel-runbook.md`(Funnel 절차·헤더 실측 E1/E2·외부 vantage 판별) · `vercel-deploy.md`(Root Directory·env 갈래·배포 후 확인 3줄) · `laptop-operating-conditions.md`(§14.4 노트북 조건·재부팅 확인법·§4-bis 감시) · `health-check.ps1`(4상태 rc · `-Containers` 실물 이름) · `container-budget-watch.ps1`(예산 계기 · 망 단위 벌 · rc 0/1/2/3) + `fixtures/budget-watch/*.json`(자기 계측 표본 4) | 배포 형상·운영 규칙 변경 시 |
+| `infra/` | 로컬 인프라 보조(postgres init SQL) · **T4-3 배포 운영 자산(PR#268·#270·#273)**: `tailscale-funnel-runbook.md`(Funnel 절차·헤더 실측 E1/E2·외부 vantage 판별) · `vercel-deploy.md`(Root Directory·env 갈래·배포 후 확인 3줄) · `laptop-operating-conditions.md`(§14.4 노트북 조건·재부팅 확인법·§4-bis 감시) · `health-check.ps1`(4상태 rc · `-Containers` 실물 이름) · `container-budget-watch.ps1`(예산 계기 · 망 단위 벌 · rc 0/1/2/3) + `fixtures/budget-watch/*.json`(자기 계측 표본 4) · **D-13 복구 자산(PR#323)**: `neo4j-restore.ps1`(논리 덤프 3본 → 빈 neo4j 재적재 · UNIQUENESS 만 · `__rid` 임시키 · 자기 검증 309/448·라벨·관계 분포 · 비밀번호는 컨테이너 안에서만 · 순서 = 새 볼륨이면 `migrate.ps1` 선행) | 배포 형상·운영 규칙 변경 시 |
 | `tests/contract/` | 계약 테스트 harness(러너·케이스·strict coverage) | 계약 개정 동반 |
 | `tests/schema/` | 스키마 제약 probe(트랜잭션 롤백·잔여물 0) | 스키마 개정 동반 |
 | `tests/graph/` | 그래프 투영 독립 검증(스펙 독립 파싱 `graph_verify` 18축 · 끊김/변조 드릴 `graph_drill` 22축 · 러너 — T1-5 검증) | 투영 개정 동반 |
