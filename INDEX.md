@@ -38,7 +38,7 @@ size_limit: 4KB
 | `tests/data/` | seed 무결성 probe 28건(C-21~C-28 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 27판정·증분/절대 이축 — G-3·E-7) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
-| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-2b · t3-5-wo-screen #225 · t4-2a #241 · t4-2b-live-guard #250·#260 · t4-4-external-gate6 골격 #256) · 🔴 `t4-4-stimulus-equivalence-control.md`(#264 · §3-2 치환 대조군 정본 = 클라이언트 축 한정·SSR 층 갈림) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 | 검증 시 |
+| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-2b · t3-5-wo-screen #225 · t4-2a #241 · t4-2b-live-guard #250·#260 · t4-4-external-gate6 골격 #256 · t4-3-public-rc(C 칸 재부팅 한정 · #298)) · 🔴 `t4-4-stimulus-equivalence-control.md`(#264 · §3-2 치환 대조군 정본 = 클라이언트 축 한정·SSR 층 갈림) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 | 검증 시 |
 | `.workspace/handoffs/` | 오케 선작성 발주문(세대 승계 · 트리거 대기 문면 · 팀 채널 발신 시 그대로) — `suzaku8-orders-20260831.md`(§A T4-2b wake · §B T4-2a 검증) · `suzaku9-orders-20260831.md`(§A D-3 · §B T4-2a 2조각 · §C T3-5 ②′ · §D PR-1 검증 · §E 리바이2 15대 wake · §F 재부팅 후 10대 1착) · `suzaku10-orders-20260831.md`(§A T4-1 ②′ · §B T4-2b PR-1 서버 축 · §C PR-1 검증 · §D 완결·관문 서식 · §E 11대 1착) | 교대·마감 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |
 | `.claude/context/checkpoint.md` | 재개점(로컬 전용·비추적 · 백지 재작성) | 세션 마감 시 |
