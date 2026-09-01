@@ -97,7 +97,20 @@ export async function proxy(req: NextRequest) {
 
   if (session) {
     // 이미 세션이 있으면 `/`는 머무는 곳이 아니라 지나가는 곳이다.
-    return isEntry ? NextResponse.redirect(new URL("/overview", req.url)) : NextResponse.next();
+    //
+    // 🔴 **단, `pending` 은 «선» 세션이 아니다.** 그 id 는 브라우저가 지어낸 것이라 ai-api 가
+    //    모르고, 그 방문자의 `/api/*` 는 전건 401 이다. 앞판은 `pending` 도 여기서 `/overview`
+    //    로 되돌려보냈고, 그래서 **재발급을 부르는 유일한 화면(`/` 의 입장 마운트)에 영영
+    //    닿지 못했다** — `/enter` 핸들러가 재시도를 하게 고쳐도 부르는 사람이 없었다.
+    //    이 한 조건이 그 사슬을 잇는다(새 화면·새 버튼 0 · 기존 경로 그대로).
+    //
+    // 🔴 되돌이 위험을 «따로» 봤다: `pending` 으로 `/` 에 서면 입장 마운트가 `POST /enter` 를
+    //    부르고, 성공이든 실패든 그 다음 항해는 `/overview` 다. `/overview` 는 세션이 있으면
+    //    (pending 이라도) 아래 `next()` 로 지나가고 `/` 로 되돌려보내지 않는다 —
+    //    즉 «/ → /overview» 는 있어도 «/overview → /» 가 없다. 순환이 성립할 변이 없다.
+    return isEntry && session.origin === "api"
+      ? NextResponse.redirect(new URL("/overview", req.url))
+      : NextResponse.next();
   }
 
   // 🔴 세션이 없어도 딥링크 2라우트는 «그대로» 연다. 여기서 세션을 만들어 주지도 않는다 —
