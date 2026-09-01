@@ -46,3 +46,9 @@
 - D-13 closed (2026-09-01): deploy DB bind volumes deleted by a worktree cleanup order; neo4j rescued via logical dump (309/448) and reloaded, postgres regenerated (seed fixed); volumes moved outside worktrees; rule codified (mounts check before worktree removal).
 - D-12e promoted (main 20f7f6c): server fetch registration moved to a globalThis slot; install axis partially PASS (20/20 boots), rescue axis undecided (no contaminated window); 5-row verdict table adopted.
 - D-14 registered and mitigated: Vercel daily deployment cap (100) exhausted by lane preview builds; lane/* preview disabled (#331); push batching and <=4 promotions/day adopted.
+
+## 2026-09-01 (rotated from PROGRESS on 2026-09-02)
+
+- D-14 mitigation landed: `lane/*` preview deployments disabled in `apps/web-console/vercel.json` (#331).
+- T4-4 Tunnel OFF row measured externally (conditional PASS: screen shows disconnected, health/live 500, immediate recovery); Q-70 slow `/enter` failure filed (#333).
+- T5-4 complete: deployment runbook `docs/deployment/runbook.md` (restart policy, Funnel OFF/ON measurements, Gate 6 rows, clean-env steps) (#335).
