@@ -29,7 +29,8 @@
 - T2-4 completed (29/31): replay fixtures 32 events (unprocessed recording, 2-field substitution, dependency-free replay proven), V-8/V-9 corrections (self-confirming control, Korean word-boundary miss — third V-1 recurrence), recheck-matrix reproducer. PR#124-129 (08-30).
 - T2-5 completed (30/31): WO draft CRUD/approval/R12 server enforcement (impl PR#134) + independent verification PASS (axes ⓪-⑦, new wo_shape_drill, 5 net-defect self-reports — 0 defects in the landed change). PR#134, #137 (08-30).
 
-## 2026-09-01 (rotated from PROGRESS done)
+## 2026-09-01
+- (rotated from PROGRESS) ✅ **D-15 종결(16대)** — Public 리포 슬래시형 개인 경로 1줄 마스킹 + CI/드릴 정규식 사정거리 보강(#332 `cf38c9c`) (rotated from PROGRESS done)
 
 - D-10 closed (public shell cold-entry 2s cap -> pending session; fix promoted, external PASS) and Q-65 closed (CI strict-coverage + validator type-array gap).
 - Q-30 closed: CI 20+ consecutive red had two layers (secret false-positive hiding a real personal path); both removed.
