@@ -14,15 +14,19 @@
          총계만 맞고 분포가 틀린 적재는 총계만 보는 검사에서 초록이 된다.
 
     사용:
-      pwsh infra/neo4j-restore.ps1 -Container fkt-t15-neo4j-1 -DryRun     # 문장만 세어 본다
-      pwsh infra/neo4j-restore.ps1 -Container fkt-t15-neo4j-1             # 실제 적재
+      pwsh infra/neo4j-restore.ps1 -Container <neo4j 컨테이너> -DryRun    # 문장만 세어 본다
+      pwsh infra/neo4j-restore.ps1 -Container <neo4j 컨테이너>            # 실제 적재
+      # 구조본 위치가 다르면 -RescueDir <경로> — 기본값은 «리포의 형제» _rescue 다
 
     종료 코드: 0 = 적재 + 대조 일치 · 1 = 대조 불일치 · 2 = 입력·전제 불충족(적재 전 중단)
 #>
 [CmdletBinding()]
 param(
     [string] $Container = 'fkt-senku2-t15-neo4j-1',
-    [string] $RescueDir = 'C:\Users\sinel\repos\_rescue',
+    # 🔴 **개인 절대경로를 기본값에 두지 않는다**(공개 경계 §15.2 · CI hygiene 게이트가 잡는다).
+    #    구조본은 리포 «형제» 디렉토리에 둔다 — 리포 «안»에 두면 워크트리 정리에 함께 쓸려 가고,
+    #    이 스크립트가 존재하는 이유가 바로 그 사고다.
+    [string] $RescueDir = (Join-Path $PSScriptRoot '..\..\_rescue'),
     [string] $NodesFile = 'neo4j-nodes-1558.json',
     [string] $RelsFile = 'neo4j-rels-1558.json',
     [string] $SchemaFile = 'neo4j-schema-1559.json',
