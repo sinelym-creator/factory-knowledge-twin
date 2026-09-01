@@ -101,10 +101,26 @@ for (const name of ["Pixel 7", "iPhone 13"]) {
     test.use({ ...layoutOf(name) });
 
     test(`${name} — ① overview alert 가 «닿는다»`, async ({ page }) => {
+      // 🔴 외부 URL 은 왕복이 다르다 — 준비(적재)와 판정(요소)이 30s 한 시계를 나눠 쓰면
+      //    느린 링크에서 판정이 시간에 쫓겨 죽는다. 그 빨강은 대상이 아니라 내 예산이다.
+      test.setTimeout(90_000);
       await enter(page);
-      await page.waitForLoadState("networkidle");
+      // 🔴 **«가라앉히기»와 «재기»를 나눈다.** `networkidle` 은 재는 것이 아니라 가라앉히는
+      //    대기인데, 외부 URL 에서는 Next 의 RSC prefetch 가 계속 떠서 이 한 줄이 예산을
+      //    통째로 먹었다(T4-4 실측: 같은 적재에서 alarm-card 는 **4,075ms** 에 보였고
+      //    networkidle 은 그 **뒤** 495ms 에 왔다 — 즉 화면은 진작 와 있었다).
+      //    그래서 가라앉히기는 상한을 주고 «삼킨다» — 이 대기의 실패는 판정이 아니다.
+      await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+      // 🔴 그리고 화면이 «섰는가»부터 세운다. 이게 서야 아래 「알람 0건」이 **데이터 사실**이
+      //    된다 — 안 서면 그건 씨앗이 아니라 **렌더 실패**이고, skip 으로 접으면 결함이 초록
+      //    옆자리로 숨는다.
+      await expect(
+        page.getByTestId("kpi-strip"),
+        "overview 가 렌더되지 않았다 — 「알람 0건」을 씨앗 조건으로 읽을 수 없다",
+      ).toBeVisible({ timeout: 30_000 });
       const dock = page.getByTestId("alarm-dock");
       const cards = page.getByTestId("alarm-card");
+      await cards.first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
       // 🔴 세는 눈 — 알람이 0건이면 「보인다」를 잴 것이 없다(씨앗 조건).
       const n = await cards.count();
       test.skip(n === 0, "알람 0건 — 이 씨앗에서는 잴 것이 없다(초록 아님)");
