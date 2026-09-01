@@ -1,0 +1,34 @@
+[
+  {
+    "Name": "fkt-a-postgres-1",
+    "State": "exited",
+    "Image": "pgvector/pgvector:pg16",
+    "Networks": [
+      "fkt-a_default"
+    ]
+  },
+  {
+    "Name": "fkt-b-postgres-1",
+    "State": "exited",
+    "Image": "pgvector/pgvector:pg16",
+    "Networks": [
+      "fkt-b_default"
+    ]
+  },
+  {
+    "Name": "fkt-c-neo4j-1",
+    "State": "exited",
+    "Image": "neo4j:5-community",
+    "Networks": [
+      "fkt-c_default"
+    ]
+  },
+  {
+    "Name": "fkt-d-neo4j-1",
+    "State": "exited",
+    "Image": "neo4j:5-community",
+    "Networks": [
+      "fkt-d_default"
+    ]
+  }
+]
