@@ -94,7 +94,7 @@ tailscale funnel status
 🔴 ③ 을 노트북 자신에서 재면 안 된다 — 같은 tailnet 안에서는 Funnel 이 아니어도 붙는다(§2 의 `serve` 가 그 증거다).
 「밖에서 되는가」는 밖에서만 갈린다.
 
-🔴 `/api/health` 가 200 이라고 의존이 살아 있다는 뜻이 아니다(`docker-compose.yml:157` 성문(ai-api healthcheck 머리말) · Q-52 계보).
+🔴 `/api/health` 가 200 이라고 의존이 살아 있다는 뜻이 아니다(`docker-compose.yml:151` 성문(ai-api `healthcheck:` 머리말) · Q-52 계보).
 응답 본문의 `status`·`dependencies` 를 함께 읽는다 — **「health 초록 ≠ 데이터 있음」**.
 
 ### 3-4. 되돌리기
@@ -132,5 +132,5 @@ tailscale funnel status               # 🔴 :3000 항목이 살아 있는지 �
 |---|---|---|
 | Funnel 실제 외부 도달 | 실행 = 게이트 3(오케·재가분) · 구현 좌석은 실행 금지 | 게이트 3 직후 §3-3 ③ |
 | 재부팅 후 Funnel 설정 복원 | 재부팅은 운영자 영역(destructive) | T4-3 AC 「재부팅 1회 실측」 |
-| Funnel 이 붙이는 헤더(`X-Forwarded-For`·`X-Forwarded-Proto`) 의 실제 값 | Funnel 미기동 | 게이트 3 직후 1줄: 외부에서 `/api/health` 호출 → ai-api 로그의 client ip 대조. 🔴 이 값이 **`FKT_TRUST_FORWARDED_FOR` 를 켤지 말지의 유일한 근거**다(`docker-compose.yml:129`(`FKT_TRUST_FORWARDED_FOR`) · D-8) — 「프록시가 XFF 를 준다」는 문장은 **재기 전에는 가설(E4)** 이다 |
+| Funnel 이 붙이는 헤더(`X-Forwarded-For`·`X-Forwarded-Proto`) 의 실제 값 | Funnel 미기동 | 게이트 3 직후 1줄: 외부에서 `/api/health` 호출 → ai-api 로그의 client ip 대조. 🔴 이 값이 **`FKT_TRUST_FORWARDED_FOR` 를 켤지 말지의 유일한 근거**다(`docker-compose.yml:123` = `FKT_TRUST_FORWARDED_FOR` 줄 · D-8) — 「프록시가 XFF 를 준다」는 문장은 **재기 전에는 가설(E4)** 이다 |
 | 대역폭·동시 접속 한도 | 실측 자극 없음 | T4-4 Gate 6 |

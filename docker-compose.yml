@@ -84,13 +84,7 @@ services:
       timeout: 10s
       retries: 12
       start_period: 30s
-    # 🔴 기본은 «안 되살린다»(T4-3 ⓒ). 앞판은 세 줄 다 `unless-stopped` 였고, 그래서
-    #    「지금 전건 restart=no 다」는 상태가 `docker compose up` 한 번에 되감겼다 —
-    #    파일이 선언하는 값이 정본이지 마지막으로 돌린 `docker update` 가 정본이 아니다.
-    #    배포 3본을 «되살아나게» 하려면 배포 셸에서 한 줄로 명시한다(그 자리가 runbook 이다):
-    #      $env:FKT_RESTART_POLICY = "unless-stopped"
-    #    확인법 = `docker inspect ... .HostConfig.RestartPolicy.Name` 의 unless-stopped 계수
-    #    가 «배포 3본과 정확히 같은 수»여야 통과(0 도 초과도 실패).
+    # 🔴 재시작 정책 — 근거·확인법은 위 postgres 주석 참조.
     restart: ${FKT_RESTART_POLICY:-no}
 
   # ── ai-api (T4-1 ⓐ · baseline §14.2 노트북 Live 영역) ────────────────────────────
@@ -162,13 +156,7 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
-    # 🔴 기본은 «안 되살린다»(T4-3 ⓒ). 앞판은 세 줄 다 `unless-stopped` 였고, 그래서
-    #    「지금 전건 restart=no 다」는 상태가 `docker compose up` 한 번에 되감겼다 —
-    #    파일이 선언하는 값이 정본이지 마지막으로 돌린 `docker update` 가 정본이 아니다.
-    #    배포 3본을 «되살아나게» 하려면 배포 셸에서 한 줄로 명시한다(그 자리가 runbook 이다):
-    #      $env:FKT_RESTART_POLICY = "unless-stopped"
-    #    확인법 = `docker inspect ... .HostConfig.RestartPolicy.Name` 의 unless-stopped 계수
-    #    가 «배포 3본과 정확히 같은 수»여야 통과(0 도 초과도 실패).
+    # 🔴 재시작 정책 — 근거·확인법은 위 postgres 주석 참조.
     restart: ${FKT_RESTART_POLICY:-no}
 
 # ─────────────────────────────────────────────────────────────────────────────
