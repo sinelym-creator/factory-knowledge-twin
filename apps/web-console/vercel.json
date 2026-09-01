@@ -6,7 +6,16 @@
   "git": {
     "deploymentEnabled": {
       "lane/*": false,
-      "develop": false
+      "develop": false,
+      "feat/*": false,
+      "fix/*": false,
+      "refactor/*": false,
+      "chore/*": false,
+      "docs/*": false,
+      "test/*": false,
+      "ci/*": false,
+      "hotfix/*": false,
+      "release/*": false
     }
   }
 }
