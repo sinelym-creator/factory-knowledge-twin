@@ -34,7 +34,8 @@ FILE_ALLOW = re.compile(r"(^|/)\.env\.example$")
 SECRET = re.compile(
     "(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}"
     "|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)")
-WIN_PATH = re.compile("C:" + BS + BS + "+Users" + BS + BS + "+[A-Za-z]")
+# 🔴 구분자 두 형태(D-15) — 문자 클래스 안의 BS+BS 는 «리터럴 백슬래시»다.
+WIN_PATH = re.compile("C:[" + BS + BS + "/]+Users[" + BS + BS + "/]+[A-Za-z]")
 SKIP_PREFIX = ".github/workflows/"
 
 
@@ -57,10 +58,14 @@ def self_check() -> None:
     """🔴 대조군 — 스캐너가 «빨강을 낼 수 있는가». 못 내면 아래 초록은 뜻이 없다."""
     probe_secret = "ghp" + "_" + "SELFCHECK" + "0" * 24
     probe_path = "C:" + BS + "Users" + BS + "someone" + BS + "repo"
+    # 🔴 넓힌 갈래는 «반드시» 자기 표본을 갖는다 — 없으면 그 가지가 한 번도 안 불린 채 초록이 유지된다.
+    #    값은 여기서도 런타임 조립이다(통짜로 적으면 이 파일 자신이 히트가 된다).
+    probe_path_fwd = "C:" + "/" + "Users" + "/" + "someone" + "/" + "repo"
     cases = [
         ("합성 토큰", SECRET, probe_secret, True),
         ("깨끗한 문장", SECRET, "안전 조치는 지울 수 없다", False),
-        ("합성 절대경로", WIN_PATH, probe_path, True),
+        ("합성 절대경로(백슬래시)", WIN_PATH, probe_path, True),
+        ("합성 절대경로(슬래시)", WIN_PATH, probe_path_fwd, True),
         ("리포 상대 경로", WIN_PATH, "evidence/t2-5-verification.md", False),
     ]
     for name, rx, text, want in cases:
@@ -68,7 +73,7 @@ def self_check() -> None:
             raise DrillError(f"자기 검증 실패 — «{name}» 을 {not want} 로 판정했다")
     if FILE_LIKE.search(".env") is None or FILE_ALLOW.search(".env.example") is None:
         raise DrillError("자기 검증 실패 — 파일명 게이트가 .env 를 못 가른다")
-    print("  자기 검증  표본 4종(합성 2 · 깨끗 2) + 파일명 게이트 — 스캐너 살아 있음")
+    print("  자기 검증  표본 5종(합성 3 · 깨끗 2) + 파일명 게이트 — 스캐너 살아 있음")
 
 
 def main() -> int:
