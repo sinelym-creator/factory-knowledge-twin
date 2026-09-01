@@ -353,6 +353,22 @@ export type Reply<T> =
    *    없으면 필드 자체가 없다 — `false` 를 지어내지 않는다(이 파일의 `detail`·`retryAfterSec` 규율과 같다).
    *    이 축이 없으면 재시도 규칙은 「넣었다」만 남고 «도는가»는 아무도 세지 못한다.
    */
+  /**
+   * 🔴 `cause` = «미도달» 회차에서 undici 예외의 속을 벗겨 낸 **코드**(D-12b · 로그 전용).
+   *
+   *    왜 `detail` 에 싣지 않았나 — `detail` 은 「**서버가** 사유 코드로 갈라 답한 것」을
+   *    화면까지 옮기는 자리다(위 T3-3 주석). 그 칸에 네트워크 사유를 실으면 화면은
+   *    「서버가 사유를 말했다」로 그린다. 실측(이 lane · grep 원문 PR 첨부): `detail` 은
+   *    `app/documents/[docId]/page.tsx:79`(`{reply.detail?.code ?? "400"} · …`) ·
+   *    `app/evidence/[evidenceId]/page.tsx:210` · `components/work-order/wo-screen.tsx:86,109` ·
+   *    `components/overview/start-investigation.tsx:49` 에서 **사람이 읽는 문구**로 쓰인다.
+   *    catch 축은 «모든» 호출이 공유하므로, 거기서 `detail` 을 채우면 이 티켓과 무관한
+   *    화면들이 `ENOTFOUND · getaddrinfo …` 를 사용자에게 보여주게 된다.
+   *
+   * 🔴 **화면은 이 필드를 읽지 않는다.** 이것은 서버 로그로만 나가는 축이다.
+   * 🔴 **호스트명·쿠키·세션 id 는 절대 담기지 않는다**(공개 경계 §15.2) — 아래
+   *    `causeCode()` 가 «대문자 코드 토큰»만 뽑고 자유 문장은 버린다. 없으면 필드도 없다.
+   */
   | {
       state: "unavailable";
       why: string;
@@ -360,6 +376,7 @@ export type Reply<T> =
       detail?: ErrorDetail;
       retryAfterSec?: number;
       retried?: true;
+      cause?: string;
     };
 
 const TIMEOUT_MS = 2000;
@@ -504,6 +521,90 @@ async function call<T>(
   return { ...second, retried: true };
 }
 
+/**
+ * 🔴 **D-12b — undici 예외의 «속»에서 코드만 벗겨 낸다(로그 전용).**
+ *
+ * 왜(E1 · Production 런타임 로그 · 2026-09-01 14:30:52~14:31:09): 승격 뒤 첫 뭉치에서
+ * `POST /enter` 9건이 `[enter] createSession failed TypeError attempt=1/3·2/3·3/3` 로 전건
+ * 3회 다 실패했다 — 즉 D-12 완화가 «구한» 요청은 0/9 다(같은 창의 다른 요청은 성공 ·
+ * ai-api 도달 27건). `TypeError` 는 undici 「fetch failed」의 겉껍질이라 DNS(ENOTFOUND ·
+ * EAI_AGAIN) · 연결거부(ECONNREFUSED) · 리셋(ECONNRESET) · 연결 타임아웃
+ * (UND_ERR_CONNECT_TIMEOUT) · 인증서(CERT_*) 를 **가르지 못한다**. 재시도 횟수·간격을 바꿀
+ * 근거도 이 코드가 나와야 생긴다 — 그래서 이 티켓은 값을 건드리지 않고 «무엇이라 우는지»만 연다.
+ *
+ * 🔴 **자유 문장은 버린다 — 호스트명이 거기 있다**(공개 경계 §15.2). 실제 형태가
+ *    `getaddrinfo ENOTFOUND fkt-xxxx.ts.net` 처럼 «메시지 안»에 호스트를 담아 온다. 그래서
+ *    `message` 를 그대로 싣지 않고 «대문자 코드 토큰»만 집는다 — 호스트명은 소문자·점·
+ *    하이픈이라 이 패턴에 걸리지 않는다. `Error`·`TypeError`·`AggregateError` 같은 «이름»도
+ *    연속 대문자가 아니라 자연히 걸러진다(이름은 코드가 아니다).
+ * 🔴 **없으면 만들지 않는다** — 코드가 안 나오면 `undefined` 이고 필드 자체가 없다.
+ *    `"unknown"` 같은 값을 지어내면 로그 계수가 「가르지 못했다」와 「가를 게 없었다」를
+ *    도로 합친다(이 파일의 `detail`·`retryAfterSec` 규율과 같다).
+ * 🔴 **`cause.errors[]` 까지 한 겹 더 본다.** undici 의 happy-eyeballs 실패는 코드를
+ *    `AggregateError` 의 `errors` 안에 넣고 바깥 `code` 를 비워 온다. 한 겹만 더 들어가고
+ *    그 이상은 따라가지 않는다 — 남의 객체를 끝까지 훑는 것은 로그가 아니라 사고다.
+ *
+ * 🔴 `/g` 를 붙이지 않는다(`scripts/contract-surface.mjs` D-13 규칙 · lastIndex 가 남아 샌다).
+ */
+const CAUSE_CODE = /\b[A-Z][A-Z0-9_]{2,}\b/;
+/** `syscall` 은 `getaddrinfo`·`connect` 같은 소문자 낱말만 허용한다 — 점이 있는 것은 호스트다. */
+const CAUSE_SYSCALL = /^[a-z_]{3,20}$/;
+
+function causeCodeOf(x: unknown, depth = 0): string | undefined {
+  if (typeof x === "string") return CAUSE_CODE.exec(x)?.[0];
+  if (x === null || typeof x !== "object") return undefined;
+  const o = x as {
+    code?: unknown;
+    name?: unknown;
+    message?: unknown;
+    syscall?: unknown;
+    errno?: unknown;
+    errors?: unknown;
+  };
+  let head: string | undefined;
+  for (const v of [o.code, o.name, o.message]) {
+    head = typeof v === "string" ? CAUSE_CODE.exec(v)?.[0] : undefined;
+    if (head) break;
+  }
+
+  /**
+   * 🔴 **`errors[]` 는 «전건» 병기한다 — 첫 원소만 보면 주소마다 다른 사유가 사라진다.**
+   *    공개 DNS 실측(오케 · 14:40 DoH): 이 배치의 Funnel 호스트는 **A 2개 + AAAA 2개** 다.
+   *    Node 20+ 의 happy-eyeballs 가 전부 실패하면 undici 는 `AggregateError`(바깥 `code`
+   *    없음)를 내고 주소별 사유를 `errors[]` 에 담는다 — 한 주소는 ECONNREFUSED, 다른
+   *    주소는 ETIMEDOUT·ENETUNREACH 일 수 있다. 첫 것만 남기면 「IPv4 는 거부, IPv6 는
+   *    닿지도 않음」 같은 갈림이 로그에서 사라진다.
+   * 🔴 **코드만 병기한다** — 각 원소의 주소·포트는 `message` 안에 있고(`connect
+   *    ECONNREFUSED 100.x.x.x:8443`) 코드 토큰만 뽑히므로 남지 않는다. 중복은 접는다.
+   */
+  const nested =
+    depth === 0 && Array.isArray(o.errors)
+      ? [...new Set(o.errors.map((inner) => causeCodeOf(inner, depth + 1)).filter(Boolean))]
+      : [];
+
+  const codes = [head, ...nested].filter(Boolean) as string[];
+  if (codes.length === 0) return undefined;
+
+  // 🔴 `syscall`·`errno` 는 «이 객체»의 것이라 한 겹 안쪽에서는 붙이지 않는다(코드만).
+  const tail =
+    depth === 0
+      ? [
+          typeof o.syscall === "string" && CAUSE_SYSCALL.test(o.syscall)
+            ? `syscall=${o.syscall}`
+            : "",
+          typeof o.errno === "number" ? `errno=${o.errno}` : "",
+        ].filter(Boolean)
+      : [];
+
+  return [...codes, ...tail].join(" ");
+}
+
+/** `fetch` 가 던진 것의 `cause` 만 본다 — 겉껍질(`e.name`)은 이미 `why` 가 들고 있다. */
+function causeCode(e: unknown): string | undefined {
+  if (!(e instanceof Error)) return undefined;
+  return causeCodeOf((e as { cause?: unknown }).cause);
+}
+
 async function attempt<T>(
   path: string,
   init: RequestInit | undefined,
@@ -529,7 +630,12 @@ async function attempt<T>(
     return { state: "ok", data: (await res.json()) as T, setCookie };
   } catch (e) {
     // 연결 거부·타임아웃·JSON 파손 — 전부 「지금은 못 물어본다」로 같다.
-    return { state: "unavailable", why: e instanceof Error ? e.name : "unknown" };
+    // 🔴 `why`(= `e.name`)는 **한 글자도 바꾸지 않는다** — 화면 문구와 드릴이 이미 쓰고 있다.
+    //    가른 사유는 `cause` 라는 «다른 칸»에 따로 담는다(D-12b).
+    const cause = causeCode(e);
+    return cause
+      ? { state: "unavailable", why: e instanceof Error ? e.name : "unknown", cause }
+      : { state: "unavailable", why: e instanceof Error ? e.name : "unknown" };
   }
 }
 
@@ -647,8 +753,14 @@ export async function createSession(base = ""): Promise<Reply<{ sessionId: strin
      *    않는다. 반환값의 `why` 는 화면 문구로만 쓰이고 서버 로그에는 안 실린다 — 즉
      *    Vercel 런타임 로그에서 「DNS 인가 TLS 인가 타임아웃인가」를 가르는 유일한 E1 축이
      *    이 한 줄이다. 세션 id·쿠키는 찍지 않는다(공개 경계 §15.2).
+     *
+     * 🔴 **D-12b — `why` 뒤에 `cause` 코드를 붙인다.** 첫 뭉치 실측에서 이 줄은 9건 전건
+     *    `TypeError` 만 말했고, 그 이름으로는 DNS·연결거부·리셋·인증서가 한 칸에 뭉친다.
+     *    `cause` 는 «코드 토큰»만 담긴 값이라 호스트명이 섞이지 않는다(`causeCodeOf`).
+     *    없으면 붙이지 않는다 — 자리를 채우려고 지어내지 않는다.
      */
-    console.warn("[enter] createSession failed", reply.why, `attempt=${attempt}/${attempts}`);
+    const said = reply.cause ? `${reply.why} ${reply.cause}` : reply.why;
+    console.warn("[enter] createSession failed", said, `attempt=${attempt}/${attempts}`);
 
     // 서버가 «답한» 실패 — 되묻지 않는다(①).
     if (reply.status !== undefined) return retried ? { ...reply, retried: true } : reply;
