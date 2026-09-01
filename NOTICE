@@ -1,0 +1,43 @@
+Factory Knowledge Twin
+======================
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file in the root of this repository for the full text,
+or obtain a copy at http://www.apache.org/licenses/LICENSE-2.0
+
+This product includes third-party software. Their names, versions,
+licenses and sources are listed in THIRD_PARTY_NOTICES.md in the root of
+this repository, which is generated from a measured dependency inventory
+rather than transcribed by hand.
+
+Where a bundled third-party component ships its own NOTICE file, that
+notice is carried through unmodified in the distribution of this product,
+as required by section 4(d) of the Apache License, Version 2.0.
+
+All factory data in this project is synthetic and self-generated. No
+customer data, no real production data, and no third-party dataset is
+included.
+
+--------------------------------------------------------------------------
+COPYRIGHT LINE — DELIBERATELY NOT FILLED IN
+--------------------------------------------------------------------------
+
+An Apache-2.0 NOTICE conventionally opens with a copyright line naming the
+holder. That line is absent here on purpose, not by oversight:
+
+  - The repository's LICENSE file carries the Apache License text with its
+    unmodified appendix, whose holder field still reads the template value
+    `Copyright [yyyy] [name of copyright owner]`. The repository therefore
+    does not yet state who the copyright holder is.
+  - Inventing one here would make this file assert something no other file
+    in this repository supports. A NOTICE that names a holder the project
+    has never declared is worse than a NOTICE that says the field is open.
+
+Filling this in is an operator decision, not a generated value. Once the
+holder is settled, add the line here and in the LICENSE appendix together,
+so the two never disagree.
+
+--------------------------------------------------------------------------
+
+이 파일은 배포물에 그대로 실린다(Apache-2.0 §4(d)). 그래서 설명이 아니라
+표기만 담고, 근거·계수·출처는 THIRD_PARTY_NOTICES.md 가 진다.
