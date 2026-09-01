@@ -57,15 +57,26 @@ function seeOther(setCookie?: string | null) {
 export async function POST(req: NextRequest) {
   const session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
 
-  // 🔴 이미 입장한 사람은 다시 입장하지 않는다(발급 0). 가는 곳은 같다.
-  if (session) return seeOther();
+  // 🔴 **이미 «선» 사람만 다시 입장하지 않는다 — `pending` 은 선 것이 아니다.**
+  //
+  //    앞판은 `if (session)` 이었다. 그래서 발급이 한 번 실패해 `pending` 이 심기면 그 쿠키가
+  //    스스로 회복할 길이 없었다: 다음 `/enter` 도 이 줄에서 곧장 돌아갔고, `pending` 은
+  //    maxAge 8시간을 그대로 살았다. 그 사이 방문자의 `/api/*` 는 전건 401 이다 —
+  //    ai-api 는 그 id 를 «발급한 적이 없다»(브라우저가 지어낸 uuid 다).
+  //    실측(2026-09-01 공개 URL): 콜드 1회가 pending 을 심었고, 그 쿠키로 `/compare` 는
+  //    「승인 질문 목록을 가져오지 못했습니다」, `/overview` 는 오류 컴포넌트였다.
+  //    같은 브라우저로 `api` 세션을 받으면 두 화면 다 정상이었다 — 갈린 것은 이 한 값이다.
+  if (session?.origin === "api") return seeOther();
 
   // 입장 1회: 계약대로 세션을 «발급받아» 본다. 닿지 않으면 pending으로 들어간다.
   const reply = await createSession(apiBase());
   const created =
     reply.state === "ok"
       ? { id: reply.data.sessionId, origin: "api" as const }
-      : { id: crypto.randomUUID().replace(/-/g, ""), origin: "pending" as const };
+      : // 🔴 재시도도 실패하면 «있던 pending 을 그대로 둔다» — 새 uuid 로 갈아치우지 않는다.
+        //    갈아치우면 방문자의 id 가 조용히 바뀌고, 「같은 사람인가」를 묻는 축(세션 격리)이
+        //    실패 회차마다 끊긴다. 실패는 실패대로 «같은» pending 으로 남는 편이 사실에 가깝다.
+        (session ?? { id: crypto.randomUUID().replace(/-/g, ""), origin: "pending" as const });
 
   // 🔴 **ai-api가 심은 세션 쿠키를 브라우저까지 그대로 넘긴다**(T3-1 · 계약 v0.1.6).
   //    입장 요청은 «서버사이드»에서 나가므로, 전달하지 않으면 그 HttpOnly 쿠키는 이 서버의
