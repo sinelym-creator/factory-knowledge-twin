@@ -24,8 +24,15 @@ export function useEscapeToClose(active: boolean, close: () => void): void {
   // 🔴 `close` 를 의존에 넣지 않는다. 호출부는 대개 인라인 화살표를 넘기므로 매 렌더 새 함수가
   //    되고, 그러면 이 effect 가 렌더마다 리스너를 떼었다 붙인다 — 그 사이 한 틱은 Esc 가
   //    아무 데도 닿지 않는 창이다. 최신 함수는 ref 로 들고, 등록은 `active` 로만 움직인다.
+  //    🔴 **ref 쓰기는 «렌더 중»이 아니라 effect 안에서 한다**(`react-hooks/refs`). 렌더 중에
+  //    `latest.current` 를 건드리면 React 가 렌더를 버리거나 다시 돌리는 경우(Strict/동시성)에
+  //    화면에 서지 않은 값이 ref 에 남는다. 아래 effect 는 «의존 배열이 없다» — 커밋마다 돌아
+  //    최신 콜백을 담는다. 읽는 쪽(keydown 핸들러)은 언제나 커밋 «뒤»에 실행되므로 이 훅이
+  //    부르는 함수는 앞판과 같다: 거동을 바꾸지 않고 쓰는 «시점»만 옮겼다.
   const latest = useRef(close);
-  latest.current = close;
+  useEffect(() => {
+    latest.current = close;
+  });
 
   useEffect(() => {
     if (!active) return;
