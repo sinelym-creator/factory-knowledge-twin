@@ -644,6 +644,50 @@ function causeCode(e: unknown): string | undefined {
   return causeCodeOf((e as { cause?: unknown }).cause);
 }
 
+/**
+ * 🔴 **D-12d — ai-api 로 «나가는» 요청만 우리 리졸버를 태운다(우회 · 뿌리 해결 아님).**
+ *
+ * 왜(E1 · 2026-09-01 15:13~): Production 함수 3종이 전건 `getaddrinfo ENOTFOUND
+ * harry.tail488f52.ts.net` 인데 같은 분 공개 DoH 는 A 2건 정상이고 인그레스 IP 직결은 200
+ * 이었다. 고장은 «함수 인스턴스의 이름 해석»이고(15:19:17 에는 프록시만 살아나고 `/enter`
+ * 는 3/3 실패 — 인스턴스마다 갈렸다), 재시도로는 못 건넌다. 자세한 기전과 단계는
+ * `lib/server-dns.ts` 머리말에 있다.
+ *
+ * 🔴 **사정거리 = 절대 base 회차뿐.** `base === ""` 는 브라우저·same-origin 축이고 그 축은
+ *    브라우저가 해석한다 — 그쪽에 dispatcher 를 얹으면 이 티켓과 무관한 경로가 함께 바뀐다.
+ * 🔴 **전역 `fetch` 에 undici Agent 를 얹지 않는다.** 전역 fetch 는 Node «내부» undici 이고
+ *    우리가 만든 Agent 는 패키지 undici 다 — 다른 복사본끼리는 dispatcher 가 조용히 무시될
+ *    수 있다. 그래서 서버 축은 **같은 패키지의 `fetch` + `Agent`** 한 벌로 간다(오케 조건 ②).
+ * 🔴 **이 파일은 `server-dns.ts` 를 «import 하지 않는다».**
+ *    처음에는 분기 안에서 `await import("./server-dns")` 로 지연 로드했는데, **Turbopack 이
+ *    그 동적 import 를 브라우저 그래프까지 따라와** 빌드가 죽었다(실측 원문:
+ *    `the chunking context (unknown) does not support external modules (request: node:dns)`
+ *    · `Failed to write app endpoint /page`). 이 파일은 클라이언트 컴포넌트가 부르므로
+ *    «참조가 있다»는 사실만으로 `node:dns` 가 브라우저 청크에 끌려온다.
+ *    그래서 방향을 뒤집었다: **서버 부팅 훅이 «넣어 준다»**(`instrumentation.ts` — 그 파일은
+ *    이미 같은 이유로 Node 전용 실체를 동적 import 하는 자리다). 여기에는 «받는 구멍»만 있다.
+ * 🔴 **등록 전이면 전역 `fetch` 그대로** — 이 우회가 없던 날과 «같은» 동작이다. 새 실패를
+ *    만들지 않는다(등록이 안 됐다는 사실은 부팅 로그 한 줄로 남는다).
+ */
+type ServerFetch = (url: string, init: RequestInit) => Promise<Response>;
+
+let serverFetch: ServerFetch | undefined;
+
+/** 🔴 서버 프로세스에서만 불린다(`instrumentation.ts`). 브라우저에서는 영원히 미등록이다. */
+export function registerServerFetch(impl: ServerFetch): void {
+  serverFetch = impl;
+}
+
+/** 드릴이 「물렸는가」를 셀 수 있는 자리 — 등록 여부는 값이 아니라 «사실»이라 세야 한다. */
+export function hasServerFetch(): boolean {
+  return serverFetch !== undefined;
+}
+
+async function outboundFetch(base: string, url: string, init: RequestInit): Promise<Response> {
+  if (!base || !serverFetch) return fetch(url, init);
+  return serverFetch(url, init);
+}
+
 async function attempt<T>(
   path: string,
   init: RequestInit | undefined,
@@ -651,7 +695,10 @@ async function attempt<T>(
   timeoutMs: number,
 ): Promise<Reply<T>> {
   try {
-    const res = await fetch(base + path, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+    const res = await outboundFetch(base, base + path, {
+      ...init,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
     // 🔴 상태코드를 함께 돌려준다. 화면이 「그런 자원이 없다(404)」와 「지금 못 물어봤다」를
     //    가르지 못하면 두 상태가 같은 모습으로 그려진다 — 서버가 사유 코드를 나눈 이유가
     //    화면에서 사라진다.
@@ -711,7 +758,7 @@ export async function proxyApiRequest(req: Request, opts: { https: boolean }): P
   }
 
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
-  const upstream = await fetch(target, {
+  const upstream = await outboundFetch(apiBase(), target, {
     method: req.method,
     headers,
     // 🔴 본문은 «스트림 그대로» 넘긴다(버퍼로 읽으면 큰 compare 본문을 이 층이 통째로 안는다).

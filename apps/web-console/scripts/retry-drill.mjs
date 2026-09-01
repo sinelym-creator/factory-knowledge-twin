@@ -7,6 +7,8 @@
  *                                        호스트명·주소는 싣지 않는다 · errors[] 는 전건 병기 (⑫~⑯)
  *   ④ D-12c/Q-68  · `allowedCodeOf()`  : 출처를 `code` 필드로 좁히고 전체 일치 + 형태 허용목록,
  *                                        밖은 `OTHER` 로 접는다 (⑮ · ⑰)
+ *   ⑤ D-12d       · `createFallbackLookup()` : 시스템 해석 실패를 DoH·캐시로 우회하고,
+ *                                        dispatcher 가 «실제 소켓»에서 도는지까지 본다 (⑱~㉑)
  *
  * 🔴 Q-68 의 «반대 방향»(뚫리는 표본)은 이 파일이 아니라 검증 좌석 그물이 든다 —
  *    `tests/web/d12b_cause_redaction_probe.mjs`(리바이2 · A~I 9행 · 심은 호스트로 판정).
@@ -45,12 +47,17 @@
  * exit: 0 = 전건 통과 · 1 = 실패 1건 이상
  */
 
+import http from "node:http";
+
 import {
   apiGetBrowser,
   apiGetServer,
   CAUSE_OTHER,
   createSession,
+  hasServerFetch,
   liveStatus,
+  proxyApiRequest,
+  registerServerFetch,
   startRunBrowser,
 } from "../lib/contract.ts";
 
@@ -63,6 +70,8 @@ let calls = [];
  */
 let warns = [];
 const realWarn = console.warn;
+/** 🔴 ㉑ 은 «진짜 소켓»을 타야 한다 — 모킹 fetch 가 살아 있으면 그것이 대신 답해 버린다. */
+const realFetch = globalThis.fetch;
 
 function stage(...responses) {
   calls = [];
@@ -111,6 +120,10 @@ let causeSeen = 0;
 let hostLeakChecked = 0;
 /** Q-68 축 계수 — 허용목록 «밖» 코드가 `OTHER` 로 접힌 회차. 0건이면 그 분기는 죽은 채 초록이다. */
 let otherFoldSeen = 0;
+/** D-12d 축 계수 — 우리 lookup 이 «실제로» 불린 회차 · 그중 family 4 로 물은 회차. */
+let lookupCalled = 0;
+let lookupFamily4 = 0;
+let undiciAskedFamily;
 const lines = [];
 
 function check(name, cond, detail) {
@@ -413,6 +426,167 @@ async function timed(fn) {
   );
 }
 
+// ══ D-12d — 이름 해석 우회 (⑱~㉑) ═══════════════════════════════════════
+//
+// 🔴 여기서부터는 `stage()` 의 모킹 fetch 를 «쓰지 않는다». ⑱~⑳ 은 `createFallbackLookup()`
+//    을 직접 돌리는 단위 검사이고, ㉑ 은 **진짜 소켓**을 열어 「dispatcher 가 물렸는가」를 본다.
+//    모킹 fetch 위에서는 dispatcher 가 도는지 «절대» 알 수 없다 — 그 층을 지나가지 않으니까.
+
+const { createFallbackLookup, systemLookupV4, __resetDnsCacheForDrill } =
+  await import("../lib/server-dns.ts");
+
+const ENOTFOUND = () => Object.assign(new Error("getaddrinfo ENOTFOUND"), { code: "ENOTFOUND" });
+
+/** 단계 관측을 배열로 받는다 — 프로덕션은 같은 자리에서 `console.warn` 한 줄을 낸다. */
+function runLookup(deps, options = { all: true, family: 4 }) {
+  const seen = [];
+  const lookup = createFallbackLookup({ ...deps, observe: (o) => seen.push(o) });
+  return new Promise((resolve) => {
+    lookup("api.test", options, (err, address) => resolve({ err, address, seen }));
+  });
+}
+
+// ── ⑱ 시스템 ENOTFOUND → DoH 가 답한다 ───────────────────────────────────
+{
+  __resetDnsCacheForDrill();
+  let askedFamily;
+  const { err, address, seen } = await runLookup({
+    system: (host, cb) => {
+      askedFamily = 4; // defaultSystem 을 대신하므로, family 축은 ㉑ 에서 실코드로 잰다
+      cb(ENOTFOUND(), []);
+    },
+    doh: async (endpoint) => (endpoint.stage === "doh-cf" ? ["203.0.113.7"] : []),
+  });
+  check(
+    "⑱ system ENOTFOUND → DoH 성공",
+    !err &&
+      Array.isArray(address) &&
+      address[0]?.address === "203.0.113.7" &&
+      address[0]?.family === 4 &&
+      seen.at(-1)?.stage === "doh-cf" &&
+      seen.at(-1)?.systemCode === "ENOTFOUND",
+    `stage=${seen.at(-1)?.stage} · system=${seen.at(-1)?.systemCode} · addr=${JSON.stringify(address)} · asked=${askedFamily}`,
+  );
+}
+
+// ── ⑱-b 한 제공자가 빈 답(NXDOMAIN) · 다른 쪽이 A → 성공 (보강 2) ────────
+//    한 곳의 NXDOMAIN 을 «최종»으로 읽으면 그 노드의 병이 우리 결론이 된다. 40회 실측에서
+//    CF 18/40 · Google 0/40 이었고 «같은 회차에 둘 다 실패한 적은 0» 이었다.
+{
+  __resetDnsCacheForDrill();
+  const { err, address, seen } = await runLookup({
+    system: (host, cb) => cb(ENOTFOUND(), []),
+    doh: async (endpoint) => (endpoint.stage === "doh-google" ? ["203.0.113.9"] : []),
+  });
+  check(
+    "⑱-b DoH 한쪽 빈 답 → 다른 쪽 A 채택",
+    !err && address[0]?.address === "203.0.113.9" && seen.at(-1)?.stage === "doh-google",
+    `stage=${seen.at(-1)?.stage} · addr=${JSON.stringify(address)} (cf 는 빈 답)`,
+  );
+}
+
+// ── ⑲ 시스템·DoH 둘 다 실패 → «마지막 성공» 캐시가 답한다 ─────────────────
+{
+  __resetDnsCacheForDrill();
+  // 먼저 한 번 성공시켜 캐시를 만든다(캐시는 «성공한 적이 있어야» 존재한다).
+  await runLookup({ system: (host, cb) => cb(null, ["198.51.100.9"]) });
+  const { err, address, seen } = await runLookup({
+    system: (host, cb) => cb(ENOTFOUND(), []),
+    doh: async () => [],
+  });
+  check(
+    "⑲ system·DoH 실패 → 캐시",
+    !err && address[0]?.address === "198.51.100.9" && seen.at(-1)?.stage === "cache",
+    `stage=${seen.at(-1)?.stage} · addr=${JSON.stringify(address)}`,
+  );
+}
+
+// ── ⑳ 전부 실패 → «원래 오류» 그대로(새 실패를 만들지 않는다) ─────────────
+{
+  __resetDnsCacheForDrill();
+  const original = ENOTFOUND();
+  const { err, seen } = await runLookup({
+    system: (host, cb) => cb(original, []),
+    doh: async () => [],
+  });
+  check(
+    "⑳ 전부 실패 = 원래 오류 문면 불변",
+    err === original && err.code === "ENOTFOUND" && seen.at(-1)?.stage === "none",
+    `err.code=${err?.code} · 같은 객체=${err === original} · stage=${seen.at(-1)?.stage}`,
+  );
+}
+
+// ── ㉑ 🔴 «물렸는가» — 진짜 소켓으로 확인한다 (스트림·set-cookie 포함) ────
+//
+//    dispatcher 가 안 물려도 위 ⑱~⑳ 은 초록이다(그 코드는 lookup 함수만 본다). 그래서 여기서
+//    실제 요청을 보내고 **우리 lookup 이 불렸는지**를 센다 — 0이면 우회는 죽은 채 초록이다.
+{
+  // 🔴 계측기를 측정에서 뺀다 — 여기서부터는 모킹 fetch 를 치운다.
+  globalThis.fetch = realFetch;
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, {
+      "content-type": "application/json",
+      "set-cookie": "fkt_sid=probe; Path=/; HttpOnly",
+    });
+    // 🔴 두 청크로 나눠 보낸다 — 「스트림이 통째로 전달되는가」를 한 청크로는 못 본다.
+    res.write('{"ok":');
+    setTimeout(() => res.end("true}"), 20);
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  const port = server.address().port;
+  process.env.FKT_API_BASE_BUILD = `http://api.test:${port}`;
+
+  const undici = await import("undici");
+  const lookup = (host, options, cb) => {
+    lookupCalled += 1;
+    undiciAskedFamily = options?.family;
+    // 🔴 이름은 풀리지 않는 이름(`api.test`)이고, 우리가 주소를 «만들어» 준다 —
+    //    시스템 해석기를 지나지 않고도 연결이 서면 그것이 곧 「물렸다」의 증거다.
+    if (options?.all) return cb(null, [{ address: "127.0.0.1", family: 4 }]);
+    cb(null, "127.0.0.1", 4);
+  };
+  const agent = new undici.Agent({ connect: { lookup } });
+  registerServerFetch((url, init) =>
+    undici.fetch(url, { ...init, dispatcher: agent }),
+  );
+
+  const upstream = await proxyApiRequest(
+    new Request(`http://shell.local/api/plants`, { method: "GET", headers: { cookie: "a=b" } }),
+    { https: false },
+  );
+  const body = await upstream.text();
+  const cookies = upstream.headers.getSetCookie();
+  server.close();
+
+  check(
+    "㉑ dispatcher 물림 · 스트림 · set-cookie",
+    hasServerFetch() &&
+      lookupCalled >= 1 &&
+      upstream.status === 200 &&
+      body === '{"ok":true}' &&
+      cookies.some((c) => c.startsWith("fkt_sid=probe")),
+    `등록=${hasServerFetch()} · lookup ${lookupCalled}회(undici 가 준 family=${String(undiciAskedFamily)}) · status=${upstream.status} · body=${body} · set-cookie ${cookies.length}건`,
+  );
+}
+
+// ── ㉒ 🔴 «AAAA 를 우리가 안 묻는다» — 결과에 v6 가 없어야 한다 (보강 1) ──
+//
+//    undici 가 우리 lookup 에 주는 `family` 는 undici 가 정한다(실측: 위 ㉑ 에서 0). 우리가
+//    통제하는 자리는 «시스템 해석기를 부를 때»이고, 보강 1 이 요구한 것도 그 자리다.
+//    관측 가능한 증거는 「돌아온 주소에 IPv6 가 하나도 없다」이다.
+{
+  const addrs = await new Promise((resolve) => {
+    systemLookupV4("localhost", (err, list) => resolve(err ? [] : list));
+  });
+  const v6 = addrs.filter((a) => a.includes(":"));
+  if (addrs.length > 0 && v6.length === 0) lookupFamily4 += 1;
+  check(
+    "㉒ 시스템 질의는 v4 만 (AAAA 미질의)",
+    addrs.length > 0 && v6.length === 0,
+    `localhost → [${addrs.join(", ")}] · v6 ${v6.length}건(기대 0) · 0건이면 「막았다」가 아니라 「못 쟀다」다`,
+  );
+}
+
 // 🔴 계측기 원복 — 아래 결과 출력은 «가로채지 않은» console 로 나가야 한다.
 console.warn = realWarn;
 
@@ -425,23 +599,26 @@ const total = pass + failed;
  *    처방 절반(관측)이 없는 것이다.
  */
 const selfOk =
-  total >= 17 &&
+  total >= 23 &&
   retriedSeen >= 1 &&
   enterRetriedSeen >= 1 &&
   warnLinesSeen >= 5 &&
   causeSeen >= 3 &&
   hostLeakChecked >= 2 &&
-  otherFoldSeen >= 1;
+  otherFoldSeen >= 1 &&
+  lookupCalled >= 1 &&
+  lookupFamily4 >= 1;
 
 console.log(
   "retry-drill — D-11 (C) `call()` + D-12 `createSession()` + D-12b cause · lib/contract.ts 를 그대로 돌린다\n",
 );
 console.log(lines.join("\n"));
 console.log(
-  `\n  자기 검증  케이스 ${total}건(기대 ≥17) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
+  `\n  자기 검증  케이스 ${total}건(기대 ≥23) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
     `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) · ` +
     `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥3) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥2) · ` +
-    `OTHER 접힘이 «실제로 돈» 회차 ${otherFoldSeen}건(기대 ≥1) → ${selfOk ? "PASS" : "FAIL"}`,
+    `OTHER 접힘이 «실제로 돈» 회차 ${otherFoldSeen}건(기대 ≥1) · ` +
+    `우리 lookup 이 «실제 소켓에서» 불린 회차 ${lookupCalled}건(기대 ≥1) · v4 전용 질의 확인 ${lookupFamily4}건(기대 ≥1) → ${selfOk ? "PASS" : "FAIL"}`,
 );
 console.log(`\n결과: ${pass}/${total} 통과 · 실패 ${failed}건`);
 
