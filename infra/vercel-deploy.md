@@ -70,11 +70,11 @@
 | 써 봐야 아무 일도 안 일어나는 이름 | 실체 |
 |---|---|
 | `HTTPS_PUBLIC` | `next.config.ts:56` 의 **로컬 const 식별자**다. 셸 env 로 주는 코드는 리포에 **0건**. 대시보드에 넣으면 무시된다 — 정본 키는 `FKT_PUBLIC_HTTPS` 이고 값은 `"true"`·`"yes"` 가 아니라 **`"1"`** 이어야 한다 |
-| `NEXT_PUBLIC_API_BASE` | 루트 `.env.example:24` 에 남아 있는 **유령 키**다. 이 이름을 읽는 코드가 리포에 없다(참조 = 그 한 줄뿐) |
+| `NEXT_PUBLIC_API_BASE` | 옛 유령 키. 이 이름을 읽는 코드는 리포에 **0건**이었고, 루트 `.env.example` 에서 **제거했다**(T4-3 ⓖ). 옛 문서를 보고 이 이름을 대시보드에 넣는 일이 없도록 이름만 남겨 둔다 |
 
-🔴 **회부 1건**: 루트 `.env.example` 에 `FKT_API_BASE`·`FKT_PUBLIC_HTTPS`·`FKT_CORS_ORIGINS`·
-`FKT_TRUST_FORWARDED_FOR`·`FKT_RESTART_POLICY` 가 **없고**, 대신 유령 키가 있다.
-그 파일은 이 좌석의 write scope 밖이라 손대지 않았다 — 오케 판단.
+✅ **회부 종결(T4-3 ⓖ)**: 루트 `.env.example` 에 `FKT_API_BASE`·`FKT_PUBLIC_HTTPS`·`FKT_CORS_ORIGINS`·
+`FKT_TRUST_FORWARDED_FOR`·`FKT_RESTART_POLICY` 5키를 «빈 값 + 층·시점 + 읽는 좌표»로 추가하고
+유령 키를 제거했다. 🔴 그 파일은 **로더가 아니라 목록**이다 — ai-api 는 `.env` 를 읽지 않는다.
 
 ### 4-2. 부팅 가드 — 「런타임에도 같이 넣어도 되는가」
 
