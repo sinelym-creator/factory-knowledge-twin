@@ -74,8 +74,27 @@ const nextConfig: NextConfig = {
   // ai-api가 떠 있지 않으면 이 rewrite는 연결 거부가 되고, 클라이언트는 그것을 «미연결»로 접는다.
   // 🔴 WebSocket 업그레이드도 이 rewrite 를 그대로 탄다(T3-4 실측: 셸 경유 101) — 그래서
   //    브라우저는 API base 를 알 필요가 없고, 세션 쿠키도 same-origin 으로 실린다.
+  /**
+   * 🔴 **D-11 (B): `/api/:path*` rewrite 를 «걷어냈다» — 이제 `app/api/[...path]/route.ts`
+   *    (Vercel 함수)가 받는다.** 엣지 rewrite 층이 간헐 502 `DNS_HOSTNAME_EMPTY` 를 냈고
+   *    (7회 중 4회 · 12:19~) 같은 시각 함수 경로는 5/5 정상이었다. 두 길을 남기지 않는다.
+   *
+   * 🔴 **단 `/api/ws/*` 는 rewrite 로 남긴다 — Route Handler 가 «할 수 없는» 일이다.**
+   *    Route Handler 는 Request→Response 라 101 Switching Protocols 를 낼 수 없다.
+   *    실측(2026-09-01 · ai-api :8010 직결): 세션 없이 `/api/ws/runs/{id}` = **403**,
+   *    세션 쿠키를 실으면 **101**(`Sec-WebSocket-Accept` 포함). 즉 이 경로는 살아 있고,
+   *    화면(`components/incident/run-console.tsx`)이 실제로 쓴다(T3-4 실행 축).
+   *    이것을 함께 걷어내면 조사 실행의 실시간 축이 죽는다 — 502 를 고치려다 Golden
+   *    시나리오를 끊는 것이므로, WS 만 옛 길에 남겨 둔다.
+   * 🔴 `beforeFiles` 여야 한다 — 기본(afterFiles) rewrite 는 파일시스템 라우트 «뒤»라
+   *    `app/api/[...path]` 가 먼저 물어 WS 가 이 rewrite 에 닿지 못한다.
+   */
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${API_BASE}/api/:path*` }];
+    return {
+      beforeFiles: [{ source: "/api/ws/:path*", destination: `${API_BASE}/api/ws/:path*` }],
+      afterFiles: [],
+      fallback: [],
+    };
   },
 
   async headers() {
