@@ -4,7 +4,7 @@
  *   ② D-12 완화   · `createSession()`  : «미도달»(status 없음) 만 400·800ms 로 2회 되묻고,
  *                                        실패 회차마다 `console.warn` 한 줄을 남긴다 (⑨~⑪)
  *   ③ D-12b       · `causeCodeOf()`    : undici 예외의 «속»에서 코드 토큰만 꺼내 warn 에 싣고,
- *                                        호스트명은 싣지 않는다 (⑫~⑮)
+ *                                        호스트명·주소는 싣지 않는다 · errors[] 는 전건 병기 (⑫~⑯)
  *
  *   node --experimental-strip-types scripts/retry-drill.mjs
  *   (pnpm retry:drill)
@@ -351,6 +351,38 @@ async function timed(fn) {
   );
 }
 
+// ── ⑯ happy-eyeballs 전멸 : 주소마다 다른 사유를 «둘 다» 남긴다 ───────────
+//    이 배치의 Funnel 호스트는 A 2 + AAAA 2 다(오케 DoH 실측) — 첫 원소만 남기면
+//    「IPv4 는 거부, IPv6 는 시간 초과」 같은 갈림이 로그에서 사라진다. 주소는 안 남는다.
+{
+  const v4 = "100.101.102.103:8443";
+  stage(
+    unreachable("TypeError", {
+      name: "AggregateError",
+      errors: [
+        { code: "ECONNREFUSED", message: `connect ECONNREFUSED ${v4}` },
+        { code: "ETIMEDOUT", message: "connect ETIMEDOUT 2001:db8::1:8443" },
+      ],
+    }),
+    ok({ sessionId: "s-7" }),
+  );
+  const [r] = await timed(() => createSession("http://api.test"));
+  const line = warns[0] ?? "";
+  if (/ECONNREFUSED/.test(line)) causeSeen += 1;
+  hostLeakChecked += 1;
+  check(
+    "⑯ errors[] 전건 병기 · 주소 미노출",
+    r.state === "ok" &&
+      warns.length === 1 &&
+      /ECONNREFUSED/.test(line) &&
+      /ETIMEDOUT/.test(line) &&
+      !line.includes(v4) &&
+      !line.includes("100.101.102.103") &&
+      !line.includes("2001:db8"),
+    `warn 「${line}」(두 코드 다 보이고 주소는 없어야 한다)`,
+  );
+}
+
 // 🔴 계측기 원복 — 아래 결과 출력은 «가로채지 않은» console 로 나가야 한다.
 console.warn = realWarn;
 
@@ -363,21 +395,21 @@ const total = pass + failed;
  *    처방 절반(관측)이 없는 것이다.
  */
 const selfOk =
-  total >= 15 &&
+  total >= 16 &&
   retriedSeen >= 1 &&
   enterRetriedSeen >= 1 &&
   warnLinesSeen >= 5 &&
-  causeSeen >= 3 &&
-  hostLeakChecked >= 1;
+  causeSeen >= 4 &&
+  hostLeakChecked >= 2;
 
 console.log(
   "retry-drill — D-11 (C) `call()` + D-12 `createSession()` + D-12b cause · lib/contract.ts 를 그대로 돌린다\n",
 );
 console.log(lines.join("\n"));
 console.log(
-  `\n  자기 검증  케이스 ${total}건(기대 ≥15) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
+  `\n  자기 검증  케이스 ${total}건(기대 ≥16) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
     `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) · ` +
-    `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥3) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥1) → ${selfOk ? "PASS" : "FAIL"}`,
+    `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥4) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥2) → ${selfOk ? "PASS" : "FAIL"}`,
 );
 console.log(`\n결과: ${pass}/${total} 통과 · 실패 ${failed}건`);
 

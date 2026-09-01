@@ -561,22 +561,42 @@ function causeCodeOf(x: unknown, depth = 0): string | undefined {
     errno?: unknown;
     errors?: unknown;
   };
+  let head: string | undefined;
   for (const v of [o.code, o.name, o.message]) {
-    const hit = typeof v === "string" ? CAUSE_CODE.exec(v)?.[0] : undefined;
-    if (!hit) continue;
-    const tail = [
-      typeof o.syscall === "string" && CAUSE_SYSCALL.test(o.syscall) ? `syscall=${o.syscall}` : "",
-      typeof o.errno === "number" ? `errno=${o.errno}` : "",
-    ].filter(Boolean);
-    return tail.length ? `${hit} ${tail.join(" ")}` : hit;
+    head = typeof v === "string" ? CAUSE_CODE.exec(v)?.[0] : undefined;
+    if (head) break;
   }
-  if (depth === 0 && Array.isArray(o.errors)) {
-    for (const inner of o.errors) {
-      const hit = causeCodeOf(inner, depth + 1);
-      if (hit) return hit;
-    }
-  }
-  return undefined;
+
+  /**
+   * 🔴 **`errors[]` 는 «전건» 병기한다 — 첫 원소만 보면 주소마다 다른 사유가 사라진다.**
+   *    공개 DNS 실측(오케 · 14:40 DoH): 이 배치의 Funnel 호스트는 **A 2개 + AAAA 2개** 다.
+   *    Node 20+ 의 happy-eyeballs 가 전부 실패하면 undici 는 `AggregateError`(바깥 `code`
+   *    없음)를 내고 주소별 사유를 `errors[]` 에 담는다 — 한 주소는 ECONNREFUSED, 다른
+   *    주소는 ETIMEDOUT·ENETUNREACH 일 수 있다. 첫 것만 남기면 「IPv4 는 거부, IPv6 는
+   *    닿지도 않음」 같은 갈림이 로그에서 사라진다.
+   * 🔴 **코드만 병기한다** — 각 원소의 주소·포트는 `message` 안에 있고(`connect
+   *    ECONNREFUSED 100.x.x.x:8443`) 코드 토큰만 뽑히므로 남지 않는다. 중복은 접는다.
+   */
+  const nested =
+    depth === 0 && Array.isArray(o.errors)
+      ? [...new Set(o.errors.map((inner) => causeCodeOf(inner, depth + 1)).filter(Boolean))]
+      : [];
+
+  const codes = [head, ...nested].filter(Boolean) as string[];
+  if (codes.length === 0) return undefined;
+
+  // 🔴 `syscall`·`errno` 는 «이 객체»의 것이라 한 겹 안쪽에서는 붙이지 않는다(코드만).
+  const tail =
+    depth === 0
+      ? [
+          typeof o.syscall === "string" && CAUSE_SYSCALL.test(o.syscall)
+            ? `syscall=${o.syscall}`
+            : "",
+          typeof o.errno === "number" ? `errno=${o.errno}` : "",
+        ].filter(Boolean)
+      : [];
+
+  return [...codes, ...tail].join(" ");
 }
 
 /** `fetch` 가 던진 것의 `cause` 만 본다 — 겉껍질(`e.name`)은 이미 `why` 가 들고 있다. */
