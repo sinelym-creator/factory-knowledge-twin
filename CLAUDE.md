@@ -47,3 +47,4 @@
 - 브랜치: `develop` 작업 · `main` 승격(운영자 게이트) · Conventional Commits(영어).
 - GitHub Public 개설·push는 운영자 확인 후(공개 행위). 그 전까지 로컬 git만.
 - lane 브랜치는 병합 즉시 원격에서 삭제한다(`gh pr merge --merge --delete-branch`) — 원격 = `develop`·`main` 만(운영자 하명 09-01 12:16 「정리 가능한 것은 정리」 · lane 99본 정리). 병합된 lane 재push 금지 · 새 작업 = 새 lane.
+- 🔴 **좌석(구현·검증) 작업 = worktree 에서만**: `git worktree add ../_wt/{slug}-{ticket} -b lane/{slug}-{ticket} origin/develop`(리포 **형제** 디렉토리 `../_wt/` · 리포 안에 만들면 `?? _wt/` 로 메인 트리를 더럽힌다). **메인 체크아웃(`factory-knowledge-twin/`)은 오케 전용** — 좌석의 편집·브랜치 생성·stash 금지. 좌석 파일 이전은 **경로 지정** stash(`git stash push -u -- <내 파일>`)만 — 경로 무지정은 타 좌석 파일을 삼킨다(09-01 12:42~12:56 3건 재발 성문).
