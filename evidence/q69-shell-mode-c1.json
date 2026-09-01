@@ -1,0 +1,356 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "startedAt": "2026-09-01T09:59:13.610Z",
+ "question": "지난 24시간 설비 이상 신호를 요약해줘",
+ "api": [
+  {
+   "ms": 2232,
+   "url": "/api/live/status",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 2438,
+   "url": "/enter",
+   "status": 303,
+   "type": null
+  },
+  {
+   "ms": 5563,
+   "url": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5877,
+   "url": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5895,
+   "url": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5903,
+   "url": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5903,
+   "url": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5912,
+   "url": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5924,
+   "url": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 6412,
+   "url": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 6412,
+   "url": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 6418,
+   "url": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 6428,
+   "url": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 6503,
+   "url": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 16690,
+   "url": "/api/live/status",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 17236,
+   "url": "/api/scenarios/GS-01/runs",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 17532,
+   "url": "/incidents/INC-2026-014?run=RUN-b6b1ab7eb918&_rsc=xrnnFjQY5UGWLegl",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 18814,
+   "url": "/incidents/INC-2026-014?run=RUN-b6b1ab7eb918&_rsc=xrnnFjQY5UGWLegl",
+   "status": null,
+   "failure": "net::ERR_ABORTED"
+  },
+  {
+   "ms": 19411,
+   "url": "/api/equipment/EQ-CNC-204/sensors/SN-204-VIB/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 19880,
+   "url": "/api/runs/RUN-b6b1ab7eb918",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 20180,
+   "url": "/api/runs/RUN-b6b1ab7eb918/events",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 20523,
+   "url": "/evidence/SN-204-TEMP?run=RUN-b6b1ab7eb918&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20544,
+   "url": "/evidence/SN-204-CUR?run=RUN-b6b1ab7eb918&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20551,
+   "url": "/evidence/SN-204-VIB?run=RUN-b6b1ab7eb918&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20552,
+   "url": "/evidence/SN-204-VIB?run=RUN-b6b1ab7eb918&_rsc=pmV04TTu4ivGoTDA",
+   "status": null,
+   "failure": "net::ERR_ABORTED"
+  },
+  {
+   "ms": 20552,
+   "url": "/evidence/EQ-CNC-204?run=RUN-b6b1ab7eb918&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20826,
+   "url": "/evidence/SN-204-TEMP?run=RUN-b6b1ab7eb918&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20856,
+   "url": "/evidence/EQ-CNC-204?run=RUN-b6b1ab7eb918&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20857,
+   "url": "/evidence/SN-204-CUR?run=RUN-b6b1ab7eb918&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20975,
+   "url": "/evidence/SN-204-VIB?run=RUN-b6b1ab7eb918&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21121,
+   "url": "/evidence/AL-20260826-0041?run=RUN-b6b1ab7eb918&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21484,
+   "url": "/api/runs/RUN-b6b1ab7eb918",
+   "status": 200,
+   "type": "application/json"
+  }
+ ],
+ "ws": [
+  {
+   "ms": 18856,
+   "url": "wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-b6b1ab7eb918",
+   "frames": [],
+   "closed": 19311,
+   "error": "Error during WebSocket handshake: Unexpected response code: 404"
+  },
+  {
+   "ms": 19836,
+   "url": "wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-b6b1ab7eb918",
+   "frames": [],
+   "closed": 20992,
+   "error": "Error during WebSocket handshake: Unexpected response code: 404"
+  }
+ ],
+ "flips": [
+  {
+   "ms": 596,
+   "tag": "entry",
+   "badge": "◌확인 중",
+   "offer": false,
+   "banner": false,
+   "url": "/"
+  },
+  {
+   "ms": 2241,
+   "tag": "entry",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/"
+  },
+  {
+   "ms": 3131,
+   "tag": "entry",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/overview"
+  },
+  {
+   "ms": 18896,
+   "tag": "start",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/incidents/INC-2026-014"
+  }
+ ],
+ "liveStatus": {
+  "status": 200,
+  "body": {
+   "online": false,
+   "checkedAt": "2026-09-01T09:59:30.100078Z"
+  }
+ },
+ "consoleCandidates": {
+  "url": "/overview",
+  "inputs": [],
+  "buttons": [
+   {
+    "tag": "button",
+    "testid": "reset-button",
+    "ph": null,
+    "type": null,
+    "text": "⟲ 세션 리셋",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": null,
+    "text": "✕",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": "start-from-headline",
+    "ph": null,
+    "type": "button",
+    "text": "조사 시작 ▸",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "전체 (12대)",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 1 (4대)LN-A-01",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 2 (4대)LN-A-02",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 3 (4대)LN-A-03",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "✕",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": "start-from-alarm",
+    "ph": null,
+    "type": "button",
+    "text": "조사 시작 ▸",
+    "disabled": false
+   }
+  ],
+  "links": [
+   "/overview",
+   "/incidents/INC-2025-019",
+   "/compare",
+   "/overview",
+   "/incidents/INC-2025-019",
+   "/compare",
+   "/overview?intro=1"
+  ]
+ },
+ "stimulus": {
+  "skipped": "입력 후보 0 — 이 vantage 에서 질문을 보낼 자리를 못 찾았다"
+ },
+ "tsHeaderHits": [],
+ "notes": [
+  "첫 응답 200 588ms · x-vercel-id=icn1::iad1::xm9rj-1788256753246-9f5103f308f7",
+  "조사 시작 클릭 16711ms"
+ ],
+ "consoleCandidates2": {
+  "url": "/incidents/INC-2026-014",
+  "inputs": []
+ },
+ "endedAt": 24853
+}

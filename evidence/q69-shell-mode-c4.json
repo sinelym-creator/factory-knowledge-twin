@@ -1,0 +1,576 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "startedAt": "2026-09-01T10:02:02.837Z",
+ "question": "지난 24시간 설비 이상 신호를 요약해줘",
+ "api": [
+  {
+   "ms": 1448,
+   "url": "/api/live/status",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 2372,
+   "url": "/enter",
+   "status": 303,
+   "type": null
+  },
+  {
+   "ms": 4538,
+   "url": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5006,
+   "url": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5037,
+   "url": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5038,
+   "url": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5049,
+   "url": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5723,
+   "url": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5723,
+   "url": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5726,
+   "url": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5731,
+   "url": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5732,
+   "url": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5733,
+   "url": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 5736,
+   "url": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 17228,
+   "url": "/api/live/status",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 17782,
+   "url": "/api/scenarios/GS-01/runs",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 18077,
+   "url": "/incidents/INC-2026-014?run=RUN-3bee6a422bdf&_rsc=xrnnFjQY5UGWLegl",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 20385,
+   "url": "/incidents/INC-2026-014?run=RUN-3bee6a422bdf&_rsc=xrnnFjQY5UGWLegl",
+   "status": null,
+   "failure": "net::ERR_ABORTED"
+  },
+  {
+   "ms": 20986,
+   "url": "/api/equipment/EQ-CNC-204/sensors/SN-204-VIB/series?window=24h",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 21345,
+   "url": "/api/runs/RUN-3bee6a422bdf/events",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 21644,
+   "url": "/api/runs/RUN-3bee6a422bdf",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 21677,
+   "url": "/evidence/SN-204-TEMP?run=RUN-3bee6a422bdf&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21681,
+   "url": "/evidence/EQ-CNC-204?run=RUN-3bee6a422bdf&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21686,
+   "url": "/evidence/SN-204-VIB?run=RUN-3bee6a422bdf&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21743,
+   "url": "/evidence/SN-204-CUR?run=RUN-3bee6a422bdf&_rsc=pmV04TTu4ivGoTDA",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21943,
+   "url": "/api/runs/RUN-3bee6a422bdf",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "ms": 21973,
+   "url": "/evidence/SN-204-TEMP?run=RUN-3bee6a422bdf&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21980,
+   "url": "/evidence/EQ-CNC-204?run=RUN-3bee6a422bdf&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 21980,
+   "url": "/evidence/SN-204-VIB?run=RUN-3bee6a422bdf&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 22078,
+   "url": "/evidence/SN-204-CUR?run=RUN-3bee6a422bdf&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 22272,
+   "url": "/evidence/AL-20260826-0041?run=RUN-3bee6a422bdf&_rsc=jao9sbQK53ASuRkV",
+   "status": 200,
+   "type": "text/x-component"
+  },
+  {
+   "ms": 25715,
+   "url": "/api/runs/RUN-3bee6a422bdf/events",
+   "status": 200,
+   "type": "application/json"
+  }
+ ],
+ "ws": [
+  {
+   "ms": 20430,
+   "url": "wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3bee6a422bdf",
+   "frames": [],
+   "closed": 20742,
+   "error": "Error during WebSocket handshake: Unexpected response code: 404"
+  },
+  {
+   "ms": 21261,
+   "url": "wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3bee6a422bdf",
+   "frames": [],
+   "closed": 21522,
+   "error": "Error during WebSocket handshake: Unexpected response code: 404"
+  }
+ ],
+ "flips": [
+  {
+   "ms": 501,
+   "tag": "entry",
+   "badge": "◌확인 중",
+   "offer": false,
+   "banner": false,
+   "url": "/"
+  },
+  {
+   "ms": 1517,
+   "tag": "entry",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/"
+  },
+  {
+   "ms": 3045,
+   "tag": "entry",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/overview"
+  },
+  {
+   "ms": 20477,
+   "tag": "start",
+   "badge": "◑REPLAY",
+   "offer": false,
+   "banner": true,
+   "url": "/incidents/INC-2026-014"
+  }
+ ],
+ "liveStatus": {
+  "status": 200,
+  "body": {
+   "online": false,
+   "checkedAt": "2026-09-01T10:02:19.864147Z"
+  }
+ },
+ "consoleCandidates": {
+  "url": "/overview",
+  "inputs": [],
+  "buttons": [
+   {
+    "tag": "button",
+    "testid": "reset-button",
+    "ph": null,
+    "type": null,
+    "text": "⟲ 세션 리셋",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": null,
+    "text": "✕",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": "start-from-headline",
+    "ph": null,
+    "type": "button",
+    "text": "조사 시작 ▸",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "전체 (12대)",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 1 (4대)LN-A-01",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 2 (4대)LN-A-02",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "가공 라인 3 (4대)LN-A-03",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": null,
+    "ph": null,
+    "type": "button",
+    "text": "✕",
+    "disabled": false
+   },
+   {
+    "tag": "button",
+    "testid": "start-from-alarm",
+    "ph": null,
+    "type": "button",
+    "text": "조사 시작 ▸",
+    "disabled": false
+   }
+  ],
+  "links": [
+   "/overview",
+   "/incidents/INC-2025-019",
+   "/compare",
+   "/overview",
+   "/incidents/INC-2025-019",
+   "/compare",
+   "/overview?intro=1"
+  ]
+ },
+ "stimulus": {
+  "skipped": "입력 후보 0 — 이 vantage 에서 질문을 보낼 자리를 못 찾았다"
+ },
+ "tsHeaderHits": [],
+ "notes": [
+  "첫 응답 200 495ms · x-vercel-id=icn1::iad1::t5sf5-1788256922475-b12cfede08f8",
+  "조사 시작 클릭 17249ms"
+ ],
+ "consoleCandidates2": {
+  "url": "/incidents/INC-2026-014",
+  "inputs": []
+ },
+ "runEvents": {
+  "run": "RUN-3bee6a422bdf",
+  "status": 200,
+  "body": [
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 0,
+    "ts": "2026-09-01T10:02:20.412Z",
+    "mode": "live",
+    "type": "run.started",
+    "payload": {
+     "scenarioId": "GS-01",
+     "question": "알람 AL-20260826-0041이 발생했다. 이 알람에서 출발해 관련 설비·부품·고장 모드·대응 절차·필수 안전 규정까지 이어지는 경로 전체를 제시하라."
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 1,
+    "ts": "2026-09-01T10:02:20.414Z",
+    "mode": "live",
+    "type": "plan.updated",
+    "payload": {
+     "steps": [
+      "structured",
+      "vector",
+      "graph",
+      "synthesize",
+      "draft_work_order"
+     ]
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 2,
+    "ts": "2026-09-01T10:02:20.419Z",
+    "mode": "live",
+    "type": "step.started",
+    "payload": {
+     "step": "structured"
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 3,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "EQ-CNC-204",
+      "kind": "record",
+      "sourceId": "EQ-CNC-204",
+      "excerpt": "[equipment] line_id=LN-A-02, name=CNC 204호기, equipment_class=CNC, model=MX-500, installed_on=2021-03-27, status=warning, criticality=high"
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 4,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "SN-204-CUR",
+      "kind": "record",
+      "sourceId": "SN-204-CUR",
+      "excerpt": "[sensor] equipment_id=EQ-CNC-204, measurement_type=CUR, unit=A, sampling_hz=10.000, warn_threshold=18.0000, alarm_threshold=22.0000"
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 5,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "SN-204-TEMP",
+      "kind": "record",
+      "sourceId": "SN-204-TEMP",
+      "excerpt": "[sensor] equipment_id=EQ-CNC-204, measurement_type=TEMP, unit=degC, sampling_hz=1.000, warn_threshold=55.0000, alarm_threshold=65.0000"
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 6,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "SN-204-VIB",
+      "kind": "record",
+      "sourceId": "SN-204-VIB",
+      "excerpt": "[sensor] equipment_id=EQ-CNC-204, measurement_type=VIB, unit=mm/s, sampling_hz=51.200, warn_threshold=4.5000, alarm_threshold=6.3000"
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 7,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "AL-20260826-0041",
+      "kind": "record",
+      "sourceId": "AL-20260826-0041",
+      "excerpt": "[alarm] sensor_id=SN-204-VIB, equipment_id=EQ-CNC-204, incident_id=INC-2026-014, severity=critical, threshold_value=6.3000, observed_value=6.3047, raised_at=2026-08-26 01:46:12+00:00, status=active"
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 8,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "MR-2026-0006",
+      "kind": "record",
+      "sourceId": "MR-2026-0006",
+      "excerpt": "[maintenance_record] equipment_id=EQ-CNC-204, action_type=lubricate, performed_at=2026-06-02 05:30:00+00:00, duration_min=92, result=completed, note=lubricate 정기 작업. 계측값 판정 기준 이내."
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 9,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "MR-2025-0095",
+      "kind": "record",
+      "sourceId": "MR-2025-0095",
+      "excerpt": "[maintenance_record] equipment_id=EQ-CNC-204, action_type=inspect, performed_at=2025-11-09 05:30:00+00:00, duration_min=68, result=completed, note=inspect 정기 작업. 계측값 판정 기준 이내."
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 10,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "MR-2025-0087",
+      "kind": "record",
+      "sourceId": "MR-2025-0087",
+      "excerpt": "[maintenance_record] equipment_id=EQ-CNC-204, work_order_id=WO-2025-0087, action_type=replace, performed_at=2025-02-11 05:30:00+00:00, duration_min=95, result=completed, note=스핀들 베어링 마모로 베어링 교체. 교체 후 진동 RMS 2.1 mm/s로 회복. 그리스 재충전 및 시운전 완료."
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 11,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.evidence",
+    "payload": {
+     "step": "structured",
+     "evidence": {
+      "evidenceId": "MR-2024-0004",
+      "kind": "record",
+      "sourceId": "MR-2024-0004",
+      "excerpt": "[maintenance_record] equipment_id=EQ-CNC-204, action_type=calibrate, performed_at=2024-04-19 05:30:00+00:00, duration_min=68, result=completed, note=calibrate 정기 작업. 계측값 판정 기준 이내."
+     }
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 12,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.completed",
+    "payload": {
+     "step": "structured",
+     "elapsedMs": 2,
+     "summary": "equipment 1건 · sensor 3건 · alarm 1건 · maintenance_record 4건"
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 13,
+    "ts": "2026-09-01T10:02:20.422Z",
+    "mode": "live",
+    "type": "step.started",
+    "payload": {
+     "step": "vector"
+    }
+   },
+   {
+    "runId": "RUN-3bee6a422bdf",
+    "seq": 14,
+    "ts": "2026-09-01T10:02:20.425Z",
+    "mode": "live",
+    "type": "run.failed",
+    "payload": {
+     "code": "step_failed:vector",
+     "message": "vector 단계에서 조사를 계속할 수 없다"
+    }
+   }
+  ]
+ },
+ "endedAt": 25716
+}

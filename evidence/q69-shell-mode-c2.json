@@ -1,0 +1,35 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "run": "RUN-b6b1ab7eb918",
+ "at": "2026-09-01T10:00:18.691Z",
+ "probes": [
+  {
+   "path": "/api/runs/RUN-b6b1ab7eb918",
+   "status": 401,
+   "ms": 1679,
+   "ts": [],
+   "body": "{\"error\":{\"code\":\"session_required\",\"message\":\"세션이 없다 — POST /api/sessions 로 발급받아라\"}}"
+  },
+  {
+   "path": "/api/runs/RUN-b6b1ab7eb918/events",
+   "status": 401,
+   "ms": 771,
+   "ts": [],
+   "body": "{\"error\":{\"code\":\"session_required\",\"message\":\"세션이 없다 — POST /api/sessions 로 발급받아라\"}}"
+  },
+  {
+   "path": "/api/live/status",
+   "status": 200,
+   "ms": 845,
+   "ts": [],
+   "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T10:00:21.777341Z\"}"
+  },
+  {
+   "path": "/api/ws/runs/RUN-b6b1ab7eb918",
+   "status": 404,
+   "ms": 260,
+   "ts": [],
+   "body": "{\"error\":{\"code\":\"http_404\",\"message\":\"Not Found\"}}"
+  }
+ ]
+}
