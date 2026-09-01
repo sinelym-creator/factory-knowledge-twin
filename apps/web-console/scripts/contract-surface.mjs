@@ -29,7 +29,11 @@ const ALLOWED = [
   /^\/api\/sessions$/,
   /^\/api\/sessions\/\$\{[^}]+\}\/reset$/, // 템플릿 리터럴 형태 그대로
   /^\/api\/live\/status$/,
-  /^\/api\/:path\*$/, // next.config.ts의 rewrite 원본·대상 표기
+  // 🔴 D-11 (B): rewrite 가 «WS 하나»로 좁아졌다. HTTP `/api/*` 는 이제 함수 프록시
+  //    (`app/api/[...path]/route.ts`)가 받고, rewrite 에 남은 것은 Route Handler 가
+  //    낼 수 없는 101 업그레이드 경로뿐이다. 그래서 이 허용 표기도 함께 «좁힌다» —
+  //    검사기가 넓은 채로 남으면 다음에 누가 `/api/:path*` 를 되살려도 아무도 모른다.
+  /^\/api\/ws\/:path\*$/, // next.config.ts 의 rewrite 원본·대상 표기(WS 전용)
   // --- T3-2 조회 계층(계약 v0.1.7 + 정정 append) ------------------------------
   // 🔴 목록을 «계약에 있는 것»으로만 늘린다. 화면이 필요하다는 이유로 여기에 줄을 더하면
   //    이 검사기는 「계약 밖 0」이 아니라 「내가 쓴 것 전부 허용」이 된다.

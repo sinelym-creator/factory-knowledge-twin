@@ -531,6 +531,67 @@ async function attempt<T>(
   }
 }
 
+/**
+ * 🔴 **D-11 (B) — 브라우저의 `/api/*` 를 «엣지 rewrite» 대신 «Vercel 함수»가 받아 넘긴다.**
+ *
+ * 왜: Production 의 엣지 rewrite 가 간헐적으로 502 `DNS_HOSTNAME_EMPTY` 를 냈다(12:19~ ·
+ * 7회 중 4회). 같은 시각 «함수» 경로(`POST /enter` → 이 파일의 `createSession`)는 5/5
+ * 정상이었다 — 두 길의 차이는 우리 코드가 아니라 «어느 층이 목적지를 해석하는가» 다.
+ * 그래서 조회도 함수가 받는 길로 옮긴다. (C) 의 재시도는 깜빡임을 덮는 완화였고, 이것이
+ * 그 깜빡임이 나는 층을 지나지 않게 하는 쪽이다.
+ *
+ * 🔴 **이 함수가 `lib/contract.ts` 에 있는 이유** — 「셸에서 나가는 fetch 는 한 파일에 모인다」는
+ *    불변식(`scripts/contract-surface.mjs`)이다. 라우트 핸들러 안에 fetch 를 두면 그 규칙이
+ *    이 한 파일만큼 약해지고, 검사기는 그만큼 조용해진다.
+ * 🔴 **표면은 넓어지지 않는다** — 이 프록시가 넘기는 것은 rewrite 가 넘기던 것과 «같은»
+ *    `/api/*` 전량이다. 계약 밖 경로가 새로 열리는 것이 아니라, 같은 문이 다른 층으로 옮겨진다.
+ * 🔴 **경로는 `pathname` 을 그대로 쓴다.** catch-all 세그먼트를 다시 조립하면 Next 가 디코드해
+ *    준 값을 내가 다시 인코딩하게 되고, `%2F` 같은 값이 왕복에서 달라진다 — 내 인코딩이
+ *    상대의 404 가 되는 자리다. 들어온 경로를 그대로 옮기면 그 자리가 없다.
+ * 🔴 **자체 상한을 두지 않는다.** 여기서 `AbortSignal.timeout` 을 걸면 `compare`(120s 예산)를
+ *    이 층이 조용히 자른다. 상한은 호출자(`call()`)와 함수의 `maxDuration` 이 이미 갖고 있다.
+ */
+export async function proxyApiRequest(req: Request, opts: { https: boolean }): Promise<Response> {
+  const url = new URL(req.url);
+  const target = apiBase() + url.pathname + url.search;
+
+  // 🔴 통과시킬 요청 헤더를 «목록으로» 정한다 — 통째로 넘기면 host·x-forwarded-* 까지 실려
+  //    상대가 우리 호스트를 자기 것으로 읽는다. 필요한 것만 옮긴다.
+  const headers = new Headers();
+  for (const name of ["cookie", "content-type", "accept"]) {
+    const v = req.headers.get(name);
+    if (v) headers.set(name, v);
+  }
+
+  const hasBody = req.method !== "GET" && req.method !== "HEAD";
+  const upstream = await fetch(target, {
+    method: req.method,
+    headers,
+    // 🔴 본문은 «스트림 그대로» 넘긴다(버퍼로 읽으면 큰 compare 본문을 이 층이 통째로 안는다).
+    //    Node fetch 는 스트림 본문에 `duplex: "half"` 를 요구한다.
+    body: hasBody ? req.body : undefined,
+    ...(hasBody ? { duplex: "half" } : {}),
+    redirect: "manual",
+    cache: "no-store",
+  } as RequestInit);
+
+  const out = new Headers();
+  for (const name of ["content-type", "retry-after", "cache-control"]) {
+    const v = upstream.headers.get(name);
+    if (v) out.set(name, v);
+  }
+
+  // 🔴 `Set-Cookie` 는 «원문 그대로» 옮긴다 — 쿠키 정체성의 정본은 API 한 곳에 남는다.
+  //    🔴 `Secure` 만 셸 쪽 조건으로 덧붙인다: API 는 자기 요청 스킴(서버간 http)을 보고
+  //       정하므로 Secure 가 빠지는데, 브라우저 쪽 조건은 브라우저 쪽에서 안다.
+  //       이 판정은 `app/enter/route.ts` 의 규율을 «한 글자도 바꾸지 않고» 그대로 쓴다.
+  for (const raw of upstream.headers.getSetCookie()) {
+    out.append("set-cookie", opts.https && !/;\s*secure/i.test(raw) ? `${raw}; Secure` : raw);
+  }
+
+  return new Response(upstream.body, { status: upstream.status, headers: out });
+}
+
 export function createSession(base = ""): Promise<Reply<{ sessionId: string }>> {
   // 🔴 `no-store` — 세션 발급 응답은 캐시에 남을 물건이 아니다(쿠키가 실려 있다).
   return call<{ sessionId: string }>(
