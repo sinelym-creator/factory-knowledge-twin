@@ -24,7 +24,7 @@ export async function register(): Promise<void> {
    *    티켓 이전과 «같은» 동작이다. 다만 그 사실이 조용하면 안 되므로 한 줄 남긴다.
    */
   try {
-    const [{ loadServerFetch }, { registerServerFetch }] = await Promise.all([
+    const [{ loadServerFetch }, { registerServerFetch, MODULE_ID }] = await Promise.all([
       import("./lib/server-dns"),
       import("./lib/contract"),
     ]);
@@ -32,7 +32,8 @@ export async function register(): Promise<void> {
     registerServerFetch((url, init) =>
       server.fetch(url, { ...init, dispatcher: server.dispatcher } as Record<string, unknown>),
     );
-    console.warn("[dns] dispatcher installed");
+    // 🔴 «어느 사본»이 등록했는지까지 남긴다 — 아래 실패 로그의 mod 와 대조하는 자리다(D-12e).
+    console.warn(`[dns] dispatcher installed mod=${MODULE_ID}`);
   } catch (e) {
     // 🔴 「못 끼웠다」를 «성공처럼» 지나가지 않는다 — 이 줄이 없으면 우회가 죽어도 조용하다.
     console.warn(`[dns] dispatcher install failed ${e instanceof Error ? e.name : "unknown"}`);

@@ -671,21 +671,51 @@ function causeCode(e: unknown): string | undefined {
  */
 type ServerFetch = (url: string, init: RequestInit) => Promise<Response>;
 
-let serverFetch: ServerFetch | undefined;
+/**
+ * 🔴 **슬롯은 «모듈 변수»가 아니라 `globalThis` 다**(D-12e · 승격 실측이 가른 자리).
+ *
+ *    D-12d 는 이 자리를 모듈 변수(`let serverFetch`)로 뒀고, 그것이 프로덕션에서 **안 물렸다**.
+ *    실측(E1 · main `5515af9` 승격 후 15:50:37~51:24): 같은 요청 로그에
+ *    `[dns] dispatcher installed` 는 찍히는데 실패는 그대로 `TypeError ENOTFOUND
+ *    syscall=getaddrinfo` 였고 `[dns] system=… fallback=…` 줄은 **0** 이었다 —
+ *    즉 «깔렸지만 안 불렸다».
+ *
+ * 🔴 이유: Next/Turbopack 은 **라우트마다 서버 번들을 따로** 만들고, 이 파일은 그 번들마다
+ *    «복사본»으로 들어간다. `instrumentation.ts` 가 등록한 것은 **부팅 번들의 복사본**이 든
+ *    모듈 변수이고, `/enter` 라우트 번들의 복사본은 그 값을 영원히 못 본다.
+ *    `globalThis` 는 복사본이 몇 벌이든 «하나»라, 쓰는 쪽과 읽는 쪽이 반드시 만난다.
+ * 🔴 **읽기는 «호출 시점»에 한다** — 모듈 로드 시점에 한 번 읽어 캐시하면 부팅 순서에 따라
+ *    또 `undefined` 를 붙잡고 살게 된다(같은 병의 다른 얼굴).
+ * 🔴 내 로컬 드릴 ㉑ 은 이 축을 **볼 수 없었다**: 단일 프로세스에 번들도 없어 복사본이 한 벌뿐이다.
+ *    그래서 아래 ㉓ 은 «복사본 2벌»을 일부러 만든다(그것이 이 결함의 모양이다).
+ */
+const SERVER_FETCH_SLOT = Symbol.for("fkt.serverFetch");
+
+/**
+ * 🔴 **이 모듈 «사본»의 지문**(자비스 제안 · D-12e). 로그 두 줄이 같은 사본을 말하는지 보려는 것이다:
+ *    `[dns] dispatcher installed mod=A` 인데 `[enter] createSession failed … mod=B` 면 **사본이 갈렸다**(D-12d 의 병).
+ *    두 줄의 mod 가 «같은데도» `[dns] system=… fallback=…` 이 안 보이면 그것은 사본 문제가 아니라
+ *    «층» 문제다(우회가 안 타는 다른 이유). 지문이 없으면 그 둘이 한 칸에서 뭉친다.
+ * 🔴 값은 무작위 8자다 — 호스트·세션과 무관하고 프로세스 밖으로 나가지 않는다(§15.2 무관).
+ */
+export const MODULE_ID = Math.random().toString(16).slice(2, 10);
+
+type GlobalSlot = { [SERVER_FETCH_SLOT]?: ServerFetch };
 
 /** 🔴 서버 프로세스에서만 불린다(`instrumentation.ts`). 브라우저에서는 영원히 미등록이다. */
 export function registerServerFetch(impl: ServerFetch): void {
-  serverFetch = impl;
+  (globalThis as GlobalSlot)[SERVER_FETCH_SLOT] = impl;
 }
 
 /** 드릴이 「물렸는가」를 셀 수 있는 자리 — 등록 여부는 값이 아니라 «사실»이라 세야 한다. */
 export function hasServerFetch(): boolean {
-  return serverFetch !== undefined;
+  return typeof (globalThis as GlobalSlot)[SERVER_FETCH_SLOT] === "function";
 }
 
 async function outboundFetch(base: string, url: string, init: RequestInit): Promise<Response> {
-  if (!base || !serverFetch) return fetch(url, init);
-  return serverFetch(url, init);
+  const impl = (globalThis as GlobalSlot)[SERVER_FETCH_SLOT];
+  if (!base || !impl) return fetch(url, init);
+  return impl(url, init);
 }
 
 async function attempt<T>(
@@ -846,7 +876,12 @@ export async function createSession(base = ""): Promise<Reply<{ sessionId: strin
      *    없으면 붙이지 않는다 — 자리를 채우려고 지어내지 않는다.
      */
     const said = reply.cause ? `${reply.why} ${reply.cause}` : reply.why;
-    console.warn("[enter] createSession failed", said, `attempt=${attempt}/${attempts}`);
+    console.warn(
+      "[enter] createSession failed",
+      said,
+      `attempt=${attempt}/${attempts}`,
+      `mod=${MODULE_ID}`,
+    );
 
     // 서버가 «답한» 실패 — 되묻지 않는다(①).
     if (reply.status !== undefined) return retried ? { ...reply, retried: true } : reply;
