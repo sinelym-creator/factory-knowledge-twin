@@ -45,6 +45,27 @@ import { ENTRY_DESTINATION, SESSION_COOKIE, formatSession, parseSession } from "
  *    를 따라갔다(https 를 주면 `https:`). 그래서 아래 Secure 판정은 V-1 규율 «원문»을
  *    그대로 쓴다. 한 객체라고 두 필드를 같이 믿거나 같이 버리지 않는다 — 축마다 쟀다.
  */
+
+/**
+ * 🔴 **`maxDuration = 60`** — 이 핸들러의 최악 체감은 «우리 코드가 정한» 25초대다.
+ *
+ *    `createSession()`(D-12)은 «미도달» 회차를 400·800ms 간격으로 2회 되묻고, **시도마다
+ *    자기 `ENTER_TIMEOUT_MS`(8s) 예산**을 쓴다 — 세 시도가 다 상한까지 가면 `3×8s + 1.2s`.
+ *    실측(리바이2 #302 §3 · E1): 타임아웃 형 3회가 **25,238ms** 로 그 계산과 맞았다.
+ *
+ * 🔴 **플랫폼 기본값에 기대지 않는다.** 함수 상한이 그 25초보다 짧으면 이 층이 «조용히
+ *    먼저» 자른다. 그러면 D-12b 의 관측 축 —`[enter] createSession failed <why> <cause>
+ *    attempt=N/3`— 이 정작 필요한 **마지막 회차에서 사라진다**(잘린 함수는 그 줄을 못 남긴다).
+ *    기본값은 플랜·런타임 설정에 따라 달라질 수 있는 값이라, 상한을 코드에 박아 둔다.
+ * 🔴 **60 = 25.2s 의 두 배 여유.** 같은 리포의 프록시 라우트는 `compare` 콜드 임베딩 적재
+ *    때문에 `maxDuration = 300` 을 선언한다(`app/api/[...path]/route.ts`) — 입장 발급은
+ *    그만큼 길 일이 없으므로 같은 값을 따라가지 않는다.
+ * 🔴 **상한을 늘린 것이 「더 기다린다」는 뜻은 아니다.** 기다림을 정하는 것은 여전히
+ *    `ENTER_TIMEOUT_MS` 와 재시도 횟수이고(둘 다 이 티켓에서 무변경), 이 값은 그 계산이
+ *    끝나기 전에 함수가 먼저 잘리지 않게 할 뿐이다.
+ */
+export const maxDuration = 60;
+
 function seeOther(setCookie?: string | null) {
   return new NextResponse(null, {
     status: 303,
