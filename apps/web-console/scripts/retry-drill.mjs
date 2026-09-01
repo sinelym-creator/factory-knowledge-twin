@@ -22,9 +22,19 @@
  *    판정식을 복사하면 이 드릴은 코드가 아니라 자기 사본을 검사하게 되고, 본체가 바뀐 날에도
  *    초록이 유지된다(「옮겨 적은 표는 자동 대조하라」).
  *
- * 🔴 새 의존성 0 — Node 22 내장 타입 스트리핑 + 내장 `Response` 만 쓴다. 테스트 러너를
- *    들이는 것은 이 티켓의 범위 밖이고, 이 리포의 다른 그물(`tests/contract/run.js` ·
- *    `tests/api/ci_hygiene_drill.py`)도 의존성 없는 자체 러너다.
+ * 🔴 **돌리기 전에 `undici` 가 설치돼 있어야 한다** — 「새 의존성 0」은 더 이상 참이 아니다.
+ *    다만 이 드릴이 들인 것이 아니라 **본체가 들인 것**이다: `lib/server-dns.ts` 가 D-12d
+ *    (`95cdef1`)에서 `await import("undici")` 로 «앱이 나가는 한 벌»을 잡았고, ⑱~㉑ 은 그
+ *    같은 패키지를 통과해야만 「dispatcher 가 실제 소켓에서 도는가」를 잰다.
+ *    `undici@8.10.1` 은 `package.json` dependencies 에 «선언»돼 있다 — 그러나 선언은 설치가
+ *    아니다. 그 커밋보다 오래된 `node_modules` 나 새 워크트리에는 없고, 그때 이 드릴은
+ *    케이스를 한 건도 찍지 못한 채 `ERR_MODULE_NOT_FOUND` 로 죽는다(실측 rc=1).
+ *    프로세스가 첫 케이스 «위»에서 죽은 것이므로 그것은 0/24 가 아니라 «측정 없음»이다.
+ *      npm install --no-save --no-package-lock undici@8.10.1
+ *    (실측: 빈 `node_modules` 에서 이 한 줄은 undici 만 가져오지 않는다 — 트리 전체
+ *     365 패키지를 깐다. 명령 이름이 사정거리를 말해 주지 않는다.)
+ *    테스트 «러너»를 들이는 것은 여전히 이 티켓의 범위 밖이고, 이 리포의 다른 그물
+ *    (`tests/contract/run.js` · `tests/api/ci_hygiene_drill.py`)도 의존성 없는 자체 러너다.
  *
  * 🔴 **왜 `.mts` 가 아니라 `.mjs` 인가** — Node 로 `lib/contract.ts` 를 직접 돌리려면 ESM 규칙상
  *    import 에 `.ts` 확장자를 «써야» 하는데, 이 프로젝트의 `tsconfig.json` 은 include 에

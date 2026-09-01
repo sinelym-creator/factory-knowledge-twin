@@ -696,7 +696,10 @@ const SERVER_FETCH_SLOT = Symbol.for("fkt.serverFetch");
  *    `[dns] dispatcher installed mod=A` 인데 `[enter] createSession failed … mod=B` 면 **사본이 갈렸다**(D-12d 의 병).
  *    두 줄의 mod 가 «같은데도» `[dns] system=… fallback=…` 이 안 보이면 그것은 사본 문제가 아니라
  *    «층» 문제다(우회가 안 타는 다른 이유). 지문이 없으면 그 둘이 한 칸에서 뭉친다.
- * 🔴 값은 무작위 8자다 — 호스트·세션과 무관하고 프로세스 밖으로 나가지 않는다(§15.2 무관).
+ * 🔴 값은 무작위 «≤8자»다 — `Math.random().toString(16).slice(2, 10)` 은 보통 8자를 주지만,
+ *    난수의 16진 표기가 짧게 끝나면 그보다 짧다. 길이로 사본을 세지 마라 — 자릿수가 같다고
+ *    같은 사본이 아니고, 짧게 나왔다고 잘린 로그가 아니다. 호스트·세션과 무관하고
+ *    프로세스 밖으로 나가지 않는다(§15.2 무관).
  */
 export const MODULE_ID = Math.random().toString(16).slice(2, 10);
 
