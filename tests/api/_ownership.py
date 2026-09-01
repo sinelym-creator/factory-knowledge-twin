@@ -35,6 +35,26 @@ class Unowned(RuntimeError):
     """대상을 «내 것»으로 세우지 못했다 — 결과가 아니라 «측정 불가»다(exit 2)."""
 
 
+#: 🔴 **걸쇠** — 이 프로세스에서 문이 시험됐는가. `none` → `running` → `passed`/`failed`.
+#:
+#:   진입점 배선(드릴마다 `self_check()` 1행)은 «아는 드릴»만 덮는다 — 다음에 새로 쓰는
+#:   파괴 드릴은 그 규율을 모른 채 태어나고, 구멍은 그 순간 그대로 다시 열린다. 그래서 검사를
+#:   입구가 아니라 **자물쇠 안**에 둔다: 파괴 대상을 «처음 내어줄 때» 문이 스스로 돈다.
+#:   `running` 이 있는 이유는 재귀다 — `self_check()` 자신이 `own_container()` 를 부른다.
+_CHECK_STATE = "none"
+
+
+def _ensure_checked() -> None:
+    """파괴 대상을 내주기 «전»에 문이 한 번은 시험됐음을 보장한다(걸쇠)."""
+    if _CHECK_STATE in ("passed", "running"):
+        return
+    if _CHECK_STATE == "failed":
+        # 🔴 한 번 실패한 문은 다시 통과시키지 않는다 — 호출부가 예외를 삼켰더라도,
+        #    그 뒤의 파괴는 «시험되지 않은 문» 아래에서 도는 것이다.
+        raise Unowned("🔴 이 프로세스에서 안전장치가 이미 «시험에 실패했다» — 파괴 대상을 내주지 않는다")
+    self_check()
+
+
 def read_base(env_name: str, what: str, *, fallback: str | None = None) -> str:
     """① 읽기 대상. 좌석 포트를 기본값으로 들던 자리는 `fallback` 없이 부른다 — 미지정 = exit 2.
 
@@ -66,7 +86,11 @@ def _exists(name: str) -> bool:
 
 
 def own_container(env_name: str, what: str) -> str:
-    """② 파괴·쓰기 대상. 명시 + 소유 확인 + 실재 확인을 «모두» 통과해야 이름을 돌려준다."""
+    """② 파괴·쓰기 대상. 명시 + 소유 확인 + 실재 확인을 «모두» 통과해야 이름을 돌려준다.
+
+    🔴 문이 시험되지 않았으면 **여기서 먼저 시험한다**(걸쇠) — 작성자가 기억하든 말든 걸린다.
+    """
+    _ensure_checked()
     name = os.environ.get(env_name, "").strip()
     if not name:
         raise Unowned(
@@ -121,6 +145,10 @@ def _probe_real_exists(prefix: str) -> str:
 
 def self_check() -> None:
     """🔴 문이 «실제로 닫히는가». 판정 앞에 이 문 자신을 먼저 시험한다."""
+    global _CHECK_STATE
+    # 🔴 «들어가는 순간» 세운다 — 아래 표본들이 `own_container` 를 부르므로, 끝나고 세우면
+    #    걸쇠가 자기 자신을 다시 부른다(무한 재귀). 재귀를 끊는 자리가 여기다.
+    _CHECK_STATE = "running"
     saved = {k: os.environ.get(k) for k in ("ZZ_T", "FKT_OWNER_PREFIX")}
     try:
         os.environ.pop("ZZ_T", None)
@@ -192,6 +220,11 @@ def self_check() -> None:
         # 🔴 ⑦ 위 ⑤⑥ 은 `_exists` 를 스텁으로 갈아 끼워 `own_container` 의 «판단»만 갈랐다 —
         #    docker 에 실제로 묻는 그 함수가 맞게 답하는지는 아직 «안 잰 축»이다. 여기서 양면으로 민다.
         probe = _probe_real_exists((saved["FKT_OWNER_PREFIX"] or "").strip())
+    except BaseException:
+        # 🔴 시험에 실패한 문은 «다시 통과시키지 않는다». 호출부가 이 예외를 삼켜도
+        #    그 뒤의 파괴는 시험되지 않은 문 아래에서 도는 것이다 — 걸쇠가 그것을 막는다.
+        _CHECK_STATE = "failed"
+        raise
     finally:
         for key, value in saved.items():
             if value is None:
@@ -203,3 +236,4 @@ def self_check() -> None:
         " + 🔴 통과 2(실재 물음 · 내 것 양성 대조군) = 문이 «닫히고, 내 것에는 열린다»"
     )
     print(probe)
+    _CHECK_STATE = "passed"
