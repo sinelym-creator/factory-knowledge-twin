@@ -20,7 +20,8 @@
 ## blocked (운영자)
 
 | ✅ **D-13 종결(16대 · 16:26)** — 폐하 「재구성」 16:11:02 → 센쿠2 6단계 ≈15분(볼륨 `_stack/.volumes-t15` · migrate 8본 선행(순서표 누락 보완) · seed 28/28 · neo4j 재적재 309/448 내용 대조 어긋남 0 · health ok/ok) · 실물 = postgres named volume `fkt-senku2-t15_pgdata` / neo4j bind 잔존(비대칭 · 후속) · 스크립트 PR #323 병합 `295c95d`(hygiene 절대경로 → 상대 기본값 수정 뒤) · 게이트 #321 병합 `1d32fa7` · 폐하 보고 16:14(사유)·16:27(종결) |
-| 🔶 **D-12e 승격 완료(main `20f7f6c` · Production 16:39:39) · 효과 = 판정 불가(無/無)** — 배포 후 창 `installed mod=bcd6b01d` 1 · `fallback=` 0 · `createSession failed` 0 · `/enter` 47/47 · 뿌리(자비스 DoH 0/40) 조용함 · **판정표 채택**(뿌리 有/無 × 앱 실패 有/無 · 목표 = 有/無) · 판정 창 신호 = 자비스 순찰 폴링 NXDOMAIN 재출현 → 리바이2 21대 자극 + 오케 로그 계수 + 센쿠2 23대 층 판별 · 「효과 있음」 문면 금지 · 잔여 = 리바이2 회차 append PR · 센쿠2 소조각(드릴 머리말 · neo4j named volume 초안) |
+| 🔶 **D-12e = 축1 설치 부분 PASS(부팅 20/20 · 설치 40 · 실패 0) / 축2 구제 판정 불가** — 판정표 5행(리바이2 #327 · `fallback=`≥1 + 그 req 의 sid 만이 작동 증거 · mod 는 곁가지) · 판정 창 ①②(17:05~17:07 · 80/80 · fallback 0) = 미오염 · 다음 창 조건 = NXDOMAIN 연속 ≥3(자비스 폴링) · 🔴 D-14 로 오늘 승격 불가 → 축2 판정은 내일 |
+| 🔴 **D-14 Vercel 일일 배포 상한 100 도달(17:06 · prod 8 + preview 92)** — 오늘 승격 불가 · 처방 ⓐ lane/* preview 끔(vercel.json 1줄 · 센쿠2 선준비) = **폐하 「진행」 17:12:21 → 센쿠2 집행 중** · 팀 규율 = push 묶기 · 승격 ≤4/일 목표 · PR 판정은 hygiene + 독립 재실행만(Vercel check = 상한 사유) |
 
 ## done
 
