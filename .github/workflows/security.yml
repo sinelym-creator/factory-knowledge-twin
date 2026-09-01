@@ -1,7 +1,7 @@
-# security — CodeQL 정적 분석 (T5-3 최소본)
+# security — CodeQL 정적 분석 + 의존성 감사 (T5-3 최소본 · 축소 안 E 항)
 #
-# 최소본 · 보류 항목: dependency audit · container scan · license · endpoint policy ·
-#   benchmark-smoke · release-evidence (별건 티켓 — 원장은 오케스트레이터가 관리한다).
+# 보류 항목: container scan · license · endpoint policy · benchmark-smoke ·
+#   release-evidence (별건 티켓 — 원장은 오케스트레이터가 관리한다).
 #
 # 경계(baseline §34.4): self-hosted runner 등록 금지 — GitHub-hosted(ubuntu-latest) 만 쓴다.
 # 판정(baseline §32.1): CI 는 게이트지 acceptance 판정이 아니다 —
@@ -42,3 +42,149 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: /language:${{ matrix.language }} # 언어별 SARIF 분리 — 미지정 시 서로 덮어쓴다
+
+  # ── 의존성 감사 (축소 안 E 항) ────────────────────────────────────────────
+  #
+  # 🔴 **경계(baseline §34.4)**: GitHub-hosted(ubuntu-latest) 만 쓴다 — self-hosted 등록 금지.
+  #    감사 도구(pnpm · pip-audit)는 **러너 안에서만** 설치한다. 리포에 더해지는 의존성은 0 이고,
+  #    `package.json`·`requirements.txt` 는 이 job 때문에 한 줄도 바뀌지 않는다.
+  #
+  # 🔴 **「취약 0건」과 「아무것도 안 봤다」를 가른다.** 경로가 바뀌거나 lockfile 이 사라지면
+  #    감사 도구는 조용히 성공한다 — 그 초록은 게이트가 아니라 «측정 없음»이다. 그래서 감사
+  #    «대상 수»를 먼저 세고, 0 이면 취약 0건이어도 실패시킨다(아래 첫 step).
+  #
+  # 🔴 **판정은 마지막 step 한 곳에서 낸다.** 감사 step 들은 결과만 남기고 실패하지 않는다 —
+  #    중간에서 죽으면 요약이 안 써지고, 그러면 「몇 건이 왜 걸렸나」가 로그 밖으로 사라진다.
+  #
+  # 🔴 **이 게이트가 «보지 않는» 것**(초록을 넓게 읽지 않도록 성문한다):
+  #    · Python 은 lockfile 이 없어 `--no-deps` 로 **선언된 핀만** 본다 — 전이 의존은 못 본다.
+  #    · `services/indexer` · `services/projector` · `requirements-dev.txt` · `tests/web` 는
+  #      이 발주 범위 밖이다(대상 = web-console + ai-api 런타임).
+  #    · 도구 버전을 고정하지 않는다. 취약 DB 와 도구가 함께 움직여야 «오늘의» 권고를 본다 —
+  #      고정하면 게이트의 지식이 그 시점에 얼어붙는다.
+  dependency-audit:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node (pnpm audit 용)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: pnpm (러너 안에서만)
+        run: npm install --global --no-fund --no-audit pnpm@10
+
+      - name: Python (pip-audit 용)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: pip-audit (러너 안에서만)
+        run: python -m pip install --disable-pip-version-check --quiet pip-audit
+
+      - name: 감사 대상이 «실재»하는가 (계측기 축)
+        env:
+          LOCK: apps/web-console/pnpm-lock.yaml
+          REQ: services/ai-api/requirements.txt
+        run: |
+          set -euo pipefail
+          test -f "$LOCK" || { echo "::error::$LOCK 없음 — 감사 대상이 사라졌다"; exit 1; }
+          test -f "$REQ"  || { echo "::error::$REQ 없음 — 감사 대상이 사라졌다"; exit 1; }
+          NPKG=$(grep -c 'resolution: {integrity' "$LOCK" || true)
+          NREQ=$(grep -vcE '^[[:space:]]*(#|$)' "$REQ" || true)
+          echo "lockfile 패키지 ${NPKG}개 · ai-api 선언 핀 ${NREQ}개"
+          [ "$NPKG" -gt 0 ] || { echo "::error::lockfile 패키지 0건 — 「취약 0」이 아니라 「아무것도 안 봤다」다"; exit 1; }
+          [ "$NREQ" -gt 0 ] || { echo "::error::requirements 항목 0건 — 같은 이유로 실패시킨다"; exit 1; }
+          { echo "NPKG=$NPKG"; echo "NREQ=$NREQ"; } >> "$GITHUB_ENV"
+
+      - name: web-console — pnpm audit
+        working-directory: apps/web-console
+        run: |
+          set -uo pipefail
+          # 🔴 실패시키지 않는다(`|| true`) — 판정은 마지막 step 이 낸다. 여기서 죽으면 요약이 없다.
+          pnpm audit --json > "$RUNNER_TEMP/pnpm-audit.json" 2> "$RUNNER_TEMP/pnpm-audit.err" || true
+          node -e '
+            const fs = require("fs");
+            const p = process.env.RUNNER_TEMP + "/pnpm-audit.json";
+            let v = { info: 0, low: 0, moderate: 0, high: 0, critical: 0 };
+            let parsed = false;
+            try {
+              const j = JSON.parse(fs.readFileSync(p, "utf8"));
+              v = Object.assign(v, (j.metadata && j.metadata.vulnerabilities) || {});
+              parsed = true;
+            } catch (e) {
+              console.log("::warning::pnpm audit JSON 파싱 실패 — " + e.message);
+            }
+            const gate = (v.high || 0) + (v.critical || 0);
+            const out = [
+              "JS_PARSED=" + (parsed ? "1" : "0"),
+              "JS_HIGH=" + (v.high || 0),
+              "JS_CRITICAL=" + (v.critical || 0),
+              "JS_MODERATE=" + (v.moderate || 0),
+              "JS_LOW=" + (v.low || 0),
+              "JS_GATE=" + gate,
+            ].join("\n");
+            fs.appendFileSync(process.env.GITHUB_ENV, out + "\n");
+            console.log(out);
+          '
+          head -c 2000 "$RUNNER_TEMP/pnpm-audit.err" || true
+
+      - name: ai-api — pip-audit
+        env:
+          REQ: services/ai-api/requirements.txt
+        run: |
+          set -uo pipefail
+          # 🔴 `--no-deps` — 이 리포의 Python 에는 lockfile 이 없다. 해석을 켜면 게이트가 매번
+          #    다른 트리를 보게 되고(재현성 0), torch 급 패키지에서 러너 시간이 튄다.
+          #    선언된 핀만 보는 대신, 「무엇을 못 보는가」를 위 머리말에 성문해 뒀다.
+          pip-audit --no-deps --progress-spinner=off -r "$REQ" -f json -o "$RUNNER_TEMP/pip-audit.json" || true
+          python - <<'PY'
+          import json, os
+          p = os.environ["RUNNER_TEMP"] + "/pip-audit.json"
+          deps, vulns, parsed = 0, 0, 0
+          rows = []
+          try:
+              with open(p, encoding="utf-8") as f:
+                  j = json.load(f)
+              parsed = 1
+              items = j.get("dependencies", j) if isinstance(j, dict) else j
+              for d in items:
+                  deps += 1
+                  for v in d.get("vulns", []) or []:
+                      vulns += 1
+                      rows.append(f"{d.get('name')}=={d.get('version')} {v.get('id')}")
+          except Exception as e:
+              print(f"::warning::pip-audit JSON 파싱 실패 — {e}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+              f.write(f"PY_PARSED={parsed}\nPY_DEPS={deps}\nPY_VULNS={vulns}\n")
+          print(f"감사 대상 {deps}개 · 취약 {vulns}건")
+          for r in rows:
+              print("  " + r)
+          PY
+
+      - name: 요약 · 판정
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo "## dependency audit"
+            echo ""
+            echo "| 대상 | 감사 대상 | 결과 |"
+            echo "|---|---|---|"
+            echo "| apps/web-console (pnpm) | lockfile 패키지 ${NPKG:-?}개 | high ${JS_HIGH:-?} · critical ${JS_CRITICAL:-?} · moderate ${JS_MODERATE:-?} · low ${JS_LOW:-?} |"
+            echo "| services/ai-api (pip-audit --no-deps) | 선언 핀 ${NREQ:-?}개 / 감사 ${PY_DEPS:-?}개 | 취약 ${PY_VULNS:-?}건 |"
+            echo ""
+            echo "게이트: JS 는 high 이상, Python 은 1건 이상이면 실패. 감사 대상이 0 이어도 실패한다"
+            echo "(「취약 0건」과 「아무것도 안 봤다」는 다른 사실이다)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          fail=0
+          [ "${JS_PARSED:-0}" = "1" ] || { echo "::error::pnpm audit 결과를 읽지 못했다 — 측정 실패"; fail=1; }
+          [ "${PY_PARSED:-0}" = "1" ] || { echo "::error::pip-audit 결과를 읽지 못했다 — 측정 실패"; fail=1; }
+          [ "${PY_DEPS:-0}" -gt 0 ] || { echo "::error::pip-audit 가 0개를 봤다 — 빈 초록은 게이트가 아니다"; fail=1; }
+          [ "${JS_GATE:-0}" -eq 0 ] || { echo "::error::web-console high 이상 취약 ${JS_GATE}건"; fail=1; }
+          [ "${PY_VULNS:-0}" -eq 0 ] || { echo "::error::ai-api 취약 ${PY_VULNS}건"; fail=1; }
+          exit $fail
