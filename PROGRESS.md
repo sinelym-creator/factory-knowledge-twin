@@ -31,5 +31,5 @@
 | ✅ **D-12e 승격(16대)** — main `20f7f6c` · 축1 설치 부분 PASS · 축2 판정 불가 · 판정표 5행(#327·#329) | 09-01 16:39 |
 | ✅ **D-14 처방 착지(16대)** — lane/* preview 끔 `apps/web-console/vercel.json`(#331 `04e48df` · 효과 = Vercel status 행 0) | 09-01 17:20 |
 | 🔶 **T4-4 Tunnel OFF 행 실측(리바이2 21대 · #333 `77fda9f`)** — 조건부 PASS(화면 «미연결» · 500 · 복구 즉시) · FastAPI OFF 행 = 금요일 · Q-70 회부(`/enter` ≥20s 느린 실패) · Replay 전환 = 공개판 판정력 없음(Q-69) | 09-01 17:35 |
-| 🔶 **T5-4 운영 runbook(센쿠2 23대)** — `docs/deployment/runbook.md` 초안 작성 중(재부팅·자동시작·Funnel OFF/ON 실측 행·clean env) → PR 회부 시 오케 판정(16대 또는 17대) · 병합 시 INDEX 등록 | 09-01 17:2x~ |
+| ✅ **T5-4 완결(센쿠2 23대 · #335 `e765ee7`)** — `docs/deployment/runbook.md` 236줄 · 손잡이 = restart 정책 · Funnel OFF/ON 실측 · Gate 6 실측 2행/미실측 6행 명시 · clean env 3단 · INDEX 등재 | 09-01 17:43 |
 | ✅ **D-15 종결(16대)** — Public 리포 슬래시형 개인 경로 1줄 마스킹 + CI/드릴 정규식 사정거리 보강(#332 `cf38c9c`) | 09-01 17:35 |
