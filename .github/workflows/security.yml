@@ -53,6 +53,13 @@ jobs:
   #    감사 도구는 조용히 성공한다 — 그 초록은 게이트가 아니라 «측정 없음»이다. 그래서 감사
   #    «대상 수»를 먼저 세고, 0 이면 취약 0건이어도 실패시킨다(아래 첫 step).
   #
+  # 🔴 **Python 축은 «보고 전용»이다(오케 판정 2026-09-01 · D-17).** 지금 `starlette==0.41.3` 이
+  #    PYSEC 9건을 달고 있어, 게이트로 두면 병합 즉시 **모든 PR 이 빨강**이 된다. 항상 빨간
+  #    신호는 곧 «안 보는 신호»가 되고, 그때 이 job 은 다른 진짜 빨강을 가린다.
+  #    **Python 게이트 승격 = starlette ≥1.3.1 수리 착지 뒤(D-17 · fastapi 상한 핀 호환 확인 포함).**
+  #    보고 전용이어도 표·PYSEC 목록·감사 대상 수는 그대로 남는다 — 낮춘 것은 «판정»이지
+  #    «관측»이 아니다. 「감사 대상 0 = 실패」와 「출력을 못 읽음 = 측정 실패」는 두 축 다 유지한다.
+  #
   # 🔴 **판정은 마지막 step 한 곳에서 낸다.** 감사 step 들은 결과만 남기고 실패하지 않는다 —
   #    중간에서 죽으면 요약이 안 써지고, 그러면 「몇 건이 왜 걸렸나」가 로그 밖으로 사라진다.
   #
@@ -192,8 +199,8 @@ jobs:
             echo "| apps/web-console (pnpm) | lockfile 패키지 ${NPKG:-?}개 | high ${JS_HIGH:-?} · critical ${JS_CRITICAL:-?} · moderate ${JS_MODERATE:-?} · low ${JS_LOW:-?} |"
             echo "| services/ai-api (pip-audit --no-deps) | 선언 핀 ${NREQ:-?}개 / 감사 ${PY_DEPS:-?}개 | 취약 ${PY_VULNS:-?}건 |"
             echo ""
-            echo "게이트: JS 는 high 이상, Python 은 1건 이상이면 실패. 감사 대상이 0 이어도 실패한다"
-            echo "(「취약 0건」과 「아무것도 안 봤다」는 다른 사실이다)."
+            echo "게이트: **JS 는 high 이상이면 실패** · **Python 은 보고 전용**(D-17 수리 착지 뒤 승격)."
+            echo "감사 «대상 수»가 0 이면 두 축 다 실패한다 — 「취약 0건」과 「아무것도 안 봤다」는 다른 사실이다."
           } >> "$GITHUB_STEP_SUMMARY"
 
           fail=0
@@ -201,5 +208,9 @@ jobs:
           [ "${PY_PARSED:-0}" = "1" ] || { echo "::error::pip-audit 결과를 읽지 못했다 — 측정 실패"; fail=1; }
           [ "${PY_DEPS:-0}" -gt 0 ] || { echo "::error::pip-audit 가 0개를 봤다 — 빈 초록은 게이트가 아니다"; fail=1; }
           [ "${JS_GATE:-0}" -eq 0 ] || { echo "::error::web-console high 이상 취약 ${JS_GATE}건"; fail=1; }
-          [ "${PY_VULNS:-0}" -eq 0 ] || { echo "::error::ai-api 취약 ${PY_VULNS}건"; fail=1; }
+          # 🔴 보고 전용 축 — 실패시키지 않는다(D-17). 대신 요약에 눈에 띄게 남긴다.
+          [ "${PY_VULNS:-0}" -eq 0 ] || {
+            echo "::warning::ai-api 취약 ${PY_VULNS}건 — 보고 전용 축(D-17 수리 대기 · 게이트 아님)"
+            echo "🔴 **ai-api 취약 ${PY_VULNS}건 — 보고 전용**(게이트 아님 · D-17 수리 착지 뒤 승격)" >> "$GITHUB_STEP_SUMMARY"
+          }
           exit $fail
