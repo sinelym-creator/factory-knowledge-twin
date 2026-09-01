@@ -18,8 +18,8 @@
 
 | 설정 | 값 | 왜 |
 |---|---|---|
-| **Root Directory** | `apps/web-console` | 리포 루트에 `package.json` 이 **없다**. 루트로 두면 Vercel 이 프레임워크를 못 찾는다 |
-| **Include files outside the Root Directory** | 🔴 **켠다** | prebuild 가 리포 루트의 `data/replay/**` 를 읽는다(§3) |
+| **Root Directory** | `apps/web-console` | 리포 루트에 `package.json` 이 **없다**. 루트로 두면 Vercel 이 프레임워크를 못 찾는다 · ✅ 첫 배포에서 이 값으로 섰다 |
+| **Include files outside the Root Directory** | 🔴 **켠다** | prebuild 가 리포 루트의 `data/replay/**` 를 읽는다(§3) · ✅ 첫 배포에서 `Enabled` 확인 |
 | Framework Preset | Next.js | `vercel.json` 에도 적었다 |
 | Node.js Version | 20.x 이상 | Next 16.3.3 요구. 리포에 버전 핀(`.nvmrc`·`engines`)이 **0건**이라 대시보드 기본값을 쓴다(로컬 실측 v22.20.0) |
 
@@ -38,6 +38,8 @@
   Root Directory 를 바꾸면 **이 파일도 함께 옮겨야 하고**, 안 옮기면 «조용히 무시»된다.
   확인법 = 첫 배포의 빌드 로그에 `pnpm install --frozen-lockfile` 문자열이 실제로 찍히는지 본다.
   안 찍히면 이 파일은 안 읽힌 것이다(대시보드 Install/Build Command 로 같은 값을 옮긴다).
+  ✅ **확인됨**(E1 · §5-bis ①): 로그에 `Running "install" command: pnpm install --frozen-lockfile` 이
+  찍혔다 — 이 파일은 Root Directory 기준으로 읽힌다.
 
 ## 3. prebuild 는 «Root Directory 밖»을 읽는다 — 이 배포의 유일한 구조적 함정
 
@@ -114,10 +116,11 @@ Preview 빌드는 기본값(`http://127.0.0.1:8000`)으로 구워진다 — 그�
 - 나쁜 쪽: 프록시가 보는 «직접 클라이언트»는 브라우저가 아니라 **셸의 egress** 다.
   셸이 실어 보낸 방문자 IP 는 거기서 **사라진다**.
 
-| 경로 | ai-api 가 보는 첫 값 | IP 축 |
-|---|---|---|
-| 셸 경유 = **공개 트래픽 본류** | 셸 egress | «몇 통» — 켜나 끄나 방문자별이 아니다 |
-| Funnel 을 직접 타격(curl · 외부 드릴) | 그 클라이언트 | 방문자별로 선다 |
+| 경로 · 스위치 | ai-api 가 보는 첫 값 | IP 축 | 등급 |
+|---|---|---|---|
+| 셸 경유 · 스위치 **끔**(현재) | 도커 브리지 peer `172.22.0.1` | **1통** — 방문자 수와 무관 | **E1**(§5-ter) |
+| 셸 경유 · 스위치 **켬** | 셸 egress | «몇 통» — 여전히 방문자별 아님 | 🔶 E3(관측점 없음) |
+| Funnel 직접 타격(curl · 외부 드릴) | 그 클라이언트 | 방문자별로 선다 | E1(§5-bis · runbook §5-bis) |
 
 🔴 **이 배치에서 「셸 경유 방문자별 IP rate limit」은 구조적으로 불가능하다.** 설정 실수가 아니라
 형상의 성질이고, 방문자별 방어는 **세션 축**이 맡는다(Q-60 성문의 발현).
@@ -143,12 +146,51 @@ Preview 빌드는 기본값(`http://127.0.0.1:8000`)으로 구워진다 — 그�
 같은 구조가 §6 의 CORS 행을 결정한다: 브라우저가 부르는 것은 언제나 셸 origin 이므로
 **교차 origin 이 성립하지 않고, 그래서 `FKT_CORS_ORIGINS` 는 비운 채로 시작한다.**
 
+## 5-bis. 첫 배포 실측 착지 (E1 · 2026-09-01 11:03 KST)
+
+배포 = production · 빌드 26s · READY `02:02:01Z` · 공개 URL `factory-knowledge-twin.vercel.app`.
+
+🔴 이 URL 은 **일부러 공개하는 제품의 얼굴**이라 그대로 적는다. 반대로 ts.net 호스트명은
+«기반 시설의 신원»이라 계속 placeholder 다 — 둘을 같은 규칙으로 다루지 않는다.
+
+| # | 잰 것 | 결과 |
+|---|---|---|
+| ① | 빌드 로그의 install 명령 | `Running "install" command: pnpm install --frozen-lockfile` ✅ → **`vercel.json` 은 Root Directory 기준으로 읽힌다**(§2 의 미확정이 이 줄로 닫혔다) |
+| | 부수 | Vercel CLI 59.3.0 · pnpm 10.32.1 · Next.js 16.3.3(Turbopack) · Root Directory `apps/web-console` · **Include files outside root = Enabled** |
+| ② | prebuild | `[static-replay] 동봉 28건 + 이벤트 32건 → lib/static-replay/generated/ (파일 3개)` · fixture sha `3eb624c237db` · 「서버가 막은 자리 6건은 막힌 채로」 ✅ → 리포 루트 접근이 실제로 열렸다 |
+| ③ | 응답 헤더 | 200 · `Strict-Transport-Security: max-age=31536000; includeSubDomains` ✅ · `X-Content-Type-Options: nosniff` → `FKT_PUBLIC_HTTPS=1` 이 **빌드에** 들어갔다 |
+| ④ | 목적지 귀속 | 셸 경유 `/api/health` → 200 · 본문이 **노트북의 것**(build `792470d` · pg ok · neo4j ok · embedding ready) ✅ → 사슬 전체가 섰다 |
+
+## 5-ter. 🔴 B⑦ — 예측의 «절반»만 확인됐다
+
+§5-4 는 두 값을 예측했다. 하나는 맞았고, 하나는 **이 형상에서 잴 수 없었다.**
+
+| 예측 | 실측 |
+|---|---|
+| client = 도커 브리지 peer(`172.22.0.1` 류) | **`172.22.0.1`** — 일치 ✅ |
+| XFF 첫 값 = Vercel egress(`76.76.x` 류) | 🔴 **못 쟀다** — 앱이 XFF 를 로그에 남기지 않는다(관측점 0) |
+
+### 그래서 무엇이 «확정»됐고 무엇이 아닌가
+
+- ✅ **확정(E1)**: 스위치가 **꺼진** 지금, 셸 경유 트래픽은 전부 `172.22.0.1` **한 통**이다.
+  방문자가 몇이든 IP 축에서는 하나로 뭉친다 — §4-4 의 「셸 경유는 방문자별이 아니다」가 실측됐다.
+- 🔶 **미확정(E3)**: 스위치를 **켰을 때** 첫 값이 「셸 egress」인지. 구조상 그래야 하지만 관측점이 없다.
+
+### 🔴 이 축을 재려는 다음 세대에게 — 되는 길과 안 되는 길
+
+- **안 되는 길**: uvicorn access log 를 보는 것. 그 줄의 client 는 **transport peer** 라
+  `FKT_TRUST_FORWARDED_FOR` 를 켜도 **바뀌지 않는다**. 스위치를 켜 놓고 그 로그를 보면
+  「켜도 안 변한다 = 스위치가 고장」이라는 **틀린 결론**이 나온다.
+- **되는 길**: `services/ai-api/app/protection.py` 의 `_client_ip` 가 «무엇을 골랐는지»를 한 줄
+  남기는 것. 그게 유일한 관측점이고, **코드 변경 = 별 티켓**이다.
+
+「안 잰 것」이 아니라 **「관측점이 없어서 못 잰 것」**이다 — 처방이 다르다.
+
 ## 6. 못 잰 것 (이 좌석이 잴 수 없었던 것)
 
 | 항목 | 왜 | 무엇이 채우는가 |
 |---|---|---|
-| 실제 Vercel 빌드 통과 여부 | 배포 = 게이트 3 | 첫 배포 로그(§5-1) |
-| 🔴 셸 경유 시 ai-api 가 보는 client ip | 배포 URL 부재 | §5-4 — §4-4 의 예측을 확증하거나 반증한다 |
-| `vercel.json` 이 Root Directory 기준으로 읽히는지 | 배포해야 갈린다 | §5-1 · 안 읽히면 대시보드로 이관 |
-| 외부 망·모바일 첫 화면 시간 | 공개 URL 부재 | T4-3 자기 실측 표 · T4-4 |
-| CORS allowlist 에 Vercel origin 을 넣어야 하는지 | 구조상 **필요 없을 것**이다(§5-3 — rewrite 가 같은 origin 을 유지한다 · `FKT_CORS_ORIGINS` 기본 = 빈 값). 다만 이것은 **구조 추론(E3)** 이고 배포 형상에서 잰 값이 아니다 | 배포 후 브라우저 콘솔에 CORS 오류가 «0건»인지 1회 확인. 🔴 0건을 확인하기 전에는 「필요 없다」를 결론으로 적지 않는다 |
+| 🔴 스위치를 «켰을 때» 의 XFF 첫 값 | **관측점이 없다** — 앱이 XFF 를 로그에 안 남긴다(§5-ter) | 코드로 관측점을 만드는 별 티켓. 🔴 access log 로는 영원히 못 잰다 |
+| CORS 오류 «건수» | 브라우저가 있어야 센다 | T4-4 검증 좌석. 🔴 **0건을 확인하기 전에는 「CORS 불요」를 결론으로 적지 않는다**(구조 추론 E3 상태 유지) |
+| Preview 환경에도 두 키가 걸렸는가 | 첫 preview 는 루트 설정 «전» 빌드라 404 였다 | 다음 develop push 의 preview. 🔴 대시보드에 «넣었다»는 설정 실측이고, «빌드에 들어갔다»는 아직 아니다 — 둘은 다른 사실이다 |
+| 외부 망·모바일 첫 화면 시간 | 값 측정은 T4-4 몫 | T4-3 자기 실측 표 · T4-4 |
