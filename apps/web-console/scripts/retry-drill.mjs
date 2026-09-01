@@ -9,6 +9,14 @@
  *                                        밖은 `OTHER` 로 접는다 (⑮ · ⑰)
  *   ⑤ D-12d       · `createFallbackLookup()` : 시스템 해석 실패를 DoH·캐시로 우회하고,
  *                                        dispatcher 가 «실제 소켓»에서 도는지까지 본다 (⑱~㉑)
+ *   ⑥ Q-70        · `createSession()` 총 예산 : 시도들의 «합»이 8s 를 넘지 못한다 —
+ *                                        타임아웃 자극을 실제로 매달아 벽시계로 재고(㉔~㉖),
+ *                                        예산 산술은 순수 함수로 즉시 판정한다(㉗)
+ *
+ * 🔴 **㉔~㉖ 은 «기다림»이 값이다.** 세 케이스가 벽시계로 약 20초를 쓴다. 자극을 짧게 흉내
+ *    내면(예: 상한을 인자로 주입) 그 초록은 코드가 아니라 하니스가 낸 것이 되고, 정작
+ *    「시도들의 합에 상한이 걸렸는가」는 재지 않은 채 남는다. 산술만 빠르게 세는 축은 ㉗ 이
+ *    따로 든다 — 둘 중 하나만으로는 이 처방이 증명되지 않는다.
  *
  * 🔴 Q-68 의 «반대 방향»(뚫리는 표본)은 이 파일이 아니라 검증 좌석 그물이 든다 —
  *    `tests/web/d12b_cause_redaction_probe.mjs`(리바이2 · A~I 9행 · 심은 호스트로 판정).
@@ -64,6 +72,7 @@ import {
   apiGetServer,
   CAUSE_OTHER,
   createSession,
+  enterRetryBudget,
   hasServerFetch,
   liveStatus,
   proxyApiRequest,
@@ -104,6 +113,27 @@ function stage(...responses) {
       if (r.cause !== undefined) e.cause = r.cause;
       throw e;
     }
+    /**
+     * 🔴 **타임아웃 형 자극(Q-70)** — 스스로 끝내지 않는다. «연결은 서는데 답이 안 오는»
+     *    블랙홀(Tunnel OFF)이 이 모양이고, 끝내는 조건은 **호출자가 건 signal 하나**다.
+     *    여기에 숫자를 적으면 그 숫자가 정본이 되어, 본체가 예산을 바꾼 날에도 드릴은
+     *    옛 값으로 초록을 낸다. 상한은 «재는 쪽»이 아니라 «재이는 쪽»이 갖는다.
+     */
+    if (r.hangs) {
+      return await new Promise((_resolve, reject) => {
+        const sig = init?.signal;
+        if (!sig) {
+          // signal 이 없으면 영원히 매달린다 — 그것은 빨강이 아니라 «측정 실패»다.
+          const e = new Error("no signal — cannot measure the budget");
+          e.name = "HarnessError";
+          reject(e);
+          return;
+        }
+        sig.addEventListener("abort", () => reject(sig.reason), { once: true });
+      });
+    }
+    // 느린 «성공» — 정상 발급이 예산 안에서 살아남는가(무회귀 축).
+    if (r.delayMs) await new Promise((res) => setTimeout(res, r.delayMs));
     const headers = { "content-type": "application/json", ...(r.headers ?? {}) };
     const body = r.body === undefined ? null : JSON.stringify(r.body);
     return new Response(body, { status: r.status, headers });
@@ -117,6 +147,25 @@ const fail = (status, headers) => ({ status, headers });
  * `cause` 를 주면 undici 가 «속»에 사유를 넣어 던지는 형태를 재현한다(D-12b).
  */
 const unreachable = (name = "TypeError", cause) => ({ throws: name, cause });
+/** 타임아웃 형 — 연결은 서는데 답이 오지 않는다(Tunnel OFF 블랙홀 · Q-70). */
+const blackhole = () => ({ hangs: true });
+/** 느린 성공 — 공개 콜드 왕복(3.06s 실측) 급이 예산 안에서 살아남는지 본다. */
+const slowOk = (delayMs, body) => ({ delayMs, status: 200, body });
+
+/**
+ * 🔴 **`AbortSignal.timeout` 의 타이머는 이벤트 루프를 붙잡지 않는다(unref).** 매달린
+ *    자극을 기다리는 동안 다른 ref 타이머가 없으면 Node 가 「할 일 없음」으로 **먼저 죽는다**
+ *    (리바이2 20대 실측 rc 13). 그건 대상의 성질이 아니라 하니스의 결함이라, 재는 동안만
+ *    루프를 깨워 둔다.
+ */
+async function awake(fn) {
+  const keep = setInterval(() => {}, 500);
+  try {
+    return await fn();
+  } finally {
+    clearInterval(keep);
+  }
+}
 
 // ── 판정 ────────────────────────────────────────────────────────────────
 let pass = 0;
@@ -130,6 +179,13 @@ let causeSeen = 0;
 let hostLeakChecked = 0;
 /** Q-68 축 계수 — 허용목록 «밖» 코드가 `OTHER` 로 접힌 회차. 0건이면 그 분기는 죽은 채 초록이다. */
 let otherFoldSeen = 0;
+/**
+ * Q-70 축 계수 — ① 타임아웃 자극이 «실제로» 걸린 회차(`why==="TimeoutError"`) ·
+ * ② 총 예산이 «실제로» 재시도를 끊은 회차(예산 소진 warn). 새 분기는 발동을 세지 않으면
+ * 죽은 채로 초록이 된다 — 특히 ②는 이 티켓이 새로 만든 유일한 분기다.
+ */
+let timeoutStimulusSeen = 0;
+let budgetStopSeen = 0;
 /** D-12d 축 계수 — 우리 lookup 이 «실제로» 불린 회차 · 그중 family 4 로 물은 회차. */
 let lookupCalled = 0;
 let lookupFamily4 = 0;
@@ -337,7 +393,7 @@ async function timed(fn) {
     r.state === "ok" &&
       warns.length === 1 &&
       // 🔴 `mod=` 지문이 붙으므로 «정확 일치»가 아니라 「코드 토큰이 없다」로 본다(D-12e).
-      /^\[enter\] createSession failed TypeError attempt=1\/3 mod=[0-9a-f]+$/.test(warns[0]),
+      /^\[enter\] createSession failed TypeError attempt=1\/3 spent=[0-9]+ms mod=[0-9a-f]+$/.test(warns[0]),
     `warn 「${warns[0] ?? "-"}」(코드 토큰이 없어야 한다)`,
   );
 }
@@ -377,7 +433,7 @@ async function timed(fn) {
     "⑮ message 는 읽지 않는다(코드도 호스트도 안 남는다)",
     r.state === "ok" &&
       warns.length === 1 &&
-      /^\[enter\] createSession failed TypeError attempt=1\/3 mod=[0-9a-f]+$/.test(line) &&
+      /^\[enter\] createSession failed TypeError attempt=1\/3 spent=[0-9]+ms mod=[0-9a-f]+$/.test(line) &&
       !line.includes(host) &&
       !line.includes("ts.net"),
     `warn 「${line}」(D-12b 에서는 여기서 ENOTFOUND 를 집었다 — 지금은 코드 자체가 없어야 한다)`,
@@ -455,6 +511,104 @@ function runLookup(deps, options = { all: true, family: 4 }) {
   return new Promise((resolve) => {
     lookup("api.test", options, (err, address) => resolve({ err, address, seen }));
   });
+}
+
+// ── ㉔ 🔴 타임아웃 형 1회 = 총 예산이 재시도를 끊는다 (Q-70 · 이 티켓의 몸통) ─────
+//
+//    BEFORE(기점 `cd8dcfa` · 이 케이스를 그대로 돌리면): 시도 **3회** · 총 **≈25,200ms**.
+//    시도마다 `ENTER_TIMEOUT_MS`(8s)를 새로 받았기 때문이다(리바이2 #302 25,238ms ·
+//    이 lane 재실측 25,230ms). AFTER 는 예산이 합에 걸려 한 시도에서 끝난다.
+{
+  stage(blackhole(), ok({ sessionId: "s-t1" }));
+  const [r, ms] = await timed(() => awake(() => createSession("http://api.test")));
+  if (r.state === "unavailable" && r.why === "TimeoutError") timeoutStimulusSeen += 1;
+  if (warns.some((w) => /retry budget spent/.test(w))) budgetStopSeen += 1;
+  warnLinesSeen += warns.length;
+  check(
+    "㉔ 타임아웃 1회 = 시도 1회 · 총 ≤8s",
+    r.state === "unavailable" &&
+      r.status === undefined &&
+      r.why === "TimeoutError" &&
+      calls.length === 1 &&
+      !retriedOf(r) &&
+      ms >= 7500 &&
+      ms <= 9500 &&
+      warns.length === 2 &&
+      /attempt=1\/3/.test(warns[0]) &&
+      /spent=\d+ms/.test(warns[0]) &&
+      /retry budget spent/.test(warns[1]),
+    `why=${r.state === "unavailable" ? r.why : "-"} · fetch ${calls.length}회(기대 1 — 앞판은 3) · ${ms}ms(기대 7500~9500 — 앞판은 ≈25,200) · warn ${warns.length}줄 「${warns[1] ?? "-"}」`,
+  );
+}
+
+// ── ㉕ 즉시 실패 → 재시도 → 타임아웃 : 되묻기는 살아 있고, 예산이 그 뒤를 끊는다 ──
+//
+//    🔴 이 케이스가 없으면 ㉔ 의 초록은 「타임아웃을 안 되묻는다」와 「아무것도 안 되묻는다」를
+//       가르지 못한다. D-12 가 구하려던 축(즉시 실패)은 여기서 실제로 한 번 더 돈다.
+{
+  stage(unreachable("TypeError", { code: "ECONNREFUSED" }), blackhole());
+  const [r, ms] = await timed(() => awake(() => createSession("http://api.test")));
+  if (r.state === "unavailable" && r.why === "TimeoutError") timeoutStimulusSeen += 1;
+  if (warns.some((w) => /retry budget spent/.test(w))) budgetStopSeen += 1;
+  if (retriedOf(r)) enterRetriedSeen += 1;
+  warnLinesSeen += warns.length;
+  check(
+    "㉕ 즉시 실패 → 재시도 → 타임아웃 = 시도 2회 · 총 ≤8s",
+    r.state === "unavailable" &&
+      r.why === "TimeoutError" &&
+      calls.length === 2 &&
+      retriedOf(r) &&
+      ms >= 7500 &&
+      ms <= 9500 &&
+      warns.length === 3 &&
+      /TypeError ECONNREFUSED/.test(warns[0]) &&
+      /retry budget spent/.test(warns[2]),
+    `why=${r.state === "unavailable" ? r.why : "-"} · fetch ${calls.length}회(기대 2 — 앞판은 3) · ${ms}ms(기대 7500~9500 — 앞판은 ≈17,200) · warn ${warns.length}줄`,
+  );
+}
+
+// ── ㉖ 느린 «성공» 무회귀 : 정상 발급은 예산 안에서 그대로 산다 ────────────
+//
+//    🔴 이 티켓의 반대 방향이다. 예산을 좁히는 처방은 「빨리 실패한다」가 목적이지
+//       「멀쩡한 발급을 자른다」가 목적이 아니다. 공개 배포의 콜드 왕복 실측이 3.06s 였으므로
+//       그보다 «더 느린» 3.8s 를 준다 — 여기서 초록이어야 시도별 상한이 안 깎였다는 뜻이다.
+{
+  stage(slowOk(3800, { sessionId: "s-slow" }));
+  const [r, ms] = await timed(() => awake(() => createSession("http://api.test")));
+  warnLinesSeen += warns.length;
+  check(
+    "㉖ 느린 성공(3.8s) 무회귀",
+    r.state === "ok" &&
+      r.data.sessionId === "s-slow" &&
+      calls.length === 1 &&
+      !retriedOf(r) &&
+      ms >= 3700 &&
+      ms <= 5500 &&
+      warns.length === 0,
+    `state=${r.state} · fetch ${calls.length}회 · ${ms}ms(기대 3700~5500) · warn ${warns.length}줄(기대 0)`,
+  );
+}
+
+// ── ㉗ 예산 산술 = 순수 함수 단위 판정 (벽시계 0) ──────────────────────────
+//
+//    🔴 위 셋은 «기다려 봤더니 그렇더라»를 말한다. 여기는 「이 입력에는 이렇게 답한다」를
+//       말한다. 벽시계가 흔들려도 이 여섯 줄은 흔들리지 않는다 — 규칙이 낸 초록이다.
+{
+  const cases = [
+    ["㉗-a 시도1 · 0ms 소모 = 연다(400ms 뒤 · 남은 7,600ms)", enterRetryBudget(1, 0), { go: true, delayMs: 400, timeoutMs: 7600 }],
+    ["㉗-b 시도1 · 2,000ms 소모 = «남은 만큼»으로 연다", enterRetryBudget(1, 2000), { go: true, delayMs: 400, timeoutMs: 5600 }],
+    ["㉗-c 시도1 · 8,000ms 소모(타임아웃 전량) = 예산 소진", enterRetryBudget(1, 8000), { go: false, reason: "budget" }],
+    ["㉗-d 시도2 · 3,000ms 소모 = 연다", enterRetryBudget(2, 3000), { go: true, delayMs: 800, timeoutMs: 4200 }],
+    ["㉗-e 시도2 · 6,400ms 소모 = 남은 800ms 로는 «열지 않는다»", enterRetryBudget(2, 6400), { go: false, reason: "budget" }],
+    ["㉗-f 시도3 = 회차 소진(예산과 다른 사유)", enterRetryBudget(3, 0), { go: false, reason: "attempts" }],
+  ];
+  for (const [name, got, want] of cases) {
+    check(
+      name,
+      JSON.stringify(got) === JSON.stringify(want),
+      `${JSON.stringify(got)} (기대 ${JSON.stringify(want)})`,
+    );
+  }
 }
 
 // ── ⑱ 시스템 ENOTFOUND → DoH 가 답한다 ───────────────────────────────────
@@ -644,7 +798,7 @@ const total = pass + failed;
  *    처방 절반(관측)이 없는 것이다.
  */
 const selfOk =
-  total >= 24 &&
+  total >= 33 &&
   retriedSeen >= 1 &&
   enterRetriedSeen >= 1 &&
   warnLinesSeen >= 5 &&
@@ -652,18 +806,22 @@ const selfOk =
   hostLeakChecked >= 2 &&
   otherFoldSeen >= 1 &&
   lookupCalled >= 1 &&
-  lookupFamily4 >= 1;
+  lookupFamily4 >= 1 &&
+  // Q-70 — 자극이 실제로 걸렸는가 · 새 분기가 실제로 돌았는가.
+  timeoutStimulusSeen >= 2 &&
+  budgetStopSeen >= 2;
 
 console.log(
-  "retry-drill — D-11 (C) `call()` + D-12 `createSession()` + D-12b cause · lib/contract.ts 를 그대로 돌린다\n",
+  "retry-drill — D-11 (C) `call()` + D-12 `createSession()` + D-12b cause + Q-70 총 예산 · lib/contract.ts 를 그대로 돌린다\n",
 );
 console.log(lines.join("\n"));
 console.log(
-  `\n  자기 검증  케이스 ${total}건(기대 ≥24) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
+  `\n  자기 검증  케이스 ${total}건(기대 ≥33) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
     `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) · ` +
     `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥3) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥2) · ` +
     `OTHER 접힘이 «실제로 돈» 회차 ${otherFoldSeen}건(기대 ≥1) · ` +
-    `우리 lookup 이 «실제 소켓에서» 불린 회차 ${lookupCalled}건(기대 ≥1) · v4 전용 질의 확인 ${lookupFamily4}건(기대 ≥1) → ${selfOk ? "PASS" : "FAIL"}`,
+    `우리 lookup 이 «실제 소켓에서» 불린 회차 ${lookupCalled}건(기대 ≥1) · v4 전용 질의 확인 ${lookupFamily4}건(기대 ≥1) · ` +
+    `타임아웃 자극이 «실제로 걸린» 회차 ${timeoutStimulusSeen}건(기대 ≥2) · 총 예산이 «실제로 끊은» 회차 ${budgetStopSeen}건(기대 ≥2) → ${selfOk ? "PASS" : "FAIL"}`,
 );
 console.log(`\n결과: ${pass}/${total} 통과 · 실패 ${failed}건`);
 

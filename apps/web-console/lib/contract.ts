@@ -840,25 +840,95 @@ export async function proxyApiRequest(req: Request, opts: { https: boolean }): P
  *   ② **중복 발급 부작용 0 의 근거가 ①에 걸려 있다.** POST 재시도가 위험한 이유는 「서버가
  *      이미 받았을 수 있다」인데, 이 축은 요청이 서버에 닿지 않은 것이 관측된 자리다
  *      (도달 0). `status` 가 하나라도 있으면 그 전제가 깨지므로 그 자리에서 반환한다.
- *   ③ **`ENTER_TIMEOUT_MS` 는 그대로다.** 값이 아니라 횟수만 는다 — 최악 체감은
- *      `3×상한 + 1.2s`, 다만 이 축은 상한에 닿기 전(0.7~3s)에 실패해 온 축이다.
+ *   ③ **`ENTER_TIMEOUT_MS` 는 그대로다.** 값이 아니라 횟수만 는다 — 다만 그 «횟수»가
+ *      타임아웃 형에서는 상한을 세 번 쌓았다. 이 줄이 「상한에 닿기 전(0.7~3s)에 실패해 온
+ *      축」이라 적은 것은 «관측된 뭉치»의 성질이지 이 코드가 보장한 값이 아니었다 —
+ *      그 자리는 아래 Q-70 의 «총 예산»이 닫는다.
  *   ④ **재시도는 `call()` 이 아니라 여기서 돈다.** `call()` 의 규칙(D-11 C)은 GET · 상대
  *      경로 · 502/503 이고, 그 사정거리를 넓히면 이 티켓과 무관한 POST 축들이 함께 되묻게
  *      된다(조사 시작이 두 run, 승인이 두 감사 기록). 처방은 증상이 난 한 호출에만 준다.
  */
 const ENTER_RETRY_DELAYS_MS = [400, 800];
 
+/**
+ * 🔴 **Q-70 — 체감을 정하는 것은 재시도 «횟수»가 아니라 «총 예산»이다.**
+ *
+ * 증상(E1 · 리바이2 #333): Tunnel OFF — 연결은 서는데 답이 오지 않는 «블랙홀» — 에서
+ * `POST /enter` 가 **20초+** 걸렸다. 같은 실패라도 FastAPI OFF(연결 «거부»)는 2.86s 였다
+ * (#342). 갈린 것은 실패의 «종류»인데, 앞판의 되묻기 규칙은 그 종류를 구분하지 않았다:
+ * 미도달(`status===undefined`) 한 칸으로 접히면 타임아웃도 즉시 실패와 같은 문으로 들어와
+ * **시도마다 `ENTER_TIMEOUT_MS`(8s) 를 온전히 새로 받는다.**
+ *
+ * 🔴 실측(BEFORE · 기점 `cd8dcfa` · `tests/web/d12_enter_retry_budget.mjs` · 이 노트북):
+ *      타임아웃 형  총 **25,230ms** = 시도 3회 × ≈8,004ms + 지연 1,220ms
+ *      즉시 실패 형 총 **1,217ms**  = 시도 3회(≈0ms)      + 지연 1,217ms
+ *    두 줄의 차이가 이 티켓이다. 외삽이 아니라 벽시계로 갈린 값이다.
+ *
+ * 🔴 **처방은 시도별 상한이 아니라 총 상한이다.** 시도별 8s 를 줄이면 정상 발급이 죽는다 —
+ *    공개 배포의 콜드 왕복이 3.06s 였다(위 `ENTER_TIMEOUT_MS` 실측). 그 값을 자르는 순간
+ *    이 티켓은 「빨리 실패한다」가 아니라 「멀쩡한 발급을 실패로 만든다」가 된다.
+ *    그래서 시도별 상한은 **그대로 두고**, 시도들의 «합»에 상한을 씌운다.
+ *
+ * 🔴 **그 결과 타임아웃 형은 재시도를 잃는다 — 부작용이 아니라 처방의 «내용»이다.**
+ *    한 시도가 예산 전량을 쓰기 때문이다. D-12 가 되물어 «구하려던» 축은 0.7~3s 에 즉시
+ *    실패해 온 미도달 축이고(위 머리말 · ai-api 도달 0), 그 축은 이 예산 안에서 지금도
+ *    2~3회 다 돈다(위 실측 1,217ms). 블랙홀을 되묻는 것은 같은 8s 를 다시 태우는 일이라
+ *    구해 낼 요청이 «구조상» 없다 — 없앤 것은 재시도가 아니라 «헛기다림»이다.
+ *
+ * 🔴 **`maxDuration`(60 · `app/enter/route.ts`)과 정합.** 그 값은 「플랫폼이 우리보다 먼저
+ *    자르지 못하게」 두는 천장이고, 기다림을 정하는 것은 여기 이 예산이다. 8s ≪ 60s 라 두
+ *    값은 충돌하지 않는다. 예산이 좁아졌다고 천장을 함께 내리지는 않았다 — 천장은 Q-67 이
+ *    정한 다른 축이고, 내리면 D-12b 의 «마지막 회차» 로그가 잘릴 자리만 새로 생긴다.
+ */
+const ENTER_TOTAL_BUDGET_MS = 8000;
+/**
+ * 🔴 남은 예산이 이보다 짧으면 새 시도를 **시작하지 않는다.**
+ *    정상 왕복은 0.65~3.06s 다(위 실측). 남은 800ms 로 시도를 여는 것은 재시도가 아니라
+ *    «TimeoutError 를 지어내는 일»이고, 그러면 관측 축(`why`)에 원래 없던 사유가 섞인다.
+ */
+const ENTER_MIN_ATTEMPT_MS = 1000;
+
+/** 다음 시도를 «열 수 있는가» — 열 수 있으면 그 시도가 쓸 지연·상한까지 함께 답한다. */
+export type EnterRetryBudget =
+  | { go: false; reason: "attempts" | "budget" }
+  | { go: true; delayMs: number; timeoutMs: number };
+
+/**
+ * 🔴 **예산 산술을 순수 함수로 떼어 둔다** — 벽시계 없이도 판정할 수 있어야 한다.
+ *    드릴이 이 함수를 직접 부르면 「8초 기다려 봤더니 그렇더라」가 아니라 「이 입력에는
+ *    이렇게 답한다」를 **즉시** 세운다. 그때의 초록은 시계가 아니라 규칙이 낸 것이다.
+ *    벽시계 축은 그것대로 따로 남긴다 — 둘 중 하나만으로는 이 처방이 증명되지 않는다.
+ *
+ * @param attempt 방금 «실패한» 회차(1-base)
+ * @param spentMs `createSession()` 진입부터 지금까지의 벽시계
+ */
+export function enterRetryBudget(attempt: number, spentMs: number): EnterRetryBudget {
+  // 회차 소진 — 지연표의 길이가 곧 되묻는 횟수다(값을 여기에 다시 적지 않는다).
+  if (attempt < 1 || attempt > ENTER_RETRY_DELAYS_MS.length) {
+    return { go: false, reason: "attempts" };
+  }
+  const delayMs = ENTER_RETRY_DELAYS_MS[attempt - 1];
+  const left = ENTER_TOTAL_BUDGET_MS - spentMs - delayMs;
+  if (left < ENTER_MIN_ATTEMPT_MS) return { go: false, reason: "budget" };
+  // 🔴 남은 예산이 시도별 상한보다 짧으면 «남은 만큼»으로 연다 — 한 시도도 예산을 넘지 못한다.
+  return { go: true, delayMs, timeoutMs: Math.min(ENTER_TIMEOUT_MS, left) };
+}
+
 export async function createSession(base = ""): Promise<Reply<{ sessionId: string }>> {
   // 🔴 `no-store` — 세션 발급 응답은 캐시에 남을 물건이 아니다(쿠키가 실려 있다).
-  const once = () =>
+  const once = (timeoutMs: number) =>
     call<{ sessionId: string }>(
       CONTRACT.createSession,
       { method: "POST", cache: "no-store" },
       base,
-      ENTER_TIMEOUT_MS,
+      timeoutMs,
     );
 
-  let reply = await once();
+  // 🔴 예산의 기점은 «이 함수 진입»이다(Q-70). 상한이 걸리는 것은 시도 하나가 아니라 합이다.
+  const startedAt = Date.now();
+  const spentMs = () => Date.now() - startedAt;
+
+  let reply = await once(Math.min(ENTER_TIMEOUT_MS, ENTER_TOTAL_BUDGET_MS));
   let attempt = 1;
   let retried = false;
   const attempts = ENTER_RETRY_DELAYS_MS.length + 1;
@@ -883,17 +953,35 @@ export async function createSession(base = ""): Promise<Reply<{ sessionId: strin
       "[enter] createSession failed",
       said,
       `attempt=${attempt}/${attempts}`,
+      // 🔴 Q-70 — «얼마를 쓰고» 실패했는지를 같은 줄에 싣는다. 이 값이 없으면 로그에서
+      //    즉시 실패(≈0ms)와 블랙홀(8,004ms)이 같은 문장으로 보인다.
+      `spent=${spentMs()}ms`,
       `mod=${MODULE_ID}`,
     );
 
     // 서버가 «답한» 실패 — 되묻지 않는다(①).
     if (reply.status !== undefined) return retried ? { ...reply, retried: true } : reply;
-    if (attempt >= attempts) return retried ? { ...reply, retried: true } : reply;
 
-    await sleep(ENTER_RETRY_DELAYS_MS[attempt - 1]);
+    // 🔴 남은 «총» 예산이 다음 시도를 감당하는가(Q-70).
+    const next = enterRetryBudget(attempt, spentMs());
+    if (!next.go) {
+      // 🔴 「회차를 다 썼다」와 「예산이 잘랐다」를 로그에서 가른다 — 한 코드가 두 사유를
+      //    덮으면 다음 사람이 재시도 «횟수»를 헛짚는다. 예산이 자른 회차만 한 줄 더 남긴다.
+      if (next.reason === "budget") {
+        console.warn(
+          "[enter] createSession retry budget spent",
+          `attempt=${attempt}/${attempts}`,
+          `spent=${spentMs()}ms`,
+          `mod=${MODULE_ID}`,
+        );
+      }
+      return retried ? { ...reply, retried: true } : reply;
+    }
+
+    await sleep(next.delayMs);
     attempt += 1;
     retried = true;
-    reply = await once();
+    reply = await once(next.timeoutMs);
   }
 }
 
