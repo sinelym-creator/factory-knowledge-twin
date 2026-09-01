@@ -57,7 +57,14 @@ services:
       #    이미 있었고 postgres 에만 없었다 — 그래서 가장 느린 자리가 예산이 가장 좁았다.
       #    named volume 으로 옮겨 시간이 크게 줄었지만, 부하 중 첫 부팅을 위해 남겨 둔다.
       start_period: 40s
-    restart: unless-stopped
+    # 🔴 기본은 «안 되살린다»(T4-3 ⓒ). 앞판은 세 줄 다 `unless-stopped` 였고, 그래서
+    #    「지금 전건 restart=no 다」는 상태가 `docker compose up` 한 번에 되감겼다 —
+    #    파일이 선언하는 값이 정본이지 마지막으로 돌린 `docker update` 가 정본이 아니다.
+    #    배포 3본을 «되살아나게» 하려면 배포 셸에서 한 줄로 명시한다(그 자리가 runbook 이다):
+    #      $env:FKT_RESTART_POLICY = "unless-stopped"
+    #    확인법 = `docker inspect ... .HostConfig.RestartPolicy.Name` 의 unless-stopped 계수
+    #    가 «배포 3본과 정확히 같은 수»여야 통과(0 도 초과도 실패).
+    restart: ${FKT_RESTART_POLICY:-no}
 
   neo4j:
     image: neo4j:5-community
@@ -77,7 +84,8 @@ services:
       timeout: 10s
       retries: 12
       start_period: 30s
-    restart: unless-stopped
+    # 🔴 재시작 정책 — 근거·확인법은 위 postgres 주석 참조.
+    restart: ${FKT_RESTART_POLICY:-no}
 
   # ── ai-api (T4-1 ⓐ · baseline §14.2 노트북 Live 영역) ────────────────────────────
   #
@@ -104,6 +112,15 @@ services:
       # ⓒ CORS allowlist — 기본은 «셸 origin 만». 비우면 CORS 를 켜지 않는다(같은 origin
       #    rewrite 경유만 쓰는 로컬 형상이 그렇다) — 「전부 허용」이라는 기본값은 두지 않는다.
       FKT_CORS_ORIGINS: ${FKT_CORS_ORIGINS:-}
+      # 🔴 프록시(Funnel·rewrite) 뒤의 «IP» 를 X-Forwarded-For 첫 값으로 읽을지(D-8 · T4-3 ⓐ).
+      #    새 스위치가 아니다 — 이미 있던 한 스위치(settings.py:93 `trust_forwarded_for` →
+      #    main.py:152 RateLimitMiddleware · protection.py:114 런너 선점 경보 · Dockerfile:42
+      #    CMD `--no-proxy-headers`)에 «배포 경로»를 이어 준다. 이 줄이 없으면 셸 환경에서 무엇을
+      #    켜든 컨테이너 안에는 닿지 않아 코드 기본값(False)에 고정된다.
+      #    🔴 기본값을 «비움»(`:-`)이 아니라 `false` 로 둔 이유(실측 E1): 빈 문자열은 bool 로
+      #    파싱되지 않아 Settings() 가 ValidationError 로 죽는다 — 위 CORS 는 문자열이라
+      #    비워도 되지만 이 축은 아니다. 「기본은 안 믿는다」는 문장은 그대로 유지된다.
+      FKT_TRUST_FORWARDED_FOR: ${FKT_TRUST_FORWARDED_FOR:-false}
       # Q-44 — 기동 시 임베딩 모델 warm-up. 🔴 부팅을 «막지» 않는다(아래 성문 참조).
       FKT_WARMUP_EMBEDDING: ${FKT_WARMUP_EMBEDDING:-1}
       # 🔴 replay fixture 자리를 «명시»한다. 앞판은 모듈이 `Path(__file__).parents[4]` 로
@@ -139,7 +156,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
-    restart: unless-stopped
+    # 🔴 재시작 정책 — 근거·확인법은 위 postgres 주석 참조.
+    restart: ${FKT_RESTART_POLICY:-no}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🔴 named volume 선언 (D-2). 이름은 프로젝트명에서 파생되므로
