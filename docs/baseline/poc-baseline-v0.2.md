@@ -4,9 +4,10 @@
 
 | 항목 | 내용 |
 |---|---|
-| 문서 상태 | Baseline v0.2 |
+| 문서 상태 | Baseline v0.2 (v0.3 축소 적용) |
 | 작성일 | 2026-08-26 |
 | 개정 | 2026-08-28 공개 경계 준수 개정(§0.3 · 운영자 재가) |
+| 개정 | v0.3 — 축소 적용 개정 2026-09-02 · 근거 = `.workspace/drafts/baseline-v0.3-scope-cut-draft.md` §1 (1-A~1-G) · 폐하 재가 A~G 2026-09-01 21:21 · 파일명은 v0.2 유지(단일 baseline 경로 보존) |
 | 프로젝트 유형 | Portfolio-grade Product PoC |
 | 주요 목적 | 제조 데이터·Ontology·RAG·Agent를 운영 가능한 제품 UX로 연결하는 역량 증명 |
 | 공개 운영 원칙 | Vercel Always-on Sandbox + 노트북 Live AI 이중 구조 |
@@ -70,6 +71,7 @@ Synthetic PoC 결과를 실제 공장 ROI로 표현하지 않는다. Business KP
 - 실제 결과표에는 `Target`, `Actual`, `PASS/FAIL`, Evidence 경로를 분리한다.
 - 범위·완료 기준·라이선스·공개 경계가 변경되면 이 문서를 먼저 개정한다.
 - 구현 완료와 검증 완료를 구분하며 독립 검증되지 않은 기능은 Release 범위에 포함하지 않는다.
+- 🔴 **기한 제약으로 축소된 검증 축은 «축소 적용(v0.3)»으로 표기하고, 줄인 항목은 «미충족»으로 남긴다 — 축소는 기준을 낮추는 것이 아니라 «측정하지 않았음»을 명시하는 것이다.** 축소 적용 항목은 §35 점검표와 Release 판정문에서 충족으로 계산하지 않는다.
 
 ---
 
@@ -982,6 +984,8 @@ Frontend와 Python service를 한 저장소에서 관리하되 contract와 data 
 - 주요 keyboard interaction test
 - desktop viewport visual QA
 
+🔴 **v0.3 축소 적용(신설 0)**: 위 4행은 그물이 이미 서 있으므로 **재실행**으로 판정한다. `desktop viewport visual QA`는 3폭(1280·1440·1920) × 5화면 그대로 **1회** 실행한다. `노트북 OFF 상태에서 전체 Golden Scenario 완료`는 T4-4 외부 판정을 **승계**하고 T3-6 축(정적 replay 완주)에서 **1회**만 재확인한다.
+
 ### Phase 4. Live AI 연결
 
 **산출물**
@@ -1854,19 +1858,23 @@ UUID와 timestamp처럼 비결정적 field를 제외하고 node 순서, evidence
 
 ### 32.8 Gate 7 — Security·Abuse
 
-- SQL injection
-- Cypher injection
-- 문서 내부 Prompt Injection
-- 임의 tool 호출
-- 관리자 endpoint 접근
-- 다른 session 접근
-- oversized request
-- 반복 요청과 rate limit
-- 잘못된 WebSocket message
-- path traversal
-- CORS 우회
-- stack trace·environment 노출
-- 승인 우회
+🔴 **v0.3 축소 적용**: Gate 7 은 **축소 적용(v0.3)**으로 판정한다 — 기존 그물이 이미 덮는 8항은 «Gate 7 축 재실행»으로, 정본이 요구하나 그물이 없는 3항(SQL 질의 표면·Cypher·문서 prompt injection)은 **최소 negative 그물 신설**로 판정하며, 나머지 2항(관리자 endpoint 접근 · 잘못된 WebSocket message)은 **미충족**으로 남긴다.
+
+- ① SQL injection — 🔶 **부분**: 경로 파라미터는 기존 그물 재실행 · 질의 문자열 표면은 **신설**(신설 3에 계상)
+- ② Cypher injection — 🔴 **신설**(최소 negative)
+- ③ 문서 내부 Prompt Injection — 🔴 **신설**(최소 negative · tool authority 미획득 실증)
+- ④ 임의 tool 호출 — ♻ 재실행
+- ⑤ 관리자 endpoint 접근 — 🔴 **미충족(v0.3)**
+- ⑥ 다른 session 접근 — ♻ 재실행
+- ⑦ oversized request — ♻ 재실행
+- ⑧ 반복 요청과 rate limit — ♻ 재실행
+- ⑨ 잘못된 WebSocket message — 🔴 **미충족(v0.3)**
+- ⑩ path traversal — ♻ 재실행
+- ⑪ CORS 우회 — ♻ 재실행
+- ⑫ stack trace·environment 노출 — ♻ 재실행
+- ⑬ 승인 우회 — ♻ 재실행
+
+**v0.3 합계**: 재실행 8(④⑥⑦⑧⑩⑪⑫⑬) · 신설 3(① 질의 표면 SQL · ② Cypher · ③ prompt injection) · 🔴 **미충족 2**(⑤ 관리자 endpoint · ⑨ malformed WebSocket). 미충족 2항은 §35.4 점검표에서 빈 칸으로 남기며 충족으로 계산하지 않는다(§0.3).
 
 검색 문서는 evidence data이며 instruction authority가 아니다.
 
@@ -2072,6 +2080,8 @@ CONTRIBUTING.md
 
 ### 34.3 GitHub Actions Gate
 
+🔴 **v0.3 축소 적용**: `security.yml` 은 **CodeQL + dependency audit** 2 job 으로 한다(축소 적용). local secret scan 보완·container scan·license inventory·public endpoint policy test 와 `ci.yml` 확장·`benchmark-smoke.yml`·`release-evidence.yml`·required check 지정은 **미충족**으로 남긴다. §34.4 runner 경계(self-hosted 등록 0)는 **무변** — 축소 대상이 아니다.
+
 #### `ci.yml`
 
 - Frontend lint·typecheck·test
@@ -2085,12 +2095,12 @@ CONTRIBUTING.md
 
 #### `security.yml`
 
-- Secret scanning 보완 local scan
-- CodeQL
-- dependency audit
-- container scan
-- license inventory
-- public endpoint policy test
+- Secret scanning 보완 local scan — 🔴 **미충족(v0.3)**
+- CodeQL — 🟢 착지(축소 대상 아님)
+- dependency audit — 🟢 **채택(v0.3)**
+- container scan — 🔴 **미충족(v0.3)**
+- license inventory — 🔴 **미충족(v0.3)**
+- public endpoint policy test — 🔴 **미충족(v0.3)**
 
 #### `benchmark-smoke.yml`
 
@@ -2259,13 +2269,13 @@ README KPI
 
 ### 35.4 Security
 
-- [ ] SQL·Cypher injection negative test가 통과했다.
-- [ ] 문서 Prompt Injection이 tool authority를 획득하지 못한다.
-- [ ] 다른 session에 접근할 수 없다.
-- [ ] Public admin endpoint가 차단됐다.
-- [ ] Rate limit와 request size limit가 동작한다.
-- [ ] stack trace·secret·environment가 노출되지 않는다.
-- [ ] Git history secret scan이 통과했다.
+- [ ] SQL·Cypher injection negative test가 통과했다. — v0.3: 신설 최소 그물로 판정(§32.8 ①②)
+- [ ] 문서 Prompt Injection이 tool authority를 획득하지 못한다. — v0.3: 신설 최소 그물로 판정(§32.8 ③)
+- [ ] 다른 session에 접근할 수 없다. — v0.3: 기존 그물 재실행(§32.8 ⑥)
+- [ ] Public admin endpoint가 차단됐다. — v0.3: 🔴 **미충족**(§32.8 ⑤) · 빈 칸으로 남긴다
+- [ ] Rate limit와 request size limit가 동작한다. — v0.3: 기존 그물 재실행(§32.8 ⑦⑧)
+- [ ] stack trace·secret·environment가 노출되지 않는다. — v0.3: 기존 그물 재실행(§32.8 ⑫)
+- [ ] Git history secret scan이 통과했다. — v0.3: **유지**(축소하지 않는다 · 공개 리포의 비가역 축)
 
 ### 35.5 GitHub·License
 
@@ -2304,3 +2314,5 @@ P0 기능 완료
 + Apache-2.0 License Closure
 + README Claim-Evidence 일치
 ```
+
+🔴 **v0.3 축소 적용**: 기한 내 판정은 **`Release 후보(축소 적용 v0.3)`**로 한다 — Gate 1~8 은 «근거 경로 표»(각 Gate = 원 판정문 링크 + 재확인 축 1개)로 세우고, clean env 재현은 **1회**로 한다. `Benchmark Evidence 생성`·`KPI·Latency 결과 공개`는 **미충족**으로 남기며, 이를 충족으로 대체할 어떤 수치도 게시하지 않는다. 위 10 조건 중 미충족 항이 남은 상태에서는 미충족 목록을 판정문에 명기하고 `Portfolio Release` 문구를 쓰지 않는다.

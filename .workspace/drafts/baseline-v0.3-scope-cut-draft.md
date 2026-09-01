@@ -11,6 +11,8 @@ base: origin/develop `d319695` · 정본 = docs/baseline/poc-baseline-v0.2.md
 > 🔴 **이 문서는 제안이지 효력이 아니다.** baseline §0.3 「범위·완료 기준·라이선스·공개 경계가
 > 변경되면 이 문서를 먼저 개정한다」에 따른 **개정 초안**이며, 폐하 재가(§8 칸) 전에는 어떤 조항도
 > 발효하지 않는다. 재가 후 baseline 본문 개정은 오케 소관(본 초안 작성자의 write scope 밖).
+>
+> 🟢 **2026-09-02 현재 — 재가가 완료되어 baseline 본문에 반영되었다.** 폐하 재가 A~G 전건(2026-09-01 21:21) · 본문 반영 = `docs/baseline/poc-baseline-v0.2.md`(제목 `Baseline v0.2 (v0.3 축소 적용)` · 파일명은 단일 baseline 경로 보존을 위해 유지) · lane `lane/suzaku18-baseline-v03`. 위 「제안이지 효력이 아니다」 문장은 재가 «전» 상태의 기록으로 그대로 둔다.
 
 ## §0 이 초안의 근거 등급과 한계 (먼저 읽는다)
 
@@ -199,7 +201,7 @@ contract tests · public boundary scan §34.6) · `.github/workflows/security.ym
 | Gate 3 Retrieval | 4전략 raw = T5-1 artifact 재검 | 🔴 **미충족**(T5-1 미착지 — 재검할 artifact 가 없다) | — |
 | Gate 4 Agent | GS-01 13행 | **재확인 1축** | `tests/api/gs01_integration_drill.py` · `evidence/t2-6-phase2-integration-verification.md` |
 | Gate 5 Live·Replay | live 신규 녹화 ↔ replay 논리 일치 «재실증» | **재확인 1축**(비결정 필드 제외) | `tests/api/gate5_fidelity_drill.py` · `evidence/t2-4-replay-verification.md` |
-| Gate 6 장애 | T4-4 승계 + 재부팅 축 재확인 | **승계** · 재부팅 축 🔴 **미충족**(T5-4 미착지) | `evidence/t4-4-external-gate6-verification.md` — §32.7 8행 중 외부 실측 PASS 2행 · 나머지 *Not measured* ⇒ **그대로 옮긴다**(로컬 열을 판정으로 올리지 않는다) |
+| Gate 6 장애 | T4-4 승계 + 재부팅 축 재확인 | **승계** · 재부팅 축 🔴 **미충족**(T5-4 미착지) | `evidence/t4-4-external-gate6-verification.md`(노트북 OFF · WebSocket 중단 **2행 PASS** · §5 실측 — 제목의 «골격»은 관측자 축 §4 에 한함) + `evidence/t4-4-external-outage-verification.md`(FastAPI OFF **PASS** §7 · Tunnel OFF **조건부 PASS** · Q-70 재실측 §8) — §32.7 8행 중 **외부 3행 PASS + 조건부 1행** · 나머지 *Not measured* ⇒ **그대로 옮긴다**(로컬 열을 판정으로 올리지 않는다) · 두 파일 병기 = 오케 결정 ① 정정(09-02 08:24 · 단일 정본 지목은 오기) |
 | Gate 7 보안 | T5-2 판정 승계 | **승계**(§3 = 재실행 8 + 신설 3 + 미충족 2) | §3 |
 | Gate 8 Portfolio Claim | 주장 ↔ Evidence 대응표(모든 수치에 근거 파일 경로) | **유지** — 🔴 축소하지 않는다 | README 수치가 0 이므로 현 시점 비용이 가장 작다(E3) |
 | restart recovery | 재부팅 → 자동 복귀(T5-4 스크립트) | 🔴 **미충족**(T5-4 미착지) | — |
@@ -229,13 +231,15 @@ contract tests · public boundary scan §34.6) · `.github/workflows/security.ym
 
 | # | 재가 항목 | 효과 | 재가 |
 |---|---|---|---|
-| A | §0.3 «축소 적용» 조항 신설(§1-A) | 축소가 §0.2 를 침식하지 않게 하는 전제 — **A 미재가 시 B~G 전부 무효** | ☐ |
-| B | Gate 7 축소(재실행 8 + 신설 3 + **미충족 2**) | §32.8 13항 → 11항 판정 · 관리자 endpoint·malformed WS 는 빈 칸 | ☐ |
-| C | T5-2 유지분(git 이력 secret scan) · Turnstile «보류» 표기 | 비가역 축 보존 | ☐ |
-| D | T3-6 **전부 유지**(신설 0 · 재실행 9) | 가장 싼 잔여 — 축소 이득이 거의 없다 | ☐ |
-| E | T5-3 = dependency audit 1 job 채택 · 5항 미충족 | CI 확장 포기 · 취약 의존성 축만 확보 | ☐ |
-| F | T5-5 Gate 축소판(근거 경로 표 + clean env 1회 + §35 점검표) | 전건 정밀 포기 · Gate 3 · Gate 6 재부팅 축 · restart recovery 미충족 | ☐ |
-| G | Release 문면 = 「Release 후보(축소 적용 v0.3)」 · README KPI 게시 0 | 「Portfolio Release」 판정 유보 | ☐ |
+| A | §0.3 «축소 적용» 조항 신설(§1-A) | 축소가 §0.2 를 침식하지 않게 하는 전제 — **A 미재가 시 B~G 전부 무효** | ☑ |
+| B | Gate 7 축소(재실행 8 + 신설 3 + **미충족 2**) | §32.8 13항 → 11항 판정 · 관리자 endpoint·malformed WS 는 빈 칸 | ☑ |
+| C | T5-2 유지분(git 이력 secret scan) · Turnstile «보류» 표기 | 비가역 축 보존 | ☑ |
+| D | T3-6 **전부 유지**(신설 0 · 재실행 9) | 가장 싼 잔여 — 축소 이득이 거의 없다 | ☑ |
+| E | T5-3 = dependency audit 1 job 채택 · 5항 미충족 | CI 확장 포기 · 취약 의존성 축만 확보 | ☑ |
+| F | T5-5 Gate 축소판(근거 경로 표 + clean env 1회 + §35 점검표) | 전건 정밀 포기 · Gate 3 · Gate 6 재부팅 축 · restart recovery 미충족 | ☑ |
+| G | Release 문면 = 「Release 후보(축소 적용 v0.3)」 · README KPI 게시 0 | 「Portfolio Release」 판정 유보 | ☑ |
+
+재가 완료: A~G 전건 · 폐하 2026-09-01 21:21 · baseline 본문 반영 = lane/suzaku18-baseline-v03 (2026-09-02)
 
 ### 재가 시 실행 순서 권고 (E3)
 
