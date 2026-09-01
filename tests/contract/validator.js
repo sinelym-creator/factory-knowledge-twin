@@ -66,13 +66,33 @@ function collectDeclaredProperties(schema, path = '#', out = new Map(), seen = n
   return out;
 }
 
+/** type 후보 1개가 값과 맞는가 — union(`type`이 배열) 판정에만 쓴다. */
+function matchesType(t, v) {
+  switch (t) {
+    case 'null': return v === null;
+    case 'object': return typeof v === 'object' && v !== null && !Array.isArray(v);
+    case 'array': return Array.isArray(v);
+    case 'string': return typeof v === 'string';
+    case 'boolean': return typeof v === 'boolean';
+    case 'number': return typeof v === 'number';
+    case 'integer': return Number.isInteger(v);
+    default: return true;   // 모르는 후보는 판정하지 않는다(조용히 «맞다»고 하지 않기 위해 unsupportedKeywords가 따로 있다)
+  }
+}
+
 function validate(schema, root, value, path = '', touched = null) {
   let sch = schema;
   if (sch && sch.$ref) sch = sch.$ref.split('/').slice(1).reduce((o, k) => o && o[k], root);
   if (!sch || typeof sch !== 'object') return [];
 
   const errors = [];
-  const t = sch.type;
+  // 🔴 `type`은 «배열»일 수 있다(JSON Schema의 union — 계약의 estimatedWaitSec: ["integer","null"]).
+  //    앞판은 `sch.type`을 문자열 동등으로만 봤고, 배열이면 아래 어느 분기에도 걸리지 않아
+  //    **타입 검사가 통째로 사라졌다**. 그래서 `estimatedWaitSec: "곧"`도, `3.7`도 조용히 통과했다
+  //    (2026-09-01 실측 — 계약은 옳았고 지키는 쪽이 없었다). 배열이면 «하나라도 맞으면» 통과고,
+  //    맞는 후보로 이어간다(단일 문자열일 때의 거동은 그대로다 — 아래 두 줄은 배열일 때만 탄다).
+  const t = Array.isArray(sch.type) ? sch.type.find((cand) => matchesType(cand, value)) : sch.type;
+  if (Array.isArray(sch.type) && t === undefined) return [`${path || '#'}: ${sch.type.join('|')} 아님`];
   if (t === 'object' && (typeof value !== 'object' || value === null || Array.isArray(value))) return [`${path || '#'}: object 아님`];
   if (t === 'array' && !Array.isArray(value)) return [`${path || '#'}: array 아님`];
   if (t === 'string' && typeof value !== 'string') return [`${path || '#'}: string 아님`];
