@@ -86,6 +86,32 @@
     { "group": "⑥ 선택 필드(커버리지)", "label": "step.completed의 summary", "expect": "accept",
       "event": { "type": "step.completed", "payload": { "step": "graph", "summary": "4-hop 경로 1건 확보", "elapsedMs": 340 } } },
     { "group": "⑥ 선택 필드(커버리지)", "label": "run.stopped의 note", "expect": "accept",
-      "event": { "type": "run.stopped", "payload": { "reason": "timeout", "note": "live 응답 지연" } } }
+      "event": { "type": "run.stopped", "payload": { "reason": "timeout", "note": "live 응답 지연" } } },
+
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "최소형(position만)", "expect": "accept",
+      "why": "position은 required — 이 한 건이 없어 두 속성이 «한 번도 실행되지 않았다»(strict-coverage 빨강의 실체)",
+      "event": { "type": "run.queued", "payload": { "position": 1 } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "예상 대기 있음(정수)", "expect": "accept",
+      "event": { "type": "run.queued", "payload": { "position": 3, "estimatedWaitSec": 45 } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "모르면 null(지어내지 않는다)", "expect": "accept",
+      "why": "계약이 integer|null을 «허용»한다는 것과, 러너가 그 union을 지킨다는 것은 다른 사실이다 — 아래 거부 짝이 그 둘을 가른다",
+      "event": { "type": "run.queued", "payload": { "position": 2, "estimatedWaitSec": null } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "position 누락(required)", "expect": "reject",
+      "event": { "type": "run.queued", "payload": { "estimatedWaitSec": 10 } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "position 0(minimum 1 — 1이 다음 실행)", "expect": "reject",
+      "event": { "type": "run.queued", "payload": { "position": 0 } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "position이 문자열", "expect": "reject",
+      "event": { "type": "run.queued", "payload": { "position": "1" } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "estimatedWaitSec이 문자열", "expect": "reject",
+      "why": "🔴 앞판 러너는 이것을 통과시켰다 — union type을 문자열 동등으로만 봐서 검사가 통째로 빠졌다(validator.js 수리와 짝)",
+      "event": { "type": "run.queued", "payload": { "position": 1, "estimatedWaitSec": "곧" } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "estimatedWaitSec이 실수(integer 아님)", "expect": "reject",
+      "event": { "type": "run.queued", "payload": { "position": 1, "estimatedWaitSec": 3.7 } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "estimatedWaitSec 음수(minimum 0)", "expect": "reject",
+      "event": { "type": "run.queued", "payload": { "position": 1, "estimatedWaitSec": -5 } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "queued에 failed payload(F-2 결속)", "expect": "reject",
+      "event": { "type": "run.queued", "payload": { "code": "E", "message": "m" } } },
+    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "stopped에 queued payload(F-2 결속)", "expect": "reject",
+      "event": { "type": "run.stopped", "payload": { "position": 1 } } }
   ]
 }
