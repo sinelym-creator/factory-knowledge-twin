@@ -4,7 +4,7 @@
 
 ## 1. 무엇인가
 
-**Factory Knowledge Twin — AI Operations Console.** 제조 데이터·Ontology·RAG·Agent를 운영 가능한 제품 UX로 연결하는 **Portfolio-grade Product PoC**(역량 시연용 · 14일 · GitHub Public · Apache-2.0).
+**Factory Knowledge Twin — AI Operations Console.** 제조 데이터·Ontology·RAG·Agent를 운영 가능한 제품 UX로 연결하는 **Portfolio-grade Product PoC**(역량 시연용 · 🔴 **기한 = 개시 08-28 후 최대 7일 = 09-04 «상한» · 상한이지 목표가 아니며 더 빨리 끝낸다**(운영자 확정 08-28 · project-plan §1 · baseline §33.4 14일표는 원문 보존일 뿐 일정 근거 아님) · GitHub Public · Apache-2.0).
 
 🔴 **단일 baseline = `docs/baseline/poc-baseline-v0.2.md`** — 범위·완료 기준·라이선스·공개 경계 변경은 **baseline 먼저 개정**(§0.3). 이 주법은 baseline을 재기술하지 않는다.
 
@@ -40,7 +40,7 @@
 |---|---|
 | 재개 | `.claude/context/checkpoint.md` **1 Read** |
 | 현황판 | `PROGRESS.md`(«지금»만) |
-| 계획 | `project-plan.md`(Phase 0~6 + 14일 일정 포인터) |
+| 계획 | `project-plan.md`(Phase 0~6 + 기한 §1 = 7일 상한 09-04 · 순서 §2) |
 
 ## 5. Git
 
