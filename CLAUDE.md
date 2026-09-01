@@ -46,3 +46,4 @@
 
 - 브랜치: `develop` 작업 · `main` 승격(운영자 게이트) · Conventional Commits(영어).
 - GitHub Public 개설·push는 운영자 확인 후(공개 행위). 그 전까지 로컬 git만.
+- lane 브랜치는 병합 즉시 원격에서 삭제한다(`gh pr merge --merge --delete-branch`) — 원격 = `develop`·`main` 만(운영자 하명 09-01 12:16 「정리 가능한 것은 정리」 · lane 99본 정리). 병합된 lane 재push 금지 · 새 작업 = 새 lane.
