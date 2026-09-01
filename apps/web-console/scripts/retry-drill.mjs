@@ -326,7 +326,8 @@ async function timed(fn) {
     "⑬ cause 없음 = 붙이지 않는다",
     r.state === "ok" &&
       warns.length === 1 &&
-      warns[0] === "[enter] createSession failed TypeError attempt=1/3",
+      // 🔴 `mod=` 지문이 붙으므로 «정확 일치»가 아니라 「코드 토큰이 없다」로 본다(D-12e).
+      /^\[enter\] createSession failed TypeError attempt=1\/3 mod=[0-9a-f]+$/.test(warns[0]),
     `warn 「${warns[0] ?? "-"}」(코드 토큰이 없어야 한다)`,
   );
 }
@@ -366,7 +367,7 @@ async function timed(fn) {
     "⑮ message 는 읽지 않는다(코드도 호스트도 안 남는다)",
     r.state === "ok" &&
       warns.length === 1 &&
-      line === "[enter] createSession failed TypeError attempt=1/3" &&
+      /^\[enter\] createSession failed TypeError attempt=1\/3 mod=[0-9a-f]+$/.test(line) &&
       !line.includes(host) &&
       !line.includes("ts.net"),
     `warn 「${line}」(D-12b 에서는 여기서 ENOTFOUND 를 집었다 — 지금은 코드 자체가 없어야 한다)`,
@@ -587,6 +588,40 @@ function runLookup(deps, options = { all: true, family: 4 }) {
   );
 }
 
+// ── ㉓ 🔴 «모듈 복사본이 둘이어도 슬롯은 하나다» (D-12e) ──────────────────
+//
+//    D-12d 가 프로덕션에서 안 물린 이유가 이 축이다: Next 는 라우트마다 서버 번들을 따로
+//    만들고 `lib/contract` 는 번들마다 «복사본»으로 들어간다. 부팅 훅이 등록한 모듈 변수를
+//    다른 복사본은 영원히 못 본다(로그: `installed` 는 찍히고 `fallback=` 은 0줄).
+//    🔴 위 ㉑ 은 이 축을 못 본다 — 단일 프로세스·비번들이라 복사본이 한 벌뿐이다.
+//    그래서 여기서 «두 벌»을 일부러 만든다: 쿼리를 붙이면 ESM 로더가 별 인스턴스로 연다.
+{
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ sessionId: "from-copy" }));
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  const port = server.address().port;
+
+  const copy = await import("../lib/contract.ts?d12e-copy=2");
+  const distinct = copy.createSession !== createSession; // 진짜 «다른» 인스턴스인가
+  const before = lookupCalled;
+  const seenByCopy = copy.hasServerFetch();
+  const r = await copy.createSession(`http://api.test:${port}`);
+  const calledFromCopy = lookupCalled - before;
+  server.close();
+
+  check(
+    "㉓ 모듈 복사본이 봐도 등록이 보인다",
+    distinct &&
+      seenByCopy &&
+      r.state === "ok" &&
+      r.data.sessionId === "from-copy" &&
+      calledFromCopy >= 1,
+    `별 인스턴스=${distinct} · 복사본이 본 등록=${seenByCopy} · state=${r.state} · 복사본에서 우회 lookup ${calledFromCopy}회(기대 ≥1)`,
+  );
+}
+
 // 🔴 계측기 원복 — 아래 결과 출력은 «가로채지 않은» console 로 나가야 한다.
 console.warn = realWarn;
 
@@ -599,7 +634,7 @@ const total = pass + failed;
  *    처방 절반(관측)이 없는 것이다.
  */
 const selfOk =
-  total >= 23 &&
+  total >= 24 &&
   retriedSeen >= 1 &&
   enterRetriedSeen >= 1 &&
   warnLinesSeen >= 5 &&
@@ -614,7 +649,7 @@ console.log(
 );
 console.log(lines.join("\n"));
 console.log(
-  `\n  자기 검증  케이스 ${total}건(기대 ≥23) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
+  `\n  자기 검증  케이스 ${total}건(기대 ≥24) · call() 재시도가 «실제로 돈» 회차 ${retriedSeen}건(기대 ≥1) · ` +
     `createSession 재시도가 «실제로 돈» 회차 ${enterRetriedSeen}건(기대 ≥1) · warn ${warnLinesSeen}줄(기대 ≥5) · ` +
     `cause 코드가 «실제로 뽑힌» 회차 ${causeSeen}건(기대 ≥3) · 호스트 누출을 «실제로 본» 회차 ${hostLeakChecked}건(기대 ≥2) · ` +
     `OTHER 접힘이 «실제로 돈» 회차 ${otherFoldSeen}건(기대 ≥1) · ` +
