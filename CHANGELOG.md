@@ -52,3 +52,5 @@
 - D-14 mitigation landed: `lane/*` preview deployments disabled in `apps/web-console/vercel.json` (#331).
 - T4-4 Tunnel OFF row measured externally (conditional PASS: screen shows disconnected, health/live 500, immediate recovery); Q-70 slow `/enter` failure filed (#333).
 - T5-4 complete: deployment runbook `docs/deployment/runbook.md` (restart policy, Funnel OFF/ON measurements, Gate 6 rows, clean-env steps) (#335).
+- D-12e promoted to main `20f7f6c`: install axis partial PASS (boot 20/20, install 40, failures 0); rescue axis no verdict; verdict table 5 rows (#327, #329).
+- D-13 closed: deployment stack reconstructed 6/6 (seed 28/28, neo4j reload 309/448 content diff 0), volumes moved outside worktrees, `infra/neo4j-restore.ps1` (#323, #325).
