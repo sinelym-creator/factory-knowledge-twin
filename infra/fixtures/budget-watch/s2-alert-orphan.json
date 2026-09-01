@@ -1,0 +1,26 @@
+[
+  {
+    "Name": "fkt-a-postgres-1",
+    "State": "running",
+    "Image": "pgvector/pgvector:pg16",
+    "Networks": [
+      "fkt-a_default"
+    ]
+  },
+  {
+    "Name": "fkt-a-neo4j-1",
+    "State": "running",
+    "Image": "neo4j:5-community",
+    "Networks": [
+      "fkt-a_default"
+    ]
+  },
+  {
+    "Name": "fkt-lost-ai-api",
+    "State": "running",
+    "Image": "fkt-a-ai-api:latest",
+    "Networks": [
+      "fkt-lost_default"
+    ]
+  }
+]

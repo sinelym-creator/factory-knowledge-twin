@@ -139,7 +139,7 @@ pwsh -File infra/health-check.ps1 `
 | levi2 스택 running(healthy 2본) | `measured=7 (PASS 7 / FAIL 0)` | **0** |
 | 이름 3종 혼합(running / exited / 부재) | 각각 PASS · FAIL · FAIL | **1** |
 
-세 상황이 서로 다른 답을 냈다 = 이 계측기는 「항상 초록」도 「항상 빨강」도 아니다.
+네 상황이 서로 다른 답을 냈다 = 이 계측기는 「항상 초록」도 「항상 빨강」도 아니다.
 
 ---
 
@@ -172,6 +172,74 @@ powercfg /query SCHEME_CURRENT SUB_SLEEP HIBERNATEIDLE
 | 전원 연결 유지 | 물리 조작 = 운영자 영역. 스크립트가 잴 수 있는 대리 지표(배터리 잔량·AC 여부)는 T5-4 monitoring 으로 회부 |
 
 ---
+
+## 4-bis. 감시 — 스택이 몇 «벌» 살아 있는가 (`infra/container-budget-watch.ps1`)
+
+§1 이 「무엇이 되살아나는가」를 정한다면, 이 절은 「지금 몇 벌이 살아 있는가」를 **센다**.
+컨테이너는 조용히 늘어난다 — 변형마다 새 스택을 띄우면 이틀 만에 수십 본이 된다.
+
+```powershell
+pwsh -File infra/container-budget-watch.ps1          # 사람이 볼 때
+pwsh -File infra/container-budget-watch.ps1 -Quiet   # 예약 작업용(임계 이내면 침묵)
+```
+
+🔴 **이 계기는 경보만 낸다. `stop`·`rm`·`update` 를 하지 않는다** — 회수 «지시»는 리더 소관이다.
+
+### 세는 단위 = 「DB 가 붙은 network」 1개 = 1벌
+
+`ai-api` 는 그 망의 구성원이지 스스로 벌을 만들지 않는다.
+DB 가 없는 망에 혼자 있는 서비스는 **고아**이고, 고아는 그 자체로 경보다 —
+붙을 데이터가 없는 서버는 초록으로 떠도 아무것도 답하지 못한다
+(「health 초록 ≠ 데이터 있음」의 컨테이너 판).
+
+### 🔴 compose 라벨로 세면 틀린다 — 실측으로 확인한 자리
+
+`com.docker.compose.project` 라벨은 **이미지에 구워지고**, `docker run` 은 그 라벨을 그대로
+물려받는다. 즉 라벨은 「이 컨테이너가 어느 스택에 사는가」가 아니라
+**「이 이미지가 어디서 빌드됐는가」**를 말한다.
+
+| 컨테이너 | compose 라벨 | 실제 network |
+|---|---|---|
+| …-t43-ai-api | `fkt-senku2-q3` | `fkt-senku2-t15_default` |
+| …-t35-seeded | `fkt-levi2-t41` | `fkt-levi2_default` |
+
+두 이미지의 **이미지 라벨 자체**가 각각 `fkt-senku2-q3` · `fkt-levi2-t41` 이었다(= 물려받은 것).
+그래서 라벨로 세면 **4벌**이 나와 상한 3을 넘고 **거짓 경보**가 된다 — 실제는 **2벌**이다.
+이 스크립트는 `NetworkSettings.Networks` 실물만 본다.
+
+### 임계와 종료 코드
+
+| 축 | 경보 | 주의 |
+|---|---|---|
+| 존재(`fkt-` 접두 전건) | > 9 | — |
+| running | > 6 | > 3 |
+| 벌 | > 3 | — |
+| 고아 | ≥ 1 | — |
+
+`rc 0` 정상 · `rc 1` 주의 · `rc 2` 경보 · 🔴 **`rc 3` 측정 불가**.
+3 이 따로 있는 이유: docker 가 안 답하는 것을 「0본 = 깨끗」으로 읽으면 **계측기가 죽을수록
+초록이 잘 나온다**. 미응답은 부재가 아니다.
+
+### 자기 계측 — 아는 참 5상태 (E1 · 2026-09-01 01:3x UTC · 파이프 없이 잰 rc)
+
+수집과 판정을 갈라 놓아서(`-FromJson`) 컨테이너를 만들지 않고도 판정부를 시험할 수 있다.
+
+| 상태 | 표본 | rc |
+|---|---|---|
+| 정상 | `infra/fixtures/budget-watch/s0-normal.json` (2벌·running 3·고아 0) | **0** |
+| 주의 | `s1-notice-running.json` (running 4) | **1** |
+| 경보(고아) | `s2-alert-orphan.json` (DB 없는 망의 서비스 1본) | **2** |
+| 경보(벌 초과) | `s3-alert-bees.json` (DB 망 4개) | **2** |
+| 측정 불가 | 실 docker · `DOCKER_HOST` 를 안 뜨는 주소로 | **3** |
+| (참고) 실물 | 그날의 실제 상태 = 존재 6 / running 3 / 벌 2 / 고아 0 | **0** |
+
+다섯이 서로 다른 답을 냈다 = 「항상 초록」도 「항상 빨강」도 아니다.
+
+### 못 알아보는 DB 가 있으면 (실패 방향)
+
+DB 판별은 이미지(`postgres|pgvector|neo4j`)가 정본이고 이름이 보조다. 못 알아본 DB 가 있으면
+그 망은 벌로 안 세지고 거기 붙은 서비스가 **고아로 울린다** — 시끄러운 쪽으로 틀리게 만들었다.
+조용히 빠지는 것보다 낫다.
 
 ## 5. 재부팅 1회로만 확정되는 것 (이 좌석이 못 한 것)
 
