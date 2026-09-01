@@ -5,7 +5,8 @@
   "buildCommand": "pnpm run build",
   "git": {
     "deploymentEnabled": {
-      "lane/*": false
+      "lane/*": false,
+      "develop": false
     }
   }
 }
