@@ -26,6 +26,7 @@
 
 | 태스크 | 산출물 | 시점 |
 |---|---|---|
+| 🚨→✅ **D-16 Golden 회귀 복구(17대 · P0)** — 배포 DB `document_chunk` 0행(D-13 재구성이 파생 색인 T1-4 미실행 · 16:26~19:11 공개 Live 실패) → 폐하 「진행」 19:07 → `build_index.py` 59/59/45 · `verify_index.py` PASS → 외부 재현 GS-01 2/2 `run.completed` 5/5(#342 `5242499`) · 재발 방지 성문 = 센쿠2 runbook 4단 PR · Q-69 문면 어긋남 3 = 별개 P2 처방(원장) | 09-01 19:11·19:17 |
 | ✅ **T4-4 완결(17대 · 조건부 = Q-69·Q-70 존속) · Phase 4 5/5** — FastAPI OFF 행 PASS(리바이2 22대 · PR#339 `afaf1bd` · 502 빠른 실패 0.9~2.9s · 「미연결」 6/6 · 복구 자동) · Gate 6 외부 항 종결(블랙홀+연결 거부 두 자극 실측 · 이월 0) · Q-70 = 블랙홀 한정으로 좁힘 | 09-01 18:52 |
 | ✅ **T5-3 최소본 착지(17대 · 부분 · 보류 6종 미완)** — `security.yml` CodeQL 1 job(JS/TS+Python · build-mode none · GitHub-hosted) · PR#337 `6b53a01` · python 추출 107/107 · alerts 0 · 룰 130 실행 · 원장·티켓·INDEX 등재 | 09-01 18:24 |
 | ✅ **재부팅 복구·Q-63 판정 자리 통과(17대)** — t15 DB 쌍 `docker start` 1회 → healthy · ai-api `/api/health` ok · pwsh 콜드 2,863→220/215ms = 「경과 시간 축」 확정(메커니즘 미상 · 재측 = 좌석 가동 몇 시간 뒤) | 09-01 18:09·17:54 |
