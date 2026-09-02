@@ -14,7 +14,13 @@
 |---|---|---|
 | 3·4 | T3-6·T4-4 그물 선행 소조각(검증 좌석 — D-3 재검·Q-41·Q-42 사이 유휴 메움) | 검증 좌석 흐름 보며 |
 | 4 | T4-3 Tunnel·Vercel 공개 RC(🔴 운영자 확인 1회 재상신) | T4-1·T4-2 |
-| 5 | T5-5 외부 축(승격 뒤 Q-70·Q-69 재실측) · T5-2 드릴 대응표(재실행 8 + 신설 3 · baseline v0.3 §32.8) · T3-6 재실행 9 · D-17 배포 반영(이미지 재빌드 · 승격 뒤) · P6(README 재현 절차 = runbook 5단 인용 · KPI 문면 · CHANGELOG · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」 · 공개 경계 스캔) | 승격 1회(11:08 뒤 · 19대) |
+| 5 | T5-5 외부 축(승격 뒤 Q-70·Q-69 재실측 + GS-01 1회 = D-17 이미지 E2E 대조) · T5-2 대응표(리바이2 진행 10:31 · 인용만) · T3-6 재실행 9 · D-18 잔여 `seed.ps1`(센쿠2 진행 10:27) · P6(CHANGELOG · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」 · 공개 경계 스캔 · README 6줄+clean env 재실측 짝 · verdict §4 조건 9 갱신 · 원장 종결 · §35.7 관문 상신) | 승격 1회(11:13 · 19대) |
+
+## 릴리스 뒤 개선 (폐하 「이후 개선사항으로 기록하고 개선」 09-02 10:40)
+
+| 항목 | 내용 | 근거 |
+|---|---|---|
+| 🔶 **Q-72 부분 저하** | 색인과 어긋난 문서 조각이 있으면 지금은 조사 전체가 `step_failed:vector` 로 멈춘다(fail-closed · 승인) → 어긋난 조각만 배제 + 경고 이벤트로 계속(코드 변경 + GS-01 회귀 1회) | 원장 Q-72 · runbook §4-1d |
 
 ## blocked (운영자)
 
@@ -26,13 +32,13 @@
 
 | 태스크 | 산출물 | 시점 |
 |---|---|---|
+| ✅ **D-18 잔여 seed.ps1 수리(19대)** — 센쿠2 28대 PR#368 `f001176` · 재현 먼저(비기본 project 에서 `:56` exit 1 · 컨테이너 healthy) → `-Project` 배열 5곳 · 후보 목록 문면 · 대조군 4열 · TRUNCATE 형 재적재 ≠ skip 형 멱등 · tests 6본 = 검증 별건 | `data/seed.ps1` | 09-02 10:55 |
+| ✅ **T5-2 대응표(19대)** — 리바이2 25대 PR#367 `844f420` · 13항+유지 1 = 14행 · 새 실행 0 · 모든 칸 출처 [V]/[N] · 두 원본 불일치 0 · PASS 6/조건부 1/부분 2/측정 불가 3/미충족 2 · 「Gate 7 은 서 있지 않다」 · 시각 열 = 원본에 없어 만들지 않음 | `evidence/t5-2-gate7-map.md` | 09-02 10:44 |
+| ✅ **T5-2 신설 3 착지(19대)** — 리바이2 25대 PR#366 `84a585a` · SQL 질의 표면(「도달 불가」 단서) · Cypher 층 A/B(파라미터 바인딩 · 추출기 = ID 토큰) · 문서 prompt injection(표지 선행 · 조건부 PASS · 무결성 배제 기전 · 재색인 경유 축 미측) · Gate 7 미충족 4→2 · 부산물 Q-72(fail-closed 유지) | `tests/api/{query_surface_sql,cypher_surface,prompt_injection_authority}_drill.py` · `evidence/t5-2-gate7-new-nets.md` | 09-02 10:31 |
+| ✅ **D-17 배포 반영(19대)** — 센쿠2 28대 · 8010 이미지 `fkt-deploy-ai-api:6e1487d` · starlette 1.3.1 · 로컬·공개 health 200 `build 6e1487d` · 의존 불통 3분 38초(🔴 오케 발주 결함 = 승계 목록에 network 누락 → 「같은 형상 = inspect 전량 diff」 게이트) · GS-01 = 외부 재실측에서 E2E 대조 · 롤백면 `-prev` 존치 | 컨테이너 `fkt-deploy-ai-api` | 09-02 10:08 |
+| ✅ **P6 README 실행 절(19대)** — 센쿠2 28대 PR#365 `6e1487d` · runbook §4 정본 지목(복제 0) · 전제조건 실측표 · 「배포 후 게시」 자기 선언 제거 · KPI «측정 전 빈 칸» · 「Release 후보 — 축소 적용(v0.3)」 · 「Portfolio Release」 0 · 판정 「이대로 확정」(§35.6 README 만으로 = 미충족 유지 · 6줄+재실측 짝은 별건) | `README.md` | 09-02 10:0x |
 | ✅ **D-18 migrate.ps1 project 선택 수리 + runbook 5단(18대)** — 센쿠2 28대 PR#362 `03056f6` · 4곳 `-p` · 미지정 실패 문면 · 주석 실측대로 · runbook §4 = compose→project→migrate→seed→indexer venv+색인→projector venv+투영 · 스키마 008 · 네트워크 문장 | `services/ai-api/db/migrate.ps1` · `docs/deployment/runbook.md` | 09-02 09:26 |
 | ✅ **Q-71 surface_scan 위양성 그물 수정(18대)** — 리바이2 25대 PR#363 `c73028e` · 4종 처리 · 10→0 · 모집단 53 유지 · 검출력 대조군(진짜 위반 주입 = 빨강 유지) | `tests/web/surface_scan.mjs` | 09-02 09:26 |
-| ✅ **T5-5 clean env 1회(18대)** — 리바이2 25대 PR#361 `c515544` · README 만으로 = 0단계(§35.6 미충족 확정) / 우회 5단 완주 GS-01 13행 · 🔴 투영 단계 빠지면 «빈 초록» — 그물 P-GRA 0→5 대조군 · 문서 결함 5+1+1 → D-18 | `evidence/t5-5-clean-env.md` | 09-02 09:08 |
-| ✅ **P6 라이선스 축(18대)** — 센쿠2 28대 PR#360 `fd52979` · `NOTICE` · `THIRD_PARTY_NOTICES.md` · `LICENSE` 보유자 = 폐하 재가 ① · JS 341/Python 80 · unknown 0 · copyleft prod 1 | `NOTICE` · `THIRD_PARTY_NOTICES.md` · `LICENSE` | 09-02 09:07 |
 | ✅ **D-17 리포 착지(18대)** — 센쿠2 28대 PR#355 `ee2bbf9` · fastapi 0.133.0(= starlette ≥1.3.1 허용 최소) + `starlette==1.3.1` 직접 핀 · pip-audit 9→0(집합 동일) · Python 감사 축 게이트 승격 · 잔여 = 배포 이미지 재빌드(승격 뒤) | `services/ai-api/requirements.txt` · `.github/workflows/security.yml` | 09-02 08:43 |
 | ✅ **T5-5 본 판정 착지(18대 · 축소판 v0.3 · 로컬 축)** — 리바이2 25대 PR#357 `d63498d` · 오늘 재실행 14본 · 판정 = 「Release 후보 — 축소 적용(v0.3)」 · 미충족 9항 명기 · 계수 실측 PASS 26/전언 10/조건부 10/미측 13/불명 2/미충족 7/로컬만 6/부분 4 · Q-71 등재 · 잔여 = clean env + 외부 축 | `evidence/t5-5-gate-verdict.md` | 09-02 08:38 |
 | ✅ **baseline v0.3 축소 적용 반영(18대)** — 폐하 A~G 승인분 1-A~1-G 본문 반영(PR#356 `e0c6958` · 파일명 v0.2 유지 · 초안 재가 칸 ☑ · Gate 6 근거 두 파일 병기로 정정) | `docs/baseline/poc-baseline-v0.2.md` · `.workspace/drafts/baseline-v0.3-scope-cut-draft.md` | 09-02 08:27 |
-| ✅ **D-14 재발 방지 2(18대 · 폐하 「preview 0」)** — develop 병합도 preview 를 만들던 사실 실측(어제 18건) → `vercel.json` develop + 규약 패턴 11종 차단(PR#354 `a76bee8`) · 병합 뒤 배포 생성 0 확인 | `apps/web-console/vercel.json` | 09-02 08:18 |
-| ✅ **연장 2·3(17대 · 폐하 「94% 진행·승인」)** — 축소 안 초안 #347(A~G 전건 승인 21:21) · T5-5 Gate 근거 표 초안 #348 · Q-70 처방 #349(블랙홀 25.2→8.0s · 외부 재실측 #351 = 승격 전이라 판정 불가 · 종결 = 승격 뒤) · dependency audit #350(starlette D-17 신설) · 잔존 워크트리 9본 삭제 9,314MB | 09-01 21:45 |
-| ✅ **Q-69 문면 수리 착지(17대 · P2 · 폐하 승인 19:35)** — 「끊겨 전환」 배너 → 「Live AI 게이트 없음 · 결정적 집계」 · 1006 «세션 만료» 단언 제거 · 문자열 3파일(#345 `efc0eee`) · 화면 축 E1 = 승격 뒤 재관측 | 09-01 19:44 |

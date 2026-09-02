@@ -11,7 +11,7 @@ size_limit: 4KB
 | 경로 | 역할 | 갱신 시점 |
 |---|---|---|
 | `CLAUDE.md` | 리포 주법 | 규율 변경 시 |
-| `README.md` | 공개 첫 화면 | release 단계(baseline §34.7) |
+| `README.md` | 공개 첫 화면 — 「▶ 실행」 절(runbook §4 정본 지목 · 전제조건 실측표 · #365) · 「Release 후보 — 축소 적용(v0.3)」 · KPI «측정 전 빈 칸» | release 단계(baseline §34.7) |
 | `project-plan.md` | 확정 계획 요약 단일본(7일 일정·운영 사이클) | 변경 «즉시»(살아있는 플랜) |
 | `PROGRESS.md` | 현황판 — «지금»만 · done 10행 초과 → CHANGELOG 회전 | 상태 변동 시 |
 | `CHANGELOG.md` | 이력(append 전용) | 회전·완결 시 |
@@ -41,7 +41,7 @@ size_limit: 4KB
 | `tests/data/` | seed 무결성 probe 28건(C-21~C-28 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 27판정·증분/절대 이축 — G-3·E-7) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
-| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-2b · t3-5-wo-screen #225 · t4-2a #241 · t4-2b-live-guard #250·#260 · t4-4-external-gate6 골격 #256 · t4-3-public-rc(C 칸 재부팅 한정 · #298) · d12-enter-retry(형태 (나) · #302)) · 🔴 `t4-4-stimulus-equivalence-control.md`(#264 · §3-2 치환 대조군 정본 = 클라이언트 축 한정·SSR 층 갈림) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 · **t5-5-gate-verdict #357(본 판정 · 축소 적용 v0.3 · 로컬 축 · 09-02)** · **t5-5-clean-env #361(README 만으로 = 0단계 · 우회 5단 완주 · 09-02)** | 검증 시 |
+| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-2b · t3-5-wo-screen #225 · t4-2a #241 · t4-2b-live-guard #250·#260 · t4-4-external-gate6 골격 #256 · t4-3-public-rc(C 칸 재부팅 한정 · #298) · d12-enter-retry(형태 (나) · #302)) · 🔴 `t4-4-stimulus-equivalence-control.md`(#264 · §3-2 치환 대조군 정본 = 클라이언트 축 한정·SSR 층 갈림) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 · **t5-5-gate-verdict #357(본 판정 · 축소 적용 v0.3 · 로컬 축 · 09-02)** · **t5-5-clean-env #361(README 만으로 = 0단계 · 우회 5단 완주 · 09-02)** · **t5-2-gate7-new-nets #366(신설 3 = SQL 질의 표면 「도달 불가」 · Cypher 층 A/B · prompt injection 표지 선행·무결성 배제 · 09-02)** | 검증 시 |
 | `.workspace/handoffs/` | 오케 선작성 발주문(세대 승계 · 트리거 대기 문면 · 팀 채널 발신 시 그대로) — `suzaku8-orders-20260831.md`(§A T4-2b wake · §B T4-2a 검증) · `suzaku9-orders-20260831.md`(§A D-3 · §B T4-2a 2조각 · §C T3-5 ②′ · §D PR-1 검증 · §E 리바이2 15대 wake · §F 재부팅 후 10대 1착) · `suzaku10-orders-20260831.md`(§A T4-1 ②′ · §B T4-2b PR-1 서버 축 · §C PR-1 검증 · §D 완결·관문 서식 · §E 11대 1착) | 교대·마감 시 |
 | `.workspace/drafts/` | 초안(SSOT 아님) — `baseline-v0.3-scope-cut-draft.md`(축소 안 · 폐하 A~G 승인 09-01 · **baseline 본문 반영 완료 09-02 #356** · 재가 칸 ☑ · 이력 보존) | 초안 추가·baseline 반영 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |

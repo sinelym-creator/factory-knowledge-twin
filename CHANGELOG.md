@@ -58,3 +58,11 @@
 - T5-3 minimal: `security.yml` CodeQL job (JS/TS + Python, build-mode none) landed (#337); six deferred items remain.
 - T4-4 complete (conditional on Q-69/Q-70): FastAPI OFF row PASS (#339), Gate 6 external item closed; Phase 4 = 5/5.
 - D-16 Golden regression recovered (P0): deployed `document_chunk` was 0 rows after the D-13 rebuild skipped the derived index; rebuilt 59/59 in ~4 min, external GS-01 2/2 (#342), runbook step 4 + health-check retrieval row (#343).
+- Q-69 wording fix landed (#345 `efc0eee`): banner "disconnected → Replay" replaced with "no Live AI gate · deterministic aggregation", the 1006 "session expired" claim removed; screen-axis E1 deferred to post-promotion.
+- Extensions 2·3 (operator "94% · proceed"): scope-cut draft #347 (A~G approved 21:21), T5-5 gate evidence map draft #348, Q-70 fix #349 (blackhole 25.2→8.0s; external recheck #351 undecidable before promotion), dependency audit #350 (D-17 raised); nine stale worktrees removed (9,314MB).
+
+## 2026-09-02 (rotated from PROGRESS done)
+
+- D-14 recurrence prevention 2 (operator "preview 0"): develop merges were also producing previews (18 the day before); `vercel.json` now blocks develop plus 11 conventional branch patterns (#354 `a76bee8`), zero deployments after merge confirmed.
+- P6 license axis: `NOTICE`, `THIRD_PARTY_NOTICES.md` generated from the measured dependency inventory (JS 341 / Python 80, unknown 0, copyleft-in-prod 1), `LICENSE` holder set per operator approval (#360 `fd52979`).
+- T5-5 clean environment run (#361 `c515544`): README-only reproduction stops at step zero (§35.6 unmet, confirmed); the documented 5-step bypass completes GS-01 (13 rows); skipping the projection step yields an "empty green" caught by the P-GRA net; 5+1+1 documentation defects → D-18.
