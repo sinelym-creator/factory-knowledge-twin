@@ -30,7 +30,15 @@ jobs:
           if git ls-files | grep -E '(^|/)\.env(\.|$)|\.(pem|key)$|credentials|secrets' | grep -vE '(^|/)\.env\.example$'; then
             echo '::error::tracked credential-like file detected'; exit 1; fi
           # 시크릿 토큰 패턴 (이 워크플로 자신은 제외)
-          if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)' -- ':!.github/workflows/'; then
+          # 🔴 `sk-` 축은 **하이픈을 허용한다**(D-19). 앞판은 `sk-[A-Za-z0-9]{20,}` 였고,
+          #    Anthropic 키는 `sk-ant-api03-…` 라 `sk-` 바로 뒤 네 번째 글자가 하이픈이다 —
+          #    20자를 세기 전에 문자군이 끊겨 **영원히 통과했다**(대조군 E1: 같은 파일에
+          #    `ghp_…`+`sk-ant-…` 를 심으니 이 게이트는 `ghp_` 1건만 잡았다).
+          # 🔴 하이픈만 허용하면 «평범한 영어»가 걸린다(실측 위양성 1건):
+          #    `task-completed-0123456789abcdef` 의 「ta**sk-**」가 26자를 채운다. 그래서
+          #    앞에 «낱말 경계»를 세운다 — `sk` 앞이 영숫자면(task·risk·ask) 매치하지 않는다.
+          #    경계를 빼고 게이트에 예외를 여는 길은 택하지 않았다(예외는 곧 「내가 쓴 것 전부 허용」이 된다).
+          if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|(^|[^A-Za-z0-9])sk-[A-Za-z0-9-]{20,}|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)' -- ':!.github/workflows/'; then
             echo '::error::secret-like pattern detected'; exit 1; fi
           # 개인 PC 절대 경로 패턴 (Windows 사용자 경로)
           # 🔴 구분자 «두 형태»를 다 본다(D-15). 백슬래시만 보던 앞판은 pwsh·git·문서가
