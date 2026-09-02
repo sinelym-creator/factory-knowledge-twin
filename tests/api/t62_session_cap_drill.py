@@ -1,12 +1,25 @@
 """t62_session_cap_drill — T6-2 축 ④ «세션 run 상한» 자극 (검증 좌석 · 29대 · 착지 전 초안).
 
 한 세션으로 조사를 상한+1 회 만들어, **상한 회차에서 429 + `session_run_cap_exceeded`
-+ `fallback=replay`** 가 오는지 본다.
++ 계약이 정한 문면(「세션 조사 상한(N/시간) · 녹화 재생으로 계속」) + `Retry-After` 정수 초**
+가 오는지 본다.
 
-🔴 **착지 전에 세우는 그물이다.** 이 파일이 쓰인 시점(09-03 07:5x)에 develop 에는
-   `FKT_RUN_CAP_PER_SESSION`·`session_run_cap_exceeded` 가 **한 건도 없다**(grep E1).
-   그래서 상한이 없는 인스턴스에서 도는 이 드릴은 **빨강이 아니라 `exit 2`(무대 없음)** 다.
-   미착지의 초록·빨강을 판정으로 올리면 그건 대상이 아니라 내 창의 값이다.
+🔴 **착지 전에 세우는 그물이다.** 작성 시점(09-03 `date` 07:35) **계약 v0.1.12 180행에는 성문**
+   (`429 session_run_cap_exceeded` · 세션 쿠키 축 · 기본 3/시간 · env `FKT_RUN_CAP_PER_SESSION`)
+   이지만 **구현에는 0건**(`services/ai-api/app` grep E1). 「계약에 있다」와 「이 인스턴스가 한다」는
+   다른 사실이라, 상한이 없는 인스턴스에서 도는 이 드릴은 **빨강이 아니라 `exit 2`(무대 없음)** 다.
+
+🔴 **`fallback` 필드를 판정선으로 걸지 않는다** — 초판(#420)이 그렇게 걸었고 그것은 **내가 만든
+   위양성**이었다. 계약 180행은 오류 형상을 `{error:{code,message}}` **불변**으로 못박고
+   **본문에 `fallback` 등 추가 필드 0** 이라고 적는다(센쿠2 선발견 07:17 · 발주 문면 「429→replay」의
+   오기 정정). 발주문의 문면을 계약과 대조하지 않고 판정선으로 옮기면, 착지해도 빨강이 난다.
+   replay 강등은 **셸 축**(화면이 `code` 로 분기해 배너 + 축 강등)이고, 이 API 축이 재는 것은
+   **code + message 문면 + `Retry-After`** 다.
+
+🔴 **replay 로 돌리면 이 축은 성립하지 않는다.** 상한은 **live 축 조사만 계수**하고 replay 는 열어
+   둔다(오케 확정 07:33 · 계약의 「녹화 재생으로 계속」과 같은 방향). 그래서 `FKT_RUN_MODE` 가
+   live 가 아니면 **재기 전에 `exit 2`** 로 끊는다 — 안 그러면 「틀린 모드로 잰 창」이 「상한 미착지」와
+   **같은 exit 2** 를 내고, 두 뜻이 한 색에 섞인다.
 
 🔴 **다른 방어가 축 앞에 설 수 있다.** ai-api 에는 이미 T4-2b rate limit 이 있고 그것도
    **429** 를 낸다(`rate_limited` · IP 6000/min · 세션 300/min · `Retry-After`). 숫자만 보면
@@ -16,6 +29,11 @@
 🔴 **대조군 = 새 세션 1회.** 상한에 걸린 뒤 «다른 세션»이 여전히 만들 수 있어야
    「세션 축의 상한」이다. 그 열이 없으면 「서버가 그냥 N번째부터 전부 막는다」와 구별되지 않는다.
 
+- **무쿠키 요청은 이 상한의 대상이 아니다**(계약 180행) — 세션 축이 없으므로 `rate_limited` IP 축이
+  막는다. 그래서 이 드릴은 매 요청에 세션 쿠키를 싣고, 그 사실을 첫 줄에 적는다.
+- **토큰 401 은 게이트웨이 축**(`X-FKT-Gateway-Token` · 계약 179행)이라 ai-api 의 이 공개 경로에는
+  걸리지 않는다(오케 확정 07:33). 이 드릴에서 401 이 나오면 그것은 **다른 문**이다.
+
 🔴 **CLI 소모 0.** 만든 run 은 **즉시 stop** 한다(합성 단계에 도달시키지 않는다). 상한은 run
    «생성» 단계의 규칙이므로 완주가 필요 없다. 게이트웨이 스텁을 함께 띄웠다면 그 호출 로그가
    0줄인 것으로 「구독을 안 썼다」를 자취로 남긴다(`FKT_STUB_LOG`).
@@ -23,7 +41,7 @@
     FKT_API_BASE      기본 http://127.0.0.1:8000
     FKT_SCENARIO      기본 GS-01
     FKT_RUN_CAP       기대 상한 (기본 3 — 착지 값과 다르면 발주문 값으로 덮어라)
-    FKT_RUN_MODE      run 생성 body 의 mode (기본 live)
+    FKT_RUN_MODE      run 생성 body 의 mode (기본 live · 🔴 live 가 아니면 exit 2 — 축 불성립)
     FKT_STUB_LOG      게이트웨이 스텁 호출 로그 경로(있으면 줄 수를 함께 찍는다)
     FKT_CAP_STOP      1(기본) = 만든 run 을 즉시 stop · 0 = 두고 본다
 
@@ -98,6 +116,15 @@ def code_of(res: dict) -> str | None:
     return None
 
 
+def message_of(res: dict) -> str:
+    """계약 오류 형상의 message. 형상이 다르면 빈 문자열(없음도 측정값)."""
+    j = res.get("json")
+    if isinstance(j, dict) and isinstance(j.get("error"), dict):
+        m = j["error"].get("message")
+        return m if isinstance(m, str) else ""
+    return ""
+
+
 def new_session() -> tuple[str | None, str | None]:
     """세션 하나. 반환 = (sessionId, Cookie 헤더값)."""
     res = call("POST", "/api/sessions")
@@ -117,6 +144,16 @@ def start_run(sid: str, cookie: str | None) -> dict:
 def stop_run(run_id: str, sid: str, cookie: str | None) -> int | None:
     return call("POST", f"/api/runs/{run_id}/stop", {"sessionId": sid}, cookie)["status"]
 
+
+# ── ⓪ 모드 가드 — 재기 «전»에 축이 성립하는지부터 ───────────────────────────────
+# 🔴 상한은 live 축 조사만 계수하고 replay 는 열어 둔다. replay 로 돌리면 4회 다 200 이 나오는데,
+#    그 초록은 「상한이 없다」가 아니라 「내가 축을 안 자극했다」다 — 두 뜻이 같은 exit 2 에 섞이지
+#    않게 사유를 나눠 끊는다.
+if MODE != "live":
+    print(f"⚪ 측정 불가(exit 2 · 축 불성립) — FKT_RUN_MODE={MODE} 다. 세션 run 상한은 live 축만 "
+          f"계수하고 replay 는 열려 있다(계약 v0.1.12 180행). 이 창은 상한을 자극하지 못한다 — "
+          f"「상한 미착지」와 다른 사유다.")
+    sys.exit(2)
 
 # ── ① 무대 확인 ───────────────────────────────────────────────────────────────
 health = call("GET", "/api/health")
@@ -140,15 +177,15 @@ for i in range(1, CAP + 2):
     res = start_run(sid, cookie)
     c = code_of(res)
     run_id = (res.get("json") or {}).get("runId") if isinstance(res.get("json"), dict) else None
-    fallback = (res.get("json") or {}).get("fallback") if isinstance(res.get("json"), dict) else None
-    if fallback is None and isinstance(res.get("json"), dict):
-        err = res["json"].get("error")
-        if isinstance(err, dict):
-            fallback = err.get("fallback")
+    # 🔴 `extra` 는 «관측»이지 판정선이 아니다 — 계약은 오류 본문을 {code,message} 로 못박고
+    #    추가 필드 0 이다. 여기서 무언가 잡히면 그건 **계약 위반 쪽**으로 보고할 재료다.
+    extra = sorted(set((res.get("json") or {}).get("error", {}).keys()) - {"code", "message"})         if isinstance(res.get("json"), dict) and isinstance(res["json"].get("error"), dict) else []
     attempts.append({"n": i, "status": res["status"], "code": c, "runId": run_id,
-                     "fallback": fallback, "retry_after": res["headers"].get("Retry-After")})
-    say(f"  {i}회차      : {res['status']} · code={c} · runId={run_id} · fallback={fallback}"
-        f" · Retry-After={res['headers'].get('Retry-After')}")
+                     "message": message_of(res), "extra": extra,
+                     "retry_after": res["headers"].get("Retry-After")})
+    say(f"  {i}회차      : {res['status']} · code={c} · runId={run_id}"
+        f" · Retry-After={res['headers'].get('Retry-After')}"
+        + (f" · 🔴 오류 본문 추가 필드 {extra}" if extra else ""))
     if run_id:
         made.append(run_id)
         if STOP_RUNS:
@@ -200,10 +237,25 @@ if capped["status"] != 429:
     fails.append(f"상한 회차가 429 가 아니라 {capped['status']}(code={capped['code']})")
 if capped["code"] != "session_run_cap_exceeded":
     fails.append(f"상한 회차 code 가 {capped['code']} — 계약은 session_run_cap_exceeded")
-if capped["fallback"] != "replay":
-    fails.append(f"상한 회차 fallback 이 {capped['fallback']} — 계약은 replay")
-if not capped["retry_after"]:
+
+# 🔴 replay 강등은 «셸 축»이다(화면이 code 로 분기한다). API 축에서 재는 것은 **문면**이다 —
+#    계약 180행: message = 「세션 조사 상한(N/시간) · 녹화 재생으로 계속」.
+msg = capped["message"]
+if "상한" not in msg:
+    fails.append(f"상한 회차 message 에 「상한」이 없다: {msg!r}")
+if "녹화" not in msg and "재생" not in msg:
+    fails.append(f"상한 회차 message 가 «계속할 길»을 말하지 않는다(녹화 재생): {msg!r}")
+
+# 🔴 오류 본문은 {code,message} 불변 — 추가 필드가 있으면 그것이 계약 위반이다(초판이 `fallback`
+#    을 «있어야 하는 것»으로 걸었던 자리 · 방향이 반대였다).
+if capped["extra"]:
+    fails.append(f"오류 본문에 계약 밖 필드가 있다: {capped['extra']} — 계약은 {{code,message}} 불변")
+
+ra = capped["retry_after"]
+if not ra:
     fails.append("429 인데 Retry-After 헤더가 없다")
+elif not str(ra).strip().isdigit():
+    fails.append(f"Retry-After 가 정수 초가 아니다: {ra!r} — 계약은 «정수 초 · 창 잔여»")
 if ctrl["status"] != 200:
     fails.append(f"대조군(새 세션)도 {ctrl['status']}(code={ctrl_code}) — 상한이 세션 축이 아니다"
                  " 또는 다른 문이 막고 있다")
@@ -214,6 +266,7 @@ if fails:
         print(f"   - {f}")
     sys.exit(1)
 
-print(f"\n○ 축 ④ — 한 세션의 {CAP + 1}회차가 429 `session_run_cap_exceeded` + fallback=replay 로 "
-      f"막히고, 다른 세션은 여전히 만든다")
+print(f"\n○ 축 ④ — 한 세션의 {CAP + 1}회차가 429 `session_run_cap_exceeded`"
+      f"(Retry-After {ra}s · 문면 「{capped['message'][:40]}…」)로 막히고, "
+      f"다른 세션은 여전히 만든다")
 sys.exit(0)
