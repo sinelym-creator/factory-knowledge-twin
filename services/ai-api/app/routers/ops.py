@@ -6,11 +6,12 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
 
-from ..investigation.synthesize import live_gateway_available
+from ..investigation.synthesize import live_gateway_reachable
 from ..probes import Resources
 from ..retrieval import embedding
 from ..schemas import HealthResponse, LiveStatus, ModelReadiness
@@ -51,6 +52,7 @@ async def live_status() -> LiveStatus:
     """Live/Replay 배지·fallback 판단 — 계약 `{ online, checkedAt }`.
 
     🔴 **`online` = 「로컬 합성 게이트웨이에 닿을 수 있는가」**(오케 판정 J-1 (b) · T2-3).
+       T6-2 ② 부터 이것은 **실도달 프로브**(`GET /health` · 몇 초 캐시)다 — env 유무가 아니다.
        조사 «실행»이 가능한가가 아니다 — 실행은 T2-3 이 붙였고 공개 배포에서도 돈다.
        공개 배포에 없는 것은 Claude 합성 축뿐이고, 그것이 바로 이 배지가 가리켜야 할 축이다
        (baseline §15.2: 구독은 공개 API 로 나가지 않는다).
@@ -62,4 +64,7 @@ async def live_status() -> LiveStatus:
        원칙1)와 충돌한다. 두 축이 한 낱말을 쓰고 있어 v0.2 재론으로 회부했다 — 구현이
        임의로 한쪽 뜻을 바꾸지 않는다.
     """
-    return LiveStatus(online=live_gateway_available(), checkedAt=datetime.now(timezone.utc))
+    # 🔴 도달 프로브 1회(몇 초 캐시). blocking 이라 스레드로 던진다 — 이 라우트가 막히면
+    #    배지 폴링이 서비스를 막는다.
+    online = await asyncio.to_thread(live_gateway_reachable)
+    return LiveStatus(online=online, checkedAt=datetime.now(timezone.utc))

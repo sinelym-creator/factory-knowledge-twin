@@ -76,6 +76,12 @@ class Settings(BaseSettings):
     #    🔴 0 이하 = 끄기가 아니라 «즉시 timeout» 이 되지 않게, 아래 runner 가 양수일 때만 건다.
     run_timeout_sec: float = 300.0
 
+    # 🔴 세션 단위 «조사 실행» 상한(T6-2 ② · 계약 v0.1.12). 분당 rate limit 과 다른 축이다 —
+    #    저쪽은 폭주를, 이쪽은 **구독 소모**를 막는다. live 축만 센다(replay 는 소모 0).
+    #    0 이하 = 상한 없음(끄기). 「0 이면 아무도 못 돈다」로 두면 끄려는 순간 Live 가 닫힌다.
+    run_cap_per_session: int = 3
+    run_cap_window_sec: float = 3600.0
+
     # ⓒ rate limit — 축 2개를 «각각» 센다(IP · 익명 세션). 창은 60초 고정 슬라이딩.
     #    🔴 기본값을 넉넉히 둔다. 낮은 기본값은 우리 자신의 그물(tests/api·브라우저 suite)을
     #       먼저 잡고, 그러면 「처방이 도는가」를 우리 도구로 확인할 수 없게 된다.

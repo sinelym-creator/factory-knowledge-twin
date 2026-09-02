@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -23,14 +24,32 @@ from typing import Any
 
 from .synthesize import LIVE_GATE_ENV, Candidate
 
-# 게이트웨이의 상한(기본 60000ms)과 «같은 이름»을 읽고, 그보다 조금 더 기다린다.
-# 클라이언트가 먼저 끊으면 게이트웨이가 답할 수 있었던 건도 timeout 으로 기록된다.
+# 🔴 **불변식: 게이트웨이 상한 < 이 예산**(= 아래 값 + margin). 게이트웨이가 먼저 504 로
+#    사유를 내고, 클라이언트는 그 답을 받을 만큼만 더 기다린다 — 클라이언트가 먼저 끊으면
+#    게이트웨이가 답할 수 있었던 건까지 「타임아웃」으로 뭉뚱그려지고, 어느 쪽이 끊었는지
+#    사후에 가릴 수 없다.
+# 🔴 그래서 이름을 **분리했다**(32대 09-03). 예전엔 이 예산과 게이트웨이 상한이 둘 다
+#    `SYNTHESIS_TIMEOUT_MS` 였다 — 한 셸에서 export 하면 두 값이 함께 움직여 불변식이
+#    무의미해지고, 크게 주면 드릴 상한(300s)까지 넘겨 «사유 없는 무효»가 된다(31대 드릴 0/4).
+#    게이트웨이 쪽 이름 = `SYNTHESIS_GATEWAY_TIMEOUT_MS`.
 TIMEOUT_ENV = "SYNTHESIS_TIMEOUT_MS"
 DEFAULT_TIMEOUT_MS = 60_000
 CLIENT_MARGIN_MS = 5_000
 
 UNKNOWN_MODEL = "claude-code-cli:unknown"
 _MAX_EXCERPT = 600
+
+# 🔴 게이트웨이와 «같은 비밀»이되 이름의 접두어는 층을 따른다 — ai-api 쪽 env 는 `FKT_`
+#    (LIVE_GATE_ENV 와 같은 관례)이고 게이트웨이 쪽은 `SYNTHESIS_` 다. 이름을 새로 짓지 않고
+#    `run.ps1` 이 이미 안내하던 문면(`FKT_SYNTHESIS_GATEWAY_TOKEN`)을 그대로 쓴다 —
+#    이미 참을 말하는 층에서 낱말을 빌리는 편이 낱말을 하나 더 만드는 것보다 안전하다.
+#    값이 없으면 헤더를 아예 붙이지 않는다(토큰 없는 게이트웨이와 그대로 호환).
+TOKEN_ENV = "FKT_SYNTHESIS_GATEWAY_TOKEN"
+TOKEN_HEADER = "X-FKT-Gateway-Token"
+
+# 도달 프로브 — `/live/status` 가 「env 가 있다」가 아니라 「닿는다」를 답하게 하는 자리.
+PROBE_TIMEOUT_SEC = 2.0
+PROBE_CACHE_SEC = 5.0
 
 
 @dataclass
@@ -124,11 +143,54 @@ def _request_body(anchor: Any, candidates: list[Candidate], evidence_text: dict[
     return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
 
+def _headers(base: dict[str, str] | None = None) -> dict[str, str]:
+    """토큰이 설정돼 있으면 붙인다 — 값은 로그·예외 문면 어디에도 싣지 않는다."""
+    headers = dict(base or {})
+    token = os.environ.get(TOKEN_ENV, "").strip()
+    if token:
+        headers[TOKEN_HEADER] = token
+    return headers
+
+
+_probe_cache: dict[str, Any] = {"at": 0.0, "online": False}
+
+
+def probe_reachable() -> bool:
+    """게이트웨이에 «실제로 닿는가» — `GET /health` 1회. 결과는 몇 초 캐시한다.
+
+    🔴 「env 가 있다」와 「닿는다」는 다른 사실이다. 앞의 것만 보고 online=true 를 주면
+       화면은 갈 수 없는 길을 권하고, 방문자는 진행 표시 뒤에서 거부를 만난다
+       (31대 드릴이 정확히 그 형태로 무효가 났다 — 자극이 게이트웨이에 닿지 않았다).
+
+    🔴 캐시가 필요한 이유: 배지는 폴링된다. 캐시가 없으면 방문자 수만큼 게이트웨이를
+       두드리고, 그 두드림이 합성 1건과 같은 단일 스레드 서버를 막는다.
+       반대로 캐시가 길면 「방금 껐는데 아직 켜져 보인다」가 된다 — 그래서 몇 초다.
+    """
+    url = gateway_url()
+    if not url:
+        return False
+    now = time.monotonic()
+    if now - float(_probe_cache["at"]) < PROBE_CACHE_SEC:
+        return bool(_probe_cache["online"])
+    online = False
+    try:
+        request = urllib.request.Request(                    # noqa: S310 — 루프백 고정 URL
+            f"{url}/health", headers=_headers(), method="GET"
+        )
+        with urllib.request.urlopen(request, timeout=PROBE_TIMEOUT_SEC) as response:  # noqa: S310
+            online = response.status == 200
+    except Exception:                                        # noqa: BLE001 — 못 닿는 것도 «답»이다
+        online = False
+    _probe_cache["at"] = now
+    _probe_cache["online"] = online
+    return online
+
+
 def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
     request = urllib.request.Request(                        # noqa: S310 — 127.0.0.1 고정 URL
         f"{url}/synthesize",
         data=body,
-        headers={"Content-Type": "application/json; charset=utf-8"},
+        headers=_headers({"Content-Type": "application/json; charset=utf-8"}),
         method="POST",
     )
     try:

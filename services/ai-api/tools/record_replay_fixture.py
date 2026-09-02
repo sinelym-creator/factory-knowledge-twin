@@ -134,7 +134,23 @@ async def _record_once(scenario_id: str, timeout: float) -> list[dict[str, Any]]
             try:
                 await asyncio.wait_for(asyncio.shield(record.task), timeout=timeout)
             except asyncio.TimeoutError:
-                raise SystemExit(f"{timeout:.0f}s 안에 끝나지 않았다 — 녹화를 버린다") from None
+                # 🔴 **버리되 «사유»는 남긴다**(32대 09-03). 예전엔 이 자리에서 이벤트를 보지도
+                #    않고 나갔다 — 그래서 09-02 지연 드릴 0/4 가 「300s 를 넘겼다」 말고는 아무
+                #    것도 말하지 못했고, 어느 단계에서 멈췄는지 다시 재려면 구독을 또 써야 했다.
+                #    한 줄이면 다음 사람이 같은 값을 두 번 치르지 않는다.
+                started = {
+                    e["payload"]["step"] for e in record.events if e["type"] == "step.started"
+                }
+                done = {
+                    e["payload"]["step"] for e in record.events if e["type"] == "step.completed"
+                }
+                stuck = sorted(started - done) or ["(시작된 단계 없음)"]
+                raise SystemExit(
+                    f"{timeout:.0f}s 안에 끝나지 않았다 — 녹화를 버린다. "
+                    f"이벤트 {len(record.events)}건 · 완료 {sorted(done)} · 멈춘 단계 {stuck} · "
+                    "🔴 드릴 상한은 run 상한(FKT_RUN_TIMEOUT_SEC 기본 300s)보다 «크게» 준다 — "
+                    "같으면 run 이 stopped 로 내는 사유를 이쪽이 먼저 버린다(--timeout)."
+                ) from None
 
             ok, lines = _selection_verdict(record)
             print("선정 규칙(J-E):")

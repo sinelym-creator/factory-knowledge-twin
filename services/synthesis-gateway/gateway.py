@@ -44,12 +44,21 @@ BIND = os.environ.get("SYNTHESIS_GATEWAY_BIND", "127.0.0.1").strip() or "127.0.0
 # 설정하면 모든 요청이 이 값을 `X-FKT-Gateway-Token` 으로 들고 와야 한다. 로그에 남기지 않는다.
 TOKEN = os.environ.get("SYNTHESIS_GATEWAY_TOKEN", "").strip()
 PORT = int(os.environ.get("SYNTHESIS_GATEWAY_PORT", "8787"))
-TIMEOUT_MS = int(os.environ.get("SYNTHESIS_TIMEOUT_MS", "60000"))
+# 🔴 **클라이언트와 «다른 이름»을 읽는다**(32대 09-03). 예전엔 ai-api 의 예산과 이 상한이
+#    둘 다 `SYNTHESIS_TIMEOUT_MS` 였다 — 한 셸에서 export 하면 두 값이 «함께» 움직여서
+#    「게이트웨이가 먼저 504 로 사유를 내고, 클라이언트는 조금 더 기다린다」는 설계가 통째로
+#    무력화된다(그러면 어느 쪽이 끊었는지 사후에 가릴 수 없다).
+#    불변식: **이 상한 < ai-api 예산**(= `SYNTHESIS_TIMEOUT_MS` + 5s margin).
+TIMEOUT_ENV = "SYNTHESIS_GATEWAY_TIMEOUT_MS"
+_LEGACY_TIMEOUT_ENV = "SYNTHESIS_TIMEOUT_MS"
+TIMEOUT_MS = int(os.environ.get(TIMEOUT_ENV, "60000"))
 CLI_BIN = os.environ.get("SYNTHESIS_CLI_BIN", "claude")
-# 기본 = `sonnet`(운영자 결정 09-02). 빈 문자열을 «명시적으로» 주면 CLI 기본 모델로 돌아간다.
-# 🔴 고를 때는 재고 고른다 — 31대 실측에서 CLI 기본(opus)이 haiku 지정보다 2~3배 빨랐고,
-#    JSON 규약도 haiku 만 깼다(코드 펜스로 감싸 돌려줬다). 「작은 모델이 빠르다」가 아니었다.
-MODEL = os.environ.get("SYNTHESIS_MODEL", "sonnet").strip()
+# 기본 = `opus`(운영자 결정 09-03 07:36). 빈 문자열을 «명시적으로» 주면 CLI 기본으로 돌아간다.
+# 🔴 고를 때는 재고 고른다 — 09-03 재측(같은 입력 GS-01 · effort=medium · 합성 단계 벽시계):
+#    opus 10.5~10.6s · sonnet 14.8~15.2s(n=4) · haiku 44.7~60.1s(n=3). 품질 지표(1순위 정답
+#    일치 · 인용 집합 밖 0 · 가드 거부 0 · insufficient=False · 재정렬 0)는 세 모델이 «동률»
+#    이었고 갈린 축은 지연뿐이다. 「작은 모델이 빠르다」는 두 번 다 실측이 반증했다.
+MODEL = os.environ.get("SYNTHESIS_MODEL", "opus").strip()
 # 사고 깊이. 빈 문자열을 주면 플래그 자체를 안 붙인다(CLI 기본).
 EFFORT = os.environ.get("SYNTHESIS_EFFORT", "medium").strip()
 
@@ -327,8 +336,12 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         detail = out.pop("_log", {})
+        # 🔴 `insufficient` 와 인용 수를 «로그에» 남긴다(32대 09-03). 응답 원문은 어디에도
+        #    저장하지 않는 규율이라, 이 줄이 남지 않으면 나중에 「그 회차가 무엇을 답했나」를
+        #    다시 물을 방법이 구독을 또 쓰는 것뿐이다 — 실제로 그 값을 치렀다(드릴 1 재사용 0).
         self.log_message(
-            "synthesize 채택 · 후보 %d · 근거 %d · 벽시계 %dms · CLI 내부 %s/%s ms · %s · model=%s effort=%s",
+            "synthesize 채택 · 후보 %d · 근거 %d · 벽시계 %dms · CLI 내부 %s/%s ms · %s · "
+            "model=%s effort=%s · insufficient=%s · 순위=%s · 인용수=%s",
             len(req.get("candidates", [])),
             len(req.get("evidenceText", {})),
             out["elapsedMs"],
@@ -337,11 +350,25 @@ class Handler(BaseHTTPRequestHandler):
             out["model"],
             MODEL or "cli-default",
             EFFORT or "cli-default",
+            out.get("insufficient"),
+            ",".join(out.get("ranking", [])),
+            ",".join(
+                f"{k}:{len(v.get('citedEvidenceIds', []))}"
+                for k, v in (out.get("rationale") or {}).items()
+            ),
         )
         self._send(200, out)
 
 
 def main() -> int:
+    # 🔴 구 이름만 준 채로 뜨면 «설정했다고 믿는» 상태가 된다 — 값은 기본 60000 인데
+    #    운영자는 자기가 준 값이 걸린 줄 안다. 조용히 지나가지 않게 소리 낸다.
+    if os.environ.get(_LEGACY_TIMEOUT_ENV) and not os.environ.get(TIMEOUT_ENV):
+        print(
+            f"경고 — {_LEGACY_TIMEOUT_ENV} 는 이제 ai-api «클라이언트 예산»의 이름이다. "
+            f"이 게이트웨이의 상한은 {TIMEOUT_ENV} 로 준다(지금 값 {TIMEOUT_MS}ms = 기본값).",
+            file=sys.stderr,
+        )
     if not SYSTEM_PROMPT_FILE.exists():
         print(f"시스템 프롬프트 파일이 없다: {SYSTEM_PROMPT_FILE}", file=sys.stderr)
         return 2
