@@ -287,6 +287,16 @@ Ground Truth 고정 · 40문×4전략 · 5회 raw · Hit@K/Recall@K/MRR/nDCG 계
   `os.system`·`shell=True`·`new Function`·`child_process.exec` **0건** · SQL·Cypher 18곳은 식별자만
   상수 보간이고 값은 `$1`·`$2` 바인딩.
 
+🔴 **09-02 T3-6 본 판정(#386 · `t3-6-e2e-verification.md`)이 §35 에 더한 것**
+
+- **§35.1 Product** — 브라우저 축 실측이 처음 붙었다: 격리 **5/5** · 키보드 **7/7**(🔴 D-7 Esc 초록 =
+  Q-59 해소 확인) · desktop viewport **16/16** · `shell` 9/9 · `mode-badge` 5/5 · `reset-modal` 7/7.
+- **§35.3 Latency·Reliability** — P50·P95 는 여전히 **빈 칸**이되, 「**외부 vantage 조건부 실측**」이
+  들어왔다: 단독 적재 `/overview` **load 599ms · networkidle 7,999ms**(200) · 콜드 `/api/health` 왕복
+  5.59s(표본 1) · 🔴 **워커 8 동시 부하에서는 같은 화면이 30s·120s 를 넘긴다**(측정 조건이지 SLA 아님).
+- **§35.4 Security** — 딥링크 무쿠키 가드 축은 초록 유지(`noCookie.opened=false`) · 🔴 **D-21** 로
+  Live/WS 축이 공개 경로에서 서지 않는다(§35.7 조건 2 잔여).
+
 ### 2-5. §35.5 GitHub·License (7항)
 
 | # | 항목 | 실측(E1 · 오늘 `db2e259` 트리) | 판정 |
@@ -367,14 +377,14 @@ runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문
 | # | §35.7 조건 | 오늘 상태 |
 |---|---|---|
 | 1 | P0 기능 완료 | 본 판정 범위 밖(오케·폐하) |
-| 2 | Golden Scenario E2E PASS | **부분** — 로컬 API 축 13행 오늘 PASS · clean env 새 클론에서도 **13행 완주**(단 **5단 절차** 필요 · `t5-5-clean-env.md`) · **브라우저 E2E 미실행** |
+| 2 | Golden Scenario E2E PASS | **부분(09-02 승격)** — 로컬 API 축 13행 PASS · clean env 새 클론 **13행 완주**(5단 절차 · `t5-5-clean-env.md`) · 🔴 **브라우저 E2E 오늘 실행**(#386 · `t3-6-e2e-verification.md` · 공개 셸 131칸 · **97 통과 / 32 빨강 / 2 건너뜀**) + 공개 경로 replay 완주(#373 §9) · 잔여 = **D-21**(공개 셸 WS 미개통) · 미결 2칸 |
 | 3 | Independent Verification PASS | 🔴 **미충족** — Gate 3 평가셋 없음 · Gate 7 4항 미충족 + 3항 측정 불가 |
 | 4 | Security Gate PASS | 🔴 **미충족** — ~~Cypher injection~~ ~~문서 Prompt Injection~~(09-02 신설로 해소) · **admin endpoint · malformed WS 2항 잔여** + ⑦⑧⑪ 측정 불가 |
-| 5 | Public Offline Fallback PASS | 승계(외부 실측 존재) · 오늘 자극 0 |
+| 5 | Public Offline Fallback PASS | **충족(외부 축 · 09-02)** — #373 §9 Q-70 외부 실측 6/6 + **오늘 Gate 6 ⓒ 정적 재생 완주**(공개 셸 · `/api` 차단 시 events 32/32 · static=true · 🔴 무자극 대조군 A 동반 · #386) |
 | 6 | Benchmark Evidence 생성 | 🔴 **미충족**(T5-1 미착지) |
 | 7 | KPI·Latency 결과 공개 | 🔴 **미충족** — §35.2 전항 · §35.3 P50·P95 빈 칸 |
 | 8 | GitHub Actions PASS | **부분** — workflow 2본 실재 · required 지정은 리포 설정 |
-| 9 | Apache-2.0 License Closure | 🔴 **미충족** — `NOTICE` · `THIRD_PARTY_NOTICES.md` 부재 |
+| 9 | Apache-2.0 License Closure | **충족(09-02)** — `NOTICE` · `THIRD_PARTY_NOTICES.md` **트리 실재**(#360 착지 · 오늘 확인 E1) |
 | 10 | README Claim-Evidence 일치 | **충족**(오늘 실측 — 성능 수치 0건) |
 
 🔴 **판정문에 함께 남기는 경계**
