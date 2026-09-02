@@ -60,7 +60,11 @@ CLI_BIN = os.environ.get("SYNTHESIS_CLI_BIN", "claude")
 #    이었고 갈린 축은 지연뿐이다. 「작은 모델이 빠르다」는 두 번 다 실측이 반증했다.
 MODEL = os.environ.get("SYNTHESIS_MODEL", "opus").strip()
 # 사고 깊이. 빈 문자열을 주면 플래그 자체를 안 붙인다(CLI 기본).
-EFFORT = os.environ.get("SYNTHESIS_EFFORT", "medium").strip()
+# 기본 = `low`(운영자 결정 09-03 07:59). 근거 = effort 축 실측(리바이2 드릴 3 n=2)에서 low 가
+# 지연을 줄이면서 객관 품질 지표를 떨어뜨리지 않았다 — n=3 재확인은 T6-2 검증 축 ⑤가 맡는다.
+# 🔴 이 값이 **유일한 선언 자리**다. run.ps1·switch.ps1 은 «전달»만 하고 기본값을 다시 적지
+#    않는다 — 두 곳에 적으면 한쪽만 고치는 날 「어느 쪽이 기본인가」가 갈린다.
+EFFORT = os.environ.get("SYNTHESIS_EFFORT", "low").strip()
 
 TOKEN_HEADER = "X-FKT-Gateway-Token"
 MAX_BODY_BYTES = 1 * 1024 * 1024
