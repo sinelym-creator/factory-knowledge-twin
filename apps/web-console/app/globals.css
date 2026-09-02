@@ -33,6 +33,65 @@
   --spacing-rail: 56px;     /* ux-direction A안 좌측 아이콘 레일 */
 }
 
+/* =============================================================================
+   모션·형태 토큰 — T6-2 ③ 이 쓰고, T6-4 「애플 감성」 규격서가 이어받는다.
+
+   🔴 색과 «같은 규율»이다: 값은 여기 한 곳에만 적고 컴포넌트는 이름만 부른다. 지금 쓰는 곳이
+      합성 대기 표시 하나뿐이어도 토큰으로 빼 두는 이유는, 규격서가 도착했을 때 고칠 자리가
+      이 블록이 되게 하기 위해서다(컴포넌트마다 0.35s 를 흩뿌리면 그때 전수 검색을 한다).
+
+   🔴 `prefers-reduced-motion` 은 «토큰 층»에서 존중한다. 컴포넌트마다 미디어 쿼리를 쓰면
+      한 곳을 빠뜨리는 날 그 컴포넌트만 계속 움직인다 — 접근성은 기본값이어야지 옵트인이
+      아니다(§11.3).
+   ============================================================================= */
+:root {
+  /* iOS 계열 스프링 이징 — 끝에서 살짝 überschoot 없이 감속만 한다(과한 바운스 0). */
+  --fkt-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --fkt-duration-enter: 0.34s;
+  --fkt-shimmer-duration: 1.6s;
+  --fkt-radius-pill: 999px;
+  --fkt-progress-height: 3px;
+  /* 시스템 폰트 스택 — 지금은 합성 대기 표시에만 쓴다. 전면 적용 여부는 T6-4 규격서가 정한다
+     (본문 폰트를 이 조각에서 바꾸면 규격 없이 화면 전체 인상이 바뀐다). */
+  --fkt-font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
+    "Segoe UI", system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fkt-duration-enter: 0.01s;
+    --fkt-shimmer-duration: 0s;
+  }
+}
+
+@keyframes fkt-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fkt-shimmer {
+  from { background-position: -160% 0; }
+  to   { background-position: 260% 0; }
+}
+
+.fkt-rise {
+  animation: fkt-rise var(--fkt-duration-enter) var(--fkt-ease-spring) both;
+}
+
+/* 🔴 shimmer 는 «배경 이동»이다 — 크기·위치를 건드리지 않으므로 레이아웃을 다시 계산하지
+   않는다. reduced-motion 에서는 duration 0 이라 정지한 띠로 남는다(사라지지 않는다: 자리
+   표시라는 뜻은 유지해야 한다). */
+.fkt-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-edge) 0%,
+    color-mix(in srgb, var(--color-edge) 55%, var(--color-muted)) 50%,
+    var(--color-edge) 100%
+  );
+  background-size: 200% 100%;
+  animation: fkt-shimmer var(--fkt-shimmer-duration) linear infinite;
+}
+
 /* 🔴 다크가 «기본»이다(§10 neutral dark). 라이트 모드 전환은 P0 범위 밖이라 두지 않는다 —
    prefers-color-scheme에 반응하는 스캐폴드 기본값을 그대로 두면 밝은 배경에서 토큰이 깨진다. */
 html {

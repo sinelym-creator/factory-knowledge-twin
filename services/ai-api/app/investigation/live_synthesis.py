@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import time
 import urllib.error
@@ -23,6 +24,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .synthesize import LIVE_GATE_ENV, Candidate
+
+log = logging.getLogger(__name__)
 
 # 🔴 **불변식: 게이트웨이 상한 < 이 예산**(= 아래 값 + margin). 게이트웨이가 먼저 504 로
 #    사유를 내고, 클라이언트는 그 답을 받을 만큼만 더 기다린다 — 클라이언트가 먼저 끊으면
@@ -263,6 +266,27 @@ def apply_guard(
     return reordered, cleaned
 
 
+def _refusal_wording(exc: BaseException) -> str:
+    """예외를 «방문자가 읽을 문장»으로 바꾼다 — D-23(09-03 리바이2 회부 · 오케 판정).
+
+    🔴 **클래스명·호스트·포트를 싣지 않는다.** 앞판은 `f"합성 중 예외({type(exc).__name__})"`
+       였고, 그 문자열이 `rejectedReason` → run 타임라인 → **공개 화면**까지 그대로 흘러
+       방문자가 `ConnectionRefusedError` 를 읽었다(baseline §15.2 공개 경계 · 계약 OFF 문면).
+       원문은 아래 호출부에서 **로그에만** 남긴다.
+
+    🔴 **분류는 세 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
+       원인을 더 잘게 나누면 그 목록이 곧 내부 구현의 지도가 된다. 방문자에게 필요한 것은
+       「지금 어떤 상태인가」와 「무엇을 할 수 있는가」이지 예외 이름이 아니다.
+    """
+    if isinstance(exc, (TimeoutError, asyncio.TimeoutError)):
+        return "응답 시간 초과"
+    if isinstance(exc, (urllib.error.URLError, ConnectionError, OSError)):
+        # URLError 는 연결 거부·DNS·경로 없음을 한꺼번에 덮는다. 셋 다 방문자에게는 같은
+        # 사실이다 — 게이트웨이가 지금 답하지 않는다.
+        return "소유자 게이트웨이 OFF(미도달)"
+    return "합성 중 오류"
+
+
 async def synthesize(
     candidates: list[Candidate],
     *,
@@ -295,11 +319,13 @@ async def synthesize(
             rejected_reason=str(exc),
         )
     except Exception as exc:                                  # noqa: BLE001 — 축 하나가 run 을 죽이지 않는다
+        # 🔴 원문은 «여기서만» 남는다. 아래 사유에는 클래스명이 들어가지 않는다(D-23).
+        log.warning("live 합성 실패 — %s: %s", type(exc).__name__, exc)
         return LiveResult(
             axis="live-rejected",
             candidates=candidates,
             model=model,
-            rejected_reason=f"합성 중 예외({type(exc).__name__})",
+            rejected_reason=_refusal_wording(exc),
         )
 
     return LiveResult(axis="live", candidates=reordered, model=model, rationale=rationale)

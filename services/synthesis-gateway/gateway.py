@@ -335,8 +335,10 @@ class Handler(BaseHTTPRequestHandler):
             self._send(exc.status, {"rejectedReason": exc.reason})
             return
         except Exception as exc:  # noqa: BLE001 — 게이트웨이가 조용히 죽지 않게
-            self.log_message("synthesize 예외 · %s", type(exc).__name__)
-            self._send(500, {"rejectedReason": f"게이트웨이 내부 오류({type(exc).__name__})"})
+            # 🔴 클래스명은 «로그에만». 이 응답의 `rejectedReason` 은 ai-api 를 지나
+            #    run 타임라인의 공개 화면까지 그대로 흐른다(D-23 · 09-03).
+            self.log_message("synthesize 예외 · %s: %s", type(exc).__name__, exc)
+            self._send(500, {"rejectedReason": "게이트웨이 내부 오류"})
             return
 
         detail = out.pop("_log", {})
