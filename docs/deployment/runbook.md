@@ -199,6 +199,10 @@ services\projector\.venv\Scripts\python.exe services\projector\build_projection.
 services\projector\.venv\Scripts\python.exe services\projector\verify_projection.py
 ```
 
+🔴 **조사 화면의 WS 는 «어디로 붙느냐»에 따라 갈린다(D-21 · E1)**: Funnel 직결에서는 핸드셰이크가
+`101` 로 서고, 공개 셸(Vercel 경로)에서는 서지 않는다 — 층은 엣지 rewrite 쪽이다
+(`evidence/d21-ws-layer-split.md`). 여기서 세운 clean env 는 직결 축이라 영향이 없다.
+
 #### 4-1a. 🔴 `COMPOSE_PROJECT_NAME` — 안 주면 «다른 스택을 본다» (D-18)
 
 `docker compose` 는 project 를 안 주면 **기본 project(디렉토리명)** 를 본다. 병렬 스택을 다른
