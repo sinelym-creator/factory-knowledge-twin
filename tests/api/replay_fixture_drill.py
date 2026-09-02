@@ -301,10 +301,11 @@ def main() -> int:
     #    구독 «경로»(게이트웨이 호스트). 하나라도 안 울면 red 다.
     probes = [
         ("자격 이름표", "ANTHROPIC_API_KEY=levi2probe", True),
-        ("Authorization 헤더", "Bearer sk-ant-api03-LEVI2PROBE00000", True),
+        # 🔴 아래 두 표본의 키 «값»은 런타임 조립(D-19) — 소스에 통짜로 남기지 않는다.
+        ("Authorization 헤더", "Bearer " + "sk" + "-ant-api03-LEVI2PROBE00000", True),
         ("벤더 이름", "anthropic.com/v1/messages", True),
         # 🔴 여기가 이 표의 본론이다 — «이름표 없이 값만» 샌 경우(V-8 이 물린 자리).
-        ("Anthropic 키 «값»만", "sk-ant-api03-LEVI2PROBE0000000000AAAA", True),
+        ("Anthropic 키 «값»만", "sk" + "-ant-api03-LEVI2PROBE0000000000AAAA", True),
         ("GitHub 토큰 «값»만", _PROBE_GITHUB, True),
         ("AWS 키 «값»만", _PROBE_AWS, True),
         ("구독 경로 호스트", "api.claude.ai/v1/messages", True),

@@ -104,7 +104,8 @@ def self_check() -> None:
     """🔴 스캐너가 «빨강을 낼 수 있는가»부터."""
     samples: list[tuple[str, str, list[str], bool]] = [
         ("깨끗한 계약 응답", '{"error":{"code":"not_found","message":"evidence X 를 찾을 수 없다"}}', [], True),
-        ("키 노출", '{"detail":"auth failed for sk-ant-api03-AAAABBBBCCCCDDDD"}', [], False),
+        # 🔴 키 «값»은 런타임 조립(D-19) — 자극은 그대로다.
+        ("키 노출", '{"detail":"auth failed for ' + "sk" + '-ant-api03-AAAABBBBCCCCDDDD"}', [], False),
         ("env 이름 노출", '{"message":"ANTHROPIC_API_KEY 가 없다"}', [], False),
         ("DSN 노출", '{"message":"postgresql://fkt:pw@host:5534/fkt 에 붙지 못했다"}', [], False),
         ("traceback 노출", '{"m":"Traceback (most recent call last): File ..."}', [], False),
