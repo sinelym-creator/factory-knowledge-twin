@@ -318,6 +318,10 @@ async function breakWebSocket(page: Page) {
         removeEventListener() {},
       };
       setTimeout(() => {
+        // 🔴 이 소켓은 «가짜»라 Playwright 의 `websocket` 이벤트가 뜨지 않는다 — close 시각을
+        //    페이지가 직접 남긴다. 안 남기면 폴링의 기준선이 비어 첫 회가 «즉시»로 보인다.
+        (w as unknown as { __wsCloseAt: number[] }).__wsCloseAt ??= [];
+        (w as unknown as { __wsCloseAt: number[] }).__wsCloseAt.push(Date.now());
         const fn = sock.onclose as ((e: { code: number; reason: string }) => void) | null;
         fn?.({ code: 1006, reason: "" });
       }, 10);
@@ -329,6 +333,10 @@ async function breakWebSocket(page: Page) {
 const wsAttempts = (page: Page) =>
   page.evaluate(() => (window as unknown as { __wsAttempts?: number }).__wsAttempts ?? 0);
 
+/** 스텁이 남긴 close 시각 — 폴링이 «시작되는» 자리다(`streamUnavailable` 이 서는 순간). */
+const wsCloseAt = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __wsCloseAt?: number[] }).__wsCloseAt ?? []);
+
 /** 조사 하나를 열고 그 화면까지 간다 — 이 절의 모든 축이 같은 동선을 탄다. */
 async function openRun(page: Page) {
   await enter(page);
@@ -338,20 +346,54 @@ async function openRun(page: Page) {
   return created.body.runId;
 }
 
-/** 브라우저가 낸 `/api/runs/{id}/events` 요청 시각(ms) — 폴링의 «자취»다. */
+/**
+ * 브라우저가 낸 `/api/runs/{id}/events` 요청 시각(ms) — 폴링의 «자취»다.
+ * 🔴 **되감기와 폴링을 가른다.** 구현은 `onclose` 에서도 같은 경로를 한 번 부른다(ⓐ 되감기).
+ *    안 가르면 그 한 건이 「첫 회를 즉시 불렀다」로 읽힌다 — 실측으로 물린 자리다.
+ */
 function pollTrail(page: Page, runId: string) {
   const hits: number[] = [];
+  const closes: number[] = [];
+  page.on("websocket", (sock) => sock.on("close", () => closes.push(Date.now())));
   page.on("request", (r) => {
     if (new URL(r.url()).pathname === `/api/runs/${runId}/events`) hits.push(Date.now());
   });
-  return hits;
+  /** close 직후 창(기본 800ms) 안의 조회 = 되감기. 나머지가 폴링이다. */
+  const split = (extraCloses: number[] = [], window = 800) => {
+    const all = [...closes, ...extraCloses];
+    const rewind: number[] = [];
+    const poll: number[] = [];
+    for (const t of hits) (all.some((c) => t >= c && t - c <= window) ? rewind : poll).push(t);
+    return { rewind, poll };
+  };
+  return { hits, closes, split };
+}
+
+/**
+ * 무대를 지킨다 — 이 시나리오는 수백 ms 에 끝나고, 끝나면 폴링은 **옳게** 멈춘다(:158).
+ * 종단 이벤트만 응답에서 빼서 «아직 안 끝난» run 으로 보이게 하고, **뺀 건수를 돌려준다**
+ * (0이면 무대가 우연히 선 것이라 red 가 아니라 오류다).
+ */
+async function withholdTerminal(page: Page) {
+  // 🔴 `release()` 는 route 를 «떼지» 않고 통과로 바꾼다 — `unroute` 는 진행 중인 요청과
+  //    부딪혀 "Route is already handled" 를 낸다(실측). 스위치가 안전하다.
+  const held = { count: 0, releasedAt: 0, release() { held.releasedAt = Date.now(); } };
+  await page.route(/\/api\/runs\/[^/]+\/events$/, async (route) => {
+    if (held.releasedAt) return route.continue();
+    const res = await route.fetch();
+    const body = (await res.json()) as { type: string }[];
+    const kept = body.filter((e) => !["run.completed", "run.stopped", "run.failed"].includes(e.type));
+    held.count += body.length - kept.length;
+    await route.fulfill({ response: res, json: kept });
+  });
+  return held;
 }
 
 test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => {
   test("ⓗ-0 🔴 대조군 — 스트림이 서는 경로에서는 배너도 폴링도 «없다»", async ({ page }) => {
     test.setTimeout(180_000);
     const runId = await openRun(page);
-    const hits = pollTrail(page, runId);
+    const trail = pollTrail(page, runId);
 
     await expect(page.getByTestId("run-console")).toHaveAttribute("data-status", "completed", {
       timeout: 90_000,
@@ -361,12 +403,15 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
       page.getByTestId("run-polling"),
       "스트림이 서는데 주기 조회 배너가 떴다 (계약 :156 = 폴링 0)",
     ).toHaveCount(0);
-    expect(hits.length, `스트림이 서는데 폴링이 ${hits.length}회 돌았다 — 두 출처가 같이 돈다`).toBe(0);
+    expect(trail.hits.length, `스트림이 서는데 조회가 ${trail.hits.length}회 나갔다 — 두 출처가 같이 돈다`).toBe(0);
   });
 
   test("ⓗ-1 미개통(101 전 1006) → 배너가 서고 «간격을 스스로 밝힌다»", async ({ page }) => {
     test.setTimeout(180_000);
     await breakWebSocket(page);
+    // 🔴 배너는 종단에 닿으면 «옳게» 사라진다. 속성을 읽는 사이에 사라지면 그 빨강은 대상이
+    //    아니라 내 경합이다(1차 실행에서 물렸다) — 그래서 여기서도 무대를 지킨다.
+    const held = await withholdTerminal(page);
     await openRun(page);
 
     const banner = page.getByTestId("run-polling");
@@ -374,60 +419,65 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
       banner,
       "미개통인데 주기 조회 배너가 없다 — 화면이 무엇으로 대신하는지 말하지 않는다 (:159)",
     ).toBeVisible({ timeout: 60_000 });
+    // 🔴 값의 «형상»을 한 번에 묻는다 — 존재 확인과 값 읽기를 나누면 그 사이가 경합이 된다.
+    await expect(banner, "배너가 간격(data-interval-ms)을 밝히지 않는다").toHaveAttribute(
+      "data-interval-ms",
+      /^[1-9][0-9]*$/,
+    );
     // 🔴 자극이 실재했는가 — 0 이면 어느 색도 내지 않는다(표지 0건은 무측정이다).
     expect(
       await wsAttempts(page),
       "WS 를 한 번도 열려 하지 않았다 — 배너의 주어가 «미개통»이 아니다",
     ).toBeGreaterThan(0);
 
-    const raw = await banner.getAttribute("data-interval-ms");
-    expect(raw, "배너가 간격을 밝히지 않는다 — 아래 축들이 잴 정본이 없다").not.toBeNull();
-    const interval = Number(raw);
-    expect(Number.isInteger(interval) && interval > 0, `간격이 수가 아니다: ${raw}`).toBeTruthy();
+    const interval = Number(await banner.getAttribute("data-interval-ms"));
     // 문면 — 「연결 안 됨」만 띄우고 뒤에서 조용히 메우는 것을 금한 자리다(:159).
     await expect(banner, "배너가 «무엇으로 대신하는지»를 말하지 않는다").toContainText("주기 조회");
+    expect(held.count, "종단을 하나도 못 뺐다 — 무대가 우연히 선 것이다(red 아님·오류)").toBeGreaterThan(0);
     test.info().annotations.push({ type: "간격 정본", description: `${interval}ms (화면이 밝힌 값)` });
   });
 
   test("ⓗ-2 폴링이 «그 간격으로» 돈다 — 첫 회 즉시 호출 0", async ({ page }) => {
     test.setTimeout(180_000);
     await breakWebSocket(page);
-    /* 🔴 **무대를 지키는 자리.** 이 시나리오는 수백 ms 에 끝나고, 끝나면 폴링은 «옳게» 멈춘다
-     *    (:158) — 그대로 두면 반복을 볼 창이 사라진다. 그래서 종단 이벤트만 빼서 «아직 안 끝난»
-     *    run 으로 보이게 한다. 지운 것은 화면이 읽는 사실뿐이고, 서버는 그대로다. */
-    let terminalHeld = 0;
-    await page.route(/\/api\/runs\/[^/]+\/events$/, async (route) => {
-      const res = await route.fetch();
-      const body = (await res.json()) as { type: string }[];
-      const kept = body.filter(
-        (e) => !["run.completed", "run.stopped", "run.failed"].includes(e.type),
-      );
-      terminalHeld += body.length - kept.length;
-      await route.fulfill({ response: res, json: kept });
-    });
+    const held = await withholdTerminal(page);
 
     const runId = await openRun(page);
-    const hits = pollTrail(page, runId);
+    const trail = pollTrail(page, runId);
     const banner = page.getByTestId("run-polling");
     await expect(banner).toBeVisible({ timeout: 60_000 });
     const interval = Number(await banner.getAttribute("data-interval-ms"));
     expect(interval, "간격 정본이 없다 — 이 축은 잴 수 없다").toBeGreaterThan(0);
 
     const openedAt = Date.now();
-    hits.length = 0; // 배너가 선 뒤부터 센다 — 그 앞의 ⓐ 되감기 조회는 폴링이 아니다
-    await page.waitForTimeout(interval * 3 + 1_500);
+    await page.waitForTimeout(interval * 4 + 2_000);
+    const { rewind, poll } = trail.split(await wsCloseAt(page));
+    const after = poll.filter((t) => t >= openedAt);
 
+    test.info().annotations.push({
+      type: "자취",
+      description: `WS close ${trail.closes.length}회 · 조회 ${trail.hits.length}(되감기 ${rewind.length} · 폴링 ${poll.length}) · 배너 뒤 폴링 ${after.length}`,
+    });
+    expect(held.count, "종단을 하나도 못 뺐다 — 무대가 우연히 선 것이다(red 아님·오류)").toBeGreaterThan(0);
+
+    /* 🔴 **표본이 없으면 어느 색도 내지 않는다.** 되감기를 걸러낸 뒤 폴링이 2회 미만이면
+     *    「간격이 틀렸다」가 아니라 「간격을 못 쟀다」이다 — 가리지 않으려고 위 주석에 되감기
+     *    수를 함께 남긴다. */
+    test.skip(after.length < 2, `배너 뒤 폴링이 ${after.length}회뿐이다 — 간격을 잴 표본이 없다(되감기 ${rewind.length}회)`);
+
+    /* 🔴 **기준선은 «내가 배너를 본 시각»이 아니다.** 폴링 effect 는 `streamUnavailable` 이
+     *    서는 순간(= WS close)에 시작하고, 내 `expect` 는 그보다 늦게 관측한다 — 그 차이만큼
+     *    첫 회가 «즉시»처럼 보인다(1차 수정본에서 512ms 로 물렸다. 그 빨강은 대상이 아니라
+     *    내 기준선의 것이었다). 그래서 첫 폴링 «직전의» close 부터 잰다. */
+    const stubCloses = await wsCloseAt(page);
+    const priorCloses = [...trail.closes, ...stubCloses].filter((c) => c <= after[0]);
+    const base = priorCloses.length ? Math.max(...priorCloses) : openedAt;
     expect(
-      hits.length,
-      `배너가 선 뒤 ${interval * 3 + 1500}ms 동안 폴링이 ${hits.length}회 — 반복이 없다`,
-    ).toBeGreaterThanOrEqual(2);
-    // 🔴 「첫 회 즉시 호출 0」(구현 주석·계약 :157) — 배너 직후에 곧장 부르면 같은 순간에 같은 요청이 둘 나간다.
-    expect(
-      hits[0] - openedAt,
-      `배너 직후 ${hits[0] - openedAt}ms 에 첫 조회가 나갔다 — 첫 회를 즉시 부른다`,
+      after[0] - base,
+      `폴링 시작점(직전 WS close)에서 ${after[0] - base}ms 만에 첫 조회가 나갔다 — 첫 회를 즉시 부른다`,
     ).toBeGreaterThan(interval * 0.5);
-    // 🔴 간격은 «자취»로 잰다 — 산수로 미루지 않는다. 관측 델타의 중앙값이 정본 근방인가.
-    const deltas = hits.slice(1).map((t, i) => t - hits[i]).sort((a, b) => a - b);
+    // 🔴 간격은 «자취»로 잰다 — 산수로 미루지 않는다.
+    const deltas = after.slice(1).map((t, i) => t - after[i]).sort((a, b) => a - b);
     const median = deltas[Math.floor(deltas.length / 2)];
     expect(median, `관측 간격 중앙값 ${median}ms 가 화면이 밝힌 ${interval}ms 와 어긋난다`).toBeGreaterThan(
       interval * 0.5,
@@ -436,26 +486,23 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
       median,
       `관측 간격 중앙값 ${median}ms 가 화면이 밝힌 ${interval}ms 보다 크게 늦다`,
     ).toBeLessThan(interval * 2.5);
-    expect(
-      terminalHeld,
-      "종단을 하나도 못 뺐다 — 이 축의 무대가 내가 만든 것이 아니라 우연이다",
-    ).toBeGreaterThan(0);
-    test.info().annotations.push({
-      type: "폴링 자취",
-      description: `정본 ${interval}ms · 관측 ${hits.length}회 · 델타 중앙값 ${median}ms · 첫 회 지연 ${hits[0] - openedAt}ms`,
-    });
   });
 
   test("ⓗ-3 종단 뒤 폴링이 «멈추고» 배너가 사라진다 (:158)", async ({ page }) => {
     test.setTimeout(180_000);
     await breakWebSocket(page);
+    /* 🔴 **무대를 잠깐만 지킨다.** 이 축은 «자연 종단»이 와야 성립하는데, warm replay 는
+     *    배너가 서기도 전에 끝나 버려 어떤 실행에서는 무대 자체가 없었다(실측 · 비결정).
+     *    그래서 배너가 설 때까지만 종단을 보류했다가 **풀고**, 그 뒤의 중단을 잰다. */
+    const held = await withholdTerminal(page);
     const runId = await openRun(page);
-    const hits = pollTrail(page, runId);
+    const trail = pollTrail(page, runId);
 
     await expect(
       page.getByTestId("run-polling"),
       "미개통인데 배너가 없다 — 이 축의 무대가 없다",
     ).toBeVisible({ timeout: 60_000 });
+    held.release(); // 보류 해제 — 이제 종단이 그대로 온다
     // 🔴 **부재를 묻기 전에 양의 신호를 세운다** — 완주에 닿았는가부터.
     await expect(
       page.getByTestId("run-console"),
@@ -467,11 +514,11 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
     ).toHaveCount(0);
 
     // 종단 «뒤» 창을 새로 열어 조회가 더 나가는지 본다(창을 먼저 열고 세면 종단 전 요청이 섞인다).
-    hits.length = 0;
+    const before = trail.hits.length;
     await page.waitForTimeout(6_000);
     expect(
-      hits.length,
-      `종단 뒤 6초 동안 폴링이 ${hits.length}회 더 돌았다 — 끝난 조사를 계속 두드린다`,
+      trail.hits.length - before,
+      `종단 뒤 6초 동안 조회가 ${trail.hits.length - before}회 더 나갔다 — 끝난 조사를 계속 두드린다`,
     ).toBe(0);
 
     // 🔴 중복 0 — 폴링 경로로 받은 이벤트도 seq 로 걸러졌는가(계약 :157 「필터는 한 곳」).
@@ -486,6 +533,8 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
   }) => {
     test.setTimeout(180_000);
     await breakWebSocket(page);
+    // 🔴 폴링이 «돌 무대»부터 만든다 — 종단이 먼저 오면 429 를 받을 기회 자체가 없다(1차 실행).
+    const held = await withholdTerminal(page);
     /* 🔴 429 는 **운영값(env)** 축이라 실물로 자극하지 않는다(발주 규율). 여기서 재는 것은
      *    「서버가 그만 오라고 했을 때 화면이 어떻게 하는가」 하나뿐이고, 그것은 응답을 갈아
      *    끼워서 물을 수 있다. 🔴 **폴링이 실제로 돌기 시작한 뒤**에 갈아 끼운다 — 처음부터
@@ -496,7 +545,12 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
       timeout: 60_000,
     });
 
+    /* 🔴 여기서 `held.count` 를 관문으로 쓰지 않는다 — 배너가 선 시점의 run 은 «진행 중»이라
+     *    뺄 종단이 아직 없는 것이 정상이다(1차 수정본에서 0으로 물렸다). 이 축의 무대는
+     *    「배너가 실재한다」로 이미 섰고, 보류는 429 전에 run 이 끝나는 것을 막는 데만 쓴다. */
+    void held;
     let rejected = 0;
+    // 🔴 나중에 건 route 가 먼저 잡는다 — 위 보류를 덮어 429 로 답한다.
     await page.route(/\/api\/runs\/[^/]+\/events$/, async (route) => {
       rejected += 1;
       await route.fulfill({
@@ -518,12 +572,27 @@ test.describe("T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10)", () => 
       "429 로 멈췄는데 「주기 조회로 진행 중」 배너가 남아 있다",
     ).toHaveCount(0);
 
-    // 🔴 정말 멈췄는가 — 문면이 아니라 «자취»로 묻는다.
-    const hits = pollTrail(page, runId);
-    await page.waitForTimeout(8_000);
+    // 🔴 정말 멈췄는가 — 문면이 아니라 «자취»로 묻는다. 🔴 그리고 「몇 회 더」와 「결국 멎었나」를
+    //    나눠 남긴다: 이미 발사된 한 건이 늦게 도착하는 것과, 멈추지 않는 것은 다른 사실이다.
+    const noteAt = Date.now();
+    const trail = pollTrail(page, runId);
+    // (아래 판정은 되감기를 뺀 «폴링»만 센다 — 분류 바탕은 스텁이 남긴 close 시각이다)
+    // 🔴 창을 넉넉히 준다 — 「이미 발사된 한 건이 늦게 온 것」과 「멈췄다가 되살아난 것」은
+    //    짧은 창에서 같은 모습이다(8s 창에서 2회를 봤다 · 그 둘을 가르려면 더 봐야 한다).
+    await page.waitForTimeout(20_000);
+    const { rewind, poll } = trail.split(await wsCloseAt(page));
+    const extra = poll.filter((t) => t >= noteAt).map((t) => t - noteAt);
+    const rewinds = rewind.filter((t) => t >= noteAt).length;
+    const lastAt = extra.length ? extra[extra.length - 1] : null;
+    test.info().annotations.push({
+      type: "429 뒤 자취",
+      description: `note 뒤 폴링 ${extra.length}회 (${extra.join("·")}ms) · 되감기 ${rewinds}회 · 배너 ${await page
+        .getByTestId("run-polling")
+        .count()} 배너 잔존 · 창 20000ms)`,
+    });
     expect(
-      hits.length,
-      `429 뒤 8초 동안 ${hits.length}회 더 두드렸다 — 「그만 와라」를 듣고 되묻는다`,
+      extra.length,
+      `429 뒤 20초 동안 폴링이 ${extra.length}회 더 나갔다(${extra.join("·")}ms · 마지막 ${lastAt}ms · 되감기 ${rewinds}회는 별건) — 「그만 와라」를 듣고 되묻는다`,
     ).toBe(0);
   });
 });

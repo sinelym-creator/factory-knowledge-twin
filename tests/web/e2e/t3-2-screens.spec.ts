@@ -18,8 +18,25 @@ import { test, expect, type Page } from "@playwright/test";
 
 const API = process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
 
+/** 진입이 «끝났는가» — 가드 홉이 준 세션이 컨텍스트에 자리 잡을 때까지. 대리 지표가 아니라 그 사실 자체를 기다린다. */
+async function sessionReady(page: Page) {
+  await expect
+    .poll(async () => (await page.context().cookies()).some((c) => c.name === "fkt_session"), {
+      message: "진입했는데 세션 쿠키가 서지 않는다 — 세션 자원을 부를 자격이 없다",
+      timeout: 15_000,
+    })
+    .toBe(true);
+}
+
 /** 화면이 그리는 값의 «출처» — 화면에서 읽은 숫자를 화면으로 검산하지 않는다. */
 async function overviewFromApi(page: Page) {
+  /* 🔴 **여기가 세션을 기다리는 자리다**(Q-73 회귀 · 27대 자수). 이 함수는 `page.request` 로
+   *    «브라우저의 쿠키»를 지고 API 를 부르는데, 진입 직후에는 가드 홉이 준 세션이 아직
+   *    컨텍스트에 자리 잡지 않아 401 이 난다. 앞판은 `networkidle` 이 그 시간을 우연히
+   *    벌어 주고 있었고, 그 대기를 걷어내자 401 이 드러났다 — 즉 이 자리는 「아래 expect 가
+   *    기다린다」가 아니라 **이 함수가 먼저 도는** 자리였다(내 분류 오류).
+   * 🔴 대리 지표를 다시 놓지 않는다. 기다리는 것은 «세션»이므로 세션을 기다린다. */
+  await sessionReady(page);
   const plants = await page.request.get("/api/plants");
   expect(plants.status(), "화면의 출처인 /api/plants 가 브라우저에서 서지 않는다").toBe(200);
   const first = (await plants.json())[0];
@@ -325,8 +342,10 @@ test.describe("T3-2 ② Incident 조사", () => {
   });
 
   test("없는 incident 는 «없다»고 말한다 — «못 물어봤다»와 다른 문장이다", async ({ page }) => {
-    // 기다리던 것: 경유일 뿐이다 — 판정선은 다음 진입 뒤 screen-unavailable 이다
+    // 기다리던 것: 🔴 경유이되 «세션이 서는» 자리다 — 세션 없이 딥링크로 가면 가드가 튕겨
+    //   screen-unavailable 이 아예 없다(Q-73 회귀 · 27대 자수).
     await page.goto("/overview");
+    await sessionReady(page);
     // 기다리던 것: 판정선은 아래 screen-unavailable 의 toBeVisible 이 기다린다
     await page.goto("/incidents/INC-DOES-NOT-EXIST");
     const box = page.getByTestId("screen-unavailable");
