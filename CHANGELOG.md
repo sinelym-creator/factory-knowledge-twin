@@ -70,3 +70,6 @@
 - T5-5 gate verdict landed (#357 `d63498d`, local axes): 14 nets re-run, verdict "Release candidate — reduced scope (v0.3)", 9 unmet §35.7 items listed; Q-71 raised.
 - D-17 repository fix (#355 `ee2bbf9`): fastapi 0.133.0 + starlette 1.3.1 pins, pip-audit 9→0, Python audit promoted to a gate.
 - Q-71 surface_scan false positives (#363 `c73028e`): four rules, 10→0 with the 53-file population unchanged and detection proven by injected violations.
+- P6 README run section (#365 `6e1487d`): points to runbook §4 as the single source (no command duplication), measured prerequisite table, "publish after deploy" self-claim removed, KPI cells left empty until measured; README-only reproduction (§35.6) stays unmet by design.
+- D-18 migrate.ps1 compose-project fix + runbook 5-step (#362 `03056f6`): four `-p <project>` call sites, explicit failure text when unspecified, runbook §4 rewritten to the measured order (compose → project → migrate → seed → indexer venv → projector venv).
+- D-17 deploy applied (senku2 gen28): ai-api container rebuilt from `6e1487d` (starlette 1.3.1), local+public health 200; 3m38s dependency outage from a missing network in the hand-off list → "same shape = full inspect diff" gate adopted.
