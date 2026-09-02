@@ -369,3 +369,81 @@ main 승격도 못 한다** — 데모 전날에 배포를 몰아 쓰지 않는�
 | 5단을 **새 클론에서 처음부터** 돌린 실측 | **실측 1회** (E1 · 2026-09-02 · #361) | `evidence/t5-5-clean-env.md` §4-4 — 타 경로 새 클론에서 **5단 완주**(GS-01 연쇄 13행 끊긴 곳 0). 🔴 그 완주는 **우회 경로**로 이룬 것이고 「README 만으로」가 아니다(아래 줄) |
 | clean environment 를 **다른 경로**에서 실제로 세운 실측 | **실측 1회** (E1 · 2026-09-02 · #361) | `evidence/t5-5-clean-env.md` §1 — 🔴 단 「README 만으로」 열은 **0단계에서 끝났다**(실행 명령 블록 0 · 코드블록 3개 전부 mermaid · 다음 문서 링크 없음). 세워진 것은 **우회 경로**이고, §35.6 「README 만으로 재현」은 **여전히 미충족**이다 |
 | ai-api 컨테이너 healthcheck | **정의 없음** | `docker run` 형상이라 계측기가 SKIP 을 낸다 — 「초록」이 아니다 |
+
+---
+
+## 7. Live 합성 게이트웨이 — ON/OFF 와 이미지 교체 (T6-2 · E1 센쿠2 32대 2026-09-03)
+
+### 7-1. ON/OFF 는 «소유자 PC 의 프로세스»다
+
+배포 컨테이너는 재기동하지 않는다. 게이트웨이를 켜고 끄는 것이 곧 Live 합성의 ON/OFF 다.
+
+```powershell
+pwsh -File services/synthesis-gateway/switch.ps1 on|status|off       # 로컬 전용(루프백)
+# 배포 컨테이너(8010)가 닿아야 할 때 — 🔴 비루프백 bind 는 토큰이 없으면 «기동을 거부»한다
+pwsh -File services/synthesis-gateway/run.ps1 -Bind 0.0.0.0 -Token <값> -Model opus -Effort medium
+```
+
+| env(게이트웨이) | 기본 | 무엇 |
+|---|---|---|
+| `SYNTHESIS_GATEWAY_BIND` | `127.0.0.1` | 비루프백 + 토큰 없음 = 기동 거부(소리 내어) |
+| `SYNTHESIS_GATEWAY_PORT` | `8787` | |
+| `SYNTHESIS_GATEWAY_TOKEN` | (없음) | 설정하면 `/health` 를 포함한 **모든** 경로가 `X-FKT-Gateway-Token` 을 요구한다 |
+| `SYNTHESIS_GATEWAY_TIMEOUT_MS` | `60000` | 🔴 클라이언트 예산(`SYNTHESIS_TIMEOUT_MS`)과 **다른 이름**이다 |
+| `SYNTHESIS_MODEL` / `SYNTHESIS_EFFORT` | `opus` / `medium` | 빈 문자열을 «명시»하면 CLI 기본 |
+
+🔴 **타임아웃 불변식 = 「게이트웨이 상한 < 클라이언트 예산」**(예산 = 상한 + 5s margin). 게이트웨이가
+먼저 504 로 «사유»를 내고 클라이언트는 그 답을 받을 만큼만 더 기다린다. 예전에는 두 층이 **같은
+이름**을 읽어서, 한 셸에서 값을 키우면 두 상한이 함께 올라가고 「어느 쪽이 끊었나」가 사라졌다
+(09-02 지연 드릴 0/4 무효의 진범 후보). 구 이름만 준 채로 뜨면 게이트웨이가 경고 1줄을 낸다.
+
+확인: `curl -H "X-FKT-Gateway-Token: <값>" http://127.0.0.1:8787/health` →
+`{"ok":true,"timeoutMs":...,"model":"opus","effort":"medium"}`.
+
+**OFF 로 내리면** `/api/live/status` 가 캐시(5s) 만료 뒤 `online:false` 로 바뀌고 화면이 REPLAY 축 +
+「Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달)」 문면으로 내려간다. 🔴 `online:false` 는
+**결함이 아니라 참**이다(공개 Sandbox 의 정상 상태 · baseline §15.2).
+
+### 7-2. 배포 컨테이너에 Live 를 붙일 때 더하는 env 2개
+
+| env(ai-api) | 값 | 주의 |
+|---|---|---|
+| `FKT_LOCAL_SYNTHESIS_GATEWAY` | `http://host.docker.internal:8787` | **없으면** live 모듈이 import 조차 되지 않는다(공개 배포의 기본 상태) |
+| `FKT_SYNTHESIS_GATEWAY_TOKEN` | 게이트웨이와 **같은 값** | 합성 요청과 도달 프로브 **양쪽** 헤더에 실린다 |
+
+선택: `FKT_RUN_CAP_PER_SESSION`(기본 3 · 세션당 시간당 Live 조사 상한 · 0 이하 = 상한 없음 ·
+초과 시 `429 session_run_cap_exceeded` + `Retry-After` · **replay 는 막지 않는다**) ·
+`SYNTHESIS_TIMEOUT_MS`(클라이언트 예산 · 기본 60000 → 실제 대기 65s).
+
+### 7-3. 이미지 교체 — 현 컨테이너 형상은 `docker inspect` 원문이 정본
+
+```
+이미지     fkt-deploy-ai-api:<sha>
+포트       8000/tcp -> 8010
+네트워크   fkt-senku2-t15_default
+재시작     unless-stopped
+Cmd        python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-proxy-headers
+바인드(2)  <repo>/data/replay             -> /srv/data/replay  (ro)
+           <repo>/.volumes-deploy/models -> /models
+env(9)     FKT_TRUST_FORWARDED_FOR · FKT_CORS_ORIGINS · FKT_POSTGRES_DSN · FKT_NEO4J_URI ·
+           FKT_NEO4J_USER · FKT_NEO4J_PASSWORD · FKT_WARMUP_EMBEDDING ·
+           FKT_REPLAY_FIXTURE_DIR=/srv/data/replay · FKT_BUILD_SHA=<sha>
+```
+
+🔴 **바인드 원본 2본은 «메인 체크아웃 안»이지 워크트리 안이 아니다.** D-13(§4-2)의 대상이 정확히 이
+축이니, 워크트리를 지우기 전에 `docker ps -a` 전수의 `Mounts.Source` 를 대조한다.
+
+순서(고정):
+
+1. **실행 전 1줄 보고** + D-13 볼륨 대조 → 오케 「가」.
+2. `docker build -t fkt-deploy-ai-api:<새sha> services/ai-api`
+3. 🔴 **구 컨테이너를 지우지 않고 보존**: `docker rename fkt-deploy-ai-api fkt-deploy-ai-api-prev` → `docker stop fkt-deploy-ai-api-prev`
+4. 위 형상 그대로 새 컨테이너 기동(포트·네트워크·바인드 2 · env 9 + 필요 시 7-2 의 env 2 · `FKT_BUILD_SHA=<새sha>`).
+5. **완료 조건 = `GET /api/health` 의 `build` 가 «새 sha»**. 컨테이너가 떴다는 것과 새 코드가 답한다는 것은 다른 사실이다.
+6. 되돌리기: 새 컨테이너 stop/rm → `docker rename fkt-deploy-ai-api-prev fkt-deploy-ai-api` → start.
+
+### 7-4. 이 절이 «안 적은» 것
+
+- 게이트웨이를 **상시 가동**하는 형상(현 규율은 실측·시연 때만 켠다).
+- 토큰 회전 절차(현재는 프로세스 재기동이 곧 회전).
+- `host.docker.internal` 이 없는 런타임(Docker Desktop 이 아닌 환경)의 대체 주소 — **미실측**.
