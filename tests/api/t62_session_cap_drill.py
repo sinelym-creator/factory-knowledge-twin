@@ -100,6 +100,16 @@ def call(method: str, path: str, body: dict | None = None, cookie: str | None = 
         return {"status": None, "body": f"{type(e).__name__}: {e}", "headers": {}, "json": None}
 
 
+def header(res: dict, name: str) -> str:
+    """🔴 헤더 케이스는 서버가 정한다 — uvicorn 은 `retry-after`(소문자)로 보낸다.
+    `.get("Retry-After")` 로 찾으면 **있는 헤더를 없다고 보고**하게 된다: 29대가 실제로
+    그렇게 「Retry-After 없음」을 회부 직전까지 갔다(curl 교차로 잡았다)."""
+    for k, v in (res.get("headers") or {}).items():
+        if k.lower() == name.lower():
+            return v
+    return ""
+
+
 def _try_json(raw: str):
     try:
         return json.loads(raw)
@@ -131,7 +141,10 @@ def new_session() -> tuple[str | None, str | None]:
     if res["status"] != 200 or not isinstance(res.get("json"), dict):
         return None, None
     sid = res["json"].get("sessionId")
-    raw_cookie = res["headers"].get("Set-Cookie", "")
+    # 🔴 헤더 케이스는 서버가 정한다(uvicorn = 소문자 `set-cookie`) — 고정 케이스로 찾으면
+    #    쿠키를 조용히 못 싣고, 그 뒤 전부 `session_required` 로 죽는다(29대 실측).
+    raw_cookie = next((v for k, v in (res.get("headers") or {}).items()
+                       if k.lower() == "set-cookie"), "")
     cookie = raw_cookie.split(";")[0] if raw_cookie else None
     return (sid if isinstance(sid, str) else None), cookie
 
@@ -182,9 +195,9 @@ for i in range(1, CAP + 2):
     extra = sorted(set((res.get("json") or {}).get("error", {}).keys()) - {"code", "message"})         if isinstance(res.get("json"), dict) and isinstance(res["json"].get("error"), dict) else []
     attempts.append({"n": i, "status": res["status"], "code": c, "runId": run_id,
                      "message": message_of(res), "extra": extra,
-                     "retry_after": res["headers"].get("Retry-After")})
+                     "retry_after": header(res, "retry-after")})
     say(f"  {i}회차      : {res['status']} · code={c} · runId={run_id}"
-        f" · Retry-After={res['headers'].get('Retry-After')}"
+        f" · Retry-After={header(res, 'retry-after')}"
         + (f" · 🔴 오류 본문 추가 필드 {extra}" if extra else ""))
     if run_id:
         made.append(run_id)
