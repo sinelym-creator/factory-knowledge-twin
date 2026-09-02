@@ -72,7 +72,7 @@
 | 버튼 | 1차 틴트 채움/2차 bg-3/3차 틴트 텍스트 · h36(모바일 44) r12 · disabled .4 유지 | ④-8 | P0 |
 | 입력(`enter-form`) | h44 r12 bg-3 무테두리 · 포커스 링 | dur-1 | P1 |
 | 스켈레톤(`overview-loading`) | bg-3 r16 블록(가짜 데이터 0·§0.2) | ④-4 | P1 |
-| 모바일 <md | 고정폭 레일(w-70/80/95/100) → `flex-col` | — | P1 |
+| 모바일·태블릿(⑧) | 고정폭 레일(w-70/80/95/100) → <md `flex-col` · md~lg 2열 · 가로 스크롤 0 · 터치 타깃 ≥44 | — | **P0**(폐하 08:18·08:19) |
 
 ## ④ 애니메이션 카탈로그 (CSS 전용 · `@layer components` · transform/opacity 만)
 
@@ -104,7 +104,7 @@
 
 | 축 | 기준 | 판정 |
 |---|---|---|
-| 스크린샷 기준선 | 5화면(overview·incident·evidence·work-order·compare) × 라이트/다크 × 390·1280·1440 × reduced on/off · `toHaveScreenshot({animations:'disabled'})` · 🔴 Playwright 기본 colorScheme=light → 프로젝트별 명시 | 전/후 이미지 |
+| 스크린샷 기준선 | 5화면(overview·incident·evidence·work-order·compare) × 라이트/다크 × 390·768·1024·1280·1440(⑧) × reduced on/off × chromium(+webkit·firefox 는 ⑧ 축) · `toHaveScreenshot({animations:'disabled'})` · 🔴 Playwright 기본 colorScheme=light → 프로젝트별 명시 | 전/후 이미지 |
 | e2e 무회귀 | 133/0/3 · 애니메이션 중 testid 142곳 `toBeVisible` · click 대기 ≤400ms | PASS/FAIL |
 | GS-01 replay | 정적 완주 정합 · 진행 바 done 스냅 · 배지 문구 불변 | PASS/FAIL |
 | 대비 | 본문·보조·상태 4.5:1 실측 × 다크/라이트(도구 자율·새 의존성이면 보고) | 표 |
@@ -117,6 +117,13 @@
 |---|---|---|---|
 | 1 기반 | 토큰 35+`@theme inline`+`color-scheme`+시스템 폰트(`layout.tsx` Geist Sans 제거)+유틸 `.fkt-card/-btn/-pill/-glass/-rise/-stagger/-progress/-shimmer`+포커스·reduced 전역 | 컴포넌트 diff 0(layout 제외) · e2e 무회귀 · 전/후 스크린샷 | e2e·스크린샷 / 대비·LCP |
 | 2 재스킨+모션 | ③ P0 전부 + ④ 1·2·5·8·9·10 | testid·문구 diff 0(grep 수치) · 상태 전수 · 기준선 갱신 | e2e·GS-01 / 성능 |
-| 3 진행·마감 | ④ 3·4·7(+6) + ③ P1 | 390 스택 · 진행 바 추정+done 스냅 · reduced 열 | 전 축 / 0 목표 |
+| 3 진행·마감 | ④ 3·4·7(+6) + ③ P1 + ⑧ 잔여 | 390/768/1024 레이아웃(⑧ 가로 스크롤 0·터치 44) · 진행 바 추정+done 스냅 · reduced 열 · 호환 표 | 전 축 / 0 목표 |
 
 각 PR = 전/후 스크린샷 1쌍 이상 · 상한 09-04.
+
+## ⑧ 반응형·호환 (폐하 08:18 「태블릿·모바일 문제없게 · 호환성 체크」 · 08:19 「레이아웃 이상 있으면 수정 보완」 · D-005)
+
+- **뷰포트 4열(+1440 기존)**: 390(폰 세로) · 768(태블릿 세로) · 1024(태블릿 가로) · 1280(데스크톱). 규칙: <md = 레일·패널 `flex-col` 스택 · md~lg = 2열 · ≥lg = 현 3열. 고정 px 폭 → `min()`/`clamp()` · 표·근거 스트립은 자기 컨테이너 `overflow-x:auto` · **body 가로 스크롤 0**. 터치 타깃 ≥44px(버튼·링크·세그먼트) · 모달 <md = 바텀 시트 전폭 · 뷰포트 높이는 `dvh`(iOS 주소창).
+- **호환 대상**: iOS Safari 17+ · Chrome/Edge 최신 2 · Firefox 최신(E2 caniuse 기준 · 실기기는 안 잰 것 = 에뮬레이션만). 점검 항목: `backdrop-filter`(`-webkit-` 접두 + 미지원 시 불투명 폴백 `@supports not`) · `color-scheme` · `prefers-reduced-motion` · `:focus-visible` · `dvh` · `@layer` · `@property`(④-6 · 미지원 = 즉시 표시) · CSS 중첩 미사용(Tailwind v4 산출 그대로).
+- **검증(리바이2 · ⑥ 확장)**: Playwright 프로젝트 = chromium·webkit·firefox × 뷰포트 4 × colorScheme 2 → ① 스크린샷 기준선 ② `scrollingElement.scrollWidth <= clientWidth` 전 화면 assert ③ 터치 타깃 ≥44 assert(버튼·링크 boundingBox) ④ 호환 표(브라우저 × 항목 · PASS/FAIL/미지원 폴백). 깨짐 = 수정 조각(센쿠2 · 같은 PR 내) · 판정 불가는 사유 명시.
+- **PR 반영**: PR2 = ③ 「모바일·태블릿」 P0 행(스택·2열·터치 44) · PR3 = 뷰포트 4열 기준선 + 호환 표 + 잔여 수정.
