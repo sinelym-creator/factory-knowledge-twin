@@ -138,7 +138,8 @@ test.describe("세션 가드", () => {
         }
       });
 
-      await page.goto(route, { waitUntil: "networkidle" });
+      // 기다리던 것: 도착 경로 — 판정선은 아래 URL 검사이고, 세션 축은 프리페치 사슬이 따로 기다린다
+      await page.goto(route);
       expect(new URL(page.url()).pathname, "딥링크가 튕겼다").toBe(route);
 
       // 🔴 **여기가 이 축의 값이다.** 「열렸다」만 보면 초록인데, 계약이 연 것은 «열람»이지
@@ -163,7 +164,9 @@ test.describe("세션 가드", () => {
       for (let round = 0; round < 5; round += 1) {
         const before = settling.length;
         await Promise.all(settling.slice());
-        await page.waitForLoadState("networkidle").catch(() => undefined);
+        // 🔴 이 한 줄만은 «가라앉히기 자체»가 축의 값이다(위 주석) — 사슬이 잦아들지 않았는데
+        //   break 하면 「세션이 늦게 생기는 것」을 못 본다. 그래서 지우지 않고 «상한»을 준다.
+        await page.waitForLoadState("networkidle", { timeout: 3_000 }).catch(() => undefined);
         if (settling.length === before) break; // 응답이 새 표지를 낳지 않았다 = 사슬의 끝
       }
 
