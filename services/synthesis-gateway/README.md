@@ -33,7 +33,7 @@ $env:FKT_LOCAL_SYNTHESIS_GATEWAY = 'http://127.0.0.1:8787'
 | `SYNTHESIS_GATEWAY_TIMEOUT_MS` | `60000` | 이 게이트웨이의 CLI 상한 |
 | `SYNTHESIS_CLI_BIN` | `claude` | Claude Code CLI 실행 파일 |
 | `SYNTHESIS_MODEL` | `opus` | 모델 별칭. 빈 문자열을 «명시»하면 CLI 기본 |
-| `SYNTHESIS_EFFORT` | `medium` | 사고 깊이. 빈 문자열이면 플래그 자체를 안 붙인다 |
+| `SYNTHESIS_EFFORT` | `low` | 사고 깊이. 빈 문자열이면 플래그 자체를 안 붙인다 |
 
 🔴 **타임아웃 이름은 층마다 다르다.** 이 게이트웨이는 `SYNTHESIS_GATEWAY_TIMEOUT_MS` 를,
 ai-api 클라이언트는 `SYNTHESIS_TIMEOUT_MS`(+5s margin)를 읽는다. 불변식은

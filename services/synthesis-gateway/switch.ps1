@@ -1,6 +1,6 @@
 # 소유자 스위치 — 창 하나로 live 합성을 켜고 끈다.
 #
-#   pwsh -File services/synthesis-gateway/switch.ps1 on -Bind 0.0.0.0 -Token <값>
+#   pwsh -File services/synthesis-gateway/switch.ps1 on -Bind 0.0.0.0 -Token <값> -Effort low
 #   pwsh -File services/synthesis-gateway/switch.ps1 off
 #   pwsh -File services/synthesis-gateway/switch.ps1 status
 #
@@ -16,6 +16,8 @@ param(
 
     [string] $Bind,
     [string] $Token,
+    [string] $Model,
+    [string] $Effort,
     [int]    $Port      = $(if ($env:SYNTHESIS_GATEWAY_PORT) { [int]$env:SYNTHESIS_GATEWAY_PORT } else { 8787 }),
     [string] $StatusUrl = 'http://127.0.0.1:8010/api/live/status'
 )
@@ -58,6 +60,10 @@ switch ($Action) {
         $runArgs = @('-File', (Join-Path $here 'run.ps1'))
         if ($Bind)  { $runArgs += @('-Bind',  $Bind) }
         if ($Token) { $runArgs += @('-Token', $Token) }
+        # 🔴 ContainsKey 로 본다 — 빈 문자열은 «CLI 기본으로 돌려라»는 지시라, `if ($Model)` 로
+        #    쓰면 그 지시가 통째로 사라진다(run.ps1 과 같은 규율).
+        if ($PSBoundParameters.ContainsKey('Model'))  { $runArgs += @('-Model',  $Model) }
+        if ($PSBoundParameters.ContainsKey('Effort')) { $runArgs += @('-Effort', $Effort) }
         $runArgs += @('-Port', "$Port")
 
         $proc = Start-Process -FilePath 'pwsh' -ArgumentList $runArgs -PassThru -WindowStyle Minimized
