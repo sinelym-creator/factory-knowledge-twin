@@ -180,7 +180,7 @@ Q-43 의 501 은 **REST 표면 축**의 것이다. 두 축을 한 초록으로 �
 | 2 | FastAPI OFF | **PASS**(외부 · 조건 §7.5) | — | `outage-verification` §7.3 8행 · 502 · 0.87~2.86초 |
 | 3 | PostgreSQL OFF | **로컬만** | — | 외부 *Not measured* — 로컬 열을 올리지 않는다 |
 | 4 | Neo4j OFF | **로컬만** | — | 〃 |
-| 5 | Tunnel OFF | **조건부**(외부) | — | Offline·빈화면 아님·복구 PASS · 🔴 `POST /enter` **20.0초** = Q-70 미결 |
+| 5 | Tunnel OFF | **조건부**(외부) | 🔴 **재실측 PASS**(09-02 12:04~12:05 · 승격본 `c6291b5`) | `/enter` **2,497~3,840ms · 6/6 ≤8s** · `cappedOut` 없음 · health·live 500 · 「미연결」 창 6/6 ↔ 기준선 0/3 ⇒ **Q-70 해소**(24대 25.5초 대비 · 갈린 변수 = 처방 실림) · `t4-4-external-outage-verification.md` §9 |
 | 6 | WebSocket 중단 | **PASS**(외부) | — | `gate6-verification` §5.2 · 1011 ↔ 1000 대조 |
 | 7 | Model timeout | **로컬만** | — | 〃 |
 | 8 | 동시 요청 초과 | **로컬만** | — | 골격이 명시적으로 *Not measured* 로 못 박음 |
@@ -239,7 +239,7 @@ Gate 8 이 오늘 «빈 칸»에서 «조건부»로 올라간 이유는 대응�
 |---|---|---|---|
 | 1 | 공개 URL이 노트북 OFF에서도 정상 표시 | `t4-4-external-gate6` §1 | 승계(외부 · 오늘 자극 0) |
 | 2 | Golden Scenario를 별도 설명 없이 실행 | `gs01` 13행(오늘 · **API 축**) · 🔴 clean env 실행됨(`t5-5-clean-env.md`) — 「별도 설명 없이」가 **거짓**이다: README 만으로는 실행 자체가 불가 | **부분 — 「설명 없이」 축은 미충족** |
-| 3 | Live와 Replay status가 사실대로 표시 | `evidence/q69-shell-mode-observation.md` · Q-69 | 조건부(오늘 미측) |
+| 3 | Live와 Replay status가 사실대로 표시 | `q69-shell-mode-observation.md` · 🔴 **외부 실물**(09-02 §9): 기준선 `◑REPLAY` ↔ 차단 창 `◌미연결` ↔ 복구 `◑REPLAY` | **충족(외부 축)** — 🔴 복구 #4 1사이클 괴리는 관측으로 남김 |
 | 4 | 주요 navigation·button·form이 실제 동작 | `t3-2`~`t3-5` · `tests/web/e2e/**` | 승계(오늘 셸 미기동) |
 | 5 | Vector·Hybrid·GraphRAG 결과 비교 | `gs01` S11(3전략 각 5건 · 오늘) · 🔴 **수치 축 없음** | **부분 — 화면·표면만** |
 | 6 | Evidence와 Graph path를 drill-down | `gs01` S5(15건 200)·S5b(GP 는 404 = 계약이 제외한 kind)·S7(경로 5) · 🔴 replay 축 501(Q-43) | **조건부** |
@@ -273,7 +273,29 @@ Ground Truth 고정 · 40문×4전략 · 5회 raw · Hit@K/Recall@K/MRR/nDCG 계
 | 4 | Public admin endpoint 차단 | 그물 없음 | 🔴 **미충족** |
 | 5 | Rate limit·request size limit 동작 | `t42b_limits`·`t42b_xff` **오늘 exit 2**(대조군 서버 미지정) · Q-60 | 🔴 **측정 불가** |
 | 6 | stack trace·secret·구성값 미노출 | `error_shape` 9/9 · `credential_leak` 3면 0(오늘) · Q-49·Q-23 미결 | **조건부** |
-| 7 | Git history secret scan 통과 | `ci_hygiene` 3게이트 0히트(오늘 · **작업 트리 461파일**) | **부분 — «이력» 축 빈 칸** |
+| 7 | Git history secret scan 통과 | `ci_hygiene` 3게이트 0히트(오늘 · **작업 트리 461파일**) + 🔴 **이력 축 실측(09-02 T5-6 · `git log -G` · 커밋 832)** — 시크릿 형태 6커밋 = distinct 토큰 6개 **전부 합성 프로브**(28~37자 · 실키 길이 미달 · 누출 0) · 절대경로 14커밋 = **D-003 재결분**(수용) | **조건부 충족** — «이력» 축 빈 칸이 채워졌다(`t5-6-public-boundary-final-scan.md` §3). 🔴 조건 = **D-19**(CI 시크릿 게이트가 `sk-ant-…` 하이픈 형태를 못 본다 — 그 축의 0 은 「안 본 0」이다) |
+
+🔴 **§35.4 에 붙는 09-02 갱신(T5-6 P6 공개 경계 최종 스캔 · `t5-6-public-boundary-final-scan.md`)**
+
+- ④ **Public admin endpoint 차단** = 그물 없음(무변). ⑤ rate limit·size limit = 측정 불가(무변).
+- ⑥ **secret·구성값 미노출** — 트리 축 시크릿 위반 **0**(추적 469파일 · 히트 5는 전부 합성 프로브)로
+  근거가 하나 늘었다. 단 **D-19** 가 붙는다.
+- **신설 결함 2건**: **D-19**(CI 시크릿 게이트 사각 — `sk-` 뒤 하이픈 불허 · 대조군 E1: 같은 파일에서
+  내 그물 2건 / CI 그물 1건) · **D-20**(CGNAT `100.64/10` **내부 IP 8히트/4파일** = §34.6 「실제 Tunnel
+  내부 주소」 · 치환 + 게이트 신설 · 이력 잔존은 폐하 결정 상신). tailnet **호스트명**은 D-15 판정 유지(누출 아님).
+- **§16.2 임의 실행 축**은 이 스캔으로 처음 정적 근거를 얻었다 — 제품 코드 150파일에 `eval`·`exec`·
+  `os.system`·`shell=True`·`new Function`·`child_process.exec` **0건** · SQL·Cypher 18곳은 식별자만
+  상수 보간이고 값은 `$1`·`$2` 바인딩.
+
+🔴 **09-02 T3-6 본 판정(#386 · `t3-6-e2e-verification.md`)이 §35 에 더한 것**
+
+- **§35.1 Product** — 브라우저 축 실측이 처음 붙었다: 격리 **5/5** · 키보드 **7/7**(🔴 D-7 Esc 초록 =
+  Q-59 해소 확인) · desktop viewport **16/16** · `shell` 9/9 · `mode-badge` 5/5 · `reset-modal` 7/7.
+- **§35.3 Latency·Reliability** — P50·P95 는 여전히 **빈 칸**이되, 「**외부 vantage 조건부 실측**」이
+  들어왔다: 단독 적재 `/overview` **load 599ms · networkidle 7,999ms**(200) · 콜드 `/api/health` 왕복
+  5.59s(표본 1) · 🔴 **워커 8 동시 부하에서는 같은 화면이 30s·120s 를 넘긴다**(측정 조건이지 SLA 아님).
+- **§35.4 Security** — 딥링크 무쿠키 가드 축은 초록 유지(`noCookie.opened=false`) · 🔴 **D-21** 로
+  Live/WS 축이 공개 경로에서 서지 않는다(§35.7 조건 2 잔여).
 
 ### 2-5. §35.5 GitHub·License (7항)
 
@@ -355,14 +377,14 @@ runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문
 | # | §35.7 조건 | 오늘 상태 |
 |---|---|---|
 | 1 | P0 기능 완료 | 본 판정 범위 밖(오케·폐하) |
-| 2 | Golden Scenario E2E PASS | **부분** — 로컬 API 축 13행 오늘 PASS · clean env 새 클론에서도 **13행 완주**(단 **5단 절차** 필요 · `t5-5-clean-env.md`) · **브라우저 E2E 미실행** |
+| 2 | Golden Scenario E2E PASS | **부분(09-02 승격)** — 로컬 API 축 13행 PASS · clean env 새 클론 **13행 완주**(5단 절차 · `t5-5-clean-env.md`) · 🔴 **브라우저 E2E 오늘 실행**(#386 · `t3-6-e2e-verification.md` · 공개 셸 131칸 · **97 통과 / 32 빨강 / 2 건너뜀**) + 공개 경로 replay 완주(#373 §9) · 잔여 = **D-21**(공개 셸 WS 미개통) · 미결 2칸 |
 | 3 | Independent Verification PASS | 🔴 **미충족** — Gate 3 평가셋 없음 · Gate 7 4항 미충족 + 3항 측정 불가 |
 | 4 | Security Gate PASS | 🔴 **미충족** — ~~Cypher injection~~ ~~문서 Prompt Injection~~(09-02 신설로 해소) · **admin endpoint · malformed WS 2항 잔여** + ⑦⑧⑪ 측정 불가 |
-| 5 | Public Offline Fallback PASS | 승계(외부 실측 존재) · 오늘 자극 0 |
+| 5 | Public Offline Fallback PASS | **충족(외부 축 · 09-02)** — #373 §9 Q-70 외부 실측 6/6 + **오늘 Gate 6 ⓒ 정적 재생 완주**(공개 셸 · `/api` 차단 시 events 32/32 · static=true · 🔴 무자극 대조군 A 동반 · #386) |
 | 6 | Benchmark Evidence 생성 | 🔴 **미충족**(T5-1 미착지) |
 | 7 | KPI·Latency 결과 공개 | 🔴 **미충족** — §35.2 전항 · §35.3 P50·P95 빈 칸 |
 | 8 | GitHub Actions PASS | **부분** — workflow 2본 실재 · required 지정은 리포 설정 |
-| 9 | Apache-2.0 License Closure | 🔴 **미충족** — `NOTICE` · `THIRD_PARTY_NOTICES.md` 부재 |
+| 9 | Apache-2.0 License Closure | **충족(09-02)** — `NOTICE` · `THIRD_PARTY_NOTICES.md` **트리 실재**(#360 착지 · 오늘 확인 E1) |
 | 10 | README Claim-Evidence 일치 | **충족**(오늘 실측 — 성능 수치 0건) |
 
 🔴 **판정문에 함께 남기는 경계**
@@ -393,7 +415,8 @@ runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문
 
 ### 5-3. 다음 조각에 남기는 것 (2차 발주 · 승격 뒤)
 
-- **Q-70 재실측**(외부 · `t4-4-external-outage-verification.md` §8 절차 그대로 30분) · **Q-69 배지 문면**(#345)
+- ~~Q-70 재실측~~ → 🔴 **완료 · 해소**(09-02 · §9 · `/enter` 6/6 ≤8s) · ~~Q-69 배지 문면~~ → **실물 확인**(창 배지 `◌미연결`)
+  잔여 = 복구 **지연 값**(이 창은 상한 ≤4분 08초만 잰다) · 복구 #4 화면-서버 1사이클 괴리(1회 관측)
 - ~~clean env 1회~~ → 🔴 **완료**(`evidence/t5-5-clean-env.md` · 막힌 자리 5건 · drift 1 · 주장-실측 불일치 1).
   후속 = **문서 수리 발주**(README 실행 절차 · runbook §4 를 **5단**으로 · `COMPOSE_PROJECT_NAME` 줄 · indexer/projector venv 절차 링크)
 - **Gate 7 ⑦⑧⑪** — 대조군 서버 기동을 발주문에 포함해야 잴 수 있다(§5-1 ③)

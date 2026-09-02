@@ -131,8 +131,9 @@ flowchart TB
 ## ▶ 실행 — 새 클론에서 세우기
 
 **절차의 정본은 [`docs/deployment/runbook.md` §4](docs/deployment/runbook.md)입니다.** 이 README 는
-명령을 **복제하지 않고 그 문서를 가리킵니다** — 같은 명령을 두 곳에 적으면 한쪽이 먼저 낡고,
-어느 쪽이 맞는지 읽는 사람이 판단해야 합니다.
+명령을 **복제하지 않습니다** — 아래 발췌는 각 단의 «한 줄»만 옮기고 옵션·검증·주의는 정본에만
+둡니다. 같은 명령을 두 곳에 «통째로» 적으면 한쪽이 먼저 낡고, 어느 쪽이 맞는지 읽는 사람이
+판단해야 합니다.
 
 ### 전제조건 (리포가 선언하거나 실측된 값)
 
@@ -164,6 +165,27 @@ flowchart TB
 🔴 **5 단계는 네트워크가 필요합니다** — 임베딩 모델을 Hugging Face Hub 에서 내려받습니다.
 오프라인 머신에서 이 단이 서는지는 **아직 재보지 않았습니다**(미실측 · 「됩니다」가 아닙니다).
 
+#### 6줄 발췌 — 각 단의 «정본 명령 한 줄»
+
+<!-- excerpt:runbook-4 -->
+> 🔴 **clean environment 재실측 «전»이라 이 발췌는 «잠정»입니다** — 재실측은 검증 좌석과 짝으로 돕니다(T5-5 · §35.6).
+
+| # | 정본 명령 (한 줄) | 정본 행 |
+|---|---|---|
+| 1 | `docker compose up -d` | [runbook §4-1](docs/deployment/runbook.md) |
+| 2 | `$env:COMPOSE_PROJECT_NAME='<project>'` | [runbook §4-1a](docs/deployment/runbook.md) |
+| 3 | `pwsh services/ai-api/db/migrate.ps1` | [runbook §4-1](docs/deployment/runbook.md) |
+| 4 | `pwsh data/seed.ps1` | [runbook §4-1](docs/deployment/runbook.md) |
+| 5 | `services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py` | [runbook §4-1 · 「4단이 왜 따로 서 있는가」](docs/deployment/runbook.md) |
+| 6 | `services\projector\.venv\Scripts\python.exe services\projector\build_projection.py` | [runbook §4-1 · §4-1b](docs/deployment/runbook.md) |
+<!-- /excerpt:runbook-4 -->
+
+🔴 **여섯 줄은 «표지»이지 실행 스크립트가 아닙니다.** 한 단이 한 줄로 끝나지 않습니다 — 5·6 은
+**venv 를 먼저 만들고 requirements 를 설치해야** 그 `.venv` 경로가 생기고, 5 는 **`PGPORT` 명시
+의무**가 붙습니다(안 주면 실패하지 않고 «다른 스택을 색인»합니다). 그 줄들과 각 단의 검증 명령은
+정본 행에 있습니다. 값(project 이름·포트)은 여기서 **자리표시자**로 둡니다 — 남의 머신에서
+참이 아닐 값을 README 가 «값»으로 적지 않습니다.
+
 ---
 
 ## 🛡 안전 경계
@@ -191,6 +213,29 @@ flowchart TB
 🔴 **빈 칸을 숫자로 채우지 않습니다.** 측정 전 수치는 어떤 것도 성능으로 주장하지 않으며,
 이 표는 그 자리가 «비어 있다»는 사실 자체를 기록합니다 — 없는 값을 그럴듯한 숫자로 메우면
 그 숫자는 지워질 때까지 사실처럼 읽힙니다.
+
+### 알려진 제약
+
+**공개 셸(Vercel 경로)에서 조사 실행의 «실시간 스트림»(WebSocket)이 열리지 않습니다.**
+
+- **어디서 끊기나** — **공개 셸을 경유하는 구간**에서 끊깁니다. 같은 세션·같은 조사로 그 서버에
+  **직접** 붙으면 핸드셰이크는 정상으로 섭니다(즉 서버도 터널도 고장이 아닙니다).
+  🔴 **실측이 말하는 것은 여기까지입니다** — 그 구간 «안»의 어느 단계가 끊는지는 **아직 소견**이고
+  좁혀서 재지 않았습니다. 구간을 가른 실측 =
+  [`evidence/d21-ws-layer-split.md`](evidence/d21-ws-layer-split.md).
+- 🔴 **화면은 숨기지 않습니다.** 스트림이 안 열리면 「실시간 스트림이 연결되어 있지 않습니다」를
+  그대로 띄웁니다 — 조용히 빈 화면을 보여 주고 정상인 척하지 않습니다.
+- **조사 결과는 잃지 않습니다.** 스트림이 닫히면 셸이 그 자리에서 스냅샷과 이벤트 백로그를 다시
+  읽어 화면을 지금 사실까지 올립니다. 이벤트는 **순번을 달고 오기 때문에** 되감아도 중복되거나
+  빠지지 않습니다 — 잃는 것은 «즉시성»이지 «사실»이 아닙니다.
+- **정적 재생 경로는 영향이 없습니다** — 그 축은 스트림을 쓰지 않습니다.
+- **릴리스 뒤 개선 후보 1순위 = 폴링 전환.** 위 되감기 배관이 이미 있어 서버 변경 없이
+  갈 수 있습니다. 다만 그렇게 하면 이 화면의 「실시간」이라는 **말 자체가 바뀌므로**,
+  코드보다 그 주장 문면을 먼저 고쳐야 합니다. 그래서 릴리스 «전»에는 하지 않습니다.
+
+검증 근거 = [`evidence/t3-6-e2e-verification.md`](evidence/t3-6-e2e-verification.md) ·
+[`evidence/d21-ws-layer-split.md`](evidence/d21-ws-layer-split.md) ·
+원장 [`docs/plan/ticket-ledger.md`](docs/plan/ticket-ledger.md) D-21.
 
 **재현 절차는 위 「실행」 절에 있습니다.** 이 자리에서 「배포 후 게시하겠다」고 미루던 문장은
 지웠습니다 — 절차는 이미 리포 안에 있고, 미루는 문장이 그것을 가리고 있었습니다

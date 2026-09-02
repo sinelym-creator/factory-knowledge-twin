@@ -132,6 +132,8 @@ tailscale funnel status                      # 8443 = Funnel on · 기존 :3000 
 - 🔴 `tailscale funnel reset` **금지** — 443 tailnet-only 설정까지 전부 지운다.
 - 🔴 `--bg` 없이 실행하면 포그라운드다. 터미널을 닫는 순간 노출이 끊긴다.
 - 복원 검증 = **설정 JSON 바이트 대조**. 「켰다」가 아니라 「**전과 같은 것**이 섰다」를 본다.
+- 🔴 **창(OFF→ON) 집행은 「대기」와 「집행」을 한 덩어리로 두지 않는다 — ON 집행 «직전»에 채널을 1회 다시 본다**(09-02 12:05 실측: 「3분 뒤 ON」 예약이 돌던 사이 「완료 중계 뒤 ON」 개정 지시가 왔고, 집행자는 그것을 «모른 채» 켰다. 결과가 조건에 맞은 것은 우연이었다 · 같은 날 아침 좌석 킬이 140초 묵은 확인값으로 집행된 사고와 같은 뿌리). 재확인 나이 60초 초과 = 집행 보류.
+- 창의 표본 귀속 = 계측기의 `startedAt`(요청 시각)을 집행자의 OFF·ON **실측 시각**과 맞댄다. ON 시각 «뒤»에 시작한 표본은 창 안으로 세지 않는다(전파 지연·앱 자체 5xx 와 구분 불가).
 
 ---
 
@@ -196,6 +198,11 @@ services\projector\.venv\Scripts\python.exe -m pip install -r services/projector
 services\projector\.venv\Scripts\python.exe services\projector\build_projection.py
 services\projector\.venv\Scripts\python.exe services\projector\verify_projection.py
 ```
+
+🔴 **조사 화면의 WS 는 «어디로 붙느냐»에 따라 갈린다(D-21)**: 같은 세션·같은 조사로 Funnel 직결
+에서는 핸드셰이크가 `101` 로 서고, **공개 셸을 경유하는 구간**에서는 서지 않는다(E1 ·
+`evidence/d21-ws-layer-split.md`). 🔴 **그 구간 «안»의 어느 단계가 끊는지는 소견이다** — 좁혀서
+잰 값이 아니다. 여기서 세운 clean env 는 직결 축이라 영향이 없다.
 
 #### 4-1a. 🔴 `COMPOSE_PROJECT_NAME` — 안 주면 «다른 스택을 본다» (D-18)
 

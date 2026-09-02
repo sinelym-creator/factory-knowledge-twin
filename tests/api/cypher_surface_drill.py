@@ -45,13 +45,19 @@ API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
 SERVICE_DIR = Path(__file__).resolve().parents[2] / "services" / "ai-api"
 
 # 자극 5종 — 「사용자 문자열이 Cypher 구조가 되려 한다」의 대표형.
-PAYLOADS = [
-    ("절 종결·삭제", 'EQ-CNC-204"}) MATCH (n) DETACH DELETE n //'),
-    ("라벨 주입", "EQ-CNC-204' OR 1=1 WITH n MATCH (x:User) RETURN x //"),
-    ("절차 호출", "CALL dbms.components() YIELD name RETURN name //"),
-    ("주석 종결", "EQ-CNC-204 /* } */ MATCH (m) RETURN m"),
-    ("관계 와일드카드", "EQ-CNC-204]-() -[r*1..99]-() RETURN r //"),
-]
+#
+# 🔴 앵커 ID 를 **박지 않는다**(폐하 하명 09-02 「하드코딩 금지」). 자극의 앞머리에 붙는 ID 는
+#    seed 에서 오는 값이라, 박아 두면 seed 가 바뀌는 날 **대조군이 조용히 죽는다** — 그리고
+#    대조군이 죽으면 층 B 의 「구조 문자 0」은 판정이 아니라 «빈 목록끼리의 일치»가 된다.
+#    그래서 승인 질문 정본에서 앵커를 뽑아 실행 시점에 조립한다(아래 `anchor_from_canon`).
+def payloads(anchor: str) -> list[tuple[str, str]]:
+    return [
+        ("절 종결·삭제", f'{anchor}"}}) MATCH (n) DETACH DELETE n //'),
+        ("라벨 주입", f"{anchor}' OR 1=1 WITH n MATCH (x:User) RETURN x //"),
+        ("절차 호출", "CALL dbms.components() YIELD name RETURN name //"),  # 앵커 없는 자극(의도)
+        ("주석 종결", f"{anchor} /* }} */ MATCH (m) RETURN m"),
+        ("관계 와일드카드", f"{anchor}]-() -[r*1..99]-() RETURN r //"),
+    ]
 
 # Cypher 「구조」가 되려면 반드시 실려 나가야 하는 문자·키워드.
 STRUCT = re.compile(r"[`{}()\[\];\"']|\b(MATCH|RETURN|DELETE|CALL|WITH|WHERE|CREATE|MERGE|UNION)\b", re.I)
@@ -110,7 +116,7 @@ def leaks(text: str) -> list[str]:
     return [name for name, rx in LEAK if rx.search(text)]
 
 
-def layer_a() -> int:
+def layer_a(anchor: str) -> int:
     """도달 층 — 그래프를 타는 다섯 문."""
     bad = 0
     ctrl_q = approved_question()
@@ -128,7 +134,7 @@ def layer_a() -> int:
     if not ctrl_ok:
         print("  🔴 대조군이 죽었다 — 아래 전건 거절은 「그래프가 비었다」와 구분되지 않는다")
 
-    for i, (what, payload) in enumerate(PAYLOADS, start=1):
+    for i, (what, payload) in enumerate(payloads(anchor), start=1):
         q = urllib.parse.quote(payload, safe="")
         doors = [
             ("compare", lambda p=payload: call("POST", "/api/retrieval/compare",
@@ -153,25 +159,48 @@ def layer_a() -> int:
     return bad
 
 
-def layer_b() -> int:
-    """구조 층 — `$anchor` 로 가는 값을 만드는 자리에 직접 먹인다."""
+def _service_modules():
+    """대상 모듈 두 개를 한 자리에서 연다(층 B 와 앵커 출처가 같은 트리를 보게)."""
     if not SERVICE_DIR.exists():
         raise DrillError(f"대상 없음 {SERVICE_DIR}")
     sys.path.insert(0, str(SERVICE_DIR))
     try:
-        from app.retrieval import anchors  # noqa: PLC0415
+        from app.retrieval import anchors, allowlist  # noqa: PLC0415
     except Exception as exc:  # pragma: no cover
-        raise DrillError(f"app.retrieval.anchors 를 못 읽었다: {exc}") from exc
+        raise DrillError(f"app.retrieval 모듈을 못 읽었다: {exc}") from exc
+    return anchors, allowlist
+
+
+def anchor_from_canon() -> tuple[str, str]:
+    """🔴 앵커를 «정본에서» 얻는다 — 박지 않는다.
+
+    승인 질문 목록(`allowlist.APPROVED_QUESTIONS`)을 읽어 추출기가 실제로 뽑아내는 첫 ID 를
+    쓴다. 서버가 없어도 되고(층 B 단독 실행), seed·승인 목록이 바뀌면 자극과 대조군이 **함께**
+    따라간다. 하나도 못 뽑으면 그것은 초록도 빨강도 아니라 **측정 불가**다.
+    """
+    anchors, allowlist = _service_modules()
+    for question in allowlist.APPROVED_QUESTIONS.values():
+        found = anchors.extract(question)
+        if found:
+            return found[0], question
+    raise DrillError(
+        "승인 질문 어디에서도 앵커를 못 뽑았다 — 추출기가 죽었거나 목록이 비었다(측정 불가)"
+    )
+
+
+def layer_b(anchor: str, ctrl_question: str) -> int:
+    """구조 층 — `$anchor` 로 가는 값을 만드는 자리에 직접 먹인다."""
+    anchors, _ = _service_modules()
 
     bad = 0
-    ctrl = anchors.extract("EQ-CNC-204 의 최근 진동 추세는 어떠한가?")
-    ctrl_ok = "EQ-CNC-204" in ctrl
+    ctrl = anchors.extract(ctrl_question)
+    ctrl_ok = anchor in ctrl
     bad += 0 if ctrl_ok else 1
     print(f"  {'PASS' if ctrl_ok else 'FAIL'}  대조군 B — 정상 문장에서 ID 가 추출된다        {ctrl}")
     if not ctrl_ok:
         print("  🔴 추출기가 아무것도 안 내놓는다 — 아래 «구조 문자 0» 은 판정이 아니다")
 
-    for i, (what, payload) in enumerate(PAYLOADS, start=1):
+    for i, (what, payload) in enumerate(payloads(anchor), start=1):
         out = anchors.extract(payload)
         offenders = [t for t in out if STRUCT.search(t)]
         ok = not offenders
@@ -183,17 +212,19 @@ def layer_b() -> int:
 
 def main() -> int:
     only_b = "--layer-b-only" in sys.argv
-    print(f"자극      : Cypher 조각 {len(PAYLOADS)}종")
+    anchor, ctrl_question = anchor_from_canon()
+    print(f"자극      : Cypher 조각 {len(payloads(anchor))}종 · 앵커 {anchor} "
+          f"(승인 질문 정본에서 추출 — 박은 값 아님)")
     print("🔴 층 A = «닿는가»(4xx 는 앞문일 수 있다) · 층 B = «구조가 되는가»(그래프로 가는 값 자체)\n")
 
     bad = 0
     if not only_b:
         _colocation.require(API_BASE)
         print(f"  ── 층 A · 도달 (대상 {API_BASE})")
-        bad += layer_a()
+        bad += layer_a(anchor)
         print()
     print("  ── 층 B · 구조 (app.retrieval.anchors — 서버 불요)")
-    bad += layer_b()
+    bad += layer_b(anchor, ctrl_question)
 
     print(f"\n결과: 어긋남 {bad}건")
     return 1 if bad else 0

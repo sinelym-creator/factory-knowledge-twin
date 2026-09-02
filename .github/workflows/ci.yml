@@ -30,10 +30,77 @@ jobs:
           if git ls-files | grep -E '(^|/)\.env(\.|$)|\.(pem|key)$|credentials|secrets' | grep -vE '(^|/)\.env\.example$'; then
             echo '::error::tracked credential-like file detected'; exit 1; fi
           # 시크릿 토큰 패턴 (이 워크플로 자신은 제외)
-          if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)' -- ':!.github/workflows/'; then
+          # 🔴 `sk-` 축은 **하이픈을 허용한다**(D-19). 앞판은 `sk-[A-Za-z0-9]{20,}` 였고,
+          #    Anthropic 키는 `sk-ant-api03-…` 라 `sk-` 바로 뒤 네 번째 글자가 하이픈이다 —
+          #    20자를 세기 전에 문자군이 끊겨 **영원히 통과했다**(대조군 E1: 같은 파일에
+          #    `ghp_…`+`sk-ant-…` 를 심으니 이 게이트는 `ghp_` 1건만 잡았다).
+          # 🔴 하이픈만 허용하면 «평범한 영어»가 걸린다(실측 위양성 1건):
+          #    `task-completed-0123456789abcdef` 의 「ta**sk-**」가 26자를 채운다. 그래서
+          #    앞에 «낱말 경계»를 세운다 — `sk` 앞이 영숫자면(task·risk·ask) 매치하지 않는다.
+          #    경계를 빼고 게이트에 예외를 여는 길은 택하지 않았다(예외는 곧 「내가 쓴 것 전부 허용」이 된다).
+          if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|(^|[^A-Za-z0-9])sk-[A-Za-z0-9-]{20,}|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)' -- ':!.github/workflows/'; then
             echo '::error::secret-like pattern detected'; exit 1; fi
           # 개인 PC 절대 경로 패턴 (Windows 사용자 경로)
           # 🔴 구분자 «두 형태»를 다 본다(D-15). 백슬래시만 보던 앞판은 pwsh·git·문서가
           #    쓰는 `C:/Users/…` 를 영원히 통과시켰다 — 실제로 evidence 1건이 그렇게 살아 있었다.
           if git grep -n -I -E 'C:[\\/]+Users[\\/]+[A-Za-z]' -- ':!.github/workflows/'; then
             echo '::error::personal absolute path detected'; exit 1; fi
+
+      # ── tailnet 내부 주소 (baseline §34.6 · D-20) ──────────────────────────────
+      #
+      # 공개 경계 문면이 말하는 「실제 Tunnel 내부 주소」의 «주소» 축이다. 앞판은 이 축을
+      # 사람 눈으로만 봤고, 그래서 추적 파일에 남은 내부 주소가 스캔 1회로만 드러났다.
+      #
+      # 🔴 «호스트명»은 이 게이트의 대상이 아니다(D-15 에서 갈린 축이다) — 여기서는
+      #    CGNAT 공유 주소 대역(RFC 6598)에 드는 «주소»만 본다. 두 축을 한 게이트에
+      #    묶으면 어느 쪽이 울었는지 실패 문면이 말해 주지 못한다.
+      #
+      # 🔴 앞뒤에 «낱말 경계»를 둔다 — 숫자·점이 붙어 있으면 매치하지 않는다. 그래서
+      #    대역을 두 옥텟으로 줄여 적는 문서 표기는 걸리지 않고(주소가 아니다),
+      #    대역 밖 이웃 주소와 자릿수가 붙은 숫자도 걸리지 않는다.
+      #    대조군 실측: 양성 표본 6종 전건 검출 · 음성 표본 8종 전건 통과.
+      #
+      # 🔴 이 파일에 «예시 주소»를 적지 않는다. 적는 순간 게이트가 자기 근거를 물고,
+      #    제외 경로 하나에 기대게 된다 — 대역 이름과 RFC 번호로만 말한다.
+      - name: tailnet internal address scan (baseline §34.6 · D-20)
+        run: |
+          set -e
+          if git grep -n -I -E '(^|[^0-9.])100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.[0-9]{1,3}\.[0-9]{1,3}([^0-9.]|$)' -- ':!.github/workflows/'; then
+            echo '::error::tailnet internal address detected'; exit 1; fi
+
+      # ── README 전제조건 표 + 실행 발췌 ↔ 리포 실물 (「하드코딩 금지」 2026-09-02) ──────
+      #
+      # README 는 pnpm·Node·이미지 태그를 «값»으로 싣는다 — 문서라 그럴 수밖에 없다. 그래서
+      # 낡는다: 리포가 움직여도 표는 자기가 낡은 줄 모른다. 이 step 이 그 자리를 받는다.
+      #
+      # 🔴 **기대값은 어디에도 박혀 있지 않다.** 검사기는 한쪽을 README 표에서 읽고, 다른 쪽을
+      #    **README 가 출처로 지목한 파일**에서 읽어 맞댄다(출처 경로조차 README 가 선언한다).
+      #
+      # 🔴 **검사기 자기 검증을 같은 step 에서 매 실행 돌린다.** 「참 한 번」만 울리면 검사기가
+      #    죽어 있을 때도 초록이 난다 — 죽은 검사기는 언제나 통과시키기 때문이다. 그래서
+      #    값 하나를 일부러 틀린 사본을 만들어 **빨강이 나오는지**까지 본다. 사본을 만들지
+      #    못했다면(표 문면이 바뀌어 치환이 안 먹었다면) 그것도 실패다 — 자극 없는 판정은
+      #    판정이 아니다.
+      #
+      # 🔴 **축이 하나 늘었다 — 「▶ 실행」의 여섯 줄 발췌**(§35.6 · D-20 후속). 그 줄들은
+      #    runbook 에서 «옮겨 적은» 것이라 원본이 움직여도 자기가 낡은 줄 모른다. 검사기는
+      #    발췌 블록에서 명령을 읽고, **그 행이 링크로 지목한 파일의 · 링크 텍스트가 말하는
+      #    절**에서 같은 줄을 찾는다 — 명령도 개수도 박혀 있지 않다.
+      #    이 축의 자기 검증은 스크립트 «안»에서 돈다(정본 사본 1줄 훼손 → 빨강 · 자극 계수).
+      #    추출 0건·자극 0건은 둘 다 실패다.
+      - name: README 전제조건 표 + 실행 발췌 ↔ 리포 실물 대조
+        run: |
+          set -euo pipefail
+          node scripts/check-readme-versions.mjs
+
+          tampered="$RUNNER_TEMP/README-tampered.md"
+          sed -E 's/^\| pnpm \| \*\*[^*]+\*\*/| pnpm | **0.0.0-tampered**/' README.md > "$tampered"
+          if cmp -s README.md "$tampered"; then
+            echo "::error::변조 사본을 만들지 못했다 — 표 문면이 바뀌어 자기 검증이 성립하지 않는다"
+            exit 1
+          fi
+          if node scripts/check-readme-versions.mjs --readme "$tampered"; then
+            echo "::error::검사기 자기 검증 실패 — 일부러 틀린 사본이 통과했다(검사기가 죽어 있다)"
+            exit 1
+          fi
+          echo "자기 검증 OK — 참에서 초록, 변조에서 빨강"
