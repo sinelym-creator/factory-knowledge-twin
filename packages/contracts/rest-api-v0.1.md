@@ -170,3 +170,14 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - 🔴 **이벤트 형상(agent-events v0.1 스키마 additive — 🔴 스키마 JSON 은 `tests/contract` 커버리지 케이스와 «같은 PR» 로 착지(hygiene strict coverage · 리바이2) · 형상 정본 = 이 절 + 인계 패치 `_handoff/suzaku-t6-1-schema/`)** — `step.completed(synthesize).payload.synthesis{axis: live|deterministic|live-rejected, model?, rejectedReason?}`(선택 · 결정적 경로도 `axis=deterministic` 으로 쓰기를 권장) · `run.completed.candidates[].rationale{sentences[≥1], citedEvidenceIds[≥1]}`(선택 · live 채택 시에만) · 기존 필수 필드·type enum 변경 0 · replay 기록본은 이 형상으로 재녹화(`record_replay_fixture --force` · 심사 PASS).
 - 화면 — 후보 카드 = rationale 문장 + 합성 축 배지(live / 결정적 / live-거부 · 숨기지 않음) · `/live/status.online` 의 뜻은 v0.1.3 그대로(게이트웨이 도달 가능).
 - 잰 것/안 잰 것 — 설계 성문(E3). 실측 = 구현 PR(센쿠2 31대) + 리바이2 독립 검증(근거 결속 0위반 · off/on+CLI 부재 갈림 · 컨테이너 env·egress 0 · fixture 심사 · GS-01 회귀 · 지연).
+
+## v0.1.12 append (09-03 · T6-2 소유자 스위치 live 합성 — 배포 스택 ↔ 소유자 PC 게이트웨이 · 방문자 상한 · 폐하 결정 4 09-02 22:12~22:27 · 오케 성문)
+
+> 결정 원문 요지: 「실제 LLM 이 붙어 동작 · 외부 사용자 무분별 사용 방지로 옵션화 · 내가 ON 한 경우만 LLM · 아니면 녹화 재생」. 공개 API 표면 변경 = **오류 code 1개 추가**(형상 불변) · 신설 라우트 0. 운영 값(env 이름·기본값)은 11행 규약대로 계약 외 — 여기서는 **형상**만 성문한다.
+
+- 🔴 **소유자 스위치** — 게이트웨이(v0.1.11)는 소유자 PC 호스트 프로세스 그대로이되, 배포 스택이 도달할 수 있게 **bind 주소 + 공유 토큰** 형상을 갖는다: 요청 헤더 `X-FKT-Gateway-Token` · 토큰 설정 상태에서 불일치/부재 = **401** · 비루프백 bind 인데 토큰 미설정 = **기동 거부(소리 내어)** · ai-api 는 합성 요청과 `/health` 프로브 양쪽에 같은 헤더를 동봉한다. ON/OFF = 게이트웨이 프로세스 기동/종료(운영 절차 = runbook · `switch.ps1 on|off|status`) · 컨테이너 재기동 0.
+- 🔴 **`/live/status.online` 의 뜻을 «실도달»로 조인다**(v0.1.3 문면 「게이트웨이 도달 가능」 그대로 · 구현 형상만 성문): 값 = 게이트웨이 `GET /health` **실제 프로브 결과**(짧은 타임아웃 · 수 초 캐시 · 합성 소모 0) · 도달 env 부재 시 프로브를 타지 않고 `false`(공개 Sandbox 의 false 는 참 · 기존 성문 무변) · 게이트웨이 OFF → 캐시 만료 뒤 `false` → 화면 = replay 축 + OFF 사유 문면(「소유자 게이트웨이 OFF · 녹화 재생」). 🔴 이전 구현(env 문자열 존재 여부)은 이 절로 폐기 — T6-1 검증 축 ②「off → deterministic」은 그대로 참이다.
+- 🔴 **429 `session_run_cap_exceeded`** — 세션(익명 세션 쿠키) 단위 **조사 실행 상한**(기본 3/시간 · 운영 값 env) · 143행 `rate_limited`(분당 · IP·세션 축) 와 **별개 계수 · 별개 code** · 헤더 `Retry-After: <정수 초 · 창 잔여>` 필수 · message = 「세션 조사 상한(N/시간) · 녹화 재생으로 계속」 · 오류 형상 = 11행 `{error:{code,message}}` **불변**(🔴 본문에 `fallback` 등 추가 필드 0 — 09-03 07:17 센쿠2 선발견 · 오케 발주 문면 오기 정정) · 셸 = `code` 로 분기 → 배너 + replay 축 강등(화면 축 · 조용한 폴백 0) · 무쿠키 요청은 세션 축이 없으므로 이 상한의 대상이 아니다(`rate_limited` IP 축이 막는다).
+- **모델·effort 형상** — 게이트웨이는 모델 별칭과 effort 단계를 CLI 인자로 넘긴다(기본 = sonnet / medium · 폐하 결정 09-02 22:43 · 빈 문자열 = CLI 기본) · `synthesis.model` 은 v0.1.11 그대로 **실제 응답 model id**(설정값 아님) · effort 반영 여부는 CLI 봉투에 필드가 없어 «인자 전달까지만» 실측 가능(판정문에 「미확인」 표기 허용).
+- **타임아웃 불변식** — 클라이언트(ai-api) 예산과 게이트웨이 상한은 **서로 다른 이름의 운영 값**이어야 하고 항상 «클라이언트 예산 < 게이트웨이 상한»(같은 이름을 두 층이 읽으면 클라이언트가 먼저 끊어 사유를 남기는 경로가 무력화된다 · 09-02 드릴 무효 진범 후보 ⓐ) · 녹화기는 timeout 시 사유를 버리지 않고 기록한다.
+- 잰 것/안 잰 것 — 설계 성문(E3). 실측 = T6-2 구현 PR(센쿠2 32대) + 리바이2 독립 검증(ON/OFF · 401 · 429 4회째 · sonnet/medium 지연 n≥3 · 경계 · 외부 vantage).
