@@ -194,9 +194,9 @@ Q-43 의 501 은 **REST 표면 축**의 것이다. 두 축을 한 초록으로 �
 
 | # | §32.8 항 | 전언(#348) | **오늘 재실행** | 사유 |
 |---|---|---|---|---|
-| ① | SQL injection | 부분 | **PASS(경로 파라미터 축)** | `injection_surface` HL-01~04 400 `highlight_mismatch` · 🔴 **질의 문자열(`compare q`) 표면은 여전히 그물 없음** — 부분 유지 |
-| ② | Cypher injection | 🔴 미충족 | 🔴 **미충족(유지)** | 그물 자체가 없다 |
-| ③ | 문서 내부 Prompt Injection | 🔴 미충족 | 🔴 **미충족(유지)** | 〃 |
+| ① | SQL injection | 부분 | **PASS(경로 축) + 질의 표면 축 신설**(09-02) | `injection_surface` HL-01~04 400 · **`query_surface_sql_drill`** 5종 전건 400 `question_not_approved` · 대조군 200/hits 15 · 🔴 질의 표면은 **「도달 불가」**이지 「SQL 계층 내성」이 아니다(allowlist 가 앞문) |
+| ② | Cypher injection | 🔴 미충족 | ✅ **신설 완료 · PASS**(09-02) | `tests/api/cypher_surface_drill.py` — 층 A 15건(4xx·내부 노출 0) + 층 B 5건(`anchors.extract` 출력 = ID 토큰 · 구조 문자 0) + 대조군 2 · `evidence/t5-2-gate7-new-nets.md` §2 |
+| ③ | 문서 내부 Prompt Injection | 🔴 미충족 | ✅ **신설 완료 · PASS(조건부)**(09-02) | `tests/api/prompt_injection_authority_drill.py` — 표지 실재 확인 후 A-3·A-4·A-6 PASS · 🔴 조건 = 방어 기전이 «무결성 배제»라 A-1·A-2 는 측정 불가 · `t5-2-gate7-new-nets.md` §3-1 |
 | ④ | 임의 tool 호출 | 미측 | **PASS** | `scenario_allowlist` — 허용 10건 200 · 목록 밖 **6종 전건 400 `question_not_approved`**(끝 낱말 교체·접두 부분문자열·접미 추가·공백만·SQL 조각·Cypher 조각) |
 | ⑤ | 관리자 endpoint 접근 | 🔴 미충족 | 🔴 **미충족(유지)** | 「문이 계약에 없다」 ≠ 「접근이 막힌다」 |
 | ⑥ | 다른 session 접근 | 미측 | **PASS** | `session_guard` 6축 — 은닉 run·초안·승인·경로 404 · 쿠키↔본문 상충 422 · 남의 reset 404 · 자기 reset 200 후 소멸 404 |
@@ -267,8 +267,8 @@ Ground Truth 고정 · 40문×4전략 · 5회 raw · Hit@K/Recall@K/MRR/nDCG 계
 
 | # | 항목 | 근거 | 판정 |
 |---|---|---|---|
-| 1 | SQL·Cypher injection negative 통과 | SQL = `injection_surface` 10종(오늘 PASS) · **Cypher = 그물 없음** | 🔴 **미충족(Cypher)** |
-| 2 | 문서 Prompt Injection이 tool authority 미획득 | 그물 없음 | 🔴 **미충족** |
+| 1 | SQL·Cypher injection negative 통과 | SQL = `injection_surface` 10종 + `query_surface_sql_drill` 5종 · **Cypher = `cypher_surface_drill` 층 A·B**(09-02 신설) | **충족** — 🔴 단 SQL 질의 표면은 「도달 불가」 축 |
+| 2 | 문서 Prompt Injection이 tool authority 미획득 | `prompt_injection_authority_drill`(09-02 신설) | **충족(조건부)** — 기전은 «무결성 배제»(§3-1) |
 | 3 | 다른 session에 접근할 수 없다 | `session_guard` 6축(오늘 PASS) | **충족** |
 | 4 | Public admin endpoint 차단 | 그물 없음 | 🔴 **미충족** |
 | 5 | Rate limit·request size limit 동작 | `t42b_limits`·`t42b_xff` **오늘 exit 2**(대조군 서버 미지정) · Q-60 | 🔴 **측정 불가** |
@@ -357,7 +357,7 @@ runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문
 | 1 | P0 기능 완료 | 본 판정 범위 밖(오케·폐하) |
 | 2 | Golden Scenario E2E PASS | **부분** — 로컬 API 축 13행 오늘 PASS · clean env 새 클론에서도 **13행 완주**(단 **5단 절차** 필요 · `t5-5-clean-env.md`) · **브라우저 E2E 미실행** |
 | 3 | Independent Verification PASS | 🔴 **미충족** — Gate 3 평가셋 없음 · Gate 7 4항 미충족 + 3항 측정 불가 |
-| 4 | Security Gate PASS | 🔴 **미충족** — Cypher injection · 문서 Prompt Injection · admin endpoint · malformed WS |
+| 4 | Security Gate PASS | 🔴 **미충족** — ~~Cypher injection~~ ~~문서 Prompt Injection~~(09-02 신설로 해소) · **admin endpoint · malformed WS 2항 잔여** + ⑦⑧⑪ 측정 불가 |
 | 5 | Public Offline Fallback PASS | 승계(외부 실측 존재) · 오늘 자극 0 |
 | 6 | Benchmark Evidence 생성 | 🔴 **미충족**(T5-1 미착지) |
 | 7 | KPI·Latency 결과 공개 | 🔴 **미충족** — §35.2 전항 · §35.3 P50·P95 빈 칸 |
