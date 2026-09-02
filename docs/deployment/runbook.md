@@ -244,6 +244,14 @@ pwsh services/ai-api/db/migrate.ps1 -Project 'fkt-<좌석>'   # ② 인자로 �
 - `seed.ps1` 은 seed 테이블 24종을 **TRUNCATE 후 재적재**한다 — 손으로 넣은 데이터는 사라진다.
   생성분은 random seed·기준 시각이 고정이라 같은 CSV 가 나온다(`data/generated/manifest.sha256`).
 
+#### 4-1d. 🔴 문서를 고쳤으면 4단(색인)을 «다시» 돌린다 — 안 돌리면 조사가 «멈춘다» (Q-72 · E1)
+
+`document_chunk` 는 조각마다 색인 시점의 본문 해시 `chunk_sha256` 을 쥐고 있다(`001_core_schema.sql:234`). 조각 본문(DB 의 `document_chunk.text` · 또는 문서를 다시 seed 한 결과)이 바뀌었는데 4단을 다시 돌리지 않으면 그 조각은 색인과 어긋나고, 조사는 어긋난 조각을 근거에서 **배제**한 뒤 `status=failed` · `code=step_failed:vector` 로 **전면 중단**한다(`app/investigation/runner.py:199` · D-16 과 같은 코드). T5-2 ③ 실측(2026-09-02 · 리바이2 25대): 한 문서 8조각 중 **3조각만** 어긋나도 GS-01 전체가 `failed` 로 끝났다.
+
+- 이것은 설계된 기본값이다(fail-closed · Q-72 · 폐하 승인 09-02 10:40). 어긋난 근거를 안고 «완료»를 내지 않는다.
+- 🔴 운영 규칙: **문서 편집 → 4단 재실행(`build_index.py`) → `verify_index.py` PASS** 까지가 «한 동작»이다. 재색인 없이 문서만 바뀐 상태를 두지 않는다. 배포 데모의 문서는 seed 로 고정돼 있어 저절로 어긋날 경로는 없다 — 어긋남은 사람이 만든다.
+- 「어긋난 조각만 빼고 경고 이벤트를 남기며 계속」(부분 저하)은 **릴리스 뒤 개선 항목**이다(Q-72 · 코드 변경 + GS-01 회귀 1회). 이 문서는 그것이 «아직 없다»고 적는다.
+
 #### 4단이 «왜» 따로 서 있는가 (D-16)
 
 `document_chunk.embedding` 은 seed 가 적재하는 **권위 원본이 아니라 파생 색인**이다(스펙 §4:
