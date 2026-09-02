@@ -131,8 +131,9 @@ flowchart TB
 ## ▶ 실행 — 새 클론에서 세우기
 
 **절차의 정본은 [`docs/deployment/runbook.md` §4](docs/deployment/runbook.md)입니다.** 이 README 는
-명령을 **복제하지 않고 그 문서를 가리킵니다** — 같은 명령을 두 곳에 적으면 한쪽이 먼저 낡고,
-어느 쪽이 맞는지 읽는 사람이 판단해야 합니다.
+명령을 **복제하지 않습니다** — 아래 발췌는 각 단의 «한 줄»만 옮기고 옵션·검증·주의는 정본에만
+둡니다. 같은 명령을 두 곳에 «통째로» 적으면 한쪽이 먼저 낡고, 어느 쪽이 맞는지 읽는 사람이
+판단해야 합니다.
 
 ### 전제조건 (리포가 선언하거나 실측된 값)
 
@@ -163,6 +164,27 @@ flowchart TB
 
 🔴 **5 단계는 네트워크가 필요합니다** — 임베딩 모델을 Hugging Face Hub 에서 내려받습니다.
 오프라인 머신에서 이 단이 서는지는 **아직 재보지 않았습니다**(미실측 · 「됩니다」가 아닙니다).
+
+#### 6줄 발췌 — 각 단의 «정본 명령 한 줄»
+
+<!-- excerpt:runbook-4 -->
+> 🔴 **clean environment 재실측 «전»이라 이 발췌는 «잠정»입니다** — 재실측은 검증 좌석과 짝으로 돕니다(T5-5 · §35.6).
+
+| # | 정본 명령 (한 줄) | 정본 행 |
+|---|---|---|
+| 1 | `docker compose up -d` | [runbook §4-1](docs/deployment/runbook.md) |
+| 2 | `$env:COMPOSE_PROJECT_NAME='<project>'` | [runbook §4-1a](docs/deployment/runbook.md) |
+| 3 | `pwsh services/ai-api/db/migrate.ps1` | [runbook §4-1](docs/deployment/runbook.md) |
+| 4 | `pwsh data/seed.ps1` | [runbook §4-1](docs/deployment/runbook.md) |
+| 5 | `services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py` | [runbook §4-1 · 「4단이 왜 따로 서 있는가」](docs/deployment/runbook.md) |
+| 6 | `services\projector\.venv\Scripts\python.exe services\projector\build_projection.py` | [runbook §4-1 · §4-1b](docs/deployment/runbook.md) |
+<!-- /excerpt:runbook-4 -->
+
+🔴 **여섯 줄은 «표지»이지 실행 스크립트가 아닙니다.** 한 단이 한 줄로 끝나지 않습니다 — 5·6 은
+**venv 를 먼저 만들고 requirements 를 설치해야** 그 `.venv` 경로가 생기고, 5 는 **`PGPORT` 명시
+의무**가 붙습니다(안 주면 실패하지 않고 «다른 스택을 색인»합니다). 그 줄들과 각 단의 검증 명령은
+정본 행에 있습니다. 값(project 이름·포트)은 여기서 **자리표시자**로 둡니다 — 남의 머신에서
+참이 아닐 값을 README 가 «값»으로 적지 않습니다.
 
 ---
 
