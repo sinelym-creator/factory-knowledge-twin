@@ -180,7 +180,7 @@ Q-43 의 501 은 **REST 표면 축**의 것이다. 두 축을 한 초록으로 �
 | 2 | FastAPI OFF | **PASS**(외부 · 조건 §7.5) | — | `outage-verification` §7.3 8행 · 502 · 0.87~2.86초 |
 | 3 | PostgreSQL OFF | **로컬만** | — | 외부 *Not measured* — 로컬 열을 올리지 않는다 |
 | 4 | Neo4j OFF | **로컬만** | — | 〃 |
-| 5 | Tunnel OFF | **조건부**(외부) | — | Offline·빈화면 아님·복구 PASS · 🔴 `POST /enter` **20.0초** = Q-70 미결 |
+| 5 | Tunnel OFF | **조건부**(외부) | 🔴 **재실측 PASS**(09-02 12:04~12:05 · 승격본 `c6291b5`) | `/enter` **2,497~3,840ms · 6/6 ≤8s** · `cappedOut` 없음 · health·live 500 · 「미연결」 창 6/6 ↔ 기준선 0/3 ⇒ **Q-70 해소**(24대 25.5초 대비 · 갈린 변수 = 처방 실림) · `t4-4-external-outage-verification.md` §9 |
 | 6 | WebSocket 중단 | **PASS**(외부) | — | `gate6-verification` §5.2 · 1011 ↔ 1000 대조 |
 | 7 | Model timeout | **로컬만** | — | 〃 |
 | 8 | 동시 요청 초과 | **로컬만** | — | 골격이 명시적으로 *Not measured* 로 못 박음 |
@@ -239,7 +239,7 @@ Gate 8 이 오늘 «빈 칸»에서 «조건부»로 올라간 이유는 대응�
 |---|---|---|---|
 | 1 | 공개 URL이 노트북 OFF에서도 정상 표시 | `t4-4-external-gate6` §1 | 승계(외부 · 오늘 자극 0) |
 | 2 | Golden Scenario를 별도 설명 없이 실행 | `gs01` 13행(오늘 · **API 축**) · 🔴 clean env 실행됨(`t5-5-clean-env.md`) — 「별도 설명 없이」가 **거짓**이다: README 만으로는 실행 자체가 불가 | **부분 — 「설명 없이」 축은 미충족** |
-| 3 | Live와 Replay status가 사실대로 표시 | `evidence/q69-shell-mode-observation.md` · Q-69 | 조건부(오늘 미측) |
+| 3 | Live와 Replay status가 사실대로 표시 | `q69-shell-mode-observation.md` · 🔴 **외부 실물**(09-02 §9): 기준선 `◑REPLAY` ↔ 차단 창 `◌미연결` ↔ 복구 `◑REPLAY` | **충족(외부 축)** — 🔴 복구 #4 1사이클 괴리는 관측으로 남김 |
 | 4 | 주요 navigation·button·form이 실제 동작 | `t3-2`~`t3-5` · `tests/web/e2e/**` | 승계(오늘 셸 미기동) |
 | 5 | Vector·Hybrid·GraphRAG 결과 비교 | `gs01` S11(3전략 각 5건 · 오늘) · 🔴 **수치 축 없음** | **부분 — 화면·표면만** |
 | 6 | Evidence와 Graph path를 drill-down | `gs01` S5(15건 200)·S5b(GP 는 404 = 계약이 제외한 kind)·S7(경로 5) · 🔴 replay 축 501(Q-43) | **조건부** |
@@ -393,7 +393,8 @@ runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문
 
 ### 5-3. 다음 조각에 남기는 것 (2차 발주 · 승격 뒤)
 
-- **Q-70 재실측**(외부 · `t4-4-external-outage-verification.md` §8 절차 그대로 30분) · **Q-69 배지 문면**(#345)
+- ~~Q-70 재실측~~ → 🔴 **완료 · 해소**(09-02 · §9 · `/enter` 6/6 ≤8s) · ~~Q-69 배지 문면~~ → **실물 확인**(창 배지 `◌미연결`)
+  잔여 = 복구 **지연 값**(이 창은 상한 ≤4분 08초만 잰다) · 복구 #4 화면-서버 1사이클 괴리(1회 관측)
 - ~~clean env 1회~~ → 🔴 **완료**(`evidence/t5-5-clean-env.md` · 막힌 자리 5건 · drift 1 · 주장-실측 불일치 1).
   후속 = **문서 수리 발주**(README 실행 절차 · runbook §4 를 **5단**으로 · `COMPOSE_PROJECT_NAME` 줄 · indexer/projector venv 절차 링크)
 - **Gate 7 ⑦⑧⑪** — 대조군 서버 기동을 발주문에 포함해야 잴 수 있다(§5-1 ③)
