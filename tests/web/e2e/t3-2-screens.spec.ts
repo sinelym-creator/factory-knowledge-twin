@@ -38,7 +38,10 @@ test.describe("T3-2 ① Factory Overview", () => {
       const u = new URL(r.url());
       if (u.pathname.startsWith("/api/")) seen.push([r.status(), u.pathname]);
     });
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 화면이 «클라이언트에서» /api/* 를 부르고 답까지 받은 상태 — 배지가 checking 을 벗는 것이 그 신호다(seen 표본은 그 뒤에 즉시 센다)
+    await page.goto("/overview");
+    await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+      .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
 
     // 🔴 「호출이 없다」와 「전부 200」은 화면에서 같은 모습이다 — 표본이 실재하는지 먼저 본다.
     expect(seen.length, "브라우저가 /api/* 를 하나도 부르지 않았다 — 이 축은 아무것도 못 쟀다")
@@ -55,7 +58,8 @@ test.describe("T3-2 ① Factory Overview", () => {
   });
 
   test("KPI 스트립 4칸이 응답의 kpi 를 그대로 말한다", async ({ page }) => {
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 kpi-strip 의 toBeVisible 이 기다린다
+    await page.goto("/overview");
     const { overview } = await overviewFromApi(page);
     const strip = page.getByTestId("kpi-strip");
     await expect(strip).toBeVisible();
@@ -73,7 +77,8 @@ test.describe("T3-2 ① Factory Overview", () => {
   });
 
   test("헤드라인은 «정렬된 목록의 첫 줄»이다 — 화면이 최댓값을 다시 고르지 않는다", async ({ page }) => {
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 headline 의 toBeVisible 이 기다린다
+    await page.goto("/overview");
     const { overview } = await overviewFromApi(page);
     const top = overview.activeAlarms[0];
     test.skip(!top, "활성 알람이 0건인 seed — 이 행의 표본이 없다(0건 갈래는 아래 행이 잰다)");
@@ -110,7 +115,8 @@ test.describe("T3-2 ① Factory Overview", () => {
      * ⇒ 관문: 「0건 표본이 실물로 서면 이 행을 켠다」. 그때까지 **초록으로도 빨강으로도
      *    세지 않는다** — 코드에 분기가 «있다»는 것은 화면이 «그린다»의 증거가 아니다.
      */
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 headline·alarm-dock 의 expect 가 기다린다
+    await page.goto("/overview");
     const { overview } = await overviewFromApi(page);
     test.fixme(
       overview.activeAlarms.length > 0,
@@ -122,7 +128,8 @@ test.describe("T3-2 ① Factory Overview", () => {
   });
 
   test("알람 도크가 §1 표시 항목을 그린다 — id·severity·발생시각·임계·관측·설비·센서", async ({ page }) => {
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 alarm-dock 의 toBeVisible 이 기다린다
+    await page.goto("/overview");
     const { overview } = await overviewFromApi(page);
     const top = overview.activeAlarms[0];
     test.skip(!top, "활성 알람 0건 — 도크 표본이 없다");
@@ -155,7 +162,8 @@ test.describe("T3-2 ① Factory Overview", () => {
   });
 
   test("조사 시작이 «두 자리»에 있고 둘이 같은 동작이다 (§1 인터랙션 ⑥ 진입 이중화)", async ({ page }) => {
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 start-from-headline 의 toHaveCount 가 기다린다
+    await page.goto("/overview");
     const fromHeadline = page.getByTestId("start-from-headline");
     const fromAlarm = page.getByTestId("start-from-alarm");
     await expect(fromHeadline, "헤드라인 문장에 조사 시작이 없다").toHaveCount(1);
@@ -166,7 +174,8 @@ test.describe("T3-2 ① Factory Overview", () => {
     await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 20_000 });
     const viaHeadline = new URL(page.url()).pathname;
 
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 fromAlarm.click 의 actionability 대기가 기다린다
+    await page.goto("/overview");
     await fromAlarm.first().click();
     await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 20_000 });
     expect(new URL(page.url()).pathname, "두 진입이 다른 incident 로 간다 — 같은 동작이 아니다")
@@ -177,7 +186,8 @@ test.describe("T3-2 ① Factory Overview", () => {
     page,
   }) => {
     test.slow(); // 진입·닫기·새로고침·재진입을 왕복한다 — 부하에서 기본 타임아웃을 먹는다
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 intro-card 의 toHaveCount(1) 이 기다린다
+    await page.goto("/overview");
     const intro = page.getByTestId("intro-card");
     await expect(intro, "첫 진입 안내가 아예 없다").toHaveCount(1);
 
@@ -187,11 +197,18 @@ test.describe("T3-2 ① Factory Overview", () => {
     // 🔴 정본 §0.1: 「세션의 첫 /overview 진입 1회(localStorage 아닌 **세션 상태** 기준 —
     //    세션 격리와 일관)」. 컴포넌트 지역 상태로만 두면 새로고침·재진입마다 다시 뜬다 —
     //    그것은 「1회」가 아니라 「매번」이고, AC 가 적은 낱말과 다르다.
-    await page.reload({ waitUntil: "networkidle" });
+    // 기다리던 것: 🔴 부재(카드 0개)를 묻기 전에 «화면이 다시 섰다»는 양의 신호 — 안 기다리면 아직 안 그려진 것을 «안 뜬 것»으로 읽는다
+    await page.reload();
+    await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+      .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
     await expect(intro, "새로고침하니 안내가 다시 떴다 — «1회»가 아니다").toHaveCount(0);
 
-    await page.goto("/", { waitUntil: "networkidle" });
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 경유일 뿐이다 — 판정선은 다음 진입 뒤에 있다
+    await page.goto("/");
+    // 기다리던 것: 🔴 부재를 묻기 전의 앵커 — 재진입 화면이 클라이언트까지 섰는가(intro 는 hydration 뒤에 정해진다)
+    await page.goto("/overview");
+    await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+      .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
     await expect(intro, "재진입하니 안내가 다시 떴다 — «1회»가 아니다").toHaveCount(0);
 
     // 🔴 정본 §0.1: 「재노출: 앱바 `?` 아이콘으로 언제든 다시 연다」. 닫으면 영영 못 여는
@@ -214,7 +231,9 @@ test.describe("T3-2 ① Factory Overview", () => {
       const u = new URL(r.url());
       if (/\/api\/equipment\/[^/]+\/sensors\/[^/]+\/series/.test(u.pathname)) series.push(u.pathname);
     });
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: series 호출 «수»를 즉시 세는 축이라, 스파크라인이 실제로 설 때까지 기다려야 표본이 있다
+    await page.goto("/overview");
+    await expect(page.getByTestId("sparkline").first(), "스파크라인이 서지 않는다 — series 표본이 없다").toBeVisible();
     const { overview } = await overviewFromApi(page);
     const withSensor = overview.lines.flatMap((l: any) => l.equipment).filter((e: any) => e.sensorIds.length);
 
@@ -227,10 +246,12 @@ test.describe("T3-2 ① Factory Overview", () => {
 test.describe("T3-2 ② Incident 조사", () => {
   /** 🔴 incident id 를 코드에 박지 않는다 — 화면이 실제로 여는 동선을 타고 간다. */
   async function enterIncident(page: Page) {
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 start-from-alarm 의 click 이 기다린다
+    await page.goto("/overview");
     await page.getByTestId("start-from-alarm").first().click();
     await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 20_000 });
-    await page.waitForLoadState("networkidle");
+    // 기다리던 것: incident 화면이 «컨텍스트까지» 섰는가 — 이 헬퍼를 쓰는 축들이 전부 그 화면에게 묻는다
+    await expect(page.getByTestId("incident-header"), "incident 화면이 서지 않았다").toBeVisible();
   }
 
   test("컨텍스트가 계약 v0.1.7 의 incident·설비를 그린다", async ({ page }) => {
@@ -304,8 +325,10 @@ test.describe("T3-2 ② Incident 조사", () => {
   });
 
   test("없는 incident 는 «없다»고 말한다 — «못 물어봤다»와 다른 문장이다", async ({ page }) => {
-    await page.goto("/overview", { waitUntil: "networkidle" });
-    await page.goto("/incidents/INC-DOES-NOT-EXIST", { waitUntil: "networkidle" });
+    // 기다리던 것: 경유일 뿐이다 — 판정선은 다음 진입 뒤 screen-unavailable 이다
+    await page.goto("/overview");
+    // 기다리던 것: 판정선은 아래 screen-unavailable 의 toBeVisible 이 기다린다
+    await page.goto("/incidents/INC-DOES-NOT-EXIST");
     const box = page.getByTestId("screen-unavailable");
     await expect(box).toBeVisible();
     await expect(box, "404 를 «못 물어봤다»로 접었다 — 서버가 나눈 사유가 화면에서 사라진다")
@@ -336,14 +359,17 @@ test("화면이 런타임 오류를 내지 않는다 — hydration 불일치 포
     page.on("console", (m) => {
       if (m.type() === "error") seen.push(m.text().slice(0, 160));
     });
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 mode-badge 가 checking 을 벗는 것이다(바로 아래 주석이 그 사유다)
+    await page.goto("/overview");
     // 🔴 **뒤집힌 사실**(Q-45): 앞판은 500ms 를 «기다려» 「오류 0」을 말했다 — 창이 판정을
     //    정하던 자리다. 부하가 그 창을 먹으면 늦게 온 오류가 조용히 지워진다(위양성 초록).
     //    부재는 창이 아니라 **사건 뒤에** 묻는다: 클라이언트가 «실제로 돌았다»는 양의 신호를
     //    기다린다 — 배지가 `checking` 을 벗는 것은 마운트 effect 가 답까지 받았다는 뜻이고,
     //    hydration 불일치 오류는 그보다 «앞»에서 난다.
-    await expect(page.getByTestId("mode-badge")).not.toHaveAttribute("data-mode", "checking");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+      .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
+    // 기다리던 것: 없다 — 바로 위 mode-badge 가 「클라이언트가 실제로 돌았다」는 양의 신호이고,
+    //   hydration 불일치는 그보다 «앞»에서 난다(위 주석). 뒤에 덧댄 가라앉히기는 예산만 먹었다.
     await ctx.close();
   }
   expect(seen, `브라우저가 오류를 냈다(${seen.length}/${N} 표본):\n${seen.join("\n")}`).toEqual([]);
@@ -362,14 +388,15 @@ test.describe("T3-2 재검 — 처방의 뜻이 거동으로 서는가", () => {
   }) => {
     test.slow();
     // ① 알람이 «있는» incident: 유래가 alarm 이고, 그 센서가 알람 행의 sensorId 다.
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 start-from-alarm 의 click 이 기다린다
+    await page.goto("/overview");
     const { overview } = await overviewFromApi(page);
     const top = overview.activeAlarms[0];
     test.skip(!top, "활성 알람 0건 — 이 축의 표본이 없다");
 
     await page.getByTestId("start-from-alarm").first().click();
     await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 20_000 });
-    await page.waitForLoadState("networkidle");
+    // 기다리던 것: 추세 패널 — 판정선은 아래 sensor-trend 의 toBeVisible 이 기다린다
 
     const trend = page.getByTestId("sensor-trend");
     await expect(trend, "알람이 있는데 추세가 안 선다").toBeVisible();
@@ -398,7 +425,8 @@ test.describe("T3-2 재검 — 처방의 뜻이 거동으로 서는가", () => {
     }
     test.skip(!control, "알람이 연결되지 않은 incident 표본을 찾지 못했다 — 대조군 없이 판정하지 않는다");
 
-    await page.goto(`/incidents/${control!.incidentId}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 sensor-provenance 의 toBeVisible 이 기다린다
+    await page.goto(`/incidents/${control!.incidentId}`);
     const prov = page.getByTestId("sensor-provenance");
     await expect(prov, "알람이 없는데 유래를 말하지 않는다").toBeVisible();
 
@@ -424,10 +452,14 @@ test.describe("T3-2 재검 — 처방의 뜻이 거동으로 서는가", () => {
   }) => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 intro-card 의 toHaveCount(1) 이 기다린다
+    await page.goto("/overview");
     await expect(page.getByTestId("intro-card"), "첫 진입 안내가 없다").toHaveCount(1);
     await page.getByTestId("intro-card").getByRole("button", { name: "안내 닫기" }).click();
-    await page.reload({ waitUntil: "networkidle" });
+    // 기다리던 것: 🔴 부재를 묻기 전의 앵커 — 새로고침한 화면이 클라이언트까지 섰는가
+    await page.reload();
+    await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+      .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
     await expect(page.getByTestId("intro-card"), "새로고침에 다시 떴다").toHaveCount(0);
 
     // 재열람 — 앱바 「?」가 실재하고, 눌러서 «다시 열린다».
@@ -441,7 +473,10 @@ test.describe("T3-2 재검 — 처방의 뜻이 거동으로 서는가", () => {
     //    비동기로 하므로 기다린 뒤에 새로고침한다 — 안 기다리고 reload 하면 아직 남은 쿼리가
     //    카드를 다시 열고, 그 빨강은 대상이 아니라 내 경합이다.
     await expect(page).toHaveURL(/\/overview$/);
-    await page.reload({ waitUntil: "networkidle" });
+    // 기다리던 것: 🔴 부재를 묻기 전의 앵커 — 「닫은 채로 있는가」는 화면이 다시 선 뒤에 묻는다
+    await page.reload();
+    await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+      .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
     await expect(page.getByTestId("intro-card"), "닫았는데 새로고침이 다시 열었다").toHaveCount(0);
     await ctx.close();
 
@@ -449,7 +484,8 @@ test.describe("T3-2 재검 — 처방의 뜻이 거동으로 서는가", () => {
     //    가르는 유일한 축이다(브라우저 수명 저장소에 적으면 여기서 걸린다 — 정본 §0.1 명문).
     const fresh = await browser.newContext();
     const p2 = await fresh.newPage();
-    await p2.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 intro-card 의 toHaveCount(1) 이 기다린다
+    await p2.goto("/overview");
     await expect(
       p2.getByTestId("intro-card"),
       "새 세션인데 안내가 안 뜬다 — 세션이 아니라 브라우저에 적힌 것이다",

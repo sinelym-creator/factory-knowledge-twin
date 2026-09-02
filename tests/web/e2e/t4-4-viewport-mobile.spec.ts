@@ -75,7 +75,9 @@ test.describe("T4-4 tablet 하네스 (정본 :528 「tablet 까지 대응」)", 
     test(`tablet × ${screen.name} — 문서 가로 밀림 0 · 겹침 0 · 색만 구분 0`, async ({ page }) => {
       await enter(page);
       await page.goto(screen.path);
-      await page.waitForLoadState("networkidle");
+      // 기다리던 것: 이 화면이 클라이언트까지 섰는가 — 훑기(survey)는 «선 화면»에서만 뜻이 있다
+      await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+        .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
       await expect(page.locator("body"), "빈 화면이다 — 잴 것이 없다").not.toHaveText("");
 
       const seen = await survey(page);
@@ -110,7 +112,8 @@ for (const name of ["Pixel 7", "iPhone 13"]) {
       //    통째로 먹었다(T4-4 실측: 같은 적재에서 alarm-card 는 **4,075ms** 에 보였고
       //    networkidle 은 그 **뒤** 495ms 에 왔다 — 즉 화면은 진작 와 있었다).
       //    그래서 가라앉히기는 상한을 주고 «삼킨다» — 이 대기의 실패는 판정이 아니다.
-      await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+      // 기다리던 것: 없다 — 이 자리의 networkidle 은 「가라앉히기」였고(위 주석·실측 4,075ms vs +495ms),
+      //   판정선은 바로 아래 kpi-strip 의 toBeVisible(30s) 이다. 예산만 먹던 줄이라 지운다.
       // 🔴 그리고 화면이 «섰는가»부터 세운다. 이게 서야 아래 「알람 0건」이 **데이터 사실**이
       //    된다 — 안 서면 그건 씨앗이 아니라 **렌더 실패**이고, skip 으로 접으면 결함이 초록
       //    옆자리로 숨는다.

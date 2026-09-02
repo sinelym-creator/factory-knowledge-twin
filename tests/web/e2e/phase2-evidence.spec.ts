@@ -193,7 +193,9 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
      *      ⓑ 우열·순위를 말하는 낱말이 화면에 없는가
      */
     test.slow();
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 세션 홉의 도착 — /compare 는 세션 없이 튕기므로 홉이 끝난 것을 보고 넘어간다
+    await page.goto("/overview");
+    await expect(page.getByTestId("kpi-strip"), "세션 홉이 끝나지 않았다").toBeVisible();
     await page.goto("/compare");
     await page.getByTestId("compare-run").click();
     await expect(page.getByTestId("compare-columns")).toBeVisible({ timeout: 120_000 });
@@ -228,7 +230,9 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
     const path = `/evidence/${encodeURIComponent(CHUNK)}`;
     test.fixme(await stillPlaceholder(page, path), "Evidence 뷰가 자리표시다 — 강조할 본문이 아직 없다");
 
-    await page.goto(path, { waitUntil: "networkidle" });
+    // 기다리던 것: 강조 구간 — 아래 textContent() 가 즉시 읽는다
+    await page.goto(path);
+    await expect(page.getByTestId("cited-span"), "인용 강조가 서지 않는다").toBeVisible();
     const ev = await (await page.request.get(`/api/evidence/${encodeURIComponent(CHUNK)}`)).json();
     const docId = CHUNK.split("@")[0];
     const doc = await (
@@ -339,7 +343,8 @@ test.describe("§21 증거 — 브라우저에서만 보이는 축", () => {
      *    🔴 두 값이 «같아도» 축이 하나인 것은 아니다. 그래서 각각을 «자기 원천»과 대조한다 —
      *       한쪽을 다른 쪽으로 검산하면 그 초록은 「둘이 같다」만 말한다. */
     test.slow();
-    await page.goto("/overview", { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 start-from-alarm 의 click 이 기다린다
+    await page.goto("/overview");
     const start = page.getByTestId("start-from-alarm").first();
     await start.click();
     await page.waitForURL(/\/incidents\/[^/?]+\?run=/, { timeout: 30_000 });
@@ -382,8 +387,12 @@ async function stillPlaceholder(page: Page, path: string): Promise<boolean> {
    *   «못 잼»이므로 안전한 쪽(자리표시로 본다)으로 답한다 — 관문이 흔들려서 축을 여는 것이
    *   가장 나쁜 실패다.
    */
-  await page.goto("/overview", { waitUntil: "networkidle" }); // 세션 홉을 먼저 지난다
-  await page.goto(path, { waitUntil: "networkidle" });
+  // 기다리던 것: 경유(세션 홉)일 뿐이다 — 판정선은 다음 진입 뒤에 있다
+  await page.goto("/overview"); // 세션 홉을 먼저 지난다
+  // 기다리던 것: 🔴 자리표시 «부재»를 세는 관문이다 — 화면이 서기 전에 세면 「자리표시 없음」이 되어 축을 잘못 연다(가장 나쁜 실패)
+  await page.goto(path);
+  await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+    .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
   if (!new URL(page.url()).pathname.startsWith(path.split("?")[0].split("#")[0])) return true;
   for (const text of PLACEHOLDERS) {
     if ((await page.getByText(text).count()) > 0) return true;
@@ -405,7 +414,10 @@ async function runScreenIsPlaceholder(page: Page): Promise<boolean> {
   if ((await start.count()) === 0) return true;
   await start.click();
   await page.waitForURL(/\/incidents\//, { timeout: 20_000 }).catch(() => {});
-  await page.waitForLoadState("networkidle");
+  // 기다리던 것: 🔴 자리표시 «부재»를 세기 전에 화면이 클라이언트까지 섰는가
+  //   — 서기 전에 세면 「자리표시 없음」이 되어 축을 잘못 연다(가장 나쁜 실패).
+  await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+    .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
   for (const text of PLACEHOLDERS) {
     if ((await page.getByText(text).count()) > 0) return true;
   }
