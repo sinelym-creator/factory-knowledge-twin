@@ -37,3 +37,33 @@ jobs:
           #    쓰는 `C:/Users/…` 를 영원히 통과시켰다 — 실제로 evidence 1건이 그렇게 살아 있었다.
           if git grep -n -I -E 'C:[\\/]+Users[\\/]+[A-Za-z]' -- ':!.github/workflows/'; then
             echo '::error::personal absolute path detected'; exit 1; fi
+
+      # ── README 전제조건 표 ↔ 리포 실물 (상시 원칙 「하드코딩 금지」 2026-09-02) ──────
+      #
+      # README 는 pnpm·Node·이미지 태그를 «값»으로 싣는다 — 문서라 그럴 수밖에 없다. 그래서
+      # 낡는다: 리포가 움직여도 표는 자기가 낡은 줄 모른다. 이 step 이 그 자리를 받는다.
+      #
+      # 🔴 **기대값은 어디에도 박혀 있지 않다.** 검사기는 한쪽을 README 표에서 읽고, 다른 쪽을
+      #    **README 가 출처로 지목한 파일**에서 읽어 맞댄다(출처 경로조차 README 가 선언한다).
+      #
+      # 🔴 **검사기 자기 검증을 같은 step 에서 매 실행 돌린다.** 「참 한 번」만 울리면 검사기가
+      #    죽어 있을 때도 초록이 난다 — 죽은 검사기는 언제나 통과시키기 때문이다. 그래서
+      #    값 하나를 일부러 틀린 사본을 만들어 **빨강이 나오는지**까지 본다. 사본을 만들지
+      #    못했다면(표 문면이 바뀌어 치환이 안 먹었다면) 그것도 실패다 — 자극 없는 판정은
+      #    판정이 아니다.
+      - name: README 전제조건 표 ↔ 리포 실물 대조
+        run: |
+          set -euo pipefail
+          node scripts/check-readme-versions.mjs
+
+          tampered="$RUNNER_TEMP/README-tampered.md"
+          sed -E 's/^\| pnpm \| \*\*[^*]+\*\*/| pnpm | **0.0.0-tampered**/' README.md > "$tampered"
+          if cmp -s README.md "$tampered"; then
+            echo "::error::변조 사본을 만들지 못했다 — 표 문면이 바뀌어 자기 검증이 성립하지 않는다"
+            exit 1
+          fi
+          if node scripts/check-readme-versions.mjs --readme "$tampered"; then
+            echo "::error::검사기 자기 검증 실패 — 일부러 틀린 사본이 통과했다(검사기가 죽어 있다)"
+            exit 1
+          fi
+          echo "자기 검증 OK — 참에서 초록, 변조에서 빨강"
