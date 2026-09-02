@@ -437,10 +437,17 @@ env(9)     FKT_TRUST_FORWARDED_FOR · FKT_CORS_ORIGINS · FKT_POSTGRES_DSN · FK
 
 1. **실행 전 1줄 보고** + D-13 볼륨 대조 → 오케 「가」.
 2. `docker build -t fkt-deploy-ai-api:<새sha> services/ai-api`
-3. 🔴 **구 컨테이너를 지우지 않고 보존**: `docker rename fkt-deploy-ai-api fkt-deploy-ai-api-prev` → `docker stop fkt-deploy-ai-api-prev`
+3. 🔴 **구 컨테이너를 지우지 않고 «세대 이름»으로 보존**:
+   `docker rename fkt-deploy-ai-api fkt-deploy-ai-api-<구sha>` → `docker stop fkt-deploy-ai-api-<구sha>`
+   🔴 **`-prev` 를 쓰지 않는다.** 「직전」은 상대 표현이라 두 번째 교체에서 반드시 이름이 충돌하고,
+   충돌한 자리에서 사람은 「어차피 낡았으니 지우자」로 간다 — 그 순간 되돌릴 자리가 사라진다.
+   실제로 09-03 07:5x 실측에서 `fkt-deploy-ai-api-prev` 는 **이미 점유돼 있었다**(09-01 생성 ·
+   `fkt-senku2-q3-ai-api:latest` · Exited). sha 를 붙이면 충돌이 구조적으로 없고 이름만 보고
+   어느 세대인지 안다. 🔴 **낡은 세대의 정리(삭제)는 destructive 라 운영자·오케 회귀 사안**이다.
 4. 위 형상 그대로 새 컨테이너 기동(포트·네트워크·바인드 2 · env 9 + 필요 시 7-2 의 env 2 · `FKT_BUILD_SHA=<새sha>`).
 5. **완료 조건 = `GET /api/health` 의 `build` 가 «새 sha»**. 컨테이너가 떴다는 것과 새 코드가 답한다는 것은 다른 사실이다.
-6. 되돌리기: 새 컨테이너 stop/rm → `docker rename fkt-deploy-ai-api-prev fkt-deploy-ai-api` → start.
+6. 되돌리기: 새 컨테이너 stop/rm → `docker rename fkt-deploy-ai-api-<구sha> fkt-deploy-ai-api` → start
+   → 🔴 `/api/health.build` 가 **구 sha** 로 돌아온 것까지 확인해야 되돌리기가 끝난다.
 
 ### 7-4. 이 절이 «안 적은» 것
 
