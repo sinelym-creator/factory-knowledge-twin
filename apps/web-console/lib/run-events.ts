@@ -29,12 +29,25 @@ export type RunEvidence = {
   stale?: boolean;
 };
 
+/**
+ * 🔴 v0.1.11 · 합성 축. 화면은 이 값을 «숨기지 않는다» — `live-rejected` 는 오류가 아니라
+ *    「물어봤고, 답을 근거 결속 가드가 물렸고, 결정적 순위를 그대로 쓴다」는 사실이다.
+ *    셋을 한 낱말(예: 「자동」)로 접으면 방문자는 누가 순위를 정했는지 알 수 없게 된다.
+ */
+export type RunSynthesis = {
+  axis: "live" | "deterministic" | "live-rejected";
+  model?: string;
+  rejectedReason?: string;
+};
+
 export type RunCandidate = {
   rank?: number;
   failureModeId?: string;
   label?: string;
   confidenceNote?: string;
   evidenceIds?: string[];
+  /** 🔴 live 축이 «채택»됐을 때만 온다. 인용 id 는 run 근거집합 안이 서버에서 보장된다. */
+  rationale?: { sentences: string[]; citedEvidenceIds: string[] };
 };
 
 type Envelope = { runId: string; seq: number; ts: string; mode: string };
@@ -55,7 +68,10 @@ export type RunEvent = Envelope &
     | { type: "plan.updated"; payload: { steps: string[] } }
     | { type: "step.started"; payload: { step: string } }
     | { type: "step.evidence"; payload: { step: string; evidence: RunEvidence } }
-    | { type: "step.completed"; payload: { step: string; elapsedMs: number; summary: string } }
+    | {
+        type: "step.completed";
+        payload: { step: string; elapsedMs: number; summary: string; synthesis?: RunSynthesis };
+      }
     | {
         type: "run.completed";
         payload: { candidates: RunCandidate[]; totalElapsedMs?: number; workOrderDraftId?: string };
@@ -90,6 +106,9 @@ export type StepView = {
   summary?: string;
   /** 이 단계가 만든 근거 수 — 스트립이 「어디서 왔는지」를 말할 수 있게. */
   evidenceCount: number;
+  /** 🔴 `synthesize` 단계에만 온다(v0.1.11). 후보 패널의 축 배지는 여기서만 읽는다 —
+   *     같은 사실을 두 자리에 두면 표면마다 다른 축을 말할 수 있다. */
+  synthesis?: RunSynthesis;
 };
 
 export type RunFailure = { code: string; message: string; fallback?: "replay" };
@@ -196,6 +215,7 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
         v.state = "done";
         v.elapsedMs = e.payload.elapsedMs;
         v.summary = e.payload.summary;
+        if (e.payload.synthesis) v.synthesis = e.payload.synthesis;
         s.elapsedMs += e.payload.elapsedMs ?? 0;
         break;
       }

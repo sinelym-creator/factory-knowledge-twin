@@ -92,13 +92,16 @@ def _step(ctx: Context, name: str):
             ctx.emitter.step_started(name)
             started = time.perf_counter()
             try:
-                patch, summary = await fn(state)
+                result = await fn(state)
             except StopRequested:
                 raise
             except Exception as exc:                      # noqa: BLE001 — 어느 단계인지 실어 올린다
                 raise StepFailed(name, exc) from exc
+            # 노드는 (patch, summary) 또는 (patch, summary, extra) 를 돌려준다 — extra 는 그
+            # 단계의 step.completed payload 에 그대로 얹힌다(계약 additive 필드의 착지 자리).
+            patch, summary, extra = result if len(result) == 3 else (*result, None)
             ctx.emitter.step_completed(
-                name, int((time.perf_counter() - started) * 1000), summary=summary
+                name, int((time.perf_counter() - started) * 1000), summary=summary, extra=extra
             )
             return patch
 
@@ -194,13 +197,38 @@ def build_graph(ctx: Context):
         if not candidates:
             # 🔴 후보 0건은 «성공한 조사»가 아니다. 스키마도 candidates 최소 1건을 요구한다.
             raise RuntimeError(f"{ctx.anchor.alarmId} 에서 원인 후보를 하나도 세우지 못했다")
-        ctx.candidates = candidates
-        payload = synth.to_payload(candidates)
         axis = synth.resolve_synthesizer()
-        gateway = "live" if axis == "live" else "결정적 집계(로컬 합성 게이트웨이 미도달)"
+        rationale: dict[str, Any] = {}
+        synthesis: dict[str, str] = {"axis": axis}
+        gateway = "결정적 집계(로컬 합성 게이트웨이 미도달)"
+        if axis == "live":
+            # 🔴 게이트 뒤에서만 불러온다 — 공개 배포 프로세스에 이 코드가 «없게» 한다.
+            from . import live_synthesis             # noqa: PLC0415
+
+            outcome = await live_synthesis.synthesize(
+                candidates,
+                anchor=ctx.anchor,
+                state=state,
+                evidence_ids=list(dict.fromkeys(ctx.evidence_ids)),
+            )
+            candidates = outcome.candidates
+            rationale = outcome.rationale
+            synthesis = outcome.synthesis_payload()
+            gateway = (
+                "live(로컬 게이트웨이)"
+                if outcome.axis == "live"
+                # 🔴 거부는 감추지 않는다 — 결정적 순위를 쓰되 왜 그렇게 됐는지 같이 말한다.
+                else f"결정적 집계(live 응답 거부 · {outcome.rejected_reason})"
+            )
+            ctx.candidates = candidates
+            payload = live_synthesis.attach_rationale(synth.to_payload(candidates), rationale)
+        else:
+            ctx.candidates = candidates
+            payload = synth.to_payload(candidates)
         return (
             {"candidates": payload},
             f"후보 {len(payload)}건 · 1순위 {payload[0]['failureModeId']} · 합성 축 = {gateway}",
+            {"synthesis": synthesis},
         )
 
     @_step(ctx, "draft_work_order")

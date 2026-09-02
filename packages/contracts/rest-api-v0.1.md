@@ -159,3 +159,14 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - 🔴 **화면 의미** — 이 경로의 「진행 표시」는 실시간 스트림이 아니라 «간격 이내 지연 조회»다. 화면은 이를 숨기지 않는다(문면 = 「실시간 스트림 대신 주기 조회로 진행 중」 · 1006 문면 대체). 「실시간」 주장 문면(README · baseline §21)은 「직결 경로 실시간(WS) · 공개 셸 주기 조회」로 정렬한다 — D-21 은 «명기»에서 «대체 착지»로 옮겨지되 **WS 미개통 자체는 남는다**(결함 해소 아님).
 - 429 제외 목록(v0.1.9)에 `GET /runs/{runId}/events` 는 **없다** — 폴링 간격이 rate limit 운영값(env)과 충돌하면 화면에 429 로 드러난다(숨기지 않음) · 운영값 조정은 runbook(T5-4) 축 · 계약은 형상만.
 - 잰 것/안 잰 것 — 이 조항은 설계 성문(E3). 실측은 구현 PR(센쿠2 · `run-console.tsx` 1파일)과 main 승격 뒤 리바이2 외부 검증에서 붙는다 · 그물(`tests/web/e2e/t3-4-run-screen.spec.ts` 등 WS 101/1006 을 기다리던 자리)은 검증 좌석이 함께 개정한다.
+- (정정 09-02 18:34 · #397 판정 · 오케 성문) 429 수신 시 클라이언트는 **조회를 멈추고 사유를 드러낸다**(자동 재개 0 · `retryAfterSec` 은 서버가 준 때만 표기 · 재개 = 사람의 재입장/새로고침) — 위 「드러난다」의 구체 형상 · 셸 429 정책(`lib/contract.ts` 「429 는 되묻지 않는다」)과 일치 · 멈춘 뒤엔 「주기 조회로 진행 중」 배너를 내린다(멈춘 화면이 진행 중이라 말하지 않는다).
+
+## v0.1.11 append (09-02 · T6-1 Live 진단 synthesis — Claude Code CLI(구독) 경유 로컬 게이트웨이 · 폐하 결정 3 19:14~19:17 · 오케 성문)
+
+> 동결 본문 「합성 게이트웨이 축」(v0.1.3 · `/live/status.online`)의 «구현 형상»을 성문한다. 공개 API 표면 변경 0 · 신설 라우트 0 — 게이트웨이는 ai-api «뒤»의 호스트 프로세스이고 공개 경로에 없다.
+
+- 🔴 **게이트웨이** — 운영자 PC 호스트 프로세스 `services/synthesis-gateway/`(`127.0.0.1:<port>` · compose 무등재 · 도달 = env `FKT_LOCAL_SYNTHESIS_GATEWAY` 1개 · 컨테이너는 자격 증명 0) · `POST /synthesize` 입력 = {anchor, candidates[](failureModeId·label·pattern·evidenceIds·history·citations·graphHops·sopIds), evidenceText{id→발췌}} · 출력 = {ranking[], rationale{failureModeId→{sentences[], citedEvidenceIds[]}}, insufficient:bool} · 실행 = Claude Code CLI(`claude -p --output-format json` · 구독 · API 키 0) · 타임아웃 10s(잠정 목표) · 동시 1 · 사용 범위 = baseline §15.2 「소유자 통제 시연 + fixture 녹화」 — 공개 방문자는 기록본 replay.
+- 🔴 **근거 결속** — 응답의 `citedEvidenceIds` 가 run 근거집합 밖 id 를 하나라도 담으면 **전량 거부**(부분 채택 0) · 거부/타임아웃/미도달 = 조용한 폴백 0 → `axis="live-rejected"` 로 드러내고 결정적 순위 유지 · LLM 재정렬 허용하되 support 0 후보의 1순위 승격은 거부 · 프롬프트 = 「주어진 evidenceId 만 인용 · 근거 부족 = insufficient=true("근거 없음") · SQL/Cypher/도구 실행 0 · JSON 만」.
+- 🔴 **이벤트 형상(agent-events v0.1 스키마 additive — 🔴 스키마 JSON 은 `tests/contract` 커버리지 케이스와 «같은 PR» 로 착지(hygiene strict coverage · 리바이2) · 형상 정본 = 이 절 + 인계 패치 `_handoff/suzaku-t6-1-schema/`)** — `step.completed(synthesize).payload.synthesis{axis: live|deterministic|live-rejected, model?, rejectedReason?}`(선택 · 결정적 경로도 `axis=deterministic` 으로 쓰기를 권장) · `run.completed.candidates[].rationale{sentences[≥1], citedEvidenceIds[≥1]}`(선택 · live 채택 시에만) · 기존 필수 필드·type enum 변경 0 · replay 기록본은 이 형상으로 재녹화(`record_replay_fixture --force` · 심사 PASS).
+- 화면 — 후보 카드 = rationale 문장 + 합성 축 배지(live / 결정적 / live-거부 · 숨기지 않음) · `/live/status.online` 의 뜻은 v0.1.3 그대로(게이트웨이 도달 가능).
+- 잰 것/안 잰 것 — 설계 성문(E3). 실측 = 구현 PR(센쿠2 31대) + 리바이2 독립 검증(근거 결속 0위반 · off/on+CLI 부재 갈림 · 컨테이너 env·egress 0 · fixture 심사 · GS-01 회귀 · 지연).
