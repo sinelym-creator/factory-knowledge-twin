@@ -130,10 +130,19 @@ class Emitter:
     def step_evidence(self, step: str, evidence: dict[str, Any]) -> dict[str, Any]:
         return self._emit("step.evidence", {"step": step, "evidence": evidence})
 
-    def step_completed(self, step: str, elapsed_ms: int, summary: str | None = None) -> dict[str, Any]:
+    def step_completed(
+        self,
+        step: str,
+        elapsed_ms: int,
+        summary: str | None = None,
+        extra: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         payload: dict[str, Any] = {"step": step, "elapsedMs": max(0, elapsed_ms)}
         if summary is not None:
             payload["summary"] = summary
+        if extra:
+            # 단계가 «자기 단계에만» 있는 사실을 실을 자리(v0.1.11 synthesize.synthesis).
+            payload.update(extra)
         return self._emit("step.completed", payload)
 
     def run_completed(
