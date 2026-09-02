@@ -54,3 +54,7 @@
 - T5-4 complete: deployment runbook `docs/deployment/runbook.md` (restart policy, Funnel OFF/ON measurements, Gate 6 rows, clean-env steps) (#335).
 - D-12e promoted to main `20f7f6c`: install axis partial PASS (boot 20/20, install 40, failures 0); rescue axis no verdict; verdict table 5 rows (#327, #329).
 - D-13 closed: deployment stack reconstructed 6/6 (seed 28/28, neo4j reload 309/448 content diff 0), volumes moved outside worktrees, `infra/neo4j-restore.ps1` (#323, #325).
+- Reboot recovery and Q-63 verdict: t15 DB pair restarted once (restart=no kept), ai-api health ok, cold-start 2,863→220 ms attributed to the elapsed-time axis (mechanism unknown).
+- T5-3 minimal: `security.yml` CodeQL job (JS/TS + Python, build-mode none) landed (#337); six deferred items remain.
+- T4-4 complete (conditional on Q-69/Q-70): FastAPI OFF row PASS (#339), Gate 6 external item closed; Phase 4 = 5/5.
+- D-16 Golden regression recovered (P0): deployed `document_chunk` was 0 rows after the D-13 rebuild skipped the derived index; rebuilt 59/59 in ~4 min, external GS-01 2/2 (#342), runbook step 4 + health-check retrieval row (#343).

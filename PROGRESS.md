@@ -14,7 +14,7 @@
 |---|---|---|
 | 3·4 | T3-6·T4-4 그물 선행 소조각(검증 좌석 — D-3 재검·Q-41·Q-42 사이 유휴 메움) | 검증 좌석 흐름 보며 |
 | 4 | T4-3 Tunnel·Vercel 공개 RC(🔴 운영자 확인 1회 재상신) | T4-1·T4-2 |
-| 5 | T5-5 잔여(clean env 1회 = 리바이2 2차 발주 08:39 · 외부 축 = 승격 뒤) · T5-2 드릴 대응표(재실행 8 + 신설 3 · baseline v0.3 §32.8) · T3-6 재실행 9 · D-17 배포 반영(이미지 재빌드 · 승격 뒤) · 메인 `.venv` 갱신 · P6(NOTICE·THIRD_PARTY_NOTICES · README KPI 문면 · CHANGELOG · 최종 판정문) | 승격 묶음 11:08 뒤 → Q-70·Q-69 외부 재실측 |
+| 5 | T5-5 외부 축(승격 뒤 Q-70·Q-69 재실측) · T5-2 드릴 대응표(재실행 8 + 신설 3 · baseline v0.3 §32.8) · T3-6 재실행 9 · D-17 배포 반영(이미지 재빌드 · 승격 뒤) · P6(README 재현 절차 = runbook 5단 인용 · KPI 문면 · CHANGELOG · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」 · 공개 경계 스캔) | 승격 1회(11:08 뒤 · 19대) |
 
 ## blocked (운영자)
 
@@ -26,13 +26,13 @@
 
 | 태스크 | 산출물 | 시점 |
 |---|---|---|
+| ✅ **D-18 migrate.ps1 project 선택 수리 + runbook 5단(18대)** — 센쿠2 28대 PR#362 `03056f6` · 4곳 `-p` · 미지정 실패 문면 · 주석 실측대로 · runbook §4 = compose→project→migrate→seed→indexer venv+색인→projector venv+투영 · 스키마 008 · 네트워크 문장 | `services/ai-api/db/migrate.ps1` · `docs/deployment/runbook.md` | 09-02 09:26 |
+| ✅ **Q-71 surface_scan 위양성 그물 수정(18대)** — 리바이2 25대 PR#363 `c73028e` · 4종 처리 · 10→0 · 모집단 53 유지 · 검출력 대조군(진짜 위반 주입 = 빨강 유지) | `tests/web/surface_scan.mjs` | 09-02 09:26 |
+| ✅ **T5-5 clean env 1회(18대)** — 리바이2 25대 PR#361 `c515544` · README 만으로 = 0단계(§35.6 미충족 확정) / 우회 5단 완주 GS-01 13행 · 🔴 투영 단계 빠지면 «빈 초록» — 그물 P-GRA 0→5 대조군 · 문서 결함 5+1+1 → D-18 | `evidence/t5-5-clean-env.md` | 09-02 09:08 |
+| ✅ **P6 라이선스 축(18대)** — 센쿠2 28대 PR#360 `fd52979` · `NOTICE` · `THIRD_PARTY_NOTICES.md` · `LICENSE` 보유자 = 폐하 재가 ① · JS 341/Python 80 · unknown 0 · copyleft prod 1 | `NOTICE` · `THIRD_PARTY_NOTICES.md` · `LICENSE` | 09-02 09:07 |
 | ✅ **D-17 리포 착지(18대)** — 센쿠2 28대 PR#355 `ee2bbf9` · fastapi 0.133.0(= starlette ≥1.3.1 허용 최소) + `starlette==1.3.1` 직접 핀 · pip-audit 9→0(집합 동일) · Python 감사 축 게이트 승격 · 잔여 = 배포 이미지 재빌드(승격 뒤) | `services/ai-api/requirements.txt` · `.github/workflows/security.yml` | 09-02 08:43 |
 | ✅ **T5-5 본 판정 착지(18대 · 축소판 v0.3 · 로컬 축)** — 리바이2 25대 PR#357 `d63498d` · 오늘 재실행 14본 · 판정 = 「Release 후보 — 축소 적용(v0.3)」 · 미충족 9항 명기 · 계수 실측 PASS 26/전언 10/조건부 10/미측 13/불명 2/미충족 7/로컬만 6/부분 4 · Q-71 등재 · 잔여 = clean env + 외부 축 | `evidence/t5-5-gate-verdict.md` | 09-02 08:38 |
 | ✅ **baseline v0.3 축소 적용 반영(18대)** — 폐하 A~G 승인분 1-A~1-G 본문 반영(PR#356 `e0c6958` · 파일명 v0.2 유지 · 초안 재가 칸 ☑ · Gate 6 근거 두 파일 병기로 정정) | `docs/baseline/poc-baseline-v0.2.md` · `.workspace/drafts/baseline-v0.3-scope-cut-draft.md` | 09-02 08:27 |
 | ✅ **D-14 재발 방지 2(18대 · 폐하 「preview 0」)** — develop 병합도 preview 를 만들던 사실 실측(어제 18건) → `vercel.json` develop + 규약 패턴 11종 차단(PR#354 `a76bee8`) · 병합 뒤 배포 생성 0 확인 | `apps/web-console/vercel.json` | 09-02 08:18 |
 | ✅ **연장 2·3(17대 · 폐하 「94% 진행·승인」)** — 축소 안 초안 #347(A~G 전건 승인 21:21) · T5-5 Gate 근거 표 초안 #348 · Q-70 처방 #349(블랙홀 25.2→8.0s · 외부 재실측 #351 = 승격 전이라 판정 불가 · 종결 = 승격 뒤) · dependency audit #350(starlette D-17 신설) · 잔존 워크트리 9본 삭제 9,314MB | 09-01 21:45 |
 | ✅ **Q-69 문면 수리 착지(17대 · P2 · 폐하 승인 19:35)** — 「끊겨 전환」 배너 → 「Live AI 게이트 없음 · 결정적 집계」 · 1006 «세션 만료» 단언 제거 · 문자열 3파일(#345 `efc0eee`) · 화면 축 E1 = 승격 뒤 재관측 | 09-01 19:44 |
-| 🚨→✅ **D-16 Golden 회귀 복구(17대 · P0)** — 배포 DB `document_chunk` 0행(D-13 재구성이 파생 색인 T1-4 미실행 · 16:26~19:11 공개 Live 실패) → 폐하 「진행」 19:07 → `build_index.py` 59/59/45 · `verify_index.py` PASS → 외부 재현 GS-01 2/2 `run.completed` 5/5(#342 `5242499`) · 재발 방지 성문 = 센쿠2 runbook 4단 PR · Q-69 문면 어긋남 3 = 별개 P2 처방(원장) | 09-01 19:11·19:17 |
-| ✅ **T4-4 완결(17대 · 조건부 = Q-69·Q-70 존속) · Phase 4 5/5** — FastAPI OFF 행 PASS(리바이2 22대 · PR#339 `afaf1bd` · 502 빠른 실패 0.9~2.9s · 「미연결」 6/6 · 복구 자동) · Gate 6 외부 항 종결(블랙홀+연결 거부 두 자극 실측 · 이월 0) · Q-70 = 블랙홀 한정으로 좁힘 | 09-01 18:52 |
-| ✅ **T5-3 최소본 착지(17대 · 부분 · 보류 6종 미완)** — `security.yml` CodeQL 1 job(JS/TS+Python · build-mode none · GitHub-hosted) · PR#337 `6b53a01` · python 추출 107/107 · alerts 0 · 룰 130 실행 · 원장·티켓·INDEX 등재 | 09-01 18:24 |
-| ✅ **재부팅 복구·Q-63 판정 자리 통과(17대)** — t15 DB 쌍 `docker start` 1회 → healthy · ai-api `/api/health` ok · pwsh 콜드 2,863→220/215ms = 「경과 시간 축」 확정(메커니즘 미상 · 재측 = 좌석 가동 몇 시간 뒤) | 09-01 18:09·17:54 |

@@ -16,7 +16,9 @@ size_limit: 4KB
 | `PROGRESS.md` | 현황판 — «지금»만 · done 10행 초과 → CHANGELOG 회전 | 상태 변동 시 |
 | `CHANGELOG.md` | 이력(append 전용) | 회전·완결 시 |
 | `INDEX.md` | 자산 목차(본 파일) | 파일 증감 커밋 동반 |
-| `LICENSE` | Apache-2.0 | — |
+| `LICENSE` | Apache-2.0 · 부록 보유자 = `Copyright 2026 sinelym-creator`(폐하 재가 09-02 08:59 ① · #360) | 보유자 변경 = `NOTICE` 와 한 PR |
+| `NOTICE` | Apache-2.0 NOTICE(프로젝트 · 보유자 = LICENSE 와 바이트 동일 · 3rd-party NOTICE 전달 문구) — baseline §34.2 필수 파일 · #360 09-02 | LICENSE 와 함께 |
+| `THIRD_PARTY_NOTICES.md` | 의존성 라이선스 인벤토리(실측 09-02 · JS 341(prod 59) · Python 80 · unknown 0 · copyleft prod 1 = sharp LGPL 바이너리 · 모델 e5-small MIT(E2) · synthetic 데이터) — baseline §35.5 · #360 | 의존성 변경 시 재실측 |
 | `docs/baseline/poc-baseline-v0.2.md` | 단일 baseline 정본 — **v0.3 축소 적용 개정 09-02(#356 · 1-A~1-G · 파일명 유지)** | §0.3 절차로만 |
 | `docs/plan/ticket-ledger.md` | 티켓 원장 = 진행률 유일 산법 | 단위 완료·분모 변경 시 |
 | `docs/plan/tickets/` | 티켓 상세(1티켓 1파일) | 발주 시 생성 |
@@ -39,7 +41,7 @@ size_limit: 4KB
 | `tests/data/` | seed 무결성 probe 28건(C-21~C-28 그물 포함) + net-liveness 생존 시험 + binding-scope 사정거리 probe + 자기점검 mutation 시험 + eval-chunk-binding(평가 chunk 좌표 그물) + transition-net(상태 전이 그물 27판정·증분/절대 이축 — G-3·E-7) | seed 개정 동반 |
 | `data/` | synthetic seed 생성기(generators/·verify SQL·seed.ps1) | Phase 1~ 데이터 진행 시 |
 | `benchmarks/` | 평가 데이터셋·결과(datasets/eval-questions 등) | 평가 축 진행 시 |
-| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-2b · t3-5-wo-screen #225 · t4-2a #241 · t4-2b-live-guard #250·#260 · t4-4-external-gate6 골격 #256 · t4-3-public-rc(C 칸 재부팅 한정 · #298) · d12-enter-retry(형태 (나) · #302)) · 🔴 `t4-4-stimulus-equivalence-control.md`(#264 · §3-2 치환 대조군 정본 = 클라이언트 축 한정·SSR 층 갈림) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 · **t5-5-gate-verdict #357(본 판정 · 축소 적용 v0.3 · 로컬 축 · 09-02)** | 검증 시 |
+| `evidence/` | 독립 검증 보고 — 티켓별 판정문 `t{n}-{m}-*-verification.md`(phase0 ~ t4-2b · t3-5-wo-screen #225 · t4-2a #241 · t4-2b-live-guard #250·#260 · t4-4-external-gate6 골격 #256 · t4-3-public-rc(C 칸 재부팅 한정 · #298) · d12-enter-retry(형태 (나) · #302)) · 🔴 `t4-4-stimulus-equivalence-control.md`(#264 · §3-2 치환 대조군 정본 = 클라이언트 축 한정·SSR 층 갈림) · 그물 계획 `t3-6-e2e-axis-plan` · Q 실측(q40~q45) · 재검 로그 · **t5-5-gate-verdict #357(본 판정 · 축소 적용 v0.3 · 로컬 축 · 09-02)** · **t5-5-clean-env #361(README 만으로 = 0단계 · 우회 5단 완주 · 09-02)** | 검증 시 |
 | `.workspace/handoffs/` | 오케 선작성 발주문(세대 승계 · 트리거 대기 문면 · 팀 채널 발신 시 그대로) — `suzaku8-orders-20260831.md`(§A T4-2b wake · §B T4-2a 검증) · `suzaku9-orders-20260831.md`(§A D-3 · §B T4-2a 2조각 · §C T3-5 ②′ · §D PR-1 검증 · §E 리바이2 15대 wake · §F 재부팅 후 10대 1착) · `suzaku10-orders-20260831.md`(§A T4-1 ②′ · §B T4-2b PR-1 서버 축 · §C PR-1 검증 · §D 완결·관문 서식 · §E 11대 1착) | 교대·마감 시 |
 | `.workspace/drafts/` | 초안(SSOT 아님) — `baseline-v0.3-scope-cut-draft.md`(축소 안 · 폐하 A~G 승인 09-01 · **baseline 본문 반영 완료 09-02 #356** · 재가 칸 ☑ · 이력 보존) | 초안 추가·baseline 반영 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) | 게이트 확장 시 |
