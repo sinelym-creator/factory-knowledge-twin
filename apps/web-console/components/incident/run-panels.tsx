@@ -6,6 +6,7 @@ import {
   type RunCandidate,
   type RunEvidence,
   type RunState,
+  type RunSynthesis,
   STEP_LABEL,
   type StepView,
 } from "@/lib/run-events";
@@ -94,6 +95,32 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
 }
 
 /** 우 400px — 원인 후보. */
+/**
+ * 🔴 합성 축 배지 — 색만으로 구분하지 않는다(아이콘 + 낱말 병기, `live-status.tsx` 규약).
+ *    `live-rejected` 는 사유까지 화면에 적는다. 사유를 툴팁에만 넣으면 터치 기기에서는
+ *    「거부됐다」만 보이고 「왜」가 사라진다 — 그건 숨긴 것과 같다.
+ */
+function SynthesisBadge({ synthesis }: { synthesis?: RunSynthesis }) {
+  if (!synthesis) return null;
+  const face =
+    synthesis.axis === "live"
+      ? { icon: "◉", text: "live 합성", cls: "text-ok" }
+      : synthesis.axis === "live-rejected"
+        ? { icon: "◌", text: "live 거부", cls: "text-warn" }
+        : { icon: "◐", text: "결정적", cls: "text-muted" };
+  return (
+    <span
+      className={`flex items-center gap-1 rounded border border-edge px-1.5 py-0.5 text-xs ${face.cls}`}
+      data-testid="synthesis-badge"
+      data-axis={synthesis.axis}
+    >
+      <span aria-hidden>{face.icon}</span>
+      {face.text}
+      {synthesis.model && <span className="id text-muted">{synthesis.model}</span>}
+    </span>
+  );
+}
+
 export function CandidateList({
   state,
   runId,
@@ -103,7 +130,19 @@ export function CandidateList({
 }) {
   return (
     <aside className="w-100 shrink-0 rounded border border-edge bg-panel p-3" data-testid="candidates" data-count={state.candidates.length}>
-      <p className="text-xs text-muted">원인 후보</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted">원인 후보</p>
+        <SynthesisBadge synthesis={state.steps.find((s) => s.step === "synthesize")?.synthesis} />
+      </div>
+      {(() => {
+        const synthesis = state.steps.find((s) => s.step === "synthesize")?.synthesis;
+        return synthesis?.axis === "live-rejected" && synthesis.rejectedReason ? (
+          <p className="mt-1 text-xs text-warn" data-testid="synthesis-rejected-reason">
+            live 응답을 근거 결속 가드가 전량 거부했습니다 — {synthesis.rejectedReason}. 아래
+            순위는 결정적 집계입니다.
+          </p>
+        ) : null;
+      })()}
       {state.candidates.length === 0 ? (
         <p className="mt-2 text-sm text-muted">
           {state.status === "running"
@@ -122,6 +161,19 @@ export function CandidateList({
               </p>
               <p className="text-sm">{c.label}</p>
               {c.confidenceNote && <p className="mt-0.5 text-xs text-muted">{c.confidenceNote}</p>}
+              {c.rationale && (
+                <div className="mt-1" data-testid="candidate-rationale">
+                  {c.rationale.sentences.map((sentence, k) => (
+                    <p key={k} className="text-xs text-ink">
+                      {sentence}
+                    </p>
+                  ))}
+                  <p className="mt-0.5 text-xs text-muted">
+                    인용 {c.rationale.citedEvidenceIds.length}건 ·{" "}
+                    <span className="id">{c.rationale.citedEvidenceIds.join(" · ")}</span>
+                  </p>
+                </div>
+              )}
               {c.evidenceIds && c.evidenceIds.length > 0 && (
                 <p className="mt-1 text-xs text-muted">
                   근거 {c.evidenceIds.length}건 ·{" "}

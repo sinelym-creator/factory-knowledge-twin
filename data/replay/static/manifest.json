@@ -1,6 +1,6 @@
 {
-  "harvestedAt": "2026-08-31T05:22:01.472Z",
-  "apiBuildSha": "47133a0",
+  "harvestedAt": "2026-09-02T11:13:59.282Z",
+  "apiBuildSha": "af4c9d1",
   "scenarioId": "GS-01",
   "harvestRunIdVolatile": true,
   "queriedBy": {
@@ -10,7 +10,7 @@
   "fixture": {
     "file": "gs-01.events.jsonl",
     "events": 32,
-    "sha256": "3eb624c237dbeaac5c7630086f3f3e05e153739abf17d4ae5a94c72163d0aa78"
+    "sha256": "6e81c7c8fcf544f61578527d7700e20c98782a2a62ffaed485849cb05bd76bc3"
   },
   "anchors": {
     "incidentId": "INC-2026-014",
@@ -255,39 +255,39 @@
   "skipped": [
     {
       "route": "GET /api/evidence/{evidenceId}",
-      "path": "/api/evidence/GP-7e4cfd025422-00",
+      "path": "/api/evidence/GP-0c22f5ed2a9d-00",
       "status": 404,
-      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-00 를 찾을 수 없다\"}}"
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-0c22f5ed2a9d-00 를 찾을 수 없다\"}}"
     },
     {
       "route": "GET /api/evidence/{evidenceId}",
-      "path": "/api/evidence/GP-7e4cfd025422-01",
+      "path": "/api/evidence/GP-0c22f5ed2a9d-01",
       "status": 404,
-      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-01 를 찾을 수 없다\"}}"
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-0c22f5ed2a9d-01 를 찾을 수 없다\"}}"
     },
     {
       "route": "GET /api/evidence/{evidenceId}",
-      "path": "/api/evidence/GP-7e4cfd025422-02",
+      "path": "/api/evidence/GP-0c22f5ed2a9d-02",
       "status": 404,
-      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-02 를 찾을 수 없다\"}}"
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-0c22f5ed2a9d-02 를 찾을 수 없다\"}}"
     },
     {
       "route": "GET /api/evidence/{evidenceId}",
-      "path": "/api/evidence/GP-7e4cfd025422-03",
+      "path": "/api/evidence/GP-0c22f5ed2a9d-03",
       "status": 404,
-      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-03 를 찾을 수 없다\"}}"
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-0c22f5ed2a9d-03 를 찾을 수 없다\"}}"
     },
     {
       "route": "GET /api/evidence/{evidenceId}",
-      "path": "/api/evidence/GP-7e4cfd025422-04",
+      "path": "/api/evidence/GP-0c22f5ed2a9d-04",
       "status": 404,
-      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-7e4cfd025422-04 를 찾을 수 없다\"}}"
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"evidence GP-0c22f5ed2a9d-04 를 찾을 수 없다\"}}"
     },
     {
       "route": "GET /api/work-orders/{woId}",
-      "path": "/api/work-orders/WOD-eaa4fce81c0b",
+      "path": "/api/work-orders/WOD-6b2a5b7e9aa6",
       "status": 404,
-      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"작업지시 초안 WOD-eaa4fce81c0b 를 찾을 수 없다\"}}"
+      "body": "{\"error\":{\"code\":\"not_found\",\"message\":\"작업지시 초안 WOD-6b2a5b7e9aa6 를 찾을 수 없다\"}}"
     }
   ]
 }

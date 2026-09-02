@@ -54,7 +54,11 @@ if hasattr(sys.stdout, "reconfigure"):                    # pragma: no cover —
 #    FAIL 로 그 사실을 알린다 — 조용히 지나가지 않게 실패 방향을 잡아 둔 것이다.
 EVIDENCE_STEPS = frozenset({"structured", "vector", "graph"})
 
-RECORD_SESSION_ID = "fixture-recorder-0001"      # session_id.is_valid 형식
+# 🔴 세션은 «발급받는다». 예전엔 이 상수를 그대로 보냈는데, T3-1 세션 게이트(같은 날
+#    08-30)가 들어온 뒤로 그 경로는 401 `session_required` 로 막혀 있었다 — 즉 녹화기는
+#    그때부터 돌지 않는 상태였고, 지금 커밋된 fixture 는 게이트 이전의 산물이다.
+#    (T6-1 에서 재녹화하려다 실측으로 드러났다 · 31대 09-02.)
+RECORD_SESSION_LABEL = "fixture-recorder"
 
 
 def _selection_verdict(record: Any) -> tuple[bool, list[str]]:
@@ -112,9 +116,14 @@ async def _record_once(scenario_id: str, timeout: float) -> list[dict[str, Any]]
             )
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://record") as client:
+            issued = await client.post("/api/sessions")
+            if issued.status_code != 200:
+                raise SystemExit(f"세션 발급 실패 {issued.status_code}: {issued.text}")
+            session_id = issued.json()["sessionId"]
+            print(f"세션     {RECORD_SESSION_LABEL} → 발급 완료")
             created = await client.post(
                 f"/api/scenarios/{scenario_id}/runs",
-                json={"sessionId": RECORD_SESSION_ID, "mode": "live"},
+                json={"sessionId": session_id, "mode": "live"},
             )
             if created.status_code != 200:
                 raise SystemExit(f"run 생성 실패 {created.status_code}: {created.text}")
