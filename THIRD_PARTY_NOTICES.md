@@ -66,6 +66,32 @@
 | `orjson` | 3.12.0 | MPL-2.0 AND (Apache-2.0 OR MIT) | https://github.com/ijl/orjson |
 | `tqdm` | 4.70.0 | MPL-2.0 AND MIT | https://tqdm.github.io |
 
+### 플랫폼 변종 — 같은 코드, 다른 패키지 경계
+
+`sharp` 는 플랫폼마다 다른 패키지로 배포된다. 위 표의 `@img/sharp-win32-x64` 는 **이 인벤토리를
+뜬 머신이 Windows 라서** 잡힌 것이고, 배포 런타임(linux)에서는 다른 변종이 설치된다.
+
+🔴 **「플랫폼 변종은 라이선스가 같다」는 실측에서 «갈렸다» — 문자열은 다르다.**
+lockfile 의 `@img/sharp*` **26본 전수**를 npm registry 에서 조회한 결과:
+
+| 라이선스 표기 | 본수 | 어떤 변종인가 |
+|---|---|---|
+| Apache-2.0 | 12 | -darwin-arm64, -darwin-x64, -freebsd-wasm32, -linux-arm … |
+| LGPL-3.0-or-later | 10 | -libvips-darwin-arm64, -libvips-darwin-x64, -libvips-linux-arm, -libvips-linux-arm64 … |
+| Apache-2.0 AND LGPL-3.0-or-later | 3 | -win32-arm64, -win32-ia32, -win32-x64 |
+| Apache-2.0 AND LGPL-3.0-or-later AND MIT | 1 | -wasm32 |
+
+읽는 법: **LGPL 코드(libvips)는 플랫폼과 무관하게 들어온다 — 바뀌는 것은 그것을 «어느 패키지가
+담느냐»다.** Windows 변종은 libvips 를 한 패키지 안에 묶어 `Apache-2.0 AND LGPL-3.0-or-later`
+한 줄로 표기하고, linux 변종은 `@img/sharp-linux-*`(Apache-2.0)와 `@img/sharp-libvips-linux-*`
+(LGPL-3.0-or-later)로 **쪼개서** 표기한다. 그래서 「동일 라이선스」라고 적으면 틀리고,
+「같은 LGPL 구성요소가 다른 패키지 경계로 들어온다」가 맞다.
+
+🔴 **이 절이 위 계수표를 정정하지는 않는다 — 모집단이 다르기 때문이다.** 위 표는 «이 머신에
+설치된» 것을 세고(그래서 win32 변종 1본만 보인다), 이 절은 «lockfile 이 선언한» 변종 전수를
+본다. 어느 쪽이 맞다가 아니라 **다른 것을 센다** — 배포 대상 플랫폼이 확정되면 그 플랫폼에서
+한 번 더 떠야 배포물의 실제 목록이 된다.
+
 🔴 **이 표는 관측이지 법적 판단이 아니다.** 각 항목이 이 프로젝트의 배포 형태에서 어떤 의무를
 지우는지(소스 제공·표기·링크 형태)는 여기서 판정하지 않는다 — 그 판단은 baseline §34.2 의
 공개 경계 결정과 함께 별도로 이뤄져야 한다.

@@ -1,5 +1,5 @@
 Factory Knowledge Twin
-======================
+Copyright 2026 sinelym-creator
 
 This product is licensed under the Apache License, Version 2.0.
 See the LICENSE file in the root of this repository for the full text,
@@ -19,25 +19,10 @@ customer data, no real production data, and no third-party dataset is
 included.
 
 --------------------------------------------------------------------------
-COPYRIGHT LINE — DELIBERATELY NOT FILLED IN
---------------------------------------------------------------------------
-
-An Apache-2.0 NOTICE conventionally opens with a copyright line naming the
-holder. That line is absent here on purpose, not by oversight:
-
-  - The repository's LICENSE file carries the Apache License text with its
-    unmodified appendix, whose holder field still reads the template value
-    `Copyright [yyyy] [name of copyright owner]`. The repository therefore
-    does not yet state who the copyright holder is.
-  - Inventing one here would make this file assert something no other file
-    in this repository supports. A NOTICE that names a holder the project
-    has never declared is worse than a NOTICE that says the field is open.
-
-Filling this in is an operator decision, not a generated value. Once the
-holder is settled, add the line here and in the LICENSE appendix together,
-so the two never disagree.
-
---------------------------------------------------------------------------
 
 이 파일은 배포물에 그대로 실린다(Apache-2.0 §4(d)). 그래서 설명이 아니라
 표기만 담고, 근거·계수·출처는 THIRD_PARTY_NOTICES.md 가 진다.
+
+저작권 문면은 LICENSE 부록의 보유자 표기와 «같은 문자열»이어야 한다 —
+두 파일이 어긋나면 어느 쪽이 정본인지 읽는 사람이 판단하게 된다.
+바꿀 때는 두 곳을 한 번에 바꾼다.
