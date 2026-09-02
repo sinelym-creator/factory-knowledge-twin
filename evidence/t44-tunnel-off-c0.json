@@ -1,0 +1,42 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "label": "baseline",
+ "cycles": [
+  {
+   "cycle": 1,
+   "at": "17:29:02",
+   "health": {
+    "ok": true,
+    "status": 500,
+    "ms": 10953,
+    "vercelId": "icn1::iad1::wh5sp-1788251341999-136987110ad2",
+    "sid": false,
+    "body": ""
+   },
+   "enter": {
+    "ok": false,
+    "ms": 20016,
+    "error": "TimeoutError: The operation was aborted due to timeout"
+   },
+   "live": {
+    "ok": true,
+    "status": 500,
+    "ms": 10788,
+    "vercelId": "icn1::iad1::s5ksz-1788251342001-3896eb82b006",
+    "sid": false,
+    "body": ""
+   },
+   "screen": {
+    "rc": 0,
+    "offline": "2760",
+    "offlineSeen": true,
+    "replayMs": "2760",
+    "badges": [
+     "◌확인 중",
+     "◌미연결"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      468 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     2760 ms  url=/          제안=있음 배너=있음  \"◌미연결\"\nⓐ Offline 표시(«미연결») : 2760ms\nⓑ Replay 전환(제안·배너)  : 2760ms\n대조군 빈 화면 아님        : 222자\n\n결과: 기대대로\n"
+   }
+  }
+ ]
+}

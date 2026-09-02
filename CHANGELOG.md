@@ -28,3 +28,41 @@
 - T2-3 completed (28/31): LangGraph 5-stage GS-01 full run (0 defects, 176 verdict rows), runs surface 5 + graph/paths + live/status, egress guard, Q-9 closed (rule A), contracts v0.1.2-3. PR#118-121 (08-30).
 - T2-4 completed (29/31): replay fixtures 32 events (unprocessed recording, 2-field substitution, dependency-free replay proven), V-8/V-9 corrections (self-confirming control, Korean word-boundary miss — third V-1 recurrence), recheck-matrix reproducer. PR#124-129 (08-30).
 - T2-5 completed (30/31): WO draft CRUD/approval/R12 server enforcement (impl PR#134) + independent verification PASS (axes ⓪-⑦, new wo_shape_drill, 5 net-defect self-reports — 0 defects in the landed change). PR#134, #137 (08-30).
+
+## 2026-09-01
+- (rotated from PROGRESS) ✅ **D-15 종결(16대)** — Public 리포 슬래시형 개인 경로 1줄 마스킹 + CI/드릴 정규식 사정거리 보강(#332 `cf38c9c`) (rotated from PROGRESS done)
+
+- D-10 closed (public shell cold-entry 2s cap -> pending session; fix promoted, external PASS) and Q-65 closed (CI strict-coverage + validator type-array gap).
+- Q-30 closed: CI 20+ consecutive red had two layers (secret false-positive hiding a real personal path); both removed.
+- T2-6 completed = Phase 2 complete (31/31): GS-01 integrated 13 rows with zero broken links; §21 evidence set.
+- T3-1 completed: session materialization (guards, ownership 404 hiding, reset) + browser V-1.
+- T3-2 completed: Overview/Incident screens + five read routes (contract v0.1.7 line).
+- T3-3 completed: Evidence/Documents screens + deep links (read-only); D-3 marker lineage.
+- T3-4 completed: investigation run / strategy compare screens (minimal shape, early feature freeze).
+- T3-5 completed: work-order draft edit/approve screen (minimal shape); implementation PR#208 -> independent verification.
+- T4-1 completed: public shape skeleton (compose ai-api, deploy build, Q-37 FKT_API_BASE).
+- T4-2a completed: static replay path — shell completes GS-01 alone with the laptop (ai-api) OFF.
+- T4-2b completed: live protections, fallback and queue (server semaphore + run.queued contract v0.1.9).
+- D-13 closed (2026-09-01): deploy DB bind volumes deleted by a worktree cleanup order; neo4j rescued via logical dump (309/448) and reloaded, postgres regenerated (seed fixed); volumes moved outside worktrees; rule codified (mounts check before worktree removal).
+- D-12e promoted (main 20f7f6c): server fetch registration moved to a globalThis slot; install axis partially PASS (20/20 boots), rescue axis undecided (no contaminated window); 5-row verdict table adopted.
+- D-14 registered and mitigated: Vercel daily deployment cap (100) exhausted by lane preview builds; lane/* preview disabled (#331); push batching and <=4 promotions/day adopted.
+
+## 2026-09-01 (rotated from PROGRESS on 2026-09-02)
+
+- D-14 mitigation landed: `lane/*` preview deployments disabled in `apps/web-console/vercel.json` (#331).
+- T4-4 Tunnel OFF row measured externally (conditional PASS: screen shows disconnected, health/live 500, immediate recovery); Q-70 slow `/enter` failure filed (#333).
+- T5-4 complete: deployment runbook `docs/deployment/runbook.md` (restart policy, Funnel OFF/ON measurements, Gate 6 rows, clean-env steps) (#335).
+- D-12e promoted to main `20f7f6c`: install axis partial PASS (boot 20/20, install 40, failures 0); rescue axis no verdict; verdict table 5 rows (#327, #329).
+- D-13 closed: deployment stack reconstructed 6/6 (seed 28/28, neo4j reload 309/448 content diff 0), volumes moved outside worktrees, `infra/neo4j-restore.ps1` (#323, #325).
+- Reboot recovery and Q-63 verdict: t15 DB pair restarted once (restart=no kept), ai-api health ok, cold-start 2,863→220 ms attributed to the elapsed-time axis (mechanism unknown).
+- T5-3 minimal: `security.yml` CodeQL job (JS/TS + Python, build-mode none) landed (#337); six deferred items remain.
+- T4-4 complete (conditional on Q-69/Q-70): FastAPI OFF row PASS (#339), Gate 6 external item closed; Phase 4 = 5/5.
+- D-16 Golden regression recovered (P0): deployed `document_chunk` was 0 rows after the D-13 rebuild skipped the derived index; rebuilt 59/59 in ~4 min, external GS-01 2/2 (#342), runbook step 4 + health-check retrieval row (#343).
+- Q-69 wording fix landed (#345 `efc0eee`): banner "disconnected → Replay" replaced with "no Live AI gate · deterministic aggregation", the 1006 "session expired" claim removed; screen-axis E1 deferred to post-promotion.
+- Extensions 2·3 (operator "94% · proceed"): scope-cut draft #347 (A~G approved 21:21), T5-5 gate evidence map draft #348, Q-70 fix #349 (blackhole 25.2→8.0s; external recheck #351 undecidable before promotion), dependency audit #350 (D-17 raised); nine stale worktrees removed (9,314MB).
+
+## 2026-09-02 (rotated from PROGRESS done)
+
+- D-14 recurrence prevention 2 (operator "preview 0"): develop merges were also producing previews (18 the day before); `vercel.json` now blocks develop plus 11 conventional branch patterns (#354 `a76bee8`), zero deployments after merge confirmed.
+- P6 license axis: `NOTICE`, `THIRD_PARTY_NOTICES.md` generated from the measured dependency inventory (JS 341 / Python 80, unknown 0, copyleft-in-prod 1), `LICENSE` holder set per operator approval (#360 `fd52979`).
+- T5-5 clean environment run (#361 `c515544`): README-only reproduction stops at step zero (§35.6 unmet, confirmed); the documented 5-step bypass completes GS-01 (13 rows); skipping the projection step yields an "empty green" caught by the P-GRA net; 5+1+1 documentation defects → D-18.

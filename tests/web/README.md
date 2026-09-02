@@ -6,7 +6,7 @@ T1-9 독립 검증에서 세운 4종. 판정 근거는 `evidence/t1-9-shell-e2e-
 |---|---|---|
 | `e2e/` (playwright) | 브라우저 실측 — 모드 배지 «전이» · 리셋 모달 · 세션 가드 | 필요 |
 | `contract_surface_drill.mjs` | 🔴 **구현 검사기**(`scripts/contract-surface.mjs`)가 무엇을 통과시키는가 | 불요 |
-| `surface_scan.mjs` | 계약 표면을 **동결 계약 문서 파싱**으로 독립 재측정 | 불요 |
+| `surface_scan.mjs` | 계약 표면을 **동결 계약 문서 파싱**으로 독립 재측정 · `--self-check` = 진짜 위반 5종 주입 대조군(Q-71) | 불요 |
 | `token_layer_probe.mjs` | Tailwind 토큰 표기별로 «어떤 선언이 나는가» (V-2 원인 대조군) | 불요 |
 | `route_matrix.sh` | 6라우트 × 쿠키 유무 상태코드 + 가드 matcher 탐침 | 필요 |
 | `q39c_entry_drill.mjs` | 입장 층이 «클라이언트 실행»이 된 뒤에도 v0.1.6 이 서는가 — 🔴 자극 강제 + 세션을 **네 곳에서** 따로(쿠키·Set-Cookie·**ai-api 발급**·`/api/*` 200) | 필요(+ `FKT_API_LOG`) |
@@ -46,6 +46,7 @@ cd tests/web && npm install && npx playwright install chromium
 npm run e2e        # 34행
 npm run tokens     # 토큰 표기 대조군
 node ../../tests/web/surface_scan.mjs           # 리포 루트에서 실행
+node ../../tests/web/surface_scan.mjs --self-check  # 🔴 주입 5종 — 「검출력을 팔지 않았는가」(Q-71)
 node ../../tests/web/contract_surface_drill.mjs # 리포 루트에서 실행
 ```
 

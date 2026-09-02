@@ -19,6 +19,11 @@ param(
   [switch] $SkipLoad,
   # 컨테이너를 «이름»이 아니라 compose «서비스명»으로 지목한다(D-1 구조 격리 · migrate.ps1과 동일)
   [string] $Service = 'postgres',
+  # compose project 이름. 기본값 = 환경변수 COMPOSE_PROJECT_NAME(compose 자신이 읽는 값과 같다).
+  # 🔴 D-18 잔여(2026-09-02): 이 인자가 없던 판은 비기본 project 스택에서 :56 으로 죽었다 —
+  #    postgres 가 healthy 인데도 「기동 중이 아닙니다」였다(실측 재현). `docker compose` 는
+  #    project 를 안 주면 기본 project(디렉토리명)를 보기 때문이다. migrate.ps1 과 같은 수리.
+  [string] $Project = $env:COMPOSE_PROJECT_NAME,
   [string] $DbUser  = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { 'fkt' }),
   [string] $DbName  = $(if ($env:POSTGRES_DB)   { $env:POSTGRES_DB }   else { 'fkt' })
 )
@@ -51,21 +56,44 @@ if (-not $SkipGenerate) {
 if ($SkipLoad) { Write-Host '== 적재 건너뜀 (-SkipLoad) ==' -ForegroundColor DarkGray; return }
 
 # --- 2. 적재 -----------------------------------------------------------------
-$running = docker compose ps --status running --services
+# 🔴 이 배열이 «모든» docker compose 호출에 앞선다(D-18). 조회 한 곳만 고치면 그다음
+#    cp·exec 가 같은 이유로 죽는다 — project 를 모르면 컨테이너를 고를 수 없다.
+$compose = @('compose')
+if ($Project) { $compose += @('-p', $Project) }
+
+$running = docker @compose ps --status running --services
 if ($running -notcontains $Service) {
-  throw "compose 서비스 '$Service' 가 기동 중이 아닙니다. 먼저 'docker compose up -d' 를 실행하십시오."
+  # 🔴 실패 문면이 «다음 수»를 들고 있어야 한다. 앞판은 project 미지정으로 못 본 경우에도
+  #    「먼저 up -d 하십시오」라고만 말해, 스택이 이미 healthy 인 사람을 막다른 길로 보냈다.
+  $where = if ($Project) { "project '$Project'" } else { "기본 project(이름 미지정)" }
+  $msg = @("compose 서비스 '$Service' 를 $where 에서 찾지 못했습니다.")
+  if (-not $Project) {
+    $msg += "🔴 project 를 지정하지 않았습니다. 스택을 다른 이름으로 띄웠다면 이 조회는 그 스택을 «보지 못합니다»."
+    $msg += "   지정 방법 ① `$env:COMPOSE_PROJECT_NAME='<project>'  ② -Project '<project>' 인자"
+    # 지정 방법만 알려주고 이름을 안 알려주면 쓸 수가 없다 — 지금 떠 있는 후보를 함께 낸다.
+    $ls = (docker compose ls --format json 2>$null)
+    if ($LASTEXITCODE -eq 0 -and $ls) {
+      try {
+        $names = ($ls | ConvertFrom-Json) | ForEach-Object { $_.Name }
+        if ($names) { $msg += "   지금 떠 있는 project: $($names -join ', ')" }
+      } catch { }   # 형식이 바뀌어도 안내 자체는 살려 둔다
+    }
+  } else {
+    $msg += "스택이 안 떠 있다면 먼저 'docker compose up -d' 를 실행하십시오."
+  }
+  throw ($msg -join [Environment]::NewLine)
 }
 
 Write-Host '== 2/3 적재 ==' -ForegroundColor Cyan
 # 소스 끝의 '/.' = 「디렉터리 내용을」 복사. 대상이 이미 있어도 그 안에 중첩되지 않는다.
-docker compose cp "$generatedDir/." "${Service}:$containerDir/"
+docker @compose cp "$generatedDir/." "${Service}:$containerDir/"
 if ($LASTEXITCODE -ne 0) { throw "CSV 복사 실패 (exit $LASTEXITCODE)" }
 
-docker compose exec -T $Service psql -U $DbUser -d $DbName `
+docker @compose exec -T $Service psql -U $DbUser -d $DbName `
   -v ON_ERROR_STOP=1 -q -f "$containerDir/load.sql"
 if ($LASTEXITCODE -ne 0) { throw "적재 실패 (exit $LASTEXITCODE)" }
 
-docker compose exec -T $Service psql -U $DbUser -d $DbName -c @'
+docker @compose exec -T $Service psql -U $DbUser -d $DbName -c @'
 SELECT 'sensor_reading' AS t, count(*) FROM sensor_reading
 UNION ALL SELECT 'equipment', count(*) FROM equipment
 UNION ALL SELECT 'document_revision', count(*) FROM document_revision
@@ -78,7 +106,7 @@ Write-Host '== 3/3 검증 ==' -ForegroundColor Cyan
 foreach ($name in @('gs01_binding', 'd2_revision_divergence', 'd5_unmapped_failure_mode')) {
   Write-Host "-- $name.sql" -ForegroundColor DarkCyan
   Get-Content -Raw -Encoding UTF8 (Join-Path $verifyDir "$name.sql") |
-    docker compose exec -T $Service psql -U $DbUser -d $DbName -v ON_ERROR_STOP=1
+    docker @compose exec -T $Service psql -U $DbUser -d $DbName -v ON_ERROR_STOP=1
   if ($LASTEXITCODE -ne 0) { throw "검증 실패: $name (exit $LASTEXITCODE)" }
 }
 

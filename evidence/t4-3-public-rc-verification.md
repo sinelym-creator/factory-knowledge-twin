@@ -34,7 +34,7 @@ Funnel 공개 경로 · 외부/모바일 UX · Gate 6 장애 축 · runbook 문�
 ### C.1 계측 명령과 rc (원문)
 
 ```
-pwsh 7.6.5 · 실행 위치 = C:/Users/sinel/repos/_wt/levi2-d12
+pwsh 7.6.5 · 실행 위치 = <worktree>/levi2-d12
              (infra/health-check.ps1 = 메인 체크아웃과 byte 동일 · diff 0 확인)
 
 pwsh -NoProfile -Command

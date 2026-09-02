@@ -302,3 +302,32 @@ ai-api 는 그 id 를 발급한 적이 없어 그 방문자의 `/api/*` 가 **�
 「한 번 실패 = 8시간 고착」이 「한 번 실패 = 그 회차만 실패」로 바뀌었다.
 근본(콜드 지연 자체)은 warm-up·리전 배치의 문제이고 이 티켓의 범위가 아니다.
 
+## 8. 🔴 D-14 — `lane/*` preview 를 끈다 (일일 배포 상한 · 2026-09-01)
+
+**증상(E1)**: 2026-09-01 17:5x 이후 모든 PR 의 Vercel check 가
+`Deployment rate limited — retry in 24 hours` (`upgradeToPro=build-rate-limit`) 로 떨어졌다.
+같은 날 앞선 PR(#323·#325)은 `pass` 였으므로 **코드 축이 아니라 계정 일일 상한**이다
+(Hobby · 100 배포/일). 상한을 먹는 주범은 lane 브랜치 push 마다 뜨는 **preview 빌드**다 —
+lane 은 검토용이고 그 URL 을 아무도 열지 않는다.
+
+**처방** (`apps/web-console/vercel.json`):
+
+```json
+"git": { "deploymentEnabled": { "lane/*": false } }
+```
+
+- 근거(E2): <https://vercel.com/docs/project-configuration/git-configuration> —
+  `deploymentEnabled` 는 «브랜치명 → boolean» 맵이고 **적지 않은 브랜치는 기본 true** 다.
+  같은 문서가 `"experiment-*": false` 형태로 **와일드카드**를 쓰고, 겹칠 때는
+  「하나라도 true 면 배포한다」로 푼다. 그래서 `main`·`develop` 은 **손대지 않아도 그대로**다.
+- 🔴 `*` 가 `/` 를 넘는지는 이 문서가 말하지 않는다 — 그러나 이 리포의 lane 이름은
+  `lane/<슬러그>` 로 **`/` 뒤가 한 마디**라 어느 쪽이든 걸린다. 이름 규칙이 바뀌면 이 줄도 바뀐다.
+- 🔴 **`ignoreCommand` 를 쓰지 않은 이유**: 그쪽은 배포를 «만든 뒤» 빌드를 접는 갈래다.
+  `deploymentEnabled: false` 는 문서 문면이 「배포를 촉발하지 않는다」이므로 상한 축에 더 곧다.
+- 🔴 **`vercel.json` 은 Root Directory(`apps/web-console`) 기준으로 읽힌다**(§2·§5-bis ①).
+  그리고 Vercel 은 «그 브랜치의» 파일을 본다 — 이 설정이 develop 에 들어간 «뒤» 잘라 낸
+  lane 만 적용된다. 이전에 만든 lane 은 rebase 하거나 다시 잘라야 한다.
+
+**효과 검증(아직 안 쟀다)**: 다음 lane push 에서 deployments API 신규 preview **0건**.
+상한이 풀리기 전에는 「상한 때문에 안 뜬 것」과 「이 설정 때문에 안 뜬 것」이 **같은 빈칸**으로
+보이므로, 그때까지 이 축은 «측정 불가»다 — 초록으로 세지 않는다.

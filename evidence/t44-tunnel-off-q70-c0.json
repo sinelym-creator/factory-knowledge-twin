@@ -1,0 +1,162 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "label": "q70-baseline3",
+ "cycles": [
+  {
+   "cycle": 1,
+   "at": "21:30:48",
+   "endedAt": "21:31:05",
+   "durationMs": 17455,
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 1006,
+    "startedAt": "21:30:48",
+    "capMs": 20000,
+    "vercelId": "icn1::iad1::mb6j4-1788265847502-edf7951df16a",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":0}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1000,
+    "startedAt": "21:30:48",
+    "capMs": 45000,
+    "vercelId": "icn1::iad1::tw6xj-1788265847502-980af313d3b1",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 903,
+    "startedAt": "21:30:48",
+    "capMs": 20000,
+    "vercelId": "icn1::iad1::gkbpc-1788265847504-85b33b2d9df4",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T12:30:48.994265Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "1882",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n     1376 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1882 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     2630 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 1882ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  },
+  {
+   "cycle": 2,
+   "at": "21:31:13",
+   "endedAt": "21:31:29",
+   "durationMs": 16409,
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 942,
+    "startedAt": "21:31:13",
+    "capMs": 20000,
+    "vercelId": "icn1::iad1::72gcs-1788265872474-4de8d5d3473c",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1003,
+    "startedAt": "21:31:13",
+    "capMs": 45000,
+    "vercelId": "icn1::iad1::cv5b9-1788265872476-eaafd1c0aa13",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 940,
+    "startedAt": "21:31:13",
+    "capMs": 20000,
+    "vercelId": "icn1::iad1::gsnzg-1788265872475-7d96814ddb4c",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T12:31:14.011109Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "966",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      419 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n      966 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     1767 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 966ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  },
+  {
+   "cycle": 3,
+   "at": "21:31:38",
+   "endedAt": "21:31:53",
+   "durationMs": 15655,
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 1715,
+    "startedAt": "21:31:38",
+    "capMs": 20000,
+    "vercelId": "icn1::iad1::5668t-1788265897493-df30db833428",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1743,
+    "startedAt": "21:31:38",
+    "capMs": 45000,
+    "vercelId": "icn1::iad1::7xklp-1788265897494-55585fe32861",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 1710,
+    "startedAt": "21:31:38",
+    "capMs": 20000,
+    "vercelId": "icn1::iad1::m4v6w-1788265897493-3f8c78d2436c",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T12:31:39.790518Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "964",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      401 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n      964 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     1702 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 964ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  }
+ ]
+}

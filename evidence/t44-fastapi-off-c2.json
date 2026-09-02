@@ -1,0 +1,182 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "label": "recovery",
+ "cycles": [
+  {
+   "cycle": 1,
+   "at": "18:44:26",
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 1082,
+    "vercelId": "icn1::iad1::fvrrv-1788255866208-476ca9660c27",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":0}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1247,
+    "vercelId": "icn1::iad1::xm9rj-1788255866215-cf819b4c29f6",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 984,
+    "vercelId": "icn1::iad1::mb6j4-1788255866212-c2bda75738ee",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T09:44:27.471367Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "874",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      361 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n      874 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     1683 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 874ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  },
+  {
+   "cycle": 2,
+   "at": "18:44:41",
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 1297,
+    "vercelId": "icn1::iad1::dc4qk-1788255881186-c533999326af",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":0}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 1760,
+    "vercelId": "icn1::iad1::bfkzm-1788255881184-d89e120a22da",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 1283,
+    "vercelId": "icn1::iad1::kzdcn-1788255881187-740c730d633e",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T09:44:42.754059Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "1241",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      441 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1241 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     2029 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 1241ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  },
+  {
+   "cycle": 3,
+   "at": "18:44:58",
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 896,
+    "vercelId": "icn1::iad1::gkbpc-1788255898165-f5ad6703a037",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":2},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 2118,
+    "vercelId": "icn1::iad1::zkql2-1788255898162-0f82bacf6b52",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 894,
+    "vercelId": "icn1::iad1::mb6j4-1788255898164-70bc04b5c0b3",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T09:44:59.357945Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "1634",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      523 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n     1634 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     2322 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 1634ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  },
+  {
+   "cycle": 4,
+   "at": "18:45:16",
+   "health": {
+    "ok": true,
+    "status": 200,
+    "ms": 904,
+    "vercelId": "icn1::iad1::6b7k2-1788255915641-509d8d382c8d",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"ok\":true,\"version\":\"0.1.0\",\"status\":\"ok\",\"dependencies\":{\"postgres\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1},\"neo4j\":{\"state\":\"ok\",\"detail\":null,\"latencyMs\":1}},\"build\":\"792470d\",\"models\":{\"embedding\":\"ready\",\"detail\":\"intfloat/multilingual-e5-small · warm-up 13.0s\"}}"
+   },
+   "enter": {
+    "ok": true,
+    "status": 303,
+    "ms": 991,
+    "vercelId": "icn1::iad1::lwc5l-1788255915644-39278aff4ac5",
+    "tsHeaders": [],
+    "sid": true,
+    "body": ""
+   },
+   "live": {
+    "ok": true,
+    "status": 200,
+    "ms": 905,
+    "vercelId": "icn1::iad1::jq62w-1788255915642-cdc900dbbd01",
+    "tsHeaders": [],
+    "sid": false,
+    "body": "{\"online\":false,\"checkedAt\":\"2026-09-01T09:45:16.847073Z\"}"
+   },
+   "screen": {
+    "rc": 1,
+    "offline": null,
+    "offlineSeen": false,
+    "chars": "1120",
+    "replayMs": "909",
+    "badges": [
+     "◌확인 중",
+     "◑REPLAY",
+     "◑REPLAY"
+    ],
+    "raw": "대상 https://factory-knowledge-twin.vercel.app\n전이 자취\n      349 ms  url=/          제안=없음 배너=없음  \"◌확인 중\"\n      909 ms  url=/          제안=없음 배너=있음  \"◑REPLAY\"\n     1603 ms  url=/overview  제안=없음 배너=있음  \"◑REPLAY\"\nⓐ Offline 표시(«미연결») : 🔴 관측 안 됨\nⓑ Replay 전환(제안·배너)  : 909ms\n대조군 빈 화면 아님        : 1120자\n\n결과: 어긋남\n"
+   }
+  }
+ ]
+}

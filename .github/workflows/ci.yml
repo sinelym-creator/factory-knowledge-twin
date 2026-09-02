@@ -33,5 +33,7 @@ jobs:
           if git grep -n -I -E '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[bap]-[0-9A-Za-z-]+|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY)' -- ':!.github/workflows/'; then
             echo '::error::secret-like pattern detected'; exit 1; fi
           # 개인 PC 절대 경로 패턴 (Windows 사용자 경로)
-          if git grep -n -I -E 'C:\\+Users\\+[A-Za-z]' -- ':!.github/workflows/'; then
+          # 🔴 구분자 «두 형태»를 다 본다(D-15). 백슬래시만 보던 앞판은 pwsh·git·문서가
+          #    쓰는 `C:/Users/…` 를 영원히 통과시켰다 — 실제로 evidence 1건이 그렇게 살아 있었다.
+          if git grep -n -I -E 'C:[\\/]+Users[\\/]+[A-Za-z]' -- ':!.github/workflows/'; then
             echo '::error::personal absolute path detected'; exit 1; fi

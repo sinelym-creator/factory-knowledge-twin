@@ -17,6 +17,10 @@
       pwsh -File infra/health-check.ps1 -Project fkt-senku2-t15 -ApiBase http://127.0.0.1:8010
       pwsh -File infra/health-check.ps1 ... -PublicBase https://<host>.ts.net:8443 -WebBase https://<app>.vercel.app
 
+      # 🔴 색인 층(D-16)은 `-PgContainer` 를 «줘야» 잰다. 안 주면 SKIP 이다 — 그리고 SKIP 은
+      #   measured 에 들어가지 않으므로, 안 준 채로 난 rc 0 은 「색인이 성하다」는 뜻이 아니다.
+      pwsh -File infra/health-check.ps1 ... -PgContainer fkt-senku2-t15-postgres-1
+
       # 🔴 `-Containers` 는 «부르는 방식마다 모양이 다르다». 둘 다 되게 만들어 두었다(Q-66):
       #   -File   → 인자가 전부 «문자열»이라 콤마로 잇는다(공백 없이)
       pwsh -File infra/health-check.ps1 -Project fkt-senku2-t15 -ApiBase http://127.0.0.1:8010 `
@@ -54,6 +58,12 @@ param(
     [string] $PublicBase = $env:FKT_PUBLIC_BASE,
     # 셸(Vercel) URL. 비우면 SKIP.
     [string] $WebBase    = $env:FKT_WEB_BASE,
+    # 🔴 색인(pgvector) 층을 재려면 «어느 컨테이너의 psql 인가»를 이름으로 못 박아야 한다(D-16).
+    #    `-Project` 라벨로 postgres 를 추측하지 않는다 — 라벨은 «빌드 자리»를 말하지 런타임
+    #    소속이 아니다(위 `-Containers` 와 같은 이유). 비우면 이 층은 SKIP 이다.
+    [string] $PgContainer = $env:FKT_PG_CONTAINER,
+    [string] $PgUser      = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { 'fkt' }),
+    [string] $PgDb        = $(if ($env:POSTGRES_DB)   { $env:POSTGRES_DB }   else { 'fkt' }),
     [int]    $TimeoutSec = 10
 )
 
@@ -240,6 +250,50 @@ if ($WebBase) {
 } else {
     Add-Row 'web' 'base url' 'SKIP' '-WebBase 미지정 — 재지 않았다'
 }
+
+# ── 층 3.5. 색인(pgvector) — 🔴 D-16: 위 층이 «전부 초록»이어도 벡터는 0 일 수 있다 ────
+#
+# 실증(E1 · 2026-09-01 16:26~19:11): D-13 재구성이 seed 는 되살렸는데 T1-4 색인을 다시
+# 돌리지 않아 `document_chunk` 임베딩이 0 건이었다. 컨테이너 running · healthcheck healthy ·
+# `/api/health` 200 · seed 계수 · neo4j 대조 — 그 어느 것도 이 사실을 못 봤고, 공개 Live
+# 경로만 `LookupError: document_chunk 에 임베딩이 0건이다`(retrieval/vector.py:67) 로 죽었다.
+# 「본 층이 전부 초록인데 제품이 죽어 있다」는 계측기가 그 축을 안 재고 있다는 뜻이다.
+function Test-VectorIndex {
+    if (-not $dockerOk) {
+        Add-Row 'retrieval' 'document_chunk' 'SKIP' 'docker 명령이 없다 — 색인 층을 잴 수 없다'
+        return
+    }
+    if (-not $PgContainer) {
+        Add-Row 'retrieval' 'document_chunk' 'SKIP' '-PgContainer 미지정 — 색인 층을 재지 않았다'
+        return
+    }
+    # 🔴 `chr(124)` 로 잇는다 — SQL 안에 따옴표를 넣지 않으려는 것이다(PowerShell 인용이
+    #    한 겹 더 씌워지는 자리라, 구분자 하나 때문에 계측기가 깨지는 일을 만들지 않는다).
+    $sql = 'SELECT count(*) || chr(124) || count(embedding) || chr(124) || count(DISTINCT embedding_model) FROM document_chunk'
+    $out = & docker exec $PgContainer psql -U $PgUser -d $PgDb -tAc $sql 2>&1
+    $line = ($out | Out-String).Trim()
+    # 🔴 계측기가 답을 못 준 것을 «대상의 결함»으로 적지 않는다(설계 원칙 ①). 테이블이 아직
+    #    없거나 psql 이 못 붙은 것은 SKIP 이지 FAIL 이 아니다 — 여기서 FAIL 을 내면 마이그레이션
+    #    전 환경이 영구 빨강이 되고, 영구 빨강은 아무도 안 본다.
+    if ($LASTEXITCODE -ne 0 -or $line -notmatch '^\d+\|\d+\|\d+$') {
+        Add-Row 'retrieval' 'document_chunk' 'SKIP' "psql 계수를 읽지 못했다 — $line"
+        return
+    }
+    $n = $line -split '\|'
+    $chunks = [int]$n[0]; $embedded = [int]$n[1]; $models = [int]$n[2]
+    # 🔴 판정은 «참이어야 할 것»으로 쓴다(원칙 ③). 기대 «건수»(오늘의 59)를 박지 않는다 —
+    #    seed 가 늘면 그 숫자가 낡아 계측기가 거짓 빨강을 낸다. 검색이 실제로 요구하는
+    #    불변식만 본다: 0 이 아니고 · 전건 임베딩되어 있고 · 한 모델로만 만들어졌다.
+    #    (그 둘이 곧 `retrieval/vector.py:67`·`:70` 이 우는 조건이다 — 경보의 사정거리를
+    #     처방과 같게 맞춘 것이다.)
+    if ($embedded -gt 0 -and $embedded -eq $chunks -and $models -eq 1) {
+        Add-Row 'retrieval' 'document_chunk' 'PASS' "chunk $chunks · 임베딩 $embedded · 모델 $models 종"
+    } else {
+        Add-Row 'retrieval' 'document_chunk' 'FAIL' "chunk $chunks · 임베딩 $embedded · 모델 $models 종 — T1-4 색인(services/indexer/build_index.py)을 다시 돌린다"
+    }
+}
+
+Test-VectorIndex
 
 # ── 층 4. 노트북 조건 (§14.4) ────────────────────────────────────────────────
 function Get-PowerIndex {
