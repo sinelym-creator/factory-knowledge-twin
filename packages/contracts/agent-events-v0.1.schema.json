@@ -105,7 +105,17 @@
       "properties": {
         "step": { "$ref": "#/$defs/stepId" },
         "summary": { "type": "string" },
-        "elapsedMs": { "type": "integer", "minimum": 0, "description": "필수 — TTAE 합산 표시(검증 F-9)의 원천" }
+        "elapsedMs": { "type": "integer", "minimum": 0, "description": "필수 — TTAE 합산 표시(검증 F-9)의 원천" },
+        "synthesis": {
+          "type": "object",
+          "required": ["axis"],
+          "additionalProperties": false,
+          "properties": {
+            "axis": { "type": "string", "enum": ["live", "deterministic", "live-rejected"], "description": "v0.1.11 · 합성 축 — live-rejected = 게이트웨이 응답을 근거 결속 가드가 전량 거부(조용한 폴백 0)" },
+            "model": { "type": "string" },
+            "rejectedReason": { "type": "string" }
+          }
+        }
       }
     },
     "runCompleted": {
@@ -125,7 +135,17 @@
               "failureModeId": { "type": "string" },
               "label": { "type": "string" },
               "confidenceNote": { "type": "string" },
-              "evidenceIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+              "evidenceIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+              "rationale": {
+                "type": "object",
+                "required": ["sentences", "citedEvidenceIds"],
+                "additionalProperties": false,
+                "description": "v0.1.11 · live 합성 채택 시에만 — 인용 id 는 run 근거집합 안이어야 한다(가드가 보장)",
+                "properties": {
+                  "sentences": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+                  "citedEvidenceIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+                }
+              }
             }
           }
         },
