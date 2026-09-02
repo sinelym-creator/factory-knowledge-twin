@@ -144,6 +144,13 @@ export function RunConsole({
    */
   const [pollNote, setPollNote] = useState<string | null>(null);
   /**
+   * 🔴 **주기 조회가 «멈춰 있는가»**(오케 판정 #397 수정 1). 멈춘 뒤에도 「2초마다 다시
+   *    묻습니다」 배너가 남으면, 멈춘 화면이 진행 중이라고 말한다 — 이 파일이 세운 「숨기지
+   *    않는다」를 이 파일이 깨는 자리다. 사유(`pollNote`)와 «지금 도는가»는 다른 사실이라
+   *    축을 따로 든다.
+   */
+  const [pollHalted, setPollHalted] = useState(false);
+  /**
    * 🔴 「이 run 은 이미 끝났는가」를 **ref 로** 든다. `onclose` 는 effect 가 만들어질 때의
    *    상태를 닫아 두므로(closure), state 를 읽으면 «그 순간의 옛 값»으로 판정하게 된다 —
    *    끝난 조사를 끊긴 것으로 읽고 재연결을 거는 자리가 바로 거기다.
@@ -197,6 +204,7 @@ export function RunConsole({
       // 🔴 스트림이 섰으면 주기 조회는 그 자리에서 멈춘다 — 두 출처가 같이 돌 이유가 없다.
       setStreamUnavailable(false);
       setPollNote(null);
+      setPollHalted(false);
     };
 
     ws.onmessage = (m) => {
@@ -289,6 +297,7 @@ export function RunConsole({
         );
         if (r.status === 429) {
           stopped = true;
+          setPollHalted(true);
           clearInterval(id);
         }
       });
@@ -529,7 +538,7 @@ export function RunConsole({
         {/* 🔴 **숨기지 않는다**(D-21 ⓒ). 「연결 안 됨」만 띄우고 뒤에서 조용히 메우면 화면이
             자기가 하는 일을 말하지 않는 것이 된다 — 무엇으로 대신하고 있는지까지 적는다.
             🔴 종단에 닿으면 이 줄은 사라진다 — 끝난 조사에 「진행 중」이 남으면 거짓이다. */}
-        {streamUnavailable && !settledNow && (
+        {streamUnavailable && !settledNow && !pollHalted && (
           <p className="mt-2 text-xs text-muted" role="status" data-testid="run-polling" data-interval-ms={POLL_INTERVAL_MS}>
             실시간 스트림 대신 주기 조회로 진행 중입니다 — {POLL_INTERVAL_MS / 1000}초마다 서버에
             다시 묻습니다. 순번이 붙어 오므로 중복되거나 빠지지 않습니다.
