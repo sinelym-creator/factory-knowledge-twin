@@ -26,6 +26,7 @@ from .errors import install_error_handlers
 from .investigation.approvals import ApprovalStore
 from .investigation.guards import enforce_no_telemetry
 from .investigation.capacity import LiveCapacity
+from .investigation.session_cap import SessionRunCap
 from .investigation.store import RunStore
 from .probes import close_resources, open_resources
 from .protection import BodyLimitMiddleware, RateLimitMiddleware
@@ -64,6 +65,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.run_store = RunStore()
     # 🔴 Live 동시 실행·대기열의 «유일한 계수기»(T4-2b ⓐ). 라우터가 각자 세면 두 라우트가
     #    서로 다른 「지금 몇 개 도는가」를 갖게 되고, 상한은 그 순간 상한이 아니게 된다.
+    # 🔴 세션 조사 상한의 «유일한 계수기»(T6-2 ② · 계약 v0.1.12). live_capacity 와 같은
+    #    이유로 한 곳에 둔다 — 라우터가 각자 세면 상한이 상한이 아니게 된다.
+    app.state.session_run_cap = SessionRunCap(
+        limit=settings.run_cap_per_session,
+        window_sec=settings.run_cap_window_sec,
+    )
     app.state.live_capacity = LiveCapacity(
         concurrency=settings.live_concurrency,
         queue_max=settings.live_queue_max,

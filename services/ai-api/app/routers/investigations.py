@@ -32,6 +32,7 @@ from ..errors import (
     DependencyUnavailable,
     LiveCapacityExhausted,
     NotImplementedRoute,
+    SessionRunCapExceeded,
     dependency_guard,
 )
 from ..investigation import binding, replay, runner
@@ -181,6 +182,17 @@ async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunC
         #    재생으로 보여 준다(계약: 강등). 재생본조차 없으면 그때는 답할 수 없다고 말한다.
         log.info("의존 정지로 live 를 강등한다 — %s", ", ".join(down))
         return _degrade_to_replay(request, scenarioId, anchor, body.sessionId, down[0])
+
+    # --- 세션 조사 상한 (계약 v0.1.12 · T6-2 ②) --------------------------------
+    #
+    # 🔴 **의존 강등보다 «뒤»에 둔다.** 의존이 죽어 replay 로 내려가는 run 은 구독을 쓰지
+    #    않는다 — 그것까지 상한에 세면 게이트웨이가 꺼진 시간에 상한만 소진된다.
+    # 🔴 **자리 잡기보다 «앞»에 둔다.** 순서가 바뀌면 상한에 걸릴 요청이 슬롯을 먼저 잡았다가
+    #    돌려주고, 그 찰나에 정상 요청이 503 을 맞는다.
+    retry_after = request.app.state.session_run_cap.admit(body.sessionId)
+    if retry_after is not None:
+        log.info("세션 조사 상한 초과 — 재생으로 안내한다(Retry-After %ds)", retry_after)
+        raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session)
 
     # --- ⓐ 자리 잡기 --------------------------------------------------------
     #

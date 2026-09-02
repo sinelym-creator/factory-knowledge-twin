@@ -198,6 +198,25 @@ def live_gateway_available() -> bool:
     return bool(os.environ.get(LIVE_GATE_ENV))
 
 
+def live_gateway_reachable() -> bool:
+    """게이트웨이에 «닿는가» — `/live/status` 가 답해야 하는 사실(T6-2 ②).
+
+    🔴 게이트가 꺼져 있으면 여기서도 live 구현을 **import 하지 않는다**. 공개 배포 프로세스
+       안에 Claude 로 가는 코드가 «존재하지 않는다»는 성질은 이 함수에서도 지켜진다
+       (baseline §15.2 · `resolve_synthesizer` 와 같은 규율).
+
+    🔴 「env 가 있다」(`live_gateway_available`)와 「닿는다」는 다른 사실이다. 배지는 뒤의
+       것을 말해야 한다 — 앞의 것만 보면 게이트웨이가 죽은 동안에도 화면이 live 를 권한다.
+    """
+    if not live_gateway_available():
+        return False
+    try:
+        from . import live_synthesis                       # noqa: PLC0415 — 게이트 뒤에서만
+    except ImportError:
+        return False
+    return live_synthesis.probe_reachable()
+
+
 class LiveSynthesisUnavailable(RuntimeError):
     """게이트는 켜졌는데 로컬 합성 구현이 없다 — 조용히 결정적 축으로 내려가지 않는다."""
 
