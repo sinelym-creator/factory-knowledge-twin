@@ -37,17 +37,40 @@ import {
  * 🔴 **정상 종료는 복구 대상이 아니다.** 조사가 끝나면 서버가 닫는다(1000). 그것을 절단으로
  *    읽고 다시 열면 끝난 조사마다 재연결이 돌고, 화면은 조용한 무한 재시도를 갖게 된다 —
  *    「끝났다」와 「끊겼다」를 가르는 것이 이 절의 전부다.
+ *
+ * 🔴 **스트림이 «열리지도 못하는» 경로가 있다**(D-21 ⓒ · 계약 v0.1.10). 공개 셸을 경유하면
+ *    핸드셰이크(101)가 서지 못하고 1006 으로 닫힌다 — 이건 절단이 아니라 미개통이고, 재연결로
+ *    낫지 않는다(같은 구간이 다음 회차도 똑같이 막는다). 그 «한 갈래»에서만 `GET /runs/{id}/events`
+ *    를 주기 조회해 같은 화면을 만든다. 스트림이 서면 이 경로는 한 번도 돌지 않는다 —
+ *    로컬·직결은 무변이다.
+ * 🔴 **주기 조회는 새 배관이 아니다.** 출처가 하나 더 늘 뿐이고, 거르는 자리는 여전히 `merge`
+ *    하나다(seq). 필터를 여기서 또 만들면 중복 제거가 두 곳에 살면서 언젠가 갈린다.
  */
 /**
  * 재연결 간격(ms) — 🔴 **횟수가 유한하다.** 무한 재시도는 서버가 죽어 있을 때 화면이 그
  * 사실을 말하지 못하게 만든다: 영원히 「곧 돌아옵니다」이고, 방문자는 기다리면 온다고 믿는다.
  * 다 쓰고도 안 붙으면 마지막 `closeMessage` 문구가 그대로 남아 「끊겼다」를 말한다.
+ *
+ * 🔴 **미개통(1006) 갈래는 예외다**(D-21 ⓒ) — 그쪽은 회차를 다 써도 「끊겼다」가 아니라
+ *    「주기 조회로 진행 중」이 남는다. 열린 적이 없는 스트림에 「끊겼다」를 쓰면, 화면이
+ *    있지도 않았던 연결을 있었다고 말하게 된다.
  */
 const RECONNECT_BACKOFF_MS = [500, 1_000, 2_000, 4_000] as const;
 const MAX_RECONNECT = RECONNECT_BACKOFF_MS.length;
 
-/** 종단 이벤트 — 이 중 하나가 도착했으면 그 run 은 «끝난» 것이고, 끊김은 복구 대상이 아니다. */
+/**
+ * 종단 이벤트 — 이 중 하나가 도착했으면 그 run 은 «끝난» 것이고, 끊김은 복구 대상이 아니다.
+ *
+ * 🔴 `run.queued` 는 여기 «없다»(계약 v0.1.10 ①). 큐 대기는 진행 중이지 끝이 아니라서,
+ *    그것을 종단으로 읽으면 줄 서 있는 조사에서 주기 조회가 멈추고 화면이 대기열에 얼어붙는다.
+ */
 const TERMINAL_TYPES = new Set(["run.completed", "run.stopped", "run.failed"]);
+
+/**
+ * 주기 조회 간격(ms) — 🔴 **미개통일 때만 도는 값이다**(D-21 ⓒ). 값이 한 곳에만 있어야
+ * 「2초마다 묻는다」고 화면이 말하는 것과 실제로 묻는 주기가 갈리지 않는다.
+ */
+const POLL_INTERVAL_MS = 2_000;
 
 export function RunConsole({
   runId,
@@ -110,6 +133,17 @@ export function RunConsole({
   /** 재연결 회차 — 값이 바뀌면 아래 WS effect 가 다시 돈다(스트림을 새로 연다). */
   const [attempt, setAttempt] = useState(0);
   /**
+   * 🔴 **「열리지도 못했다」**(101 전 1006) — 절단(`attempt`)과 다른 사실이라 축을 따로 든다.
+   *    절단은 재연결이 답이고, 미개통은 재연결해도 같은 구간이 또 막는다 — 답이 주기 조회다.
+   */
+  const [streamUnavailable, setStreamUnavailable] = useState(false);
+  /**
+   * 주기 조회가 «서버에게 거절당한» 사유 — 🔴 숨기지 않는다(계약 v0.1.10 ②).
+   * `GET /runs/{id}/events` 는 429 제외 목록에 없어서, 화면이 이 값을 삼키면 방문자는
+   * 멈춘 화면을 「아직 진행 중」으로 읽는다.
+   */
+  const [pollNote, setPollNote] = useState<string | null>(null);
+  /**
    * 🔴 「이 run 은 이미 끝났는가」를 **ref 로** 든다. `onclose` 는 effect 가 만들어질 때의
    *    상태를 닫아 두므로(closure), state 를 읽으면 «그 순간의 옛 값»으로 판정하게 된다 —
    *    끝난 조사를 끊긴 것으로 읽고 재연결을 거는 자리가 바로 거기다.
@@ -130,6 +164,12 @@ export function RunConsole({
     setEvents((prev) => [...prev, ...fresh].sort((a, b) => a.seq - b.seq));
   }, []);
 
+  /**
+   * 🔴 파생으로 «먼저» 세우고 ref 로 옮긴다(D-21 ⓒ). ref 만 두면 주기 조회 effect 가 종단
+   *    도착을 보지 못해 — ref 변화는 렌더를 부르지 않는다 — 끝난 조사를 계속 두드린다.
+   */
+  const settledNow = useMemo(() => events.some((e) => TERMINAL_TYPES.has(e.type)), [events]);
+
   // ── WS 구독 ────────────────────────────────────────────────────────────────
   // 🔴 runId 가 바뀔 때의 «초기화»는 이 effect 가 하지 않는다 — 부르는 쪽이 `key={run}` 으로
   //    다시 마운트한다. effect 안에서 상태를 되돌리면 초기화가 한 박자 늦게 적용돼, 새 조사를
@@ -145,7 +185,19 @@ export function RunConsole({
     const url = location.origin.replace(/^http/, "ws") + CONTRACT.runStream(runId);
     const ws = new WebSocket(url);
     let closedByUs = false;
+    /**
+     * 🔴 핸드셰이크가 «섰는가». state 로 들면 `onclose` 가 옛 값을 읽는다(closure) — 미개통
+     *    판정이 회차를 건너뛰어 어긋난다. 이 회차의 사실은 이 회차의 지역 변수가 든다.
+     */
+    let opened = false;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+    ws.onopen = () => {
+      opened = true;
+      // 🔴 스트림이 섰으면 주기 조회는 그 자리에서 멈춘다 — 두 출처가 같이 돌 이유가 없다.
+      setStreamUnavailable(false);
+      setPollNote(null);
+    };
 
     ws.onmessage = (m) => {
       let e: RunEvent;
@@ -159,9 +211,18 @@ export function RunConsole({
 
     ws.onclose = (ev) => {
       if (closedByUs) return;
+      /**
+       * 🔴 **미개통과 절단을 가른다**(D-21 ⓒ). 「한 번도 안 열렸고(101 전) 사유도 없다(1006)」
+       *    는 경유 구간이 막는 형태다 — 그 경우에만 주기 조회로 같은 화면을 만들고, 1006 의
+       *    「연결되어 있지 않습니다」 문면을 «지금 무엇을 하고 있는지»로 대체한다(아래 렌더).
+       * 🔴 서버가 사유를 «말한» 종료(4000~4999)와 개통 뒤 절단은 이 갈래가 아니다 — 그쪽
+       *    문면을 주기 조회로 덮으면 서버가 한 말이 화면에서 사라진다.
+       */
+      const neverOpened = !opened && ev.code === 1006;
+      if (neverOpened) setStreamUnavailable(true);
       // 🔴 정상 종료(1000)는 «사건»이 아니다 — 조사가 끝나면 서버가 닫는다. 문구를 띄우면
       //    완주한 화면이 매번 경고를 달게 된다.
-      if (ev.code !== 1000) setNote(closeMessage(ev.code, ev.reason));
+      if (ev.code !== 1000 && !neverOpened) setNote(closeMessage(ev.code, ev.reason));
       // 끊겼으면 마지막 사실이라도 남긴다.
       void apiGetBrowser<RunSnapshot>(CONTRACT.run(runId)).then((r) => {
         if (r.state === "ok") setFallback(r.data);
@@ -191,6 +252,53 @@ export function RunConsole({
       ws.close();
     };
   }, [runId, isStatic, attempt, merge]);
+
+  // ── 주기 조회 대체 경로 (D-21 ⓒ · 계약 v0.1.10) ─────────────────────────────
+  //
+  // 🔴 **여기서 «새 엔드포인트»를 만들지 않는다.** 끊김 복구(ⓕ)가 이미 쓰는 그 조회를 그대로
+  //    반복할 뿐이고, 중복은 `merge` 의 seq 가 거른다 — 필터는 이 파일에 하나뿐이다.
+  // 🔴 **첫 회를 즉시 부르지 않는다.** 미개통 판정이 서는 자리(`onclose`)가 ⓐ 로 이미 한 번
+  //    메운다 — 여기서 또 부르면 같은 순간에 같은 요청이 둘 나간다.
+  useEffect(() => {
+    if (isStatic) return;
+    // 🔴 스트림이 서는 경로(로컬·직결)에서는 이 effect 가 «한 줄도» 돌지 않는다.
+    if (!streamUnavailable) return;
+    // 🔴 끝난 조사는 두드리지 않는다 — 종단 이벤트가 이 경로의 종료 조건이다.
+    if (settledNow) return;
+
+    let stopped = false;
+    const id = setInterval(() => {
+      void runEventsBrowser<RunEvent>(runId).then((r) => {
+        if (stopped) return;
+        if (r.state === "ok") {
+          merge(r.data);
+          setPollNote(null);
+          return;
+        }
+        /**
+         * 🔴 **거절을 삼키지 않는다**(계약 v0.1.10 ②). 특히 429 는 서버가 「그만 와라」라고
+         *    «말한» 것이라, 그 말을 듣고도 2초마다 계속 두드리는 것은 되묻는 것과 같다 —
+         *    조회를 멈추고 그 사실을 화면에 남긴다. 다시 여는 것은 사람이 정한다.
+         * 🔴 `retryAfterSec` 은 «서버가 준 경우에만» 적는다 — 화면이 「잠시 후」를 지어내면
+         *    그 숫자는 서버가 하지 않은 말이 된다.
+         */
+        setPollNote(
+          r.status === 429
+            ? `서버가 조회 빈도를 제한했습니다 — 주기 조회를 멈춥니다${r.retryAfterSec !== undefined ? ` (${r.retryAfterSec}초 뒤 다시 열어 보세요)` : ""}.`
+            : `주기 조회가 실패했습니다 — ${r.why}`,
+        );
+        if (r.status === 429) {
+          stopped = true;
+          clearInterval(id);
+        }
+      });
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      stopped = true;
+      clearInterval(id);
+    };
+  }, [runId, isStatic, streamUnavailable, settledNow, merge]);
 
   // ── 방문자 상태(정적 경로) — 되감기 위치를 브라우저에 남긴다 (T4-2a ⓒ) ────────────
   //
@@ -229,8 +337,8 @@ export function RunConsole({
    *    재연결이 다시 돈다 — 화면 조작이 네트워크 동작을 바꾸는 자리가 된다.
    */
   useEffect(() => {
-    settled.current = events.some((e) => TERMINAL_TYPES.has(e.type));
-  }, [events]);
+    settled.current = settledNow;
+  }, [settledNow]);
 
   /**
    * 🔴 스냅샷은 «채우는» 것이지 «덮는» 것이 아니다. 이벤트가 후보를 냈으면 그것이 정본이고,
@@ -418,6 +526,20 @@ export function RunConsole({
           </p>
         )}
 
+        {/* 🔴 **숨기지 않는다**(D-21 ⓒ). 「연결 안 됨」만 띄우고 뒤에서 조용히 메우면 화면이
+            자기가 하는 일을 말하지 않는 것이 된다 — 무엇으로 대신하고 있는지까지 적는다.
+            🔴 종단에 닿으면 이 줄은 사라진다 — 끝난 조사에 「진행 중」이 남으면 거짓이다. */}
+        {streamUnavailable && !settledNow && (
+          <p className="mt-2 text-xs text-muted" role="status" data-testid="run-polling" data-interval-ms={POLL_INTERVAL_MS}>
+            실시간 스트림 대신 주기 조회로 진행 중입니다 — {POLL_INTERVAL_MS / 1000}초마다 서버에
+            다시 묻습니다. 순번이 붙어 오므로 중복되거나 빠지지 않습니다.
+          </p>
+        )}
+        {pollNote && (
+          <p className="mt-2 text-xs text-warn" role="status" data-testid="run-poll-note">
+            {pollNote}
+          </p>
+        )}
         {note && (
           <p className="mt-2 text-xs text-warn" role="status" data-testid="run-note">
             {note}
