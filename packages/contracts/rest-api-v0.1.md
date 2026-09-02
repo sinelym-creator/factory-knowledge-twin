@@ -181,3 +181,13 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - **모델·effort 형상** — 게이트웨이는 모델 별칭과 effort 단계를 CLI 인자로 넘긴다(기본 = **opus / low** · 폐하 결정 09-03 07:36 「오퍼스로」 + 07:59 「승인」(low · 드릴 3 실측 low 9.3~9.5s < medium 10.5s < high 11.1~11.4s · 품질 6지표 미갈림 · n≥3 재확인 = T6-2 검증 축 ⑤) — 09-02 22:43 sonnet 결정을 드릴 2 실측(opus 10.5s < sonnet 15s < haiku 45~60s · 품질 지표 동률)으로 갱신 · 빈 문자열 = CLI 기본) · `synthesis.model` 은 v0.1.11 그대로 **실제 응답 model id**(설정값 아님) · effort 반영 여부는 CLI 봉투에 필드가 없어 «인자 전달까지만» 실측 가능(판정문에 「미확인」 표기 허용).
 - **타임아웃 불변식** — 클라이언트(ai-api) 예산과 게이트웨이 상한은 **서로 다른 이름의 운영 값**이어야 하고 항상 «게이트웨이 상한 < 클라이언트 예산»(클라이언트 예산 = 게이트웨이 상한 + margin · 게이트웨이가 먼저 504 로 «사유»를 내고 클라이언트는 그 답을 받을 만큼만 더 기다린다 — 같은 이름을 두 층이 읽으면 이 순서가 무너져 어느 쪽이 끊었는지 사후에 못 가른다 · 09-02 드릴 무효 진범 후보 ⓐ · 🔴 09-03 07:31 센쿠2 선발견 = 초판 부등호 오기 정정) · 녹화기는 timeout 시 사유를 버리지 않고 기록한다.
 - 잰 것/안 잰 것 — 설계 성문(E3). 실측 = T6-2 구현 PR(센쿠2 32대) + 리바이2 독립 검증(ON/OFF · 401 · 429 4회째 · sonnet/medium 지연 n≥3 · 경계 · 외부 vantage).
+
+## v0.1.13 append (09-03 · T6-3 체감 속도 — 결정적 순위 선표시 + 합성 문장 스트리밍 · 폐하 결정 08:09 「전건 반영 승인」 · 오케 성문)
+
+> 목적 = 총시간이 아니라 **첫 반응**을 바꾼다(실측 09-03: 합성 9.4s 동안 화면 무반응 · 스트리밍 첫 청크 1.3s). 공개 API 표면 변경 = agent-events **type 1종 추가**(additive) · REST 라우트 0 · 폴링(v0.1.10 ⓒ)으로도 성립한다(부분 이벤트가 폴링 주기마다 실린다 · WS 필요 0).
+
+- 🔴 **이벤트 `step.progress`**(agent-events v0.1 스키마 additive · 🔴 스키마 JSON 은 `tests/contract` 커버리지 케이스와 «같은 PR»(리바이2) · 형상 정본 = 이 절) — `payload{step:"synthesize", kind:"preliminary"|"sentence", seq:int(0부터 · 단조), preliminary?:{ranking:[failureModeId…], axis:"deterministic"}, sentence?:{failureModeId, text, citedEvidenceIds:[≥1]}}` · ① **선표시** = `step.started(synthesize)` 직후 `kind=preliminary` 1건(결정적 순위 · 이미 계산된 값 · 지연 0) ② **스트리밍** = 게이트웨이가 CLI `--output-format stream-json` 을 읽어 **문장 단위**로 `kind=sentence` 를 낸다(부분 JSON 파싱 대신 **출력 형식을 줄 단위(NDJSON · 문장 1줄 = `{fm,s,ids}` · 마지막 줄 = `{ranking,insufficient}`)로 바꿔** 잘린 문장을 만들지 않는다).
+- 🔴 **가드는 마지막에 한 번** — 부분 문장은 «잠정»이고 `step.completed(synthesize).payload.synthesis` 가 판정이다: 거부(`live-rejected`)면 화면은 **잠정 문장을 전부 걷고 사유를 보인다**(조용한 폴백 0 · 부분 채택 0 은 v0.1.11 그대로) · 채택이면 잠정 문장 = 최종 rationale 과 동일해야 한다(불일치 = 결함). `run.completed.candidates[].rationale` 형상 무변.
+- **화면** — 합성 단계 진입 즉시 후보 카드(결정적 순위 · 배지 「순위 계산됨 · AI 근거 작성 중」) → 문장이 오는 대로 카드에 채움 → 최종 배지(live / live-rejected / deterministic). 진행 표시(「AI 합성 중 · 평균 N초」 · N = 하드코딩 0 · 설정 또는 실측 이력)는 T6-2 소조각 ③(09-03 08:09 발주)과 같은 자리.
+- **게이트웨이 상주(④ · 선택)** — 요청마다 `subprocess.run` 대신 프로세스 재사용으로 기동 1.7s(실측)를 없앤다 · 공개 형상 무변 · 실측 뒤 채택.
+- 잰 것/안 잰 것 — 설계 성문(E3). 실측 = 구현 PR(센쿠2) + 리바이2 독립 검증(첫 `sentence` 도착 시각 · 부분↔최종 일치 · 거부 시 걷힘 · 폴링 경로에서 순서 보존 · 구독 소모 ≤3).
