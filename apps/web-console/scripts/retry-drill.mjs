@@ -444,7 +444,11 @@ async function timed(fn) {
 //    이 배치의 Funnel 호스트는 A 2 + AAAA 2 다(오케 DoH 실측) — 첫 원소만 남기면
 //    「IPv4 는 거부, IPv6 는 시간 초과」 같은 갈림이 로그에서 사라진다. 주소는 안 남는다.
 {
-  const v4 = "100.101.102.103:8443";
+  // 🔴 주소는 «문서용 대역»에서 고른다(D-20). 앞판의 값은 손으로 지은 합성 표본인데도
+  //    하필 CGNAT 100.64/10 «안»이라, 공개 경계 스캔이 실 tunnel 주소와 구분하지 못했다.
+  //    이 파일의 다른 표본(203.0.113.7·198.51.100.9·2001:db8::1)과 같은 관용으로 옮긴다 —
+  //    주소 «모양»은 그대로라 「주소가 로그에 안 남는가」라는 자극은 유지된다.
+  const v4 = "203.0.113.103:8443";
   stage(
     unreachable("TypeError", {
       name: "AggregateError",
@@ -466,7 +470,7 @@ async function timed(fn) {
       /ECONNREFUSED/.test(line) &&
       /ETIMEDOUT/.test(line) &&
       !line.includes(v4) &&
-      !line.includes("100.101.102.103") &&
+      !line.includes("203.0.113.103") &&
       !line.includes("2001:db8"),
     `warn 「${line}」(두 코드 다 보이고 주소는 없어야 한다)`,
   );
