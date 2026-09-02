@@ -148,3 +148,14 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - 🔴 **Q-48 «시작 전 판정» = 200 `mode:"replay"` 강등**(동결 본문 34행 그대로 · 신설 0) — 판정 근거 = `/health` 의존 프로브 결과(`postgres`·`neo4j` 중 하나라도 `unavailable` → live 불가 = v0.1.3 106행 «실행 자체 불가» 독법 안 · 합성 게이트웨이 부재는 여전히 아님) · 프로브 최소 간격 5s(PR#222)라 ≤5s stale 허용 — 그 틈에 시작된 run 은 `run.failed` + `payload.fallback:"replay"`(스키마 151행 · 기존 신호)로 받는다. 강등 조건 = 해당 시나리오 fixture 존재(`investigation/replay.py` = pool·conn·driver 참조 0 → 의존 정지 중에도 서버 replay 성립 · E1) · fixture 없으면 **503 `dependency_unavailable`**(`errors.py:66` 기존 코드 재사용 · 501 은 「구현 없음」이라 live 요청에 쓰지 않는다). 🔴 `resources.pg_pool is None`(`investigations.py:130`)은 «핸들 유무»라 판정 근거로 쓰지 않는다(pg 가 죽어도 객체는 산다).
 - **두 축 분리(R-G · T4-2a R-3 와 겹침 0)** — 축 1 「ai-api 미도달」(`liveStatus()` 응답 실패) → 셸 정적 replay(T4-2a) · 축 2 「ai-api 도달 + 의존 정지」 → 위 강등/503(«응답»이므로 R-3 를 켜지 않는다 · 설계대로). 축 2 에서 뒤이은 `/evidence`·`/documents` 는 pg 를 타므로 503 잔존 = «부분 초록» → 원장 Q-56(한계 성문 · T4-4 Gate 6 pg OFF 행이 잰다 · 이 티켓에서 R-3 트리거를 넓히지 않는다).
 - 실물 대조(E1 · 08-31 · develop `4596407`): agent-events type enum = **8종**(run.started · plan.updated · step.started · step.evidence · step.completed · run.completed · run.stopped · run.failed — 회부문 「7종」은 오기 · 성문은 실물) · `runFailed.payload.fallback` enum ["replay"](151행) · `runStopped.reason` enum user|timeout|reset(139행 · timeout 호출자 0 = §ⓑ 가 채움) · `session_store.py:35` TTL 8h + lazy `_sweep()`(78·135행 접촉 시만 · 주기 태스크 0 → §ⓔ = 주기 정리 + 주기 env 추가) · 429 · 413 · 503 queue · `Retry-After` = 계약·코드 0건.
+
+## v0.1.10 append (09-02 · D-21 ⓒ — 공개 셸 WS 미개통 시 «주기 조회» 대체 · 폐하 결정 2 ⓐ 18:13 · 오케 성문)
+
+> 동결 본문 WS 행(`WS /ws/runs/{runId}` = agent-events 스키마 스트림 · 진행 표시)은 그대로다. 여기서 성문하는 것은 **클라이언트가 그 스트림을 못 열 때의 대체 경로**뿐 — 서버 형상 변경 0 · 신설 라우트 0 · 이벤트 enum 변경 0.
+
+- 🔴 **대체 조건** — WS 핸드셰이크가 서지 않을 때(101 전 close · 브라우저 close code 1006 · D-21 = Vercel 경로 실측 `evidence/d21-ws-layer-split.md` #388)에 한한다. 101 이 서면 폴링 0(로컬·직결 경로 무변).
+- 🔴 **대체 경로** — `GET /runs/{runId}/events`(동결 본문 G3 · 같은 envelope · seq 순)를 주기 조회한다. 간격 = 클라이언트 명명 상수 1곳(초기값 2s · 성문은 «형상»만 · 박은 값 0) · 중복 제거 = `seq`(클라이언트 병합 자리 1곳 · ⓕ 재연결 백로그와 같은 규칙 · 새 필터 금지).
+- 🔴 **종료** — terminal 이벤트(`run.completed` · `run.stopped` · `run.failed`) 수신 시 폴링 중단. `run.queued`(v0.1.9)는 terminal 아님 — 큐 대기 중에도 조회는 계속된다.
+- 🔴 **화면 의미** — 이 경로의 「진행 표시」는 실시간 스트림이 아니라 «간격 이내 지연 조회»다. 화면은 이를 숨기지 않는다(문면 = 「실시간 스트림 대신 주기 조회로 진행 중」 · 1006 문면 대체). 「실시간」 주장 문면(README · baseline §21)은 「직결 경로 실시간(WS) · 공개 셸 주기 조회」로 정렬한다 — D-21 은 «명기»에서 «대체 착지»로 옮겨지되 **WS 미개통 자체는 남는다**(결함 해소 아님).
+- 429 제외 목록(v0.1.9)에 `GET /runs/{runId}/events` 는 **없다** — 폴링 간격이 rate limit 운영값(env)과 충돌하면 화면에 429 로 드러난다(숨기지 않음) · 운영값 조정은 runbook(T5-4) 축 · 계약은 형상만.
+- 잰 것/안 잰 것 — 이 조항은 설계 성문(E3). 실측은 구현 PR(센쿠2 · `run-console.tsx` 1파일)과 main 승격 뒤 리바이2 외부 검증에서 붙는다 · 그물(`tests/web/e2e/t3-4-run-screen.spec.ts` 등 WS 101/1006 을 기다리던 자리)은 검증 좌석이 함께 개정한다.
