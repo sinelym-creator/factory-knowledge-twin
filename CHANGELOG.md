@@ -66,3 +66,7 @@
 - D-14 recurrence prevention 2 (operator "preview 0"): develop merges were also producing previews (18 the day before); `vercel.json` now blocks develop plus 11 conventional branch patterns (#354 `a76bee8`), zero deployments after merge confirmed.
 - P6 license axis: `NOTICE`, `THIRD_PARTY_NOTICES.md` generated from the measured dependency inventory (JS 341 / Python 80, unknown 0, copyleft-in-prod 1), `LICENSE` holder set per operator approval (#360 `fd52979`).
 - T5-5 clean environment run (#361 `c515544`): README-only reproduction stops at step zero (§35.6 unmet, confirmed); the documented 5-step bypass completes GS-01 (13 rows); skipping the projection step yields an "empty green" caught by the P-GRA net; 5+1+1 documentation defects → D-18.
+- baseline v0.3 scope-cut amendments applied (#356 `e0c6958`): operator-approved items 1-A~1-G written into the baseline body (file name kept at v0.2), Gate 6 evidence now cites both files.
+- T5-5 gate verdict landed (#357 `d63498d`, local axes): 14 nets re-run, verdict "Release candidate — reduced scope (v0.3)", 9 unmet §35.7 items listed; Q-71 raised.
+- D-17 repository fix (#355 `ee2bbf9`): fastapi 0.133.0 + starlette 1.3.1 pins, pip-audit 9→0, Python audit promoted to a gate.
+- Q-71 surface_scan false positives (#363 `c73028e`): four rules, 10→0 with the 53-file population unchanged and detection proven by injected violations.

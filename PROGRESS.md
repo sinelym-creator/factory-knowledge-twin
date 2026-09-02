@@ -14,7 +14,7 @@
 |---|---|---|
 | 3·4 | T3-6·T4-4 그물 선행 소조각(검증 좌석 — D-3 재검·Q-41·Q-42 사이 유휴 메움) | 검증 좌석 흐름 보며 |
 | 4 | T4-3 Tunnel·Vercel 공개 RC(🔴 운영자 확인 1회 재상신) | T4-1·T4-2 |
-| 5 | T5-5 외부 축(승격 뒤 Q-70·Q-69 재실측 + GS-01 1회 = D-17 이미지 E2E 대조) · T5-2 대응표(리바이2 진행 10:31 · 인용만) · T3-6 재실행 9 · D-18 잔여 `seed.ps1`(센쿠2 진행 10:27) · P6(CHANGELOG · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」 · 공개 경계 스캔 · README 6줄+clean env 재실측 짝 · verdict §4 조건 9 갱신 · 원장 종결 · §35.7 관문 상신) | 승격 1회(11:13 · 19대) |
+| 5·6 | T3-6 재실행 9(검증 ≈1h) · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」(오케) · 공개 경계 최종 스캔(검증) · CHANGELOG 오늘분 · 원장 종결 · §35.7 관문 상신 · 소조각 = README 6줄+clean env 재실측 짝 · verdict §4 조건 9 갱신 · `API_BASE` 공용 상수(tests/api) · `t44_outage_watch` 자식 rc 판정(§8.7-2 기지) · `tests/**` 6본 compose project 인자 | 승격 ✅ 11:18 · 외부 재실측 ✅ 12:05 → 오후(재부팅 여부 폐하 결정 뒤) |
 
 ## 릴리스 뒤 개선 (폐하 「이후 개선사항으로 기록하고 개선」 09-02 10:40)
 
@@ -32,13 +32,13 @@
 
 | 태스크 | 산출물 | 시점 |
 |---|---|---|
+| ✅ **Q-70 외부 재실측 PASS + Q-69 화면 축 실물(19대)** — 리바이2 25대 PR#373 · Funnel OFF 창 11:59:33~12:05:33(자비스) · 창 안 확정 6/6(`startedAt`) · `/enter` 2,497~3,840ms ≤8,000ms · `cappedOut` 없음 · health/live 500 6/6 · 「미연결」 6/6↔기준선 0/3 · 24대 25.5s 대비 ≈10배 · Q-69 배지 `◌미연결` 실물 · 복구 지연 상한 ≤4분 08초 · gap 15s 이탈 명기 | `evidence/t4-4-external-outage-verification.md` §9 · `evidence/t5-5-gate-verdict.md` 3곳 | 09-02 12:28 |
+| ✅ **D-17 종결(E2E) + 배포 DB restart 정책 ⓒ(19대)** — GS-01 공개 경로 replay 완주(`RUN-dac5edac664f` · 32 이벤트 · 5단계 · D-17 이미지) · 폐하 「권장 승인」 12:14 → t15 postgres·neo4j `unless-stopped`(센쿠2 · StartedAt 불변 = 무재시작 증명) · `-prev` = `no`(8010 충돌 차단 · 롤백 = 수동 start) | 컨테이너 4본 정책표 · 원장 D-17·Q-63 | 09-02 12:24 |
+| ✅ **README 표 자동 대조 그물(19대)** — 센쿠2 28대 PR#372 `a029837` · `scripts/check-readme-versions.mjs` + hygiene step 1 · 기대값·출처 경로 0(README 가 지목한 파일을 읽음) · 비교 0건 = 실패 · 매 실행 참/변조 두 번 · 러너 로그 3/3 | `scripts/` · `.github/workflows/ci.yml` | 09-02 11:40 |
+| ✅ **Cypher 드릴 앵커 정본화(19대 · 하드코딩 원칙)** — 리바이2 25대 PR#370 `a256ca0` · 리터럴 앵커 6줄 제거 → `allowlist.APPROVED_QUESTIONS` 실행 시점 추출 · 못 뽑으면 exit 2 · 결과 무변 | `tests/api/cypher_surface_drill.py` | 09-02 11:2x |
 | ✅ **D-18 잔여 seed.ps1 수리(19대)** — 센쿠2 28대 PR#368 `f001176` · 재현 먼저(비기본 project 에서 `:56` exit 1 · 컨테이너 healthy) → `-Project` 배열 5곳 · 후보 목록 문면 · 대조군 4열 · TRUNCATE 형 재적재 ≠ skip 형 멱등 · tests 6본 = 검증 별건 | `data/seed.ps1` | 09-02 10:55 |
 | ✅ **T5-2 대응표(19대)** — 리바이2 25대 PR#367 `844f420` · 13항+유지 1 = 14행 · 새 실행 0 · 모든 칸 출처 [V]/[N] · 두 원본 불일치 0 · PASS 6/조건부 1/부분 2/측정 불가 3/미충족 2 · 「Gate 7 은 서 있지 않다」 · 시각 열 = 원본에 없어 만들지 않음 | `evidence/t5-2-gate7-map.md` | 09-02 10:44 |
 | ✅ **T5-2 신설 3 착지(19대)** — 리바이2 25대 PR#366 `84a585a` · SQL 질의 표면(「도달 불가」 단서) · Cypher 층 A/B(파라미터 바인딩 · 추출기 = ID 토큰) · 문서 prompt injection(표지 선행 · 조건부 PASS · 무결성 배제 기전 · 재색인 경유 축 미측) · Gate 7 미충족 4→2 · 부산물 Q-72(fail-closed 유지) | `tests/api/{query_surface_sql,cypher_surface,prompt_injection_authority}_drill.py` · `evidence/t5-2-gate7-new-nets.md` | 09-02 10:31 |
 | ✅ **D-17 배포 반영(19대)** — 센쿠2 28대 · 8010 이미지 `fkt-deploy-ai-api:6e1487d` · starlette 1.3.1 · 로컬·공개 health 200 `build 6e1487d` · 의존 불통 3분 38초(🔴 오케 발주 결함 = 승계 목록에 network 누락 → 「같은 형상 = inspect 전량 diff」 게이트) · GS-01 = 외부 재실측에서 E2E 대조 · 롤백면 `-prev` 존치 | 컨테이너 `fkt-deploy-ai-api` | 09-02 10:08 |
 | ✅ **P6 README 실행 절(19대)** — 센쿠2 28대 PR#365 `6e1487d` · runbook §4 정본 지목(복제 0) · 전제조건 실측표 · 「배포 후 게시」 자기 선언 제거 · KPI «측정 전 빈 칸» · 「Release 후보 — 축소 적용(v0.3)」 · 「Portfolio Release」 0 · 판정 「이대로 확정」(§35.6 README 만으로 = 미충족 유지 · 6줄+재실측 짝은 별건) | `README.md` | 09-02 10:0x |
 | ✅ **D-18 migrate.ps1 project 선택 수리 + runbook 5단(18대)** — 센쿠2 28대 PR#362 `03056f6` · 4곳 `-p` · 미지정 실패 문면 · 주석 실측대로 · runbook §4 = compose→project→migrate→seed→indexer venv+색인→projector venv+투영 · 스키마 008 · 네트워크 문장 | `services/ai-api/db/migrate.ps1` · `docs/deployment/runbook.md` | 09-02 09:26 |
-| ✅ **Q-71 surface_scan 위양성 그물 수정(18대)** — 리바이2 25대 PR#363 `c73028e` · 4종 처리 · 10→0 · 모집단 53 유지 · 검출력 대조군(진짜 위반 주입 = 빨강 유지) | `tests/web/surface_scan.mjs` | 09-02 09:26 |
-| ✅ **D-17 리포 착지(18대)** — 센쿠2 28대 PR#355 `ee2bbf9` · fastapi 0.133.0(= starlette ≥1.3.1 허용 최소) + `starlette==1.3.1` 직접 핀 · pip-audit 9→0(집합 동일) · Python 감사 축 게이트 승격 · 잔여 = 배포 이미지 재빌드(승격 뒤) | `services/ai-api/requirements.txt` · `.github/workflows/security.yml` | 09-02 08:43 |
-| ✅ **T5-5 본 판정 착지(18대 · 축소판 v0.3 · 로컬 축)** — 리바이2 25대 PR#357 `d63498d` · 오늘 재실행 14본 · 판정 = 「Release 후보 — 축소 적용(v0.3)」 · 미충족 9항 명기 · 계수 실측 PASS 26/전언 10/조건부 10/미측 13/불명 2/미충족 7/로컬만 6/부분 4 · Q-71 등재 · 잔여 = clean env + 외부 축 | `evidence/t5-5-gate-verdict.md` | 09-02 08:38 |
-| ✅ **baseline v0.3 축소 적용 반영(18대)** — 폐하 A~G 승인분 1-A~1-G 본문 반영(PR#356 `e0c6958` · 파일명 v0.2 유지 · 초안 재가 칸 ☑ · Gate 6 근거 두 파일 병기로 정정) | `docs/baseline/poc-baseline-v0.2.md` · `.workspace/drafts/baseline-v0.3-scope-cut-draft.md` | 09-02 08:27 |
