@@ -287,7 +287,7 @@ Ground Truth 고정 · 40문×4전략 · 5회 raw · Hit@K/Recall@K/MRR/nDCG 계
   `os.system`·`shell=True`·`new Function`·`child_process.exec` **0건** · SQL·Cypher 18곳은 식별자만
   상수 보간이고 값은 `$1`·`$2` 바인딩.
 
-🔴 **09-02 T3-6 본 판정(#380 · `t3-6-e2e-verification.md`)이 §35 에 더한 것**
+🔴 **09-02 T3-6 본 판정(#386 · `t3-6-e2e-verification.md`)이 §35 에 더한 것**
 
 - **§35.1 Product** — 브라우저 축 실측이 처음 붙었다: 격리 **5/5** · 키보드 **7/7**(🔴 D-7 Esc 초록 =
   Q-59 해소 확인) · desktop viewport **16/16** · `shell` 9/9 · `mode-badge` 5/5 · `reset-modal` 7/7.
@@ -377,10 +377,10 @@ runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문
 | # | §35.7 조건 | 오늘 상태 |
 |---|---|---|
 | 1 | P0 기능 완료 | 본 판정 범위 밖(오케·폐하) |
-| 2 | Golden Scenario E2E PASS | **부분(09-02 승격)** — 로컬 API 축 13행 PASS · clean env 새 클론 **13행 완주**(5단 절차 · `t5-5-clean-env.md`) · 🔴 **브라우저 E2E 오늘 실행**(#380 · `t3-6-e2e-verification.md` · 공개 셸 131칸 · **97 통과 / 32 빨강 / 2 건너뜀**) + 공개 경로 replay 완주(#373 §9) · 잔여 = **D-21**(공개 셸 WS 미개통) · 미결 2칸 |
+| 2 | Golden Scenario E2E PASS | **부분(09-02 승격)** — 로컬 API 축 13행 PASS · clean env 새 클론 **13행 완주**(5단 절차 · `t5-5-clean-env.md`) · 🔴 **브라우저 E2E 오늘 실행**(#386 · `t3-6-e2e-verification.md` · 공개 셸 131칸 · **97 통과 / 32 빨강 / 2 건너뜀**) + 공개 경로 replay 완주(#373 §9) · 잔여 = **D-21**(공개 셸 WS 미개통) · 미결 2칸 |
 | 3 | Independent Verification PASS | 🔴 **미충족** — Gate 3 평가셋 없음 · Gate 7 4항 미충족 + 3항 측정 불가 |
 | 4 | Security Gate PASS | 🔴 **미충족** — ~~Cypher injection~~ ~~문서 Prompt Injection~~(09-02 신설로 해소) · **admin endpoint · malformed WS 2항 잔여** + ⑦⑧⑪ 측정 불가 |
-| 5 | Public Offline Fallback PASS | **충족(외부 축 · 09-02)** — #373 §9 Q-70 외부 실측 6/6 + **오늘 Gate 6 ⓒ 정적 재생 완주**(공개 셸 · `/api` 차단 시 events 32/32 · static=true · 🔴 무자극 대조군 A 동반 · #380) |
+| 5 | Public Offline Fallback PASS | **충족(외부 축 · 09-02)** — #373 §9 Q-70 외부 실측 6/6 + **오늘 Gate 6 ⓒ 정적 재생 완주**(공개 셸 · `/api` 차단 시 events 32/32 · static=true · 🔴 무자극 대조군 A 동반 · #386) |
 | 6 | Benchmark Evidence 생성 | 🔴 **미충족**(T5-1 미착지) |
 | 7 | KPI·Latency 결과 공개 | 🔴 **미충족** — §35.2 전항 · §35.3 P50·P95 빈 칸 |
 | 8 | GitHub Actions PASS | **부분** — workflow 2본 실재 · required 지정은 리포 설정 |
