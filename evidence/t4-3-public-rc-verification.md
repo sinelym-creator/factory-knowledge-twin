@@ -165,8 +165,8 @@ PASS · rc 0 이다.
 ### C.5 🔴 이 초록이 «아닌» 것 (초록의 주어)
 
 1. **`ai-api(funnel)` 4행은 외부 도달성의 증거가 아니다.** `harry.tail488f52.ts.net` 은 이 호스트에서
-   **100.87.3.33**(Tailscale CGNAT)으로 풀리고, 실제 TCP 연결의 **remote 와 local 이 둘 다
-   `100.87.3.33`** 이다 — tailnet self 로 붙었다. 공개 Funnel 경로를 지난 적이 없다.
+   **<tailnet-ip>**(Tailscale CGNAT)으로 풀리고, 실제 TCP 연결의 **remote 와 local 이 둘 다
+   `<tailnet-ip>`** 이다 — tailnet self 로 붙었다. 공개 Funnel 경로를 지난 적이 없다.
    ⇒ 이 4행이 지키는 사실 = 「이 호스트에서 8443 리스너가 서 있고 `/api/health` 가 ok 를 낸다」.
    외부 vantage 판정은 **§Z 에 Not measured 로 남는다.**
 2. **`SKIP 1` 은 초록도 빨강도 아니다.** `fkt-deploy-ai-api` 에 healthcheck 정의가 없다
@@ -296,3 +296,11 @@ docker image inspect fkt-senku2-q3-ai-api:latest --format "{{json .Config.Labels
 docker ps -a --filter "label=com.docker.compose.project=<proj>" --format "{{.Names}}"
 pwsh -NoProfile -Command "Resolve-DnsName harry.tail488f52.ts.net; $c=New-Object Net.Sockets.TcpClient; $c.Connect('harry.tail488f52.ts.net',8443); $c.Client.RemoteEndPoint; $c.Close()"
 ```
+
+---
+
+🔴 **주소 마스킹 (D-20 · 2026-09-02 · 리바이2 26대)** — 본문의 `<tailnet-ip>` 는 실측한 Tailscale
+CGNAT(100.64/10) 주소를 가린 것이다(baseline §34.6 「실제 Tunnel 내부 주소」 · 리포가 Public 이므로
+값 자체는 트리에 두지 않는다). 🔴 이 조각에서 치환한 3 자리(이 문서 2 · `d12-enter-retry-verification.md` 1)는 **전부 같은 하나의 값**이었고, 그래서 한 개의
+placeholder 로 덮어도 **「같은 주소였다」는 진술이 보존**된다. 주소는 «좌표»이지 «측정값»이 아니다 —
+지연·상태코드·도달 판정은 **어느 것도 바뀌지 않았다**. 이력에 남은 원값은 치환으로 지워지지 않는다(폐하 결정 사항).

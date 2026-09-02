@@ -273,7 +273,19 @@ Ground Truth 고정 · 40문×4전략 · 5회 raw · Hit@K/Recall@K/MRR/nDCG 계
 | 4 | Public admin endpoint 차단 | 그물 없음 | 🔴 **미충족** |
 | 5 | Rate limit·request size limit 동작 | `t42b_limits`·`t42b_xff` **오늘 exit 2**(대조군 서버 미지정) · Q-60 | 🔴 **측정 불가** |
 | 6 | stack trace·secret·구성값 미노출 | `error_shape` 9/9 · `credential_leak` 3면 0(오늘) · Q-49·Q-23 미결 | **조건부** |
-| 7 | Git history secret scan 통과 | `ci_hygiene` 3게이트 0히트(오늘 · **작업 트리 461파일**) | **부분 — «이력» 축 빈 칸** |
+| 7 | Git history secret scan 통과 | `ci_hygiene` 3게이트 0히트(오늘 · **작업 트리 461파일**) + 🔴 **이력 축 실측(09-02 T5-6 · `git log -G` · 커밋 832)** — 시크릿 형태 6커밋 = distinct 토큰 6개 **전부 합성 프로브**(28~37자 · 실키 길이 미달 · 누출 0) · 절대경로 14커밋 = **D-003 재결분**(수용) | **조건부 충족** — «이력» 축 빈 칸이 채워졌다(`t5-6-public-boundary-final-scan.md` §3). 🔴 조건 = **D-19**(CI 시크릿 게이트가 `sk-ant-…` 하이픈 형태를 못 본다 — 그 축의 0 은 「안 본 0」이다) |
+
+🔴 **§35.4 에 붙는 09-02 갱신(T5-6 P6 공개 경계 최종 스캔 · `t5-6-public-boundary-final-scan.md`)**
+
+- ④ **Public admin endpoint 차단** = 그물 없음(무변). ⑤ rate limit·size limit = 측정 불가(무변).
+- ⑥ **secret·구성값 미노출** — 트리 축 시크릿 위반 **0**(추적 469파일 · 히트 5는 전부 합성 프로브)로
+  근거가 하나 늘었다. 단 **D-19** 가 붙는다.
+- **신설 결함 2건**: **D-19**(CI 시크릿 게이트 사각 — `sk-` 뒤 하이픈 불허 · 대조군 E1: 같은 파일에서
+  내 그물 2건 / CI 그물 1건) · **D-20**(CGNAT `100.64/10` **내부 IP 8히트/4파일** = §34.6 「실제 Tunnel
+  내부 주소」 · 치환 + 게이트 신설 · 이력 잔존은 폐하 결정 상신). tailnet **호스트명**은 D-15 판정 유지(누출 아님).
+- **§16.2 임의 실행 축**은 이 스캔으로 처음 정적 근거를 얻었다 — 제품 코드 150파일에 `eval`·`exec`·
+  `os.system`·`shell=True`·`new Function`·`child_process.exec` **0건** · SQL·Cypher 18곳은 식별자만
+  상수 보간이고 값은 `$1`·`$2` 바인딩.
 
 ### 2-5. §35.5 GitHub·License (7항)
 

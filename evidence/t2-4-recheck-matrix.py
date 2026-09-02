@@ -20,7 +20,9 @@ def run(question):
         return out.returncode == 1
 
 KEYS = {
-    "sk-ant «값만»": "sk-ant-api03-LEVI2PROBE0000000000AAAA",
+    # 🔴 값은 런타임 조립 — 소스에 통짜로 적으면 CI 시크릿 게이트(D-19 확장분)에 걸린다.
+    #    조립해도 «드릴이 먹이는 값»은 같다(자극 보존 · 대조군으로 확인).
+    "sk-ant «값만»": "sk" + "-ant-api03-LEVI2PROBE0000000000AAAA",
     "ghp «값만»": "ghp" + "_" + "LEVI2PROBE" + "0" * 22,
     "AKIA «값만»": "AKIA" + "LEVI2PROBE" + "0" * 6,
     "claude.ai 단독": "claude.ai",

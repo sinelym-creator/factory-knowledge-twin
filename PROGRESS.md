@@ -14,7 +14,7 @@
 |---|---|---|
 | 3·4 | T3-6·T4-4 그물 선행 소조각(검증 좌석 — D-3 재검·Q-41·Q-42 사이 유휴 메움) | 검증 좌석 흐름 보며 |
 | 4 | T4-3 Tunnel·Vercel 공개 RC(🔴 운영자 확인 1회 재상신) | T4-1·T4-2 |
-| 5·6 | T3-6 재실행 9(검증 ≈1h) · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」(오케) · 공개 경계 최종 스캔(검증) · CHANGELOG 오늘분 · 원장 종결 · §35.7 관문 상신 · 소조각 = README 6줄+clean env 재실측 짝 · verdict §4 조건 9 갱신 · `API_BASE` 공용 상수(tests/api) · `t44_outage_watch` 자식 rc 판정(§8.7-2 기지) · `tests/**` 6본 compose project 인자 | 승격 ✅ 11:18 · 외부 재실측 ✅ 12:05 → 재부팅 ✅ 13:20(ⓒ 자동 복귀 PASS 13:38) → **20대 발주 13:45 진행 중** = 리바이2 26대 공개 경계 최종 스캔(`evidence/t5-6-…` · 읽기 전용) · 센쿠2 29대 `tests/**` 6본(D-18 잔여 · 재현 먼저) → 다음 = T3-6 재실행 9 · 최종 판정문 |
+| 5·6 | T3-6 재실행 9(검증 ≈1h) · 최종 판정문 「Release 후보 — 축소 적용(v0.3)」(오케) · 공개 경계 최종 스캔(검증) · CHANGELOG 오늘분 · 원장 종결 · §35.7 관문 상신 · 소조각 = README 6줄+clean env 재실측 짝 · verdict §4 조건 9 갱신 · `API_BASE` 공용 상수(tests/api) · `t44_outage_watch` 자식 rc 판정(§8.7-2 기지) · `tests/**` 6본 compose project 인자 | 승격 ✅ 11:18 · 외부 재실측 ✅ 12:05 → 재부팅 ✅ 13:20(ⓒ 자동 복귀 PASS 13:38) → 20대 = 스캔 ✅ #377 · tests 6본 ✅ #376 → **진행 중 14:1x** = 센쿠2 D-19 CI 게이트 수리(+D-20 CGNAT 게이트 축) · 리바이2 D-20 치환(evidence 3히트) → 다음 = `apps/` 2히트 치환(센쿠2) · 원장 3히트(오케) · T3-6 본 판정 · 최종 판정문 |
 
 ## 릴리스 뒤 개선 (폐하 「이후 개선사항으로 기록하고 개선」 09-02 10:40)
 
@@ -32,6 +32,8 @@
 
 | 태스크 | 산출물 | 시점 |
 |---|---|---|
+| ✅ **P6 공개 경계 최종 스캔(20대)** — 리바이2 26대 PR#377 `3096e6e` · 6축×모집단 2(트리 469 · 이력 832커밋) · 대조군 어긋나면 exit 2 · 트리 위반 **0** · D-15 잔여 사정거리 종결 · 이력 축 §35.4 ⑦ 채움 · 회부 2 = **D-19**(CI 시크릿 게이트 하이픈 사각) · **D-20**(CGNAT IP 8히트 · 폐하 ⓐ 승인) | `tests/api/public_boundary_scan.py` · `evidence/t5-6-public-boundary-final-scan.md` · verdict §35.4 | 09-02 14:12 |
+| ✅ **D-18 잔여 2 = `tests/**` 6본 project 인자(20대)** — 센쿠2 29대 PR#376 `39b66a4` · 재현 6/6 exit 2 → `-Project` 배열 11/11 · 판정 행 3모드 무변 · 격리 스택 잔해 0 | `tests/data/run-*.ps1` 4 · `tests/graph/run-graph-verify.ps1` · `tests/schema/run-probes.ps1` | 09-02 14:07 |
 | ✅ **Q-70 외부 재실측 PASS + Q-69 화면 축 실물(19대)** — 리바이2 25대 PR#373 · Funnel OFF 창 11:59:33~12:05:33(자비스) · 창 안 확정 6/6(`startedAt`) · `/enter` 2,497~3,840ms ≤8,000ms · `cappedOut` 없음 · health/live 500 6/6 · 「미연결」 6/6↔기준선 0/3 · 24대 25.5s 대비 ≈10배 · Q-69 배지 `◌미연결` 실물 · 복구 지연 상한 ≤4분 08초 · gap 15s 이탈 명기 | `evidence/t4-4-external-outage-verification.md` §9 · `evidence/t5-5-gate-verdict.md` 3곳 | 09-02 12:28 |
 | ✅ **D-17 종결(E2E) + 배포 DB restart 정책 ⓒ(19대)** — GS-01 공개 경로 replay 완주(`RUN-dac5edac664f` · 32 이벤트 · 5단계 · D-17 이미지) · 폐하 「권장 승인」 12:14 → t15 postgres·neo4j `unless-stopped`(센쿠2 · StartedAt 불변 = 무재시작 증명) · `-prev` = `no`(8010 충돌 차단 · 롤백 = 수동 start) | 컨테이너 4본 정책표 · 원장 D-17·Q-63 | 09-02 12:24 |
 | ✅ **README 표 자동 대조 그물(19대)** — 센쿠2 28대 PR#372 `a029837` · `scripts/check-readme-versions.mjs` + hygiene step 1 · 기대값·출처 경로 0(README 가 지목한 파일을 읽음) · 비교 0건 = 실패 · 매 실행 참/변조 두 번 · 러너 로그 3/3 | `scripts/` · `.github/workflows/ci.yml` | 09-02 11:40 |
