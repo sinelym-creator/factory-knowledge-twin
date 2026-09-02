@@ -170,18 +170,73 @@ tailscale funnel status                      # 8443 = Funnel on · 기존 :3000 
 
 ### 4-1. 🔴 「1커맨드」는 아직 **없다**
 
-지금 서 있는 것은 **4단**이고, 순서가 규칙이다(migrate 가 seed 보다 «먼저», seed 가 색인보다 «먼저»):
+지금 서 있는 것은 **5단**이고, 순서가 규칙이다(migrate 가 seed 보다 «먼저», seed 가 색인보다
+«먼저», 색인과 투영은 서로 다른 파생이라 **둘 다** 돌아야 한다):
 
 ```powershell
 docker compose up -d                          # 1) 스택
-pwsh services/ai-api/db/migrate.ps1           # 2) 스키마 (001~005 순차)
+$env:COMPOSE_PROJECT_NAME='<project>'         # 🔴 기본 project 가 아니면 «필수» — 아래 4-1a
+pwsh services/ai-api/db/migrate.ps1           # 2) 스키마 (001~008 순차 · 실물 8본)
 pwsh data/seed.ps1                            # 3) synthetic seed 생성 → 적재 → 검증
-# 4) 🔴 파생 색인 (T1-4) — seed 가 만들지 «않는다». 이 단이 빠지면 검색·Live 경로만 죽는다
+
+# 4) 🔴 파생 색인 (T1-4) — seed 가 만들지 «않는다». 이 단이 빠지면 검색·Live 경로가 죽는다
+#    🔴 venv 부터 만든다. 이 두 줄이 없으면 아래 .venv 경로가 존재하지 않는다
+#       (출처: services/indexer/README.md:16-17)
+python -m venv services/indexer/.venv
+services\indexer\.venv\Scripts\python.exe -m pip install -r services/indexer/requirements.txt
 $env:PYTHONUTF8='1'
 $env:PGPORT='<이 스택의 게시 포트>'           # 🔴 아래 「포트 명시 의무」
 services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py
 services\indexer\.venv\Scripts\python.exe services\indexer\verify_index.py
+
+# 5) 🔴 그래프 투영 (T1-5) — 색인과 «다른» 파생이다. 이 단이 빠지면 GS-01 이 completed 로
+#    닫히면서 graph 경로만 0건이 된다(아래 4-1b)
+python -m venv services/projector/.venv
+services\projector\.venv\Scripts\python.exe -m pip install -r services/projector/requirements.txt
+services\projector\.venv\Scripts\python.exe services\projector\build_projection.py
+services\projector\.venv\Scripts\python.exe services\projector\verify_projection.py
 ```
+
+#### 4-1a. 🔴 `COMPOSE_PROJECT_NAME` — 안 주면 «다른 스택을 본다» (D-18)
+
+`docker compose` 는 project 를 안 주면 **기본 project(디렉토리명)** 를 본다. 병렬 스택을 다른
+이름으로 띄워 놓고 이 값을 빠뜨리면, `migrate.ps1` 은 postgres 가 **healthy 인데도**
+「기동 중이 아닙니다」로 죽는다 — 2026-09-02 에 실제로 그랬다(E1 · `evidence/t5-5-clean-env.md`
+막힘 #2). 그 실패 문면은 이제 «지정 방법과 지금 떠 있는 project 목록»을 함께 낸다.
+
+```powershell
+$env:COMPOSE_PROJECT_NAME='fkt-<좌석>'        # ① 환경변수 (compose 자신도 이 값을 읽는다)
+pwsh services/ai-api/db/migrate.ps1 -Project 'fkt-<좌석>'   # ② 인자로 직접 (env 없이도 된다)
+```
+
+- 🔴 **스크립트 안의 `docker compose` 호출 «전부»가 이 값을 받는다**(E1 · D-18). 조회 한 곳만
+  고치면 그다음 `exec` 가 같은 이유로 죽는다 — project 를 모르면 컨테이너를 고를 수 없다.
+- 실측(2026-09-02 · E1): 비기본 project(`fkt-senku2-d18`) 스택에서 ①·② 두 경로 모두
+  **exit 0 · 001~008 전건 적용** · 재실행 **exit 0 · 전건 skip**. 미지정 실행은 **exit 1** 이고
+  문면이 지정 방법과 후보 project 목록을 낸다.
+
+#### 4-1b. 🔴 5단(투영)이 빠지면 «빈 초록»이 난다 (D-18 · E1)
+
+색인까지만 하고 GS-01 을 돌리면 run 은 **`completed`** 로 닫힌다. 그런데 `graph` 단계만
+**경로 0건 · 종단 `[]`** 이고 Neo4j 는 `count(n) = 0` 이다. GraphRAG 주장의 핵심(4-hop)이
+**비어 있는 채로 초록이 된다.** 같은 그물을 투영 «전/후»로 한 손잡이만 바꿔 돌린 대조군
+(`evidence/t5-5-clean-env.md` §4-3):
+
+| 판정 행 | 투영 **전** | 투영 **후** |
+|---|---|---|
+| P-GRA graph 0건 통과 금지 | **FAIL · 0건** | **PASS · 5건** |
+| P-05 근거 0건인 채 완료된 검색 단계 없음 | **FAIL · `['graph']`** | **PASS · `[]`** |
+| exit | **1** | **0** |
+
+**투영 PASS 기준**(`verify_projection.py` · E1): 노드 **309** · 관계 **448** · 짝 판정
+**`PAIRED`** · 데이터 지문 일치. 🔴 이 수는 «오늘의 seed» 값이지 불변식이 아니다 —
+판정으로 삼을 것은 스크립트의 exit 0 과 짝 판정이고, 수는 그 실행에서 나온 값이다.
+
+#### 4-1c. 🔴 4단은 **네트워크가 필요하다** (E1)
+
+`build_index.py` 는 임베딩 모델(`intfloat/multilingual-e5-small`)을 **Hugging Face Hub 에서
+내려받는다**(실측 로그: `You are sending unauthenticated requests to the HF Hub`). 오프라인
+머신에서 이 단이 선다는 보장은 **없고, 아직 재보지 않았다** — 「미실측」이지 「된다」가 아니다.
 
 - **멱등**: `migrate.ps1` 은 `schema_migration` 이력을 읽어 적용분을 **건너뛴다**. 🔴 「전부 다시
   돌리기」 스위치는 **일부러 두지 않았다** — 객체를 «교체»하는 마이그레이션이 있어 앞 파일이 뒤
@@ -294,7 +349,7 @@ main 승격도 못 한다** — 데모 전날에 배포를 몰아 쓰지 않는�
 | Gate 6 6행(FastAPI·PG·Neo4j·Tunnel OFF · Model timeout · 동시 요청 초과) | **미실측** | 외부 대상 파괴 불가 · 관측자 축 설계 미정 · 앞 회차 근거 미확인 |
 | 재부팅 후 **Funnel 설정 복원** | **미실측** | 재부팅 «후» `funnel status` 를 확인한 적이 없다 |
 | 재부팅 실측 횟수 | **1회** | 1회는 «되더라»이지 «된다»가 아니다 |
-| 「새 클론 → 1커맨드」 | **미실재** | 지금은 4단(§4-1). 부트스트랩 1본은 아직 없다 |
+| 「새 클론 → 1커맨드」 | **미실재** | 지금은 5단(§4-1 · D-18 로 투영이 더해졌다). 부트스트랩 1본은 아직 없다 |
 | `retrieval` 행을 **실제 컨테이너에 대고** 울려 본 것 | **미실측** | 이 개정은 컨테이너 무접촉 조건에서 썼다 — `docker exec` 를 한 번도 하지 않았다. 판정식은 «참»(`59\|59\|1`→PASS)과 «거짓»(`59\|0\|0`·`0\|0\|0`·`59\|58\|1`·`59\|59\|2`→FAIL)·«계측 실패»(빈 문자열·psql 오류→SKIP)로 따로 울려 확인했고 파일은 parse OK 다. 남은 것은 실환경 1회 |
 | 4단을 **새 클론에서 처음부터** 돌린 실측 | **미실측** | 오늘 집행은 이미 선 스택에 4단만 다시 돌린 것이다(59/59/45 · 23s) |
 | clean environment 를 **다른 경로**에서 실제로 세운 실측 | **미실측** | T5-5 범위 |
