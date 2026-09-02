@@ -223,7 +223,7 @@ Q-43 의 501 은 **REST 표면 축**의 것이다. 두 축을 한 초록으로 �
 | 5 | Offline fallback | `evidence/t4-2a`(AC 전건 PASS) · `t4-4-external-gate6` §1 | **PASS(전언)** · 오늘 자극 0 |
 | 6 | 정확도 향상 | 🔴 **없음** | 🔴 **미충족** — 이 주장을 README·시연에서 **하지 않는 것**이 유일한 정합 처리 |
 | 7 | 안전한 Agent | `injection_surface`·`session_guard`·`scenario_allowlist`·`r12`·`approval_transition`(오늘 5본) · 🔴 미충족 4항(②③⑤⑨) | **부분** — 「안전하다」로 닫지 않는다 |
-| 8 | 재현 가능 | `evidence/t1-7-b`(로컬 index 재현) · clean env 새 클론 **미실행** | **부분** |
+| 8 | 재현 가능 | `evidence/t1-7-b`(로컬 index 재현) · 🔴 **clean env 실행됨** → `evidence/t5-5-clean-env.md`: **README 만으로는 0단계** · 우회 5단으로는 GS-01 13행 완주 | **부분(확정)** — 「재현 가능」은 **문서가 아니라 사람이 리포를 아는 정도에 의존**한다 |
 
 🔴 **README 대조(E1)**: 성능 수치 `grep` = **0건**. 문면은 「측정 전 수치는 어떤 것도 성능으로
 주장하지 않습니다」(`README.md:138`) — 즉 **대응표의 빈 칸이 README 의 주장과 어긋나지 않는다.**
@@ -238,7 +238,7 @@ Gate 8 이 오늘 «빈 칸»에서 «조건부»로 올라간 이유는 대응�
 | # | 항목 | 근거 | 판정 |
 |---|---|---|---|
 | 1 | 공개 URL이 노트북 OFF에서도 정상 표시 | `t4-4-external-gate6` §1 | 승계(외부 · 오늘 자극 0) |
-| 2 | Golden Scenario를 별도 설명 없이 실행 | `gs01` 13행(오늘 · **API 축**) · clean env 미실행 | **부분** |
+| 2 | Golden Scenario를 별도 설명 없이 실행 | `gs01` 13행(오늘 · **API 축**) · 🔴 clean env 실행됨(`t5-5-clean-env.md`) — 「별도 설명 없이」가 **거짓**이다: README 만으로는 실행 자체가 불가 | **부분 — 「설명 없이」 축은 미충족** |
 | 3 | Live와 Replay status가 사실대로 표시 | `evidence/q69-shell-mode-observation.md` · Q-69 | 조건부(오늘 미측) |
 | 4 | 주요 navigation·button·form이 실제 동작 | `t3-2`~`t3-5` · `tests/web/e2e/**` | 승계(오늘 셸 미기동) |
 | 5 | Vector·Hybrid·GraphRAG 결과 비교 | `gs01` S11(3전략 각 5건 · 오늘) · 🔴 **수치 축 없음** | **부분 — 화면·표면만** |
@@ -290,8 +290,11 @@ Ground Truth 고정 · 40문×4전략 · 5회 raw · Hit@K/Recall@K/MRR/nDCG 계
 ### 2-6. §35.6 Portfolio (8항) — 검증 좌석 산출물 아님
 
 영상 2종·Architecture diagram·KPI 결과표·trade-off 설명 = 폐하·오케 몫.
-검증이 잴 수 있는 2항: 「외부 모바일 네트워크 확인」(승계 · 오늘 자극 0) · 「clean seed·index·run 이
-README 만으로 재현」(**미실행** — 2차 발주).
+검증이 잴 수 있는 2항: 「외부 모바일 네트워크 확인」(승계 · 오늘 자극 0) ·
+🔴 「clean seed·index·run 이 README 만으로 재현」 = **실행됨 → 미충족 확정**
+(`evidence/t5-5-clean-env.md` · 2차 조각). README 144행에 실행 명령 **0건**·전제조건 0·포트 0·
+runbook 링크 0 ⇒ **출발선 자체가 없다.** 우회(리포의 다른 문서)로는 compose→migrate→seed→색인까지
+갔고 **막힌 자리 4건 + 문서 drift 1건**을 실측했다. 🔴 우회 열의 성공은 이 항의 근거가 **되지 않는다.**
 
 ---
 
@@ -352,7 +355,7 @@ README 만으로 재현」(**미실행** — 2차 발주).
 | # | §35.7 조건 | 오늘 상태 |
 |---|---|---|
 | 1 | P0 기능 완료 | 본 판정 범위 밖(오케·폐하) |
-| 2 | Golden Scenario E2E PASS | **부분** — 로컬 API 축 13행 오늘 PASS · **브라우저 E2E·clean env 미실행** |
+| 2 | Golden Scenario E2E PASS | **부분** — 로컬 API 축 13행 오늘 PASS · clean env 새 클론에서도 **13행 완주**(단 **5단 절차** 필요 · `t5-5-clean-env.md`) · **브라우저 E2E 미실행** |
 | 3 | Independent Verification PASS | 🔴 **미충족** — Gate 3 평가셋 없음 · Gate 7 4항 미충족 + 3항 측정 불가 |
 | 4 | Security Gate PASS | 🔴 **미충족** — Cypher injection · 문서 Prompt Injection · admin endpoint · malformed WS |
 | 5 | Public Offline Fallback PASS | 승계(외부 실측 존재) · 오늘 자극 0 |
@@ -391,7 +394,8 @@ README 만으로 재현」(**미실행** — 2차 발주).
 ### 5-3. 다음 조각에 남기는 것 (2차 발주 · 승격 뒤)
 
 - **Q-70 재실측**(외부 · `t4-4-external-outage-verification.md` §8 절차 그대로 30분) · **Q-69 배지 문면**(#345)
-- **clean env 1회** — 타 경로 새 클론 · README 만으로 seed→index→run→GS-01 · 막힌 자리 전건 기록
+- ~~clean env 1회~~ → 🔴 **완료**(`evidence/t5-5-clean-env.md` · 막힌 자리 5건 · drift 1 · 주장-실측 불일치 1).
+  후속 = **문서 수리 발주**(README 실행 절차 · runbook §4 를 **5단**으로 · `COMPOSE_PROJECT_NAME` 줄 · indexer/projector venv 절차 링크)
 - **Gate 7 ⑦⑧⑪** — 대조군 서버 기동을 발주문에 포함해야 잴 수 있다(§5-1 ③)
 - **Gate 6 로컬 4행** — 외부 칸으로 올리지 않는다. 외부 재현이 없으면 `Not measured` 로 남는다
 - **§35.2 KPI 전항** · **Gate 3 평가셋** — T5-1 착지 전에는 어떤 수치도 만들지 않는다
