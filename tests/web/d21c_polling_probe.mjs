@@ -48,17 +48,32 @@ async function observe(base, label) {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
-  const ws = { opened: 0, closed: [] };
+  const t0 = Date.now();
+  const ws = { opened: 0, closed: [], marks: [] };
   page.on("websocket", (sock) => {
     ws.opened += 1;
-    sock.on("close", () => ws.closed.push(Date.now()));
+    ws.marks.push({ at: Date.now() - t0, what: "open" });
+    sock.on("close", () => {
+      ws.closed.push(Date.now());
+      ws.marks.push({ at: Date.now() - t0, what: "close" });
+    });
   });
 
   const polls = [];
+  let mine = false; // 🔴 내 검산 fetch 를 폴링으로 세지 않는다(측정 면에 내 출력이 섞인다)
   let edge = null;
+  page.on("request", (r) => {
+    const u = new URL(r.url());
+    // 🔴 «요청» 시각이다. 응답 시각으로 재면 왕복이 긴 공개 경로에서 간격이 뭉쳐 보인다.
+    if (!mine && /^\/api\/runs\/[^/]+\/events$/.test(u.pathname))
+      polls.push({ rel: Date.now() - t0, status: null });
+  });
   page.on("response", (r) => {
     const u = new URL(r.url());
-    if (/^\/api\/runs\/[^/]+\/events$/.test(u.pathname)) polls.push({ at: Date.now(), status: r.status() });
+    if (/^\/api\/runs\/[^/]+\/events$/.test(u.pathname)) {
+      const open = polls.find((x) => x.status === null);
+      if (open) open.status = r.status();
+    }
     if (edge === null && u.pathname === "/overview") {
       const h = r.headers();
       edge = h["x-vercel-id"] ?? h["server"] ?? h["via"] ?? "(엣지 표지 없음)";
@@ -78,10 +93,12 @@ async function observe(base, label) {
   // ① 배너 — 뜨는가, 그리고 간격을 스스로 밝히는가.
   let interval = null;
   let bannerAt = null;
+  let bannerRel = null;
   try {
     const banner = page.locator("[data-testid=run-polling]");
     await banner.waitFor({ state: "visible", timeout: 45_000 });
     bannerAt = Date.now() - startedAt;
+    bannerRel = Date.now() - t0;
     interval = Number(await banner.getAttribute("data-interval-ms"));
   } catch {
     /* 안 뜬 것도 사실이다 — 아래에서 갈라 읽는다 */
@@ -117,6 +134,7 @@ async function observe(base, label) {
     applied = Number(await cursor.getAttribute("data-applied"));
     total = Number(await cursor.getAttribute("data-total"));
   }
+  mine = true;
   const serverSeqs = runId
     ? await page.evaluate(async (id) => {
         const res = await fetch(`/api/runs/${id}/events`);
@@ -126,7 +144,7 @@ async function observe(base, label) {
     : null;
 
   await ctx.close();
-  return { label, base, edge, runId, ws, polls, interval, bannerAt, settled, bannerAfterSettle, afterWindow, applied, total, serverSeqs };
+  return { label, base, edge, runId, ws, polls, bannerRel, t0, interval, bannerAt, settled, bannerAfterSettle, afterWindow, applied, total, serverSeqs };
 }
 
 function report(o) {
@@ -136,10 +154,17 @@ function report(o) {
   console.log(`   WS 열림/닫힘     : ${o.ws.opened} / ${o.ws.closed.length}`);
   console.log(`   배너             : ${o.bannerAt !== null ? `${o.bannerAt}ms 에 출현 · 간격 정본 ${o.interval}ms` : "안 뜸"}`);
   console.log(`   폴링 요청        : ${o.polls.length}회 (429 ${o.polls.filter((p) => p.status === 429).length}건)`);
-  if (o.polls.length > 1) {
-    const d = o.polls.slice(1).map((p, i) => p.at - o.polls[i].at).sort((a, b) => a - b);
-    console.log(`   관측 간격 중앙값 : ${d[Math.floor(d.length / 2)]}ms`);
+  console.log(`   타임라인(ms)     : WS ${o.ws.marks.map((m) => `${m.what}@${m.at}`).join(" ")}`);
+  console.log(`                      배너@${o.bannerRel ?? "-"} · 조회 ${o.polls.map((p) => `${p.rel}(${p.status})`).join(" ")}`);
+  // 🔴 배너가 «선 뒤»의 조회만 폴링이다 — 그 앞의 되감기 조회(onclose ⓐ)는 다른 사건이다.
+  const after = o.bannerRel === null ? [] : o.polls.filter((p) => p.rel >= o.bannerRel);
+  if (after.length > 1) {
+    const d = after.slice(1).map((p, i) => p.rel - after[i].rel).sort((a, b) => a - b);
+    console.log(`   배너 뒤 조회 델타 : ${d.join(" · ")}ms (중앙값 ${d[Math.floor(d.length / 2)]}ms · 표본 ${after.length}회)`);
+  } else {
+    console.log(`   배너 뒤 조회      : ${after.length}회 — 간격을 잴 표본이 없다`);
   }
+  console.log(`   되감기/폴링 구분  : WS close 뒤 조회 = 되감기(구현 onclose ⓐ) · 배너+간격 뒤 조회 = 폴링`);
   console.log(`   완주 도달        : ${o.settled ? "○" : "🔴"} · 종단 뒤 배너 ${o.bannerAfterSettle}개 · 종단 뒤 조회 ${o.afterWindow}회`);
   console.log(`   이벤트 수        : 화면 ${o.applied}/${o.total} · 서버 seq ${o.serverSeqs ? o.serverSeqs.length : "(못 읽음)"}`);
 }
@@ -169,12 +194,13 @@ else if (shell.bannerAt === null && shell.ws.opened > 0 && shell.polls.length ==
 } else {
   if (shell.bannerAt === null) fail.push("① 미개통인데 주기 조회 배너가 안 떴다");
   if (!(shell.interval > 0)) fail.push("① 배너가 간격(data-interval-ms)을 밝히지 않는다");
-  if (shell.polls.length < 2) fail.push(`② 폴링이 ${shell.polls.length}회뿐이다 — 반복이 없다`);
-  if (shell.polls.length > 1 && shell.interval > 0) {
-    const d = shell.polls.slice(1).map((p, i) => p.at - shell.polls[i].at).sort((a, b) => a - b);
+  const after = shell.bannerRel === null ? [] : shell.polls.filter((p) => p.rel >= shell.bannerRel);
+  if (after.length < 2) unmeasurable.push(`② 배너 뒤 조회가 ${after.length}회뿐이다 — 간격을 잴 표본이 없다(조사가 먼저 끝났을 수 있다)`);
+  else if (shell.interval > 0) {
+    const d = after.slice(1).map((p, i) => p.rel - after[i].rel).sort((a, b) => a - b);
     const median = d[Math.floor(d.length / 2)];
     if (median < shell.interval * 0.5 || median > shell.interval * 2.5)
-      fail.push(`② 관측 간격 중앙값 ${median}ms 가 정본 ${shell.interval}ms 와 어긋난다`);
+      fail.push(`② 배너 뒤 관측 간격 중앙값 ${median}ms 가 정본 ${shell.interval}ms 와 어긋난다 (델타 ${d.join("·")})`);
   }
   if (!shell.settled) fail.push("③ 폴링만으로 완주 상태에 닿지 못했다");
   if (shell.settled && shell.bannerAfterSettle > 0) fail.push("③ 끝난 조사에 「진행 중」 배너가 남았다");
