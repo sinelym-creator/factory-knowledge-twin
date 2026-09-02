@@ -32,7 +32,9 @@ async function anonymous(browser: Parameters<typeof test>[1] extends never ? nev
 test.describe("T3-3 딥링크 — 계약 v0.1.6 읽기 예외의 «화면» 절반", () => {
   test("무세션 브라우저가 evidence 딥링크를 «열고 데이터까지» 본다", async ({ browser }) => {
     const { ctx, page } = await anonymous(browser);
-    await page.goto(`/evidence/${enc(DOC_CHUNK)}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 딥링크 화면이 «데이터까지» 그린 상태(46행 주석) — 그려졌는데도 쿠키가 0 이어야 「열람만」이 참이다
+    await page.goto(`/evidence/${enc(DOC_CHUNK)}`);
+    await expect(page.getByTestId("evidence-kind"), "딥링크 화면이 데이터까지 그리지 않았다").toBeVisible();
 
     // 🔴 도착지가 딥링크여야 한다. 세션 화면으로 튕겼는데 「열렸다」고 세지 않는다.
     expect(new URL(page.url()).pathname, "딥링크가 세션 화면으로 튕겼다").toContain("/evidence/");
@@ -61,15 +63,18 @@ test.describe("T3-3 딥링크 — 계약 v0.1.6 읽기 예외의 «화면» 절�
       ["/compare", "세션 화면이 무세션에서 그대로 선다"],
     ] as const) {
       const { ctx, page } = await anonymous(browser);
-      await page.goto(path, { waitUntil: "networkidle" });
-      expect(new URL(page.url()).pathname, why).not.toBe(path);
+      // 기다리던 것: «리다이렉트가 끝난 최종 경로» — 화면 요소가 아니라 그 조건을 직접 폴링한다
+      //   (튕겨 간 곳이 세 갈래라 도착 화면의 표지가 하나로 정해지지 않는다)
+      await page.goto(path);
+      await expect.poll(() => new URL(page.url()).pathname, { message: why, timeout: 10_000 }).not.toBe(path);
       await ctx.close();
     }
   });
 
   test("딥링크 화면이 «무엇이 안 열리는지»를 말하고 세션 화면으로 가는 길을 준다", async ({ browser }) => {
     const { ctx, page } = await anonymous(browser);
-    await page.goto(`/evidence/${enc(RECORD)}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 deep-link-notice 의 toBeVisible 이 기다린다
+    await page.goto(`/evidence/${enc(RECORD)}`);
     const notice = page.getByTestId("deep-link-notice");
     await expect(notice, "무세션 딥링크인데 안내가 없다").toBeVisible();
     // AC 「세션 화면으로의 전환 동선」 — 막다른 길로 두지 않는다.
@@ -85,12 +90,14 @@ test.describe("T3-3 근거 열람 — kind 2종·인용 강조", () => {
   test("kind=doc-chunk 는 문서 탭과 인용 강조를, kind=record 는 «색인 축 없음»을 그린다", async ({
     page,
   }) => {
-    await page.goto(`/evidence/${enc(DOC_CHUNK)}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 evidence-kind 의 toContainText 가 기다린다
+    await page.goto(`/evidence/${enc(DOC_CHUNK)}`);
     await expect(page.getByTestId("evidence-kind")).toContainText("doc-chunk");
     await expect(page.getByTestId("document-tab")).toBeVisible();
     await expect(page.getByTestId("cited-body")).toHaveAttribute("data-highlight", "ok");
 
-    await page.goto(`/evidence/${enc(RECORD)}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 evidence-kind·index-badge 의 expect 가 기다린다
+    await page.goto(`/evidence/${enc(RECORD)}`);
     await expect(page.getByTestId("evidence-kind")).toContainText("record");
     // 🔴 계약 v0.1.1: record 의 stale=false 는 «색인 축이 없다»는 뜻이지 신선 실증이 아니다.
     //    두 false 를 같은 초록으로 그리면 재지 않은 것을 잰 것처럼 말하게 된다(§0.2).
@@ -101,7 +108,9 @@ test.describe("T3-3 근거 열람 — kind 2종·인용 강조", () => {
   });
 
   test("🔴 인용 강조가 «원문에서 잘라 낸 그 구간»이다 (E-4 축 · AC)", async ({ page }) => {
-    await page.goto(`/evidence/${enc(DOC_CHUNK)}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 강조 구간 — 아래 textContent() 는 즉시 읽으므로 그 요소가 설 때까지는 여기서 기다려야 한다
+    await page.goto(`/evidence/${enc(DOC_CHUNK)}`);
+    await expect(page.getByTestId("cited-span"), "인용 강조가 서지 않는다").toBeVisible();
 
     // 출처를 화면이 아니라 두 라우트에서 가져온다 — 화면에서 읽은 것을 화면으로 검산하지 않는다.
     const ev = await (await page.request.get(`/api/evidence/${enc(DOC_CHUNK)}`)).json();
@@ -126,16 +135,16 @@ test.describe("T3-3 근거 열람 — kind 2종·인용 강조", () => {
   test("계약 밖 kind 는 404 이고, 화면은 «추정 없이» 그 사실만 적는다 (Q-34 · red 아님)", async ({
     page,
   }) => {
-    await page.goto(`/evidence/${enc(OUT_OF_KIND)}`, { waitUntil: "networkidle" });
+    // 기다리던 것: 판정선은 아래 screen-unavailable 의 toHaveAttribute 가 기다린다
+    await page.goto(`/evidence/${enc(OUT_OF_KIND)}`);
     await expect(page.getByTestId("screen-unavailable")).toHaveAttribute("data-kind", "not-found");
     // 🔴 화면이 id 모양으로 kind 를 갈라 그리면 계약이 정하지 않은 것을 화면이 정한 것이다.
     await expect(page.getByTestId("screen-unavailable").locator("..")).toContainText("Q-34");
   });
 
   test("문서 화면이 신뢰 6필드를 «전부» 그린다 (wireframes §3 문서 헤더 · F-4)", async ({ page }) => {
-    await page.goto(`/documents/${enc(DOC_ID)}?highlight=${enc(DOC_CHUNK)}`, {
-      waitUntil: "networkidle",
-    });
+    // 기다리던 것: 문서 신뢰 헤더 — 판정선은 아래 trust-header 의 toContainText 가 기다린다
+    await page.goto(`/documents/${enc(DOC_ID)}?highlight=${enc(DOC_CHUNK)}`);
     const doc = await (
       await page.request.get(`/api/documents/${enc(DOC_ID)}?highlight=${enc(DOC_CHUNK)}`)
     ).json();
@@ -179,7 +188,9 @@ function psql(sql: string): string {
 }
 
 async function badgeState(page: Page, path: string): Promise<string | null> {
-  await page.goto(path, { waitUntil: "networkidle" });
+  // 기다리던 것: 색인 배지 — 아래 getAttribute 는 즉시 읽는다(안 기다리면 배지 없음이 null 로 나와 판정이 흐려진다)
+  await page.goto(path);
+  await expect(page.getByTestId("index-badge").first(), "색인 배지가 서지 않는다").toBeVisible();
   return page.getByTestId("index-badge").first().getAttribute("data-state");
 }
 

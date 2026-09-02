@@ -85,7 +85,9 @@ test.describe("T3-6 viewport 하네스 — 3폭 × 5화면", () => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(screen.path);
         // 🔴 그려지기 «전»에 재지 않는다 — 레이아웃은 늦게 선다(16대 자수 계보).
-        await page.waitForLoadState("networkidle");
+        // 기다리던 것: 이 화면이 클라이언트까지 섰는가 — 레이아웃은 늦게 서고(16대 자수), 훑기는 «선 화면»에서만 뜻이 있다
+        await expect(page.getByTestId("mode-badge"), "셸이 클라이언트까지 서지 않았다")
+          .not.toHaveAttribute("data-mode", "checking", { timeout: 15_000 });
         await expect(page.locator("body"), "빈 화면이다 — 잴 것이 없다").not.toHaveText("");
 
         // 🔴 **훑은 «수»를 먼저 센다.** 0개를 훑고 낸 「위반 0」은 초록이 아니라 무측정이다
