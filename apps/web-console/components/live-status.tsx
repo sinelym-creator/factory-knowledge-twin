@@ -194,7 +194,12 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
   if (!notice || closed) return null;
   return (
     <div
-      className="flex items-center gap-3 border-b border-edge bg-panel px-4 py-2 text-foot text-ink"
+      /* 🔴 줄 높이를 44 로 «상자»로 세운다. ✕ 의 `fkt-hit::before` 는 44 였지만 배너
+         상자(36.5)를 넘어 삐져나온 위·아래를 «나중에 그려지는 이웃»(위 = sticky 앱바 ·
+         아래 = 본문)이 덮어, 실제로는 세로 20 만 눌렸다(D-26 · 1440 실측). 의사 요소를 더
+         키우거나 z-order 로 이웃을 덮으면 다른 자리가 죽는다 — 그래서 줄 자체를 44 로 한다.
+         `py-2`(위아래 8) 를 빼고 `min-h-11` 로 바꾸므로 배너는 36.5 → 44 로 «7.5px» 커진다. */
+      className="flex min-h-11 items-center gap-3 border-b border-edge bg-panel px-4 text-foot text-ink"
       role="status"
       data-testid="fallback-banner"
     >
@@ -209,7 +214,8 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
       <button
         /* ✕ 글리프는 가로 10.6px 뿐이라 2.5.8 의 24 미만 — 간격 예외에 기대는 자리였다.
            위 `intro-reopen` 과 같은 형태로 «실제 박스»를 44 로 편다(글리프 크기 불변). */
-        className="fkt-hit inline-flex min-w-11 items-center justify-center text-muted hover:text-ink"
+        /* 줄이 44 이므로 `self-stretch` 로 상자를 그 높이에 맞춘다 — 글리프 크기는 그대로다. */
+        className="fkt-hit inline-flex min-w-11 self-stretch items-center justify-center text-muted hover:text-ink"
         onClick={() => setClosed(true)}
         aria-label="배너 닫기"
       >
