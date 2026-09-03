@@ -26,3 +26,9 @@ included.
 저작권 문면은 LICENSE 부록의 보유자 표기와 «같은 문자열»이어야 한다 —
 두 파일이 어긋나면 어느 쪽이 정본인지 읽는 사람이 판단하게 된다.
 바꿀 때는 두 곳을 한 번에 바꾼다.
+
+The guided tour was designed with reference to the public documentation of
+several open-source projects and to W3C standards (WAI-ARIA Authoring
+Practices, WCAG 2.2). No third-party code, assets or style values were
+copied; every implementation is original. The list of what was read, and
+what was deliberately not read, is in THIRD_PARTY_NOTICES.md.
