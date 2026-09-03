@@ -39,6 +39,16 @@ type Props =
       onGoto: (href: string) => void;
     };
 
+/** 포커스를 실제로 받을 수 있는 것들. `tabindex="-1"` 은 «순회» 대상이 아니라 제외한다. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** 그 요소 자신이 받을 수 있으면 자신을, 아니면 «안»의 첫 번째를 준다(D-42 · ⓑ). */
+function focusableIn(root: HTMLElement): HTMLElement | null {
+  if (root.matches(FOCUSABLE)) return root;
+  return root.querySelector<HTMLElement>(FOCUSABLE);
+}
+
 export function TourOverlay(props: Props) {
   if (props.mode === "invite") {
     return (
@@ -228,11 +238,18 @@ function TourStepView({
           ? document.querySelector<HTMLElement>(`[data-testid="${plan.of}"]`)
           : null;
       if (t && !allowed.includes(t)) allowed.push(t);
-      const el =
-        t ??
-        callout.querySelector<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])') ??
-        titleRef.current;
+      /* 🔴 **셀렉터가 «맞게» 풀리는 것과 «포커스를 받을 수 있는 것»을 가리키는 것은 다르다.**
+         `[data-testid="candidate"]` 는 평범한 `<li>` 라 `.focus()` 가 **예외도 경고도 없이
+         아무 일도 안 했다**(D-42 추적 실측: `picked="LI/candidate"` 다음 줄이 `active="BODY/"`).
+         그래서 가리킨 것 «안»의 첫 포커스 가능 요소로 내려간다 — 스크린리더도 그때 이름을 읽는다.
+         🔴 `<li>` 자체에 `tabIndex` 를 붙이지 «않는다»: 포커스가 껍데기에 앉으면 「이걸 누르세요」의
+            대상과 실제 누를 것이 어긋나 Tab 이 한 번 더 필요해진다(오케 판정 ⓐ 미채택). */
+      const el = (t ? focusableIn(t) : null) ?? focusableIn(callout) ?? titleRef.current;
       el?.focus();
+      /* 🔴 **안전망 — `focus()` 는 조용히 실패한다.** 불렀다고 갔다고 치면 그 순간 포커스는
+         「아무 데도 아닌 곳」(`body`)에 떨어지고, 그게 D-42 퇴행의 정의였다. 부른 «뒤» 결과를
+         읽어 확인하고, 안 갔으면 말풍선 제목으로 갚는다(앞판이 조건 없이 주던 자리다). */
+      if (!inRange(document.activeElement)) titleRef.current?.focus();
     };
     focusInitial();
     const raf = window.requestAnimationFrame(focusInitial);
