@@ -23,7 +23,11 @@ export function TourReopen() {
   return (
     <Link
       href="/overview?intro=1&tour=1"
-      className="fkt-hit fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill text-[1.125rem] text-muted hover:text-ink"
+      /* 🔴 가로 44 를 «실제 박스»로 만든다 — `::before` 를 좌우로 넓히면 요소가 그만큼 밖으로
+         삐져나가 뷰포트 가장자리에서 문서가 넘친다(D-33 실측: coarse 60/60 `scrollWidth 391 /
+         clientWidth 390`). 레이아웃으로 넓히면 넘칠 «수가» 없고 이웃 히트와 겹칠 수도 없다.
+         🔴 아이콘의 보이는 크기는 그대로다 — 는 것은 둘레 여백뿐이다. */
+      className="fkt-hit fkt-hoverable flex h-8 w-11 items-center justify-center rounded-pill text-[1.125rem] text-muted hover:text-ink"
       title="처음 오셨나요? 안내와 둘러보기 다시 보기"
       data-testid="intro-reopen"
       onClick={() => {

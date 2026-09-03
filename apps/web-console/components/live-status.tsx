@@ -206,7 +206,13 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
           `checking` 은 아직 물어보는 중이다. 셋을 한 자리에서 제안하면 살아 있는 Live 를
           정적이 가로챈다(오케 판정 R-3). */}
       {mode === "unavailable" && <StaticReplayOffer />}
-      <button className="fkt-hit text-muted hover:text-ink" onClick={() => setClosed(true)} aria-label="배너 닫기">
+      <button
+        /* ✕ 글리프는 가로 10.6px 뿐이라 2.5.8 의 24 미만 — 간격 예외에 기대는 자리였다.
+           위 `intro-reopen` 과 같은 형태로 «실제 박스»를 44 로 편다(글리프 크기 불변). */
+        className="fkt-hit inline-flex min-w-11 items-center justify-center text-muted hover:text-ink"
+        onClick={() => setClosed(true)}
+        aria-label="배너 닫기"
+      >
         ✕
       </button>
     </div>
