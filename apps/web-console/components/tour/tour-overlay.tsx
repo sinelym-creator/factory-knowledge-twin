@@ -21,6 +21,8 @@ type Rect = { top: number; left: number; width: number; height: number };
 type Props =
   | {
       mode: "invite";
+      /** 잠깐 끊었던 사람인가(⑧-2 `dismissed`) — 문면과 버튼이 「이어서」가 된다. */
+      resume?: boolean;
       onStart: () => void;
       onLater: () => void;
       onNever: () => void;
@@ -50,7 +52,9 @@ export function TourOverlay(props: Props) {
         aria-label="가이드 투어 안내"
       >
         <div className="min-w-0 flex-1">
-          <p className="text-body-c font-semibold">둘러보시겠습니까?</p>
+          <p className="text-body-c font-semibold">
+            {props.resume ? "보시던 곳부터 이어서 볼까요?" : "둘러보시겠습니까?"}
+          </p>
           <p className="mt-1 text-foot text-muted">
             이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다.
             녹화된 조사로 진행하니 아무것도 실행되지 않습니다.
@@ -63,7 +67,7 @@ export function TourOverlay(props: Props) {
             className="fkt-btn fkt-btn-primary rounded-pill px-5"
             data-testid="tour-start"
           >
-            둘러보기 시작
+            {props.resume ? "이어서 보기" : "둘러보기 시작"}
           </button>
           <button
             type="button"

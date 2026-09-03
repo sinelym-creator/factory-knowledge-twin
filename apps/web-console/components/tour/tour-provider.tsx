@@ -25,8 +25,17 @@ import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
  *    남기 때문이다. 그래서 클릭 감지는 capture 단계에서 듣고 즉시 저장한다.
  */
 
-type TourStatus = "never" | "active" | "done" | "skipped";
+/* 🔴 5상태(규격 ⑧-2 · D-38). 앞판의 4상태는 **「잠깐 끊기」와 「다시 보지 않기」가
+   같은 `skipped` 로 접혔다** — 둘 다 초대 카드가 «영구히» 사라졌다.
+   규칙 ① **사용자가 명시적으로 고르지 않은 것은 영구가 아니다** — Esc 는 의사 표시가 아니라
+   탈출 키다. ② `dismissed` 는 단계를 기억한다(1단계부터면 다시 끊는다). */
+type TourStatus = "never" | "running" | "dismissed" | "suppressed" | "completed";
 type TourState = { v: 1; status: TourStatus; step: number };
+
+/** 재개 지점 — 「이어서」는 `running`·`dismissed` 뿐이고 나머지는 1단계다(⑧-2 표). */
+function resumeStepOf(loaded: TourState): number {
+  return loaded.status === "running" || loaded.status === "dismissed" ? loaded.step : 0;
+}
 
 const KEY = "fkt.tour.v1";
 const INITIAL: TourState = { v: 1, status: "never", step: 0 };
@@ -40,13 +49,32 @@ function readState(): TourState {
     //    투어가 엉뚱한 스텝에서 열리는 것보다, 처음부터 여는 쪽이 덜 틀린다).
     if (parsed.v !== 1) return INITIAL;
     const step = typeof parsed.step === "number" ? Math.min(Math.max(parsed.step, 0), TOUR_TOTAL - 1) : 0;
-    const status: TourStatus =
-      parsed.status === "active" || parsed.status === "done" || parsed.status === "skipped"
-        ? parsed.status
-        : "never";
-    return { v: 1, status, step };
+    return { v: 1, status: migrate(parsed.status), step };
   } catch {
     return INITIAL;
+  }
+}
+
+/* 🔴 **저장된 `skipped` 는 어느 쪽인지 알 수 없다** — 그래서 «보수적으로» `dismissed` 다.
+   틀렸을 때 최악이 「초대 카드가 한 번 더 뜸」이고 반대는 「영구히 못 봄」이라 **비대칭**이다
+   (⑧-2 이관 규칙). 저장 키를 올리지 «않는» 이유도 같다 — 올리면 저장분이 통째로 `never` 가
+   되어 끝까지 본 사람에게도 초대가 다시 뜬다. */
+function migrate(raw: unknown): TourStatus {
+  switch (raw) {
+    case "never":
+    case "running":
+    case "dismissed":
+    case "suppressed":
+    case "completed":
+      return raw;
+    case "active":
+      return "running";
+    case "done":
+      return "completed";
+    case "skipped":
+      return "dismissed";
+    default:
+      return "never";
   }
 }
 
@@ -66,12 +94,14 @@ export function TourProvider() {
 
   /** null = 아직 저장소를 안 읽었다(첫 페인트) — 그동안 아무것도 그리지 않는다. */
   const [state, setState] = useState<TourState | null>(null);
+  /* 「나중에」 = 이 탭에서만 접는다. 저장으로 남기면 «명시적으로 고르지 않은 것»이 영구가 된다. */
+  const [laterHidden, setLaterHidden] = useState(false);
 
   useEffect(() => {
     const loaded = readState();
     // `?tour=1` 로 들어오면 «다시 보기»다 — 끝냈거나 건너뛴 사람도 열 수 있어야 한다(규격 ①-3).
-    if (wants && loaded.status !== "active") {
-      const resumed: TourState = { v: 1, status: "active", step: loaded.status === "done" ? 0 : loaded.step };
+    if (wants && loaded.status !== "running") {
+      const resumed: TourState = { v: 1, status: "running", step: resumeStepOf(loaded) };
       writeState(resumed);
       setState(resumed);
       return;
@@ -98,7 +128,7 @@ export function TourProvider() {
     (next: TourState) => {
       writeState(next);
       setState(next);
-      if (next.status !== "active") clearTourParam();
+      if (next.status !== "running") clearTourParam();
     },
     [clearTourParam],
   );
@@ -111,27 +141,27 @@ export function TourProvider() {
   useEffect(() => {
     const onOpen = () => {
       const loaded = readState();
-      commit({ v: 1, status: "active", step: loaded.status === "done" ? 0 : loaded.step });
+      commit({ v: 1, status: "running", step: resumeStepOf(loaded) });
     };
     window.addEventListener(TOUR_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(TOUR_OPEN_EVENT, onOpen);
   }, [commit]);
 
   const step: TourStep | null =
-    state?.status === "active" ? (TOUR_STEPS[state.step] ?? null) : null;
+    state?.status === "running" ? (TOUR_STEPS[state.step] ?? null) : null;
 
   const advance = useCallback(() => {
     if (!state) return;
     const at = state.step + 1;
     if (at >= TOUR_TOTAL) {
-      commit({ v: 1, status: "done", step: TOUR_TOTAL - 1 });
+      commit({ v: 1, status: "completed", step: TOUR_TOTAL - 1 });
       return;
     }
-    commit({ v: 1, status: "active", step: at });
+    commit({ v: 1, status: "running", step: at });
   }, [state, commit]);
 
   const stop = useCallback(
-    (how: "skipped" | "done") => {
+    (how: "dismissed" | "completed") => {
       if (!state) return;
       commit({ v: 1, status: how, step: state.step });
       /* 🔴 끊고 나면 포커스를 «왔던 자리»로 돌려놓는다 — 앱바의 `?`(재개 링크)다.
@@ -157,7 +187,9 @@ export function TourProvider() {
   useEffect(() => {
     if (!step) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") stop("skipped");
+      /* 🔴 Esc 는 «잠깐 끊음»이다 — 영구가 아니다(⑧-2 규칙 ①). 앞판은 여기서 `skipped` 로
+         굳혀 초대 카드를 영영 못 보게 만들었다. */
+      if (e.key === "Escape") stop("dismissed");
       // Enter = 다음(읽는 스텝만) — 입력 요소 안에서는 가만히 있는다.
       if (e.key === "Enter" && readAdvance(step).ui === "next") {
         const el = e.target as HTMLElement | null;
@@ -195,7 +227,7 @@ export function TourProvider() {
       if (state) {
         const at = Math.min(state.step + 1, TOUR_TOTAL - 1);
         const last = state.step + 1 >= TOUR_TOTAL;
-        commit({ v: 1, status: last ? "done" : "active", step: last ? TOUR_TOTAL - 1 : at });
+        commit({ v: 1, status: last ? "completed" : "running", step: last ? TOUR_TOTAL - 1 : at });
       }
       router.push(href);
     },
@@ -204,15 +236,20 @@ export function TourProvider() {
 
   if (!state) return null;
 
-  // 초대 카드 — 아직 한 번도 안 본 사람이 overview 에 있을 때만(막지 않는다 · 규격 ①-3).
-  if (state.status === "never") {
-    if (!pathname.startsWith("/overview")) return null;
+  /* 초대 카드 — overview 에서만(막지 않는다 · 규격 ①-3).
+     🔴 `dismissed` 에도 «보인다»(⑧-2 표) — 잠깐 끊은 사람에게 돌아갈 길이 있어야 한다.
+        앞판은 Esc 한 번으로 이 카드가 영영 사라졌다. `suppressed`·`completed` 는 숨긴다. */
+  if (state.status === "never" || state.status === "dismissed") {
+    if (!pathname.startsWith("/overview") || laterHidden) return null;
+    const resume = state.status === "dismissed";
     return (
       <TourOverlay
         mode="invite"
-        onStart={() => commit({ v: 1, status: "active", step: 0 })}
-        onLater={() => setState({ ...state, status: "never" })}
-        onNever={() => commit({ v: 1, status: "skipped", step: 0 })}
+        resume={resume}
+        onStart={() => commit({ v: 1, status: "running", step: resume ? state.step : 0 })}
+        /* 「나중에」는 «이 탭에서만» 접는다 — 저장을 건드리면 그게 곧 영구가 된다. */
+        onLater={() => setLaterHidden(true)}
+        onNever={() => commit({ v: 1, status: "suppressed", step: 0 })}
       />
     );
   }
@@ -227,7 +264,7 @@ export function TourProvider() {
       total={TOUR_TOTAL}
       onRoute={onRoute}
       onNext={advance}
-      onSkip={() => stop("skipped")}
+      onSkip={() => stop("dismissed")}
       onGoto={goto}
     />
   );
