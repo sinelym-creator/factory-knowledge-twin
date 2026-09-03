@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3112",
   "pointerRequested": "coarse",
-  "at": "2026-09-03T12:51:02.053Z",
+  "at": "2026-09-03T12:54:58.363Z",
   "sc": {
     "2.5.8": "The size of the target for pointer inputs is at least 24 by 24 CSS pixels, except when: Spacing / Equivalent / Inline / User agent control / Essential. (Level AA)",
     "spacing": "Undersized targets are positioned so that if a 24 CSS pixel diameter circle is centered on the bounding box of each, the circles do not intersect another target or the circle for another undersized target.",
@@ -81,28 +81,43 @@
         "anyHover": false
       },
       "total": 16,
-      "undersized24": 0,
+      "undersized24": 1,
       "aaPass": 16,
       "aaFailCount": 0,
-      "aaaPass": 13,
-      "aaaFailCount": 3,
+      "aaaPass": 10,
+      "aaaFailCount": 6,
       "inlineCandidatesAmongAaFail": 0,
       "aaFailures": [],
       "aaaFailSizes": [
         {
           "role": "link",
+          "name": "Overview",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
           "name": "안내와 둘러보기 다시 보기",
-          "size": "39×45"
+          "size": "33×45"
         },
         {
           "role": "button",
           "name": "배너 닫기",
-          "size": "39×40"
+          "size": "13×40"
         },
         {
           "role": "button",
           "name": "안내 닫기",
-          "size": "37×46"
+          "size": "29×45"
         }
       ]
     },
@@ -116,58 +131,78 @@
         "anyHover": false
       },
       "total": 41,
-      "undersized24": 19,
+      "undersized24": 20,
       "aaPass": 41,
       "aaFailCount": 0,
-      "aaaPass": 8,
-      "aaaFailCount": 33,
+      "aaaPass": 4,
+      "aaaFailCount": 37,
       "inlineCandidatesAmongAaFail": 0,
       "aaFailures": [],
       "aaaFailSizes": [
         {
           "role": "link",
+          "name": "Overview",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
           "name": "안내와 둘러보기 다시 보기",
-          "size": "39×45"
+          "size": "33×45"
         },
         {
           "role": "button",
           "name": "⟲정적 재생본 기억 리셋",
-          "size": "40×31"
+          "size": "35×25"
         },
         {
           "role": "button",
           "name": "배너 닫기",
-          "size": "39×40"
+          "size": "13×40"
         },
         {
           "role": "button",
           "name": "처음으로",
-          "size": "35×37"
+          "size": "29×29"
         },
         {
           "role": "button",
           "name": "한 이벤트 뒤로",
-          "size": "33×37"
+          "size": "29×29"
         },
         {
           "role": "button",
           "name": "재생",
-          "size": "70×37"
+          "size": "67×29"
         },
         {
           "role": "button",
           "name": "한 이벤트 앞으로",
-          "size": "33×37"
+          "size": "29×29"
         },
         {
           "role": "link",
           "name": "MR-2025-0087",
-          "size": "122×31"
+          "size": "109×25"
         },
         {
           "role": "link",
           "name": "DOC-MAN-0021@r1#006",
-          "size": "122×31"
+          "size": "122×25"
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25"
         },
         {
           "role": "link",
@@ -301,33 +336,48 @@
         "anyHover": false
       },
       "total": 8,
-      "undersized24": 1,
+      "undersized24": 2,
       "aaPass": 8,
       "aaFailCount": 0,
-      "aaaPass": 4,
-      "aaaFailCount": 4,
+      "aaaPass": 1,
+      "aaaFailCount": 7,
       "inlineCandidatesAmongAaFail": 0,
       "aaFailures": [],
       "aaaFailSizes": [
         {
           "role": "link",
+          "name": "Overview",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
           "name": "안내와 둘러보기 다시 보기",
-          "size": "39×45"
+          "size": "33×45"
         },
         {
           "role": "button",
           "name": "⟲정적 재생본 기억 리셋",
-          "size": "40×31"
+          "size": "35×25"
         },
         {
           "role": "button",
           "name": "배너 닫기",
-          "size": "39×40"
+          "size": "13×40"
         },
         {
           "role": "link",
           "name": "① Overview",
-          "size": "122×22"
+          "size": "70×19"
         }
       ]
     }

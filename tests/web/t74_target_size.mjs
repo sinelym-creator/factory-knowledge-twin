@@ -103,7 +103,10 @@ const SCAN = () => {
     const cy = r.top + r.height / 2;
     const owns = (x, y) => {
       const e = document.elementFromPoint(x, y);
-      return !!e && (e === el || el.contains(e) || e === el.parentElement);
+      // 🔴 부모를 «소유»로 세면 안 된다 — 밖으로 걸어 나가 부모 컨테이너에 닿는 순간
+      //    그 컨테이너 크기가 이 대상의 히트 상자로 둔갑한다(11px ✕ 가 39px 로 부풀었다).
+      //    의사요소(::before)는 elementFromPoint 가 «요소 자신»을 돌려주므로 부모는 불필요하다.
+      return !!e && (e === el || el.contains(e));
     };
     let hit = null;
     if (owns(cx, cy)) {
