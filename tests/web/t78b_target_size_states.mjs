@@ -284,7 +284,9 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
       const keyOf = KEY;
       for (const t of rows) {
         const k2 = keyOf(t);
-        if (!seen.has(k2)) seen.set(k2, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name });
+        const prev2 = seen.get(k2);
+        if (!prev2) seen.set(k2, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name, raw: t });
+        else if (!prev2.measured && t.inWindow && !(prev2.raw && prev2.raw.inWindow)) { prev2.raw = t; seen.set(k2, prev2); }
       }
       for (const r of liveRows) {
         const k2 = keyOf(r);
@@ -327,7 +329,13 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
               aaFail: liveRows.filter((r) => !r.aaPass).length,
               aaaFail: liveRows.filter((r) => !r.aaaPass).length,
             });
-            for (const t of rows) { const k = KEY(t); if (!seen.has(k)) seen.set(k, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name }); }
+            /* 🔴 안 잼 행의 «덮임» 근거를 남긴다 — 창 «안»에서 본 관측을 우선한다(밖은 스크롤 문제다). */
+      for (const t of rows) {
+        const k = KEY(t);
+        const prev = seen.get(k);
+        if (!prev) seen.set(k, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name, raw: t });
+        else if (!prev.measured && t.inWindow && !(prev.raw && prev.raw.inWindow)) { prev.raw = t; seen.set(k, prev); }
+      }
             for (const r of liveRows) {
               const k = KEY(r);
               const e = seen.get(k) ?? { measured: false, inert: r.inert, role: r.role, name: r.name };
@@ -370,6 +378,30 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
     cell.distinct = entries.length;   // 🔴 측정 + 안 잼 = 이 수. on/off 두 열에서 «불변»이어야 한다.
     cell.unmeasured = unmeasured.length;
     cell.unmeasuredNames = unmeasured.slice(0, 12).map((e) => `${e.role}:${e.name}`);
+    /* 🔴 **«덮임» 축 산출** — 안 잼마다 ① 이름 ② 덮은 것 ③ 자기/남 ④ 밖인가 덮인가.
+       🔴 판정의 핵심 = `unpressableHere` — **창 «안»인데 상자 어느 점도 내 것이 아니다**
+          = 그 자리에서는 **사람이 눌러도 이 대상이 안 받는다**(계측 한계가 아니라 대상의 사실).
+       `elementFromPoint` 는 `pointer-events:none` 을 건너뛰므로, 여기 잡힌 덮개는
+       **실제로 클릭을 받는 요소**다. */
+    cell.occlusion = unmeasured.map((e) => {
+      const t = e.raw;
+      /* 🔴 **«관측 없음»을 «창 밖»으로 읽지 않는다.** 기본값에서 사실을 만들면, 못 본 것이
+         「밖에 있었다」로 둔갑한다 — 폴백·상한과 같은 병이다(§⑧-7 ⑨). 별도 값으로 낸다. */
+      if (!t) return { role: e.role, name: e.name, observed: false, why: "관측 없음(이 칸에서 원본 행을 못 잡았다 — 0 도 밖도 아니다)" };
+      return {
+        role: e.role, name: e.name, observed: true,
+        inWindow: !!t.inWindow,
+        unpressableHere: !!t.unpressableHere,
+        box: t.boxW != null ? `${t.boxW}×${t.boxH}` : null,
+        blocker: t.blockedAtCenter ?? null,
+        why: !t.inWindow ? "창 밖(스크롤로 닿을 수 있다 — 내 한계)"
+          : t.unpressableHere ? "🔴 창 안인데 상자 전체가 막힘 — 사람도 이 상자로는 못 누른다"
+          : "창 안 · 일부 점은 내 것(중심만 막힘)",
+      };
+    });
+    cell.unobservedCount = cell.occlusion.filter((o) => !o.observed).length;
+    cell.unpressableCount = cell.occlusion.filter((o) => o.unpressableHere).length;
+    cell.viaAnchorCount = liveMeasured.filter((r) => r.hitViaAnchor).length;
     cell.aaFailures = liveMeasured.filter((r) => !r.aaPass).map((r) => ({
       role: r.role, name: r.name, size: `${r.w}×${r.h}`, box: `${r.boxW}×${r.boxH}`,
       hitScanned: r.hitScanned, inlineCandidate: r.inlineCandidate,
@@ -491,7 +523,8 @@ for (const pointer of POINTERS) for (const state of STATES) {
   console.log(`  [${pointer} · ${state}]`);
   for (const c of cs) {
     console.log(`    ${String(c.width).padStart(4)}×${String(c.height).padEnd(4)} ${c.route.padEnd(11)} 스텝 ${String(c.steps.length).padStart(1)} · 대상 ${String(c.nonInert.total).padStart(3)}(all ${String(c.all.total).padStart(3)}·inert제외 ${c.inertExcluded}) · AA통과 ${c.nonInert.total - c.nonInert.aaFailCount}/${c.nonInert.total}${c.nonInert.aaFailCount ? ` 🔴${c.nonInert.aaFailCount}` : ""} · AAA통과 ${c.nonInert.total - c.nonInert.aaaFailCount}/${c.nonInert.total}${c.unmeasured ? ` · 🔴안잼 ${c.unmeasured}` : ""} · distinct ${c.distinct}${c.containersSwept ? ` · 컨테이너 ${c.scrollers.length}` : " · 컨테이너 OFF"}`);
-    if (c.unmeasured) console.log(`         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): ${c.unmeasuredNames.join(" · ")}`);
+    if (c.unmeasured) console.log(`         ⌀ 안 잰 대상 ${c.unmeasured}${c.unpressableCount ? ` · 🔴 그중 «사람도 못 누름» 후보 ${c.unpressableCount}` : ""}${c.viaAnchorCount ? ` · (중심 대신 다른 점에서 잰 것 ${c.viaAnchorCount})` : ""}`);
+    for (const o of (c.occlusion ?? [])) console.log(`            ${o.unpressableHere ? "🔴" : "▫"} ${o.role} 「${o.name}」 ${o.box ?? ""} — ${o.why}${o.blocker ? ` · 덮은 것: ${o.blocker.rel}/${o.blocker.tag} 「${o.blocker.name}」 op=${o.blocker.opacity} bg=${o.blocker.bg}${o.blocker.interactive ? " ⟨상호작용 요소⟩" : ""}` : ""}`);
     for (const f of c.aaFailures) console.log(`         🔴 AA ${f.role} 「${f.name}」 ${f.size} — 교차 ${f.partnerCount}: ${f.partners.map((x) => `${x.kind}:${x.name}`).join(" | ")}${f.inlineCandidate ? " ⟨Inline 예외 후보 — 사람 판단⟩" : ""}`);
     for (const f of (c.aaaFailures ?? [])) console.log(`         ▫ AAA(목표) ${f.role} 「${f.name}」 ${f.size}`);
   }

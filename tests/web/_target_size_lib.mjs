@@ -94,12 +94,55 @@ export const SCAN = () => {
       // 🔴 부모를 «소유»로 세면 안 된다 — 부모 컨테이너 크기가 이 대상의 히트 상자로 둔갑한다.
       return !!e && (e === el || el.contains(e));
     };
+    /* 🔴 **«덮임» 축 — 중심 한 점만 물으면 «사람도 못 누른다」와 «내가 가운데만 짚었다」가 접힌다.**
+       사람은 대상의 «아무 데나» 누른다. 그래서 중심이 막히면 **상자 안을 격자로 훑어 «내 것인 점»을
+       찾고**, 찾으면 **거기서부터** 히트 상자를 잰다. 한 점도 못 찾으면 그건
+       🔴 **「내가 못 쟀다」가 아니라 「사람도 그 상자 안 어디를 눌러도 이 대상이 안 받는다」**다.
+       그 둘을 가르는 것이 이 축의 값이다. */
+    const blockerOf = (x, y) => {
+      const e = document.elementFromPoint(x, y);
+      if (!e) return { none: true };
+      const rel = e === el ? "self" : el.contains(e) ? "descendant" : e.contains(el) ? "ancestor" : "other";
+      const bcs = getComputedStyle(e);
+      return {
+        rel,
+        tag: e.tagName.toLowerCase(),
+        name: (e.getAttribute("aria-label") || (e.textContent ?? "").replace(/\s+/g, " ").trim() || e.className || "").toString().slice(0, 40),
+        opacity: bcs.opacity,
+        bg: bcs.backgroundColor,
+        /* 🔴 `elementFromPoint` 는 `pointer-events:none` 을 «건너뛴다» ⇒ 여기 잡힌 것은
+           **실제로 클릭을 받는 요소**다. 즉 이 자리에서는 사람이 눌러도 대상에 안 간다. */
+        interactive: !!e.closest("a[href],button,input,select,textarea,[role=button],[role=link],[tabindex]"),
+      };
+    };
     let hit = null;
+    let anchor = null;                 // 실제로 «내 것»인 점
+    let blocked = null;                // 중심을 막은 것
     if (owns(cx, cy)) {
-      const walk = (dx, dy) => { let k = 0; for (let s = 1; s <= 60; s++) { if (!owns(cx + dx * s, cy + dy * s)) break; k = s; } return k; };
-      const L = walk(-1, 0), R2 = walk(1, 0), U = walk(0, -1), D = walk(0, 1);
-      hit = { left: cx - L, right: cx + R2, top: cy - U, bottom: cy + D, w: L + R2 + 2, h: U + D + 2 };
+      anchor = { x: cx, y: cy };
+    } else {
+      blocked = blockerOf(cx, cy);
+      /* 상자 안 5×5 격자(테두리에서 2px 안쪽) — 사람이 누를 만한 자리를 대신 훑는다. */
+      const N = 5;
+      outer:
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          const x = r.left + 2 + ((r.width - 4) * i) / (N - 1);
+          const y = r.top + 2 + ((r.height - 4) * j) / (N - 1);
+          if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) continue;
+          if (owns(x, y)) { anchor = { x, y }; break outer; }
+        }
+      }
     }
+    if (anchor) {
+      const ax = anchor.x, ay = anchor.y;
+      const walk = (dx, dy) => { let k = 0; for (let s = 1; s <= 60; s++) { if (!owns(ax + dx * s, ay + dy * s)) break; k = s; } return k; };
+      const L = walk(-1, 0), R2 = walk(1, 0), U = walk(0, -1), D = walk(0, 1);
+      hit = { left: ax - L, right: ax + R2, top: ay - U, bottom: ay + D, w: L + R2 + 2, h: U + D + 2, viaAnchor: !(ax === cx && ay === cy) };
+    }
+    /* 🔴 **화면 «밖»인가 «덮인» 것인가** — 뜻이 다르다. 밖이면 스크롤로 닿을 수 있고(내 한계),
+       안인데 한 점도 못 잡으면 **그 자리에서 사람도 못 누른다**(대상의 사실). */
+    const inWindow = r.right > 0 && r.bottom > 0 && r.left < window.innerWidth && r.top < window.innerHeight;
 
     targets.push({
       role: roleOf(el),
@@ -109,6 +152,12 @@ export const SCAN = () => {
       boxW: Number(r.width.toFixed(2)),
       boxH: Number(r.height.toFixed(2)),
       hitScanned: !!hit,
+      /* «덮임» 축 산출 — 안 잼 행에서만 뜻이 있다. */
+      hitViaAnchor: !!(hit && hit.viaAnchor),
+      inWindow,
+      blockedAtCenter: blocked,
+      /* 🔴 창 «안»인데 상자 어디에도 내 점이 없다 = **사람도 그 상자로는 못 누른다**(후보). */
+      unpressableHere: inWindow && !hit,
       cx: Number(cx.toFixed(2)),
       cy: Number(cy.toFixed(2)),
       left: Number((hit ? hit.left : r.left).toFixed(2)),
