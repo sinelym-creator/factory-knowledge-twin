@@ -15,6 +15,8 @@
  * 🔴 **여기서 데이터를 흉내 내지 않는다.** 가짜 수치·가짜 알람으로 채운 스켈레톤은 잠깐이라도
  *    「공장이 이렇다」고 말하는 것이고, 그것이 §0.2 가 금지하는 형태다. 자리와 「불러오는 중」
  *    이라는 사실만 그린다.
+ *
+ * T6-4 ③ 스켈레톤 행: bg-3 r16 블록 + shimmer(④-4) · 가짜 수치 0 은 그대로.
  */
 export default function OverviewLoading() {
   return (
@@ -25,14 +27,14 @@ export default function OverviewLoading() {
           실제로 `reset-modal` 이 그 자리에서 strict mode violation 으로 울었다 —
           그물을 고치는 대신 이 줄을 고친다(그물은 내 write scope 도 아니다).
           `aria-live="polite"` 는 같은 안내를 하되 새 role 을 만들지 않는다. */}
-      <p className="text-xs text-muted" aria-live="polite">
+      <p className="text-foot text-muted" aria-live="polite">
         공장 현황을 불러오는 중입니다…
       </p>
       {/* 자리만 잡는 골격 — 값이 아니라 «레이아웃»이 여기 있다는 뜻이다 */}
-      <div className="h-20 rounded border border-dashed border-edge bg-panel" aria-hidden />
+      <div className="fkt-shimmer h-20 rounded-card" aria-hidden />
       <div className="flex gap-3">
-        <div className="h-40 flex-1 rounded border border-dashed border-edge bg-panel" aria-hidden />
-        <div className="h-40 w-80 shrink-0 rounded border border-dashed border-edge bg-panel" aria-hidden />
+        <div className="fkt-shimmer h-40 flex-1 rounded-card" aria-hidden />
+        <div className="fkt-shimmer hidden h-40 w-80 shrink-0 rounded-card lg:block" aria-hidden />
       </div>
     </div>
   );

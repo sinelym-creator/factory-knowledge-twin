@@ -7,30 +7,31 @@
       기존 토큰 이름(bg·panel·edge·ink·muted·ok·warn·danger·ai·scrim)은 아래 @theme inline 이
       --fkt-* 로 «참조»하므로 컴포넌트 diff 0 으로 팔레트가 바뀐다(PR 1 완료 조건).
 
-   🔴 다크/라이트 = 자동(원칙 ①-7). 값만 스위치하고 구조는 같다. 라이트가 :root 기본값이고
-      다크는 prefers-color-scheme 미디어 쿼리 한 블록이다 — 컴포넌트마다 dark: 변형을 쓰지 않는다.
-      (이전 주석 「다크가 기본 · 라이트 전환은 P0 밖」은 규격서 ①-7 로 대체됐다 · D-005)
+   🔴 **다크가 기본이다**(baseline §10 neutral dark · 폐하 09-03 14:15 「다크가 더 낫다」). 라이트는
+      `:root[data-theme="light"]` 옵트인 자리에 «값만» 준비해 둔다(토글은 P2 · 미디어 쿼리로 자동
+      전환하지 않는다 — 검증 그물 「다크가 기본이다」 행과 §10 정본을 코드가 따른다).
+      컴포넌트마다 dark: 변형을 쓰지 않는다 — 값만 스위치하고 구조는 같다.
 
    총 35 토큰 = 색 14 · 폰트 2 · 크기 7 · 라운드 4 · 그림자 2 · blur 1 · 모션 5.
    ============================================================================= */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  /* ── 색 14 (라이트 · HIG 고대비 변형 · label-2 .72 = 본문 4.5:1) ── */
-  --fkt-bg-1: #f2f2f7;                 /* 바탕 */
-  --fkt-bg-2: #ffffff;                 /* 카드·패널 */
-  --fkt-bg-3: #e5e5ea;                 /* 인셋·트랙·2차 버튼 */
-  --fkt-label-1: #000000;              /* 본문 */
-  --fkt-label-2: rgb(60 60 67 / 0.72); /* 보조 */
-  --fkt-label-3: rgb(60 60 67 / 0.5);  /* 플레이스홀더 — 본문 텍스트 금지(⑤) */
-  --fkt-label-4: rgb(60 60 67 / 0.18); /* 구분선·헤어라인 */
-  --fkt-tint: #0071e3;                 /* 틴트 = AI·evidence·현재 항목 */
-  --fkt-success: #248a3d;
-  --fkt-warning: #c93400;
-  --fkt-danger: #d70015;
-  --fkt-info: #0071a4;
-  --fkt-scrim: rgb(0 0 0 / 0.3);
-  --fkt-glass: rgb(255 255 255 / 0.72); /* 앱바·레일·모달 3면만 */
+  /* ── 색 14 (다크 · HIG 고대비 변형) ── */
+  --fkt-bg-1: #000000;                    /* 바탕 */
+  --fkt-bg-2: #1c1c1e;                    /* 카드·패널 */
+  --fkt-bg-3: #2c2c2e;                    /* 인셋·트랙·2차 버튼 */
+  --fkt-label-1: #ffffff;                 /* 본문 */
+  --fkt-label-2: rgb(235 235 245 / 0.6);  /* 보조 */
+  --fkt-label-3: rgb(235 235 245 / 0.4);  /* 플레이스홀더 — 본문 텍스트 금지(⑤) */
+  --fkt-label-4: rgb(84 84 88 / 0.65);    /* 구분선·헤어라인 */
+  --fkt-tint: #0a84ff;                    /* 틴트 = AI·evidence·현재 항목 */
+  --fkt-success: #30db5b;
+  --fkt-warning: #ffb340;
+  --fkt-danger: #ff6961;
+  --fkt-info: #70d7ff;
+  --fkt-scrim: rgb(0 0 0 / 0.55);
+  --fkt-glass: rgb(28 28 30 / 0.72);      /* 앱바·레일·모달 3면만 */
 
   /* ── 폰트 2 (시스템 스택 · 웹폰트 fetch 0 · LCP ⑤) ── */
   --fkt-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
@@ -52,9 +53,9 @@
   --fkt-r-chip: 8px;
   --fkt-r-pill: 999px;
 
-  /* ── 그림자 2 (라이트) ── */
-  --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.04);
-  --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
+  /* ── 그림자 2 (다크 = alpha ×2 + 1px label-4 헤어라인 · 검정 위에선 그림자만으로 층이 안 보인다) ── */
+  --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.12), 0 0 0 1px var(--fkt-label-4);
+  --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.24), 0 0 0 1px var(--fkt-label-4);
 
   /* ── blur 1 ── */
   --fkt-blur: blur(20px) saturate(180%);
@@ -81,26 +82,25 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fkt-bg-1: #000000;
-    --fkt-bg-2: #1c1c1e;
-    --fkt-bg-3: #2c2c2e;
-    --fkt-label-1: #ffffff;
-    --fkt-label-2: rgb(235 235 245 / 0.6);
-    --fkt-label-3: rgb(235 235 245 / 0.4);
-    --fkt-label-4: rgb(84 84 88 / 0.65);
-    --fkt-tint: #0a84ff;
-    --fkt-success: #30db5b;
-    --fkt-warning: #ffb340;
-    --fkt-danger: #ff6961;
-    --fkt-info: #70d7ff;
-    --fkt-scrim: rgb(0 0 0 / 0.55);
-    --fkt-glass: rgb(28 28 30 / 0.72);
-    /* 다크 그림자 = alpha ×2 + 1px label-4 헤어라인(검정 위에서 그림자만으로는 층이 안 보인다) */
-    --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.12), 0 0 0 1px var(--fkt-label-4);
-    --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.24), 0 0 0 1px var(--fkt-label-4);
-  }
+/* 라이트 값(옵트인 자리 · P2 토글이 `data-theme="light"` 를 html 에 올리면 켜진다 · 지금 켜는 곳 0) */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fkt-bg-1: #f2f2f7;
+  --fkt-bg-2: #ffffff;
+  --fkt-bg-3: #e5e5ea;
+  --fkt-label-1: #000000;
+  --fkt-label-2: rgb(60 60 67 / 0.72); /* .72 = 본문 4.5:1 계산 상향 */
+  --fkt-label-3: rgb(60 60 67 / 0.5);
+  --fkt-label-4: rgb(60 60 67 / 0.18);
+  --fkt-tint: #0071e3;
+  --fkt-success: #248a3d;
+  --fkt-warning: #c93400;
+  --fkt-danger: #d70015;
+  --fkt-info: #0071a4;
+  --fkt-scrim: rgb(0 0 0 / 0.3);
+  --fkt-glass: rgb(255 255 255 / 0.72);
+  --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.04);
+  --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
 }
 
 /* =============================================================================
@@ -236,6 +236,12 @@ body {
     background: var(--fkt-bg-2);
     border-radius: var(--fkt-r-card);
     box-shadow: var(--fkt-shadow-1);
+  }
+  /* 히어로 — 헤드라인 한 장에만: 좌상단 틴트 글로우(장식은 이 한 곳 · 원칙 ①-1 예외를 명시) */
+  .fkt-hero {
+    background:
+      radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--fkt-tint) 16%, transparent), transparent 55%),
+      var(--fkt-bg-2);
   }
 
   /* 버튼 — 1차 틴트 채움 / 2차 bg-3 / 3차 틴트 텍스트 · h36(모바일 44) · press ④-8 */

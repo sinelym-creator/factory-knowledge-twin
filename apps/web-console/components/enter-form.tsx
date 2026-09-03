@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+import { IconMark } from "@/components/icons";
 import { enterSession } from "@/lib/contract";
 import { ENTRY_DESTINATION } from "@/lib/session";
 
@@ -47,6 +48,8 @@ import { ENTRY_DESTINATION } from "@/lib/session";
  *    🔴 `redirect: "manual"` 인 이유: 그냥 두면 fetch 가 303 을 따라가 `/overview` **문서를
  *       통째로** 받아 버리고(그 SSR 이 API 를 기다리는 동안 사람은 아무것도 못 본다) 그
  *       응답을 버린다. 우리는 쿠키만 필요하고 화면은 클라이언트 항해가 그린다.
+ *
+ * T6-4: 이 화면이 «첫인상»이다 — 마크 + 제목 + 한 줄 + 숨 쉬는 점 + 주 버튼. 문구·testid 불변.
  */
 export function EnterForm() {
   const form = useRef<HTMLFormElement>(null);
@@ -94,19 +97,26 @@ export function EnterForm() {
       ref={form}
       method="post"
       action="/enter"
-      className="mx-auto mt-24 flex max-w-sm flex-col items-center gap-3 text-center"
+      className="fkt-rise mx-auto mt-16 flex w-full max-w-sm flex-col items-center gap-4 text-center md:mt-28"
       data-testid="entry-form"
     >
-      <p className="text-sm" role="status">
+      <span
+        aria-hidden
+        className="flex h-16 w-16 items-center justify-center rounded-card bg-ai/12 text-[30px] text-ai shadow-1"
+      >
+        <IconMark />
+      </span>
+      <p className="text-title font-semibold leading-tight tracking-tight" role="status">
         세션을 만들고 조사 화면으로 들어갑니다…
       </p>
-      <p className="text-xs text-muted">
+      <p className="text-foot text-muted">
         이 세션의 변경은 다른 방문자에게 보이지 않습니다. 자동으로 넘어가지 않으면 아래를
         눌러 주세요.
       </p>
+      <span aria-hidden className="fkt-dot fkt-pulse text-ai" />
       <button
         type="submit"
-        className="rounded border border-edge px-3 py-1.5 text-xs text-ai hover:bg-panel focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+        className="fkt-btn fkt-btn-primary"
         data-testid="enter-button"
       >
         입장하기 →

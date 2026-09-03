@@ -15,6 +15,9 @@ import { startRunBrowser } from "@/lib/contract";
  * 🔴 **pending 세션에서는 «될 리가 없다»고 먼저 말한다.** 백엔드가 모르는 임시 세션으로
  *    조사를 시작하면 401 이 돌아오는데, 그 빨강은 방문자에게 「내가 뭘 잘못했나」로 읽힌다.
  *    상태를 아는 쪽이 먼저 말하는 것이 정직하다.
+ *
+ * T6-4 ③ 버튼 행: 이 화면의 «주 동작»이라 1차(틴트 채움)다 — 화면에서 가장 먼저 눈이
+ * 가야 하는 것이 이 버튼이다. Replay 제안은 2차(bg-3).
  */
 export function StartInvestigation({
   scenarioId,
@@ -56,13 +59,13 @@ export function StartInvestigation({
         onClick={() => void start("live")}
         disabled={!usable || busy}
         data-testid={testId}
-        className="rounded border border-ai/60 px-3 py-1 text-xs text-ai hover:bg-ai/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+        className="fkt-btn fkt-btn-primary whitespace-nowrap"
         title={usable ? undefined : "이 세션은 아직 백엔드에 등록되지 않았습니다"}
       >
         {busy ? "조사 시작 중…" : "조사 시작 ▸"}
       </button>
       {refusal && (
-        <div className="mt-1 text-xs" role="status" data-testid="run-refusal" data-code={refusal.code ?? "unknown"}>
+        <div className="fkt-rise mt-2 text-foot" role="status" data-testid="run-refusal" data-code={refusal.code ?? "unknown"}>
           <p className="text-warn">{refusal.text}</p>
           {/* 🔴 **제안은 «문장»이 아니라 «동작»이다**(§6.2 · 빈 화면 0). 「Replay 로 볼 수
               있습니다」라고만 적으면 방문자는 그 다음에 무엇을 눌러야 하는지 모른 채 남는다.
@@ -74,7 +77,7 @@ export function StartInvestigation({
               onClick={() => void start("replay")}
               disabled={busy}
               data-testid="run-replay-offer"
-              className="mt-1 rounded border border-edge px-2 py-1 text-muted hover:text-ink disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+              className="fkt-btn fkt-btn-secondary mt-2"
             >
               Replay 로 보기 ▸
             </button>

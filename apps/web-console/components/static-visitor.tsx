@@ -52,7 +52,7 @@ export function StaticVisitorChip() {
   return (
     <span className="flex items-center gap-1.5" data-testid="static-visitor">
       <span
-        className="rounded border border-ai/50 px-2 py-1 text-xs text-ai"
+        className="rounded-chip bg-ai/12 px-2 py-1 text-cap font-medium text-ai"
         title={`정적 재생본 방문자 ${visitor.visitorId} — 서버 세션이 아닙니다. 이 브라우저에만 남습니다.`}
         data-testid="static-visitor-chip"
         data-origin="static"
@@ -67,7 +67,7 @@ export function StaticVisitorChip() {
       {/* ⟲ 리셋의 정적 대응 — 🔴 서버에 보낼 것이 없으니 «이 브라우저의 기억»을 지운다.
           Live 의 리셋과 같은 몸짓이지만 지우는 대상이 다르므로 툴팁이 그 사실을 말한다. */}
       {asking ? (
-        <span className="flex items-center gap-1 text-xs" role="group" aria-label="정적 재생본 리셋 확인">
+        <span className="fkt-rise flex items-center gap-1 text-foot" role="group" aria-label="정적 재생본 리셋 확인">
           <span className="text-muted">기억을 지웁니까?</span>
           <button
             type="button"
@@ -78,7 +78,7 @@ export function StaticVisitorChip() {
               //    남아 있으면 「리셋했는데 그 자리」가 되어 리셋이 거짓이 된다.
               location.reload();
             }}
-            className="rounded border border-warn/50 px-1.5 py-0.5 text-warn hover:bg-warn/10"
+            className="rounded-chip bg-warn/12 px-2 py-1 font-medium text-warn transition-colors duration-(--fkt-dur-1) hover:bg-warn/20"
             data-testid="static-reset-confirm"
           >
             지운다
@@ -86,7 +86,7 @@ export function StaticVisitorChip() {
           <button
             type="button"
             onClick={() => setAsking(false)}
-            className="rounded border border-edge px-1.5 py-0.5 text-muted hover:text-ink"
+            className="rounded-chip bg-inset px-2 py-1 text-muted transition-colors duration-(--fkt-dur-1) hover:text-ink"
             data-testid="static-reset-cancel"
           >
             취소
@@ -96,7 +96,7 @@ export function StaticVisitorChip() {
         <button
           type="button"
           onClick={() => setAsking(true)}
-          className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+          className="rounded-chip bg-inset px-2.5 py-1 text-foot text-muted transition-colors duration-(--fkt-dur-1) hover:text-ink"
           title="이 브라우저에 남은 정적 재생본 기억(되감기 위치·열람 이력)을 지웁니다"
           data-testid="static-reset"
         >

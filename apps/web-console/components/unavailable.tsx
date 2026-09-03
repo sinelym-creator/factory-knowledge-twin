@@ -24,20 +24,20 @@ export function Unavailable({
   heading?: boolean;
 }) {
   return (
-    <section className="max-w-2xl" data-testid="screen-unavailable" data-kind={kind}>
+    <section className="fkt-rise max-w-2xl" data-testid="screen-unavailable" data-kind={kind}>
       {heading ? (
-        <h1 className="text-lg font-semibold">{screen}</h1>
+        <h1 className="text-title font-semibold tracking-tight">{screen}</h1>
       ) : (
-        <p className="text-lg font-semibold">{screen}</p>
+        <p className="text-title font-semibold tracking-tight">{screen}</p>
       )}
-      <div className="mt-4 rounded border border-warn/40 bg-panel p-4">
-        <p className="text-sm text-warn">
+      <div className="fkt-card mt-4 p-5 outline outline-1 -outline-offset-1 outline-warn/40">
+        <p className="text-body-c font-medium text-warn">
           {kind === "not-found"
             ? "서버가 «그런 자원이 없다»고 답했다."
             : "이 화면의 데이터를 지금 가져오지 못했다."}
         </p>
-        <p className="id mt-2 text-xs text-muted">사유: {why}</p>
-        <p className="mt-3 text-xs text-muted">
+        <p className="id mt-2 text-foot text-muted">사유: {why}</p>
+        <p className="mt-3 text-foot text-muted">
           {kind === "not-found"
             ? "«없다»와 «못 물어봤다»는 다른 사건이라 다른 문장으로 답한다 — 이 자리는 전자다."
             : "화면이 «비어 있는 것»이 아니라 «묻지 못한 것»이다 — 두 상태를 같은 모습으로 그리지 않으려고 이 자리를 둔다."}

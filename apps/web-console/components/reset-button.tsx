@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { IconReset } from "@/components/icons";
 import { resetSession } from "@/lib/contract";
 import { useEscapeToClose } from "@/lib/use-escape-to-close";
 
@@ -10,6 +11,8 @@ import { useEscapeToClose } from "@/lib/use-escape-to-close";
  *
  * 🔴 「초기화됐습니다」를 «응답을 받은 뒤에만» 말한다. 백엔드가 아직 없을 때 성공처럼 보이게
  *    하면, 화면이 하지 않은 일을 했다고 말하는 것이다(P0 11항 중 «리셋»의 참·거짓이 여기서 갈린다).
+ *
+ * T6-4 ③ 모달 행: 스크림+blur · 시트 r16 shadow-2 · ≥md 중앙 / <md 바텀 시트 · 주 버튼 틴트 채움.
  */
 export function ResetButton({ sessionId }: { sessionId: string }) {
   const [asking, setAsking] = useState(false);
@@ -36,7 +39,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
   return (
     <>
       <button
-        className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink"
+        className="flex items-center gap-1 rounded-chip bg-inset px-2.5 py-1 text-foot text-muted transition-colors duration-(--fkt-dur-1) hover:text-ink"
         onClick={() => {
           setResult(null);
           setAsking(true);
@@ -44,22 +47,27 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
         title="이 세션의 상태를 처음으로 되돌립니다"
         data-testid="reset-button"
       >
-        ⟲ <span className="sr-only">세션 </span>리셋
+        <IconReset className="text-[14px]" />
+        <span className="sr-only">세션 </span>리셋
       </button>
 
       {asking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
-          <div className="w-full max-w-sm rounded border border-edge bg-panel p-4" role="dialog" aria-modal>
-            <p className="text-sm">이 세션을 처음 상태로 되돌릴까요?</p>
-            <p className="mt-1 text-xs text-muted">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-scrim backdrop-blur-sm md:items-center md:p-4">
+          <div
+            className="fkt-card fkt-sheet w-full rounded-b-none p-5 shadow-2 md:max-w-sm md:rounded-b-card"
+            role="dialog"
+            aria-modal
+          >
+            <p className="text-head font-semibold tracking-tight">이 세션을 처음 상태로 되돌릴까요?</p>
+            <p className="mt-2 text-foot text-muted">
               변경한 작업지시서 초안·조사 결과가 사라집니다. 다른 방문자에게는 영향이 없습니다.
             </p>
-            <div className="mt-4 flex justify-end gap-2 text-xs">
-              <button className="rounded border border-edge px-3 py-1.5 text-muted hover:text-ink"
+            <div className="mt-5 flex justify-end gap-2">
+              <button className="fkt-btn fkt-btn-secondary"
                       onClick={() => setAsking(false)} disabled={busy}>
                 취소
               </button>
-              <button className="rounded border border-edge px-3 py-1.5 text-ai hover:text-ink"
+              <button className="fkt-btn fkt-btn-primary"
                       onClick={() => void confirm()} disabled={busy}>
                 {busy ? "되돌리는 중…" : "되돌리기"}
               </button>
@@ -69,7 +77,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
       )}
 
       {result && (
-        <span className="text-xs text-muted" role="status">
+        <span className="fkt-rise text-foot text-muted" role="status">
           {result}
         </span>
       )}

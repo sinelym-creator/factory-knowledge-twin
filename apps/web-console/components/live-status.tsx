@@ -15,6 +15,9 @@ import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
  *    → 확인 중 · LIVE · REPLAY · 미연결을 각각 다르게 말한다.
  *
  * 🔴 색만으로 구분하지 않는다(§10·§11.3) — 아이콘(◉ ◑ ◌) + 텍스트를 항상 함께 낸다.
+ *
+ * T6-4 ③ 모드 배지 행: pill 999 · 상태색 12% 배경 · 문구·아이콘 불변 · 모드가 바뀌면 pop(④-5 ·
+ * `key={mode}` 재마운트) · checking/live 는 아이콘이 숨 쉰다(④-10).
  */
 
 // 🔴 「아직 안 물어봤다」와 「물어봤는데 못 받았다」는 다른 상태다. 첫 응답 전에 «미연결»이라
@@ -55,11 +58,11 @@ export function LiveStatusProvider({ children }: { children: React.ReactNode }) 
   return <LiveContext.Provider value={state}>{children}</LiveContext.Provider>;
 }
 
-const FACE: Record<Mode, { icon: string; text: string; cls: string }> = {
-  checking: { icon: "◌", text: "확인 중", cls: "text-muted" },
-  live: { icon: "◉", text: "LIVE", cls: "text-ok" },
-  replay: { icon: "◑", text: "REPLAY", cls: "text-warn" },
-  unavailable: { icon: "◌", text: "미연결", cls: "text-muted" },
+const FACE: Record<Mode, { icon: string; text: string; cls: string; breathing: boolean }> = {
+  checking: { icon: "◌", text: "확인 중", cls: "text-muted", breathing: true },
+  live: { icon: "◉", text: "LIVE", cls: "text-ok", breathing: true },
+  replay: { icon: "◑", text: "REPLAY", cls: "text-warn", breathing: false },
+  unavailable: { icon: "◌", text: "미연결", cls: "text-muted", breathing: false },
 };
 
 /**
@@ -79,12 +82,15 @@ export function ModeBadge() {
   const seen = checkedAt ? new Date(checkedAt).toLocaleTimeString("ko-KR") : "확인 전";
   return (
     <span
-      className={`flex items-center gap-1.5 rounded border border-edge px-2 py-1 text-xs ${face.cls}`}
+      key={mode}
+      className={`fkt-pill fkt-pop ${face.cls}`}
       title={`마지막 확인 ${seen}${why ? ` · ${why}` : ""}`}
       data-testid="mode-badge"
       data-mode={mode}
     >
-      <span aria-hidden>{face.icon}</span>
+      <span aria-hidden className={face.breathing ? "fkt-pulse inline-block" : "inline-block"}>
+        {face.icon}
+      </span>
       <span>{face.text}</span>
     </span>
   );
@@ -135,7 +141,7 @@ function StaticReplayOffer() {
         type="button"
         onClick={() => void enter()}
         disabled={busy}
-        className="rounded border border-ai/60 px-2 py-0.5 text-xs text-ai hover:bg-ai/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+        className="fkt-btn fkt-btn-primary min-h-8 px-3 text-foot md:min-h-8"
         data-testid="static-replay-offer"
       >
         {busy ? "재생본 준비 중…" : "정적 재생본으로 GS-01 보기 ▸"}
@@ -194,7 +200,7 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
   if (!notice || closed) return null;
   return (
     <div
-      className="flex items-center gap-3 border-b border-edge bg-panel px-4 py-2 text-xs text-ink"
+      className="fkt-glass fkt-rise flex items-center gap-3 border-b border-edge px-4 py-2 text-foot text-ink"
       role="status"
       data-testid="fallback-banner"
     >
@@ -206,7 +212,11 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
           `checking` 은 아직 물어보는 중이다. 셋을 한 자리에서 제안하면 살아 있는 Live 를
           정적이 가로챈다(오케 판정 R-3). */}
       {mode === "unavailable" && <StaticReplayOffer />}
-      <button className="text-muted hover:text-ink" onClick={() => setClosed(true)} aria-label="배너 닫기">
+      <button
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-pill text-muted transition-colors duration-(--fkt-dur-1) hover:bg-inset hover:text-ink"
+        onClick={() => setClosed(true)}
+        aria-label="배너 닫기"
+      >
         ✕
       </button>
     </div>

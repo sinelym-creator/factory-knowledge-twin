@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { type ActiveAlarm, CONTRACT, type Series, type SeriesWindow, apiGetBrowser } from "@/lib/contract";
+import { areaPath, bandPath, bucketize, smoothPath, xAt, yScale } from "@/lib/chart-path";
 import { TZ_LABEL, stamp } from "@/lib/time";
 
 /**
@@ -23,7 +24,12 @@ import { TZ_LABEL, stamp } from "@/lib/time";
  *
  * 🔴 **줄인 사실을 화면이 숨기지 않는다.** 3주 창 원본은 44,400점(2MB)이라 서버가 버킷
  *    min·max 로 줄여 보낸다. 그 사실을 캡션에 남기지 않으면 보는 사람은 전량을 봤다고 믿는다.
+ *
+ * T6-4(폐하 14:01 「차트가 뭉개져 보인다」): 화면 120구간으로 줄인 «평균 곡선» + 구간
+ * 최소~최대 «띠» + 임계선 3종(비율 무관 1px) + 마지막 값 점. 창 전환은 세그먼트 컨트롤.
  */
+const SCREEN_BUCKETS = 120;
+
 export function SensorTrend({
   equipmentId,
   sensorId,
@@ -89,15 +95,16 @@ export function SensorTrend({
 
   return (
     <section
-      className="rounded border border-edge bg-panel p-3"
+      className="fkt-card p-4"
       data-testid="sensor-trend"
       data-sensor-source={source}
       data-sensor={sensorId}
     >
       <div className="flex items-center gap-2">
-        <p className="id text-xs">{sensorId}</p>
-        <p className="text-xs text-muted">{unit}</p>
-        <div className="ml-auto flex gap-1" role="group" aria-label="추세 창">
+        <p className="id text-foot font-semibold">{sensorId}</p>
+        <p className="text-foot text-muted">{unit}</p>
+        {/* 세그먼트 컨트롤(iOS) — 선택 칸이 카드처럼 «떠» 있다 · 문구·testid 불변 */}
+        <div className="ml-auto flex rounded-btn bg-inset p-0.5" role="group" aria-label="추세 창">
           {(["24h", "3w"] as const).map((w) => (
             <button
               key={w}
@@ -105,8 +112,8 @@ export function SensorTrend({
               onClick={() => setWindow(w)}
               aria-pressed={window === w}
               data-testid={`window-${w}`}
-              className={`rounded border px-2 py-0.5 text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai ${
-                window === w ? "border-ai text-ai" : "border-edge text-muted hover:text-ink"
+              className={`min-h-8 rounded-[10px] px-3 text-foot font-medium transition-[background-color,box-shadow,color] duration-(--fkt-dur-1) ${
+                window === w ? "bg-panel text-ink shadow-1" : "text-muted hover:text-ink"
               }`}
             >
               {w === "24h" ? "24h" : "3주"}
@@ -118,11 +125,11 @@ export function SensorTrend({
       <SensorProvenance source={source} alarm={alarm} alarmIds={alarmIds} />
 
       {why && (
-        <p className="mt-3 text-sm text-warn" role="status">
+        <p className="mt-3 text-body-c text-warn" role="status">
           추세를 가져오지 못했다: {why}
         </p>
       )}
-      {!why && !series && <p className="mt-3 text-sm text-muted">불러오는 중…</p>}
+      {!why && !series && <div className="fkt-shimmer mt-3 h-48 w-full rounded-card" aria-label="불러오는 중…" />}
       {series && <Chart series={series} alarm={source === "alarm" ? alarm : null} />}
     </section>
   );
@@ -140,7 +147,7 @@ function SensorProvenance({
 }) {
   if (source === "alarm" && alarm) {
     return (
-      <p className="mt-1 text-xs text-muted" data-testid="sensor-provenance">
+      <p className="mt-1 text-foot text-muted" data-testid="sensor-provenance">
         <span className="text-ai">이 incident 를 울린 알람의 센서</span> ·{" "}
         <span className="id">{alarm.alarmId}</span> · 발생 {stamp(alarm.raisedAt) ?? alarm.raisedAt}{" "}
         {TZ_LABEL}
@@ -149,7 +156,7 @@ function SensorProvenance({
   }
   // 🔴 「알람 센서가 아니다」를 «말한다». 앞판은 같은 자리에 아무 말 없이 첫 센서를 그렸다.
   return (
-    <p className="mt-1 text-xs text-warn" data-testid="sensor-provenance">
+    <p className="mt-1 text-foot text-warn" data-testid="sensor-provenance">
       ⚠ 알람 센서가 아니다 — 이 설비의 첫 센서다.{" "}
       {alarmIds.length === 0
         ? "이 incident 에 연결된 알람이 없다."
@@ -159,6 +166,7 @@ function SensorProvenance({
 }
 
 function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null }) {
+  const gradientId = `fkt-trend-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const values = series.points.map((p) => p.value);
   // 🔴 알람 행의 임계도 «스케일에» 넣는다 — 넣지 않으면 마커가 그림 밖으로 나가 조용히
   //    사라지고, 화면은 앵커를 그렸다고 믿는다.
@@ -167,38 +175,58 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
   );
   const min = Math.min(...values, ...thresholds);
   const max = Math.max(...values, ...thresholds);
-  const span = max - min || 1;
-  const y = (v: number) => 100 - ((v - min) / span) * 96 - 2;
-  const path = series.points
-    .map((p, i) => {
-      const x = (i / Math.max(series.points.length - 1, 1)) * 100;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y(p.value).toFixed(2)}`;
-    })
-    .join(" ");
+  const y = yScale(min, max, 4);
+  const buckets = bucketize(values, SCREEN_BUCKETS);
+  const mean = buckets.map((b, i) => ({ x: xAt(i, buckets.length), y: y(b.mean) }));
+  const hi = buckets.map((b, i) => ({ x: xAt(i, buckets.length), y: y(b.hi) }));
+  const lo = buckets.map((b, i) => ({ x: xAt(i, buckets.length), y: y(b.lo) }));
+  const last = mean[mean.length - 1];
 
   return (
     <figure className="mt-3">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-48 w-full" role="img"
-        aria-label={`${series.sensorId} ${series.window} 추세`}>
-        {series.alarmThreshold !== null && (
-          <line x1="0" y1={y(series.alarmThreshold)} x2="100" y2={y(series.alarmThreshold)}
-            stroke="currentColor" className="text-danger/50" strokeDasharray="1 2" strokeWidth="0.4" />
-        )}
-        {series.warnThreshold !== null && (
-          <line x1="0" y1={y(series.warnThreshold)} x2="100" y2={y(series.warnThreshold)}
-            stroke="currentColor" className="text-warn" strokeDasharray="2 2" strokeWidth="0.5" />
-        )}
-        {/* 🔴 알람 «행»의 임계 = 서사의 앵커(계약 v0.1.7-정정 2차). 센서 임계표와 갈릴 수
-            있으므로 별도 선으로 긋는다 — 겹치면 겹친 대로가 사실이다. */}
-        {alarm?.thresholdValue !== null && alarm?.thresholdValue !== undefined && (
-          <line
-            x1="0" y1={y(alarm.thresholdValue)} x2="100" y2={y(alarm.thresholdValue)}
-            stroke="currentColor" className="text-danger" strokeWidth="0.35"
+      <div className="relative">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-48 w-full overflow-visible text-ai" role="img"
+          aria-label={`${series.sensorId} ${series.window} 추세`}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="currentColor" stopOpacity="0.18" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {/* 구간 최소~최대 «띠» — 줄이면서 잃는 진폭을 여기서 보여 준다 */}
+          <path d={bandPath(hi, lo)} fill="currentColor" fillOpacity="0.12" />
+          <path d={areaPath(mean, 100)} fill={`url(#${gradientId})`} />
+          {series.alarmThreshold !== null && (
+            <line x1="0" y1={y(series.alarmThreshold)} x2="100" y2={y(series.alarmThreshold)}
+              stroke="currentColor" className="text-danger/50" strokeDasharray="2 4" strokeWidth="1"
+              vectorEffect="non-scaling-stroke" />
+          )}
+          {series.warnThreshold !== null && (
+            <line x1="0" y1={y(series.warnThreshold)} x2="100" y2={y(series.warnThreshold)}
+              stroke="currentColor" className="text-warn" strokeDasharray="4 4" strokeWidth="1"
+              vectorEffect="non-scaling-stroke" />
+          )}
+          {/* 🔴 알람 «행»의 임계 = 서사의 앵커(계약 v0.1.7-정정 2차). 센서 임계표와 갈릴 수
+              있으므로 별도 선으로 긋는다 — 겹치면 겹친 대로가 사실이다. */}
+          {alarm?.thresholdValue !== null && alarm?.thresholdValue !== undefined && (
+            <line
+              x1="0" y1={y(alarm.thresholdValue)} x2="100" y2={y(alarm.thresholdValue)}
+              stroke="currentColor" className="text-danger" strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+          <path d={smoothPath(mean)} fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        </svg>
+        {last && (
+          <span
+            aria-hidden
+            className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-pill bg-ai shadow-1"
+            style={{ left: `${last.x}%`, top: `${last.y}%` }}
           />
         )}
-        <path d={path} fill="none" stroke="currentColor" className="text-ai" strokeWidth="0.6" />
-      </svg>
-      <figcaption className="mt-2 flex flex-wrap gap-x-4 text-xs text-muted">
+      </div>
+      <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-foot text-muted">
         {/* 🔴 「기준선」이라는 낱말로 한쪽을 지목하지 않는다 — 두 임계는 뜻이 다른 두 선이다. */}
         <span data-testid="threshold-legend">
           임계 <span className="text-warn">warn {series.warnThreshold}</span>
@@ -218,7 +246,8 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
         </span>
         <span>
           원본 {series.sampling.sourcePoints.toLocaleString()}점 →{" "}
-          {series.sampling.returnedPoints}점 표시 ({series.sampling.method})
+          {series.sampling.returnedPoints}점 표시 ({series.sampling.method}) · 화면 {buckets.length}구간
+          평균·범위
         </span>
       </figcaption>
     </figure>
