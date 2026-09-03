@@ -6,6 +6,7 @@ import { IconMark, IconQuestion } from "@/components/icons";
 import { FallbackBanner, LiveStatusProvider, ModeBadge } from "@/components/live-status";
 import { ResetButton } from "@/components/reset-button";
 import { ShellNav } from "@/components/shell-nav";
+import { TruncationTitles } from "@/components/truncation-titles";
 import { StaticVisitorChip } from "@/components/static-visitor";
 import { TourProvider } from "@/components/tour/tour-provider";
 import { TourReopen } from "@/components/tour/tour-reopen";
@@ -31,6 +32,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <LiveStatusProvider>
+      {/* 잘린 글자에 전체 값을 `title` 로 — 한 곳에서 훑는다(요소마다 달면 새 카드가 빠진다). */}
+      <TruncationTitles />
       <div className="flex min-h-screen">
         {/* ── 좌측 레일 260 — glass 위에 라벨형 항목(리서치 §7-2·3) ───────────── */}
         <nav
