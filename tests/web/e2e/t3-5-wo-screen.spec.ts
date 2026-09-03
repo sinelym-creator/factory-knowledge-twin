@@ -520,11 +520,26 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     const box = otherPage.getByTestId("screen-unavailable");
     await expect(box).toBeVisible();
     await expect(box).toHaveAttribute("data-kind", "not-found");
-    const text = await otherPage.locator("body").innerText();
+    // 🔴 **셸 크롬이 아니라 «자원 화면»을 센다.** `body` 를 뜨면 앱 공용 fallback 배너의
+    //    「소유자 게이트웨이 미도달」이 「소유」 누설로 계수된다(09-03 실측 · 배너 없는 열은
+    //    같은 코드로 초록). 낱말 예외로 빼지 않는다 — 「이 문서의 소유자는 …」 같은 **진짜**
+    //    누설까지 통과시킨다. 좁힐 것은 낱말이 아니라 보는 범위다.
+    const LEAK_WORDS = ["남의", "다른 세션", "권한", "403", "소유"];
+    const text = await otherPage.locator("main").innerText();
     expect(text).toContain("그런 작업지시 초안이 없다");
-    for (const leak of ["남의", "다른 세션", "권한", "403", "소유"]) {
+    for (const leak of LEAK_WORDS) {
       expect(text, `존재를 누설하는 낱말이 있다: ${leak}`).not.toContain(leak);
     }
+    // 🔴 대조군 — 좁힌 눈이 아직 문다(같은 실행 · main 안에 심고 지운다)
+    await otherPage.evaluate(() => {
+      const el = document.createElement("p");
+      el.id = "levi2-leak-control";
+      el.textContent = "이 초안은 남의 세션 자원입니다.";
+      document.querySelector("main")?.appendChild(el);
+    });
+    const planted = await otherPage.locator("main").innerText();
+    expect(LEAK_WORDS.filter((w) => planted.includes(w)), "심은 누설 낱말을 못 잡는다 — 눈이 멀었다").not.toEqual([]);
+    await otherPage.evaluate(() => document.getElementById("levi2-leak-control")?.remove());
     // ⓐ 세는 눈 자기 검증 — 같은 눈이 있는 낱말은 찾는다
     expect(text).toContain("없다");
     await other.close();
