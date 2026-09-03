@@ -19,15 +19,15 @@ export function Placeholder({
   return (
     <section className="max-w-3xl">
       <h1 className="text-lg font-semibold">{screen}</h1>
-      <p className="id mt-1 text-xs text-muted">{route}</p>
+      <p className="id mt-1 text-foot text-muted">{route}</p>
 
       {ids && ids.length > 0 && (
-        <p className="id mt-3 text-xs text-ai">{ids.join(" · ")}</p>
+        <p className="id mt-3 text-foot text-ai">{ids.join(" · ")}</p>
       )}
 
-      <div className="mt-4 rounded border border-edge bg-panel p-4">
-        <p className="text-xs text-muted">이 자리에 올 것 (Phase 3 · wireframes 기준)</p>
-        <ul className="mt-2 space-y-1 text-sm">
+      <div className="mt-4 fkt-card p-6">
+        <p className="text-foot text-muted">이 자리에 올 것 (Phase 3 · wireframes 기준)</p>
+        <ul className="mt-2 space-y-1 text-body-c">
           {planned.map((p) => (
             <li key={p} className="flex gap-2">
               <span aria-hidden className="text-muted">
@@ -39,7 +39,7 @@ export function Placeholder({
         </ul>
       </div>
 
-      <p className="mt-3 text-xs text-muted">
+      <p className="mt-3 text-foot text-muted">
         지금 서 있는 것은 전역 셸(세션 격리 · 리셋 · Live 감지 · Replay fallback)과 라우트 골격이다.
       </p>
     </section>

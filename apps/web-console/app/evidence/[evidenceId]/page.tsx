@@ -68,7 +68,7 @@ export default async function EvidencePage({
           //    않는 kind」에 같은 404 를 준다(계약 v0.1.1 이 코드를 무규정 — 현행 참 · red
           //    아님). 화면이 evidenceId 모양으로 kind 를 «추정»해 둘을 갈라 그리면, 그것은
           //    계약이 정하지 않은 것을 화면이 정한 것이다. 추정하지 않고 사실만 적는다.
-          <p className="rounded border border-edge bg-panel p-3 text-xs text-muted">
+          <p className="fkt-card p-5 text-foot text-muted">
             이 404 는 두 가지를 함께 뜻한다 — 「그런 근거가 없다」 또는 「이 라우트가 다루지 않는
             kind 다」. 계약 v0.1.1 이 정한 kind 는 <span className="id">doc-chunk</span> ·{" "}
             <span className="id">record</span> 뿐이라,{" "}
@@ -96,12 +96,12 @@ export default async function EvidencePage({
 
   return (
     <div className="flex min-w-0 max-w-5xl flex-col gap-3">
-      <header className="rounded border border-edge bg-panel px-4 py-3">
+      <header className="fkt-card p-5">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-sm font-semibold">③ Evidence</h1>
-          <span className="id text-sm text-ai">{ev.evidenceId}</span>
+          <h1 className="text-body-c font-semibold">③ Evidence</h1>
+          <span className="id text-body-c text-ai">{ev.evidenceId}</span>
           <span
-            className="rounded border border-edge px-2 py-0.5 text-xs text-muted"
+            className="fkt-pill bg-fill text-foot text-muted"
             data-testid="evidence-kind"
           >
             kind {ev.kind}
@@ -131,7 +131,7 @@ export default async function EvidencePage({
           {/* 탭 — 🔴 링크로 만든다. 클라이언트 JS 없이 Tab·Enter 로 오가고, 상태가 URL 에
               남아 딥링크가 탭까지 가리킨다(wireframes §6 `?tab=graph|doc`). */}
           <nav
-            className="flex gap-2 text-xs"
+            className="flex gap-2 text-foot"
             aria-label="Evidence 탭"
             data-testid="evidence-tabs"
           >
@@ -171,8 +171,8 @@ function TabLink({ href, active, label }: { href: string; active: boolean; label
       href={href}
       aria-current={active ? "page" : undefined}
       className={
-        "rounded border px-3 py-1 focus:outline-2 focus:outline-ai " +
-        (active ? "border-ai/60 bg-bg text-ai" : "border-edge text-muted hover:text-ink")
+        "rounded-pill px-3 py-1 transition-colors duration-(--fkt-dur-1) focus:outline-2 focus:outline-ai " +
+        (active ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink")
       }
     >
       {label}
@@ -193,7 +193,7 @@ function DocumentTab({
   if (!docId) {
     // chunk id 조성(T0-6 §3.1)에 맞지 않는 doc-chunk — 서버·화면의 조성 인식이 갈렸다는 뜻이다.
     return (
-      <p className="rounded border border-warn/40 bg-panel p-3 text-sm text-warn">
+      <p className="rounded border border-warn/40 bg-panel p-3 text-body-c text-warn">
         🔴 <span className="id">{evidence.evidenceId}</span> 에서 documentId 를 갈라내지 못했다 —
         chunk id 조성(<span className="id">{"{documentId}@r{N}#{NNN}"}</span>)과 어긋난다. 문서를
         추측해서 부르지 않는다.
@@ -205,16 +205,16 @@ function DocumentTab({
     const why = doc?.detail?.message ?? doc?.why ?? "문서를 부르지 않았다";
     return (
       <div className="rounded border border-warn/40 bg-panel p-3">
-        <p className="text-sm text-warn">문서 원문을 가져오지 못했다.</p>
-        <p className="id mt-1 text-xs text-muted">
+        <p className="text-body-c text-warn">문서 원문을 가져오지 못했다.</p>
+        <p className="id mt-1 text-foot text-muted">
           {doc?.detail?.code ? `${doc.detail.code} · ` : ""}
           {why}
         </p>
         {/* 인용 문장만이라도 남긴다 — evidence 응답의 `text` 는 이미 손에 있다. */}
-        <p className="mt-2 text-xs text-muted">
+        <p className="mt-2 text-foot text-muted">
           원문 대조는 못 하지만, 근거 응답이 실어 온 인용 문장은 아래와 같다.
         </p>
-        <pre className="mt-2 max-h-64 overflow-auto rounded border border-edge bg-bg p-3 text-xs whitespace-pre-wrap">
+        <pre className="mt-2 max-h-64 overflow-auto rounded-chip bg-inset p-3 text-foot whitespace-pre-wrap">
           {evidence.text}
         </pre>
       </div>
@@ -223,13 +223,13 @@ function DocumentTab({
 
   const d = doc.data;
   return (
-    <section className="rounded border border-edge bg-panel p-3" data-testid="document-tab">
+    <section className="fkt-card p-5" data-testid="document-tab">
       <div className="flex flex-wrap items-baseline gap-2">
-        <span className="id text-sm text-ai">{d.documentId}</span>
-        <span className="text-sm">{d.title}</span>
+        <span className="id text-body-c text-ai">{d.documentId}</span>
+        <span className="text-body-c">{d.title}</span>
         <Link
           href={`/documents/${encodeURIComponent(d.documentId)}?highlight=${encodeURIComponent(evidence.evidenceId)}`}
-          className="ml-auto rounded border border-edge px-2 py-0.5 text-xs text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+          className="ml-auto fkt-pill bg-fill text-foot text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
         >
           이 문서 전체 열기 →
         </Link>
@@ -266,8 +266,8 @@ function DocumentTab({
  */
 function PreviousRevisionDeferred() {
   return (
-    <p className="mt-3 border-t border-edge pt-2 text-xs text-muted" data-testid="prev-revision-deferred">
-      <span className="rounded border border-edge px-2 py-0.5 text-muted/70">
+    <p className="mt-3 border-t border-edge pt-2 text-foot text-muted" data-testid="prev-revision-deferred">
+      <span className="fkt-pill bg-fill text-muted/70">
         [ 이전 revision 보기 ]
       </span>{" "}
       — 이연(원장 Q-36). 계약에 revision 선택 축이 없고, 옛 revision 은 색인 chunk 가 0건이라
@@ -282,7 +282,7 @@ function RecordView({ evidence }: { evidence: Evidence }) {
   const rec = evidence.record;
   if (!rec) {
     return (
-      <p className="rounded border border-warn/40 bg-panel p-3 text-sm text-warn">
+      <p className="rounded border border-warn/40 bg-panel p-3 text-body-c text-warn">
         🔴 kind=record 인데 <span className="id">record</span> 가 비어 있다 — 계약 v0.1.1 형상과
         어긋난다.
       </p>
@@ -290,19 +290,19 @@ function RecordView({ evidence }: { evidence: Evidence }) {
   }
   const entries = Object.entries(rec.fields);
   return (
-    <section className="rounded border border-edge bg-panel p-3" data-testid="record-view">
-      <p className="text-xs text-muted">
+    <section className="fkt-card p-5" data-testid="record-view">
+      <p className="text-foot text-muted">
         SSOT 레코드 직독 · 테이블 <span className="id text-ink">{rec.entityType}</span> · {entries.length}필드
       </p>
-      <dl className="mt-2 grid grid-cols-[minmax(8rem,auto)_1fr] gap-x-4 gap-y-1 text-sm">
+      <dl className="mt-2 grid grid-cols-[minmax(8rem,auto)_1fr] gap-x-4 gap-y-1 text-body-c">
         {entries.map(([k, v]) => (
           <div key={k} className="contents">
-            <dt className="id text-xs text-muted">{k}</dt>
+            <dt className="id text-foot text-muted">{k}</dt>
             <dd className="min-w-0 break-words">{String(v)}</dd>
           </div>
         ))}
       </dl>
-      <p className="mt-3 border-t border-edge pt-2 text-xs text-muted">
+      <p className="mt-3 border-t border-edge pt-2 text-foot text-muted">
         🔴 이 근거에는 revision·색인 축이 «없다» — 화이트리스트 테이블을 직독하므로 「색인이
         낡았다」는 개념이 성립하지 않는다(계약 v0.1.1). 그래서 신뢰 배지도 신선도를 주장하지
         않는다. 인용 가능 여부는 <span className="id">approvalState</span>·유효기간이 아니라 이
@@ -316,12 +316,12 @@ function RecordView({ evidence }: { evidence: Evidence }) {
 function GraphTab({ hasSession, runId }: { hasSession: boolean; runId?: string }) {
   return (
     <section
-      className="rounded border border-dashed border-edge bg-panel p-4"
+      className="fkt-card p-6"
       data-testid="graph-tab-placeholder"
     >
-      <p className="text-xs text-muted">🕸 그래프 경로</p>
-      <p className="mt-2 text-sm">이 자리는 T3-4다 — 조사가 실제로 지나간 경로 위에 선다.</p>
-      <ul className="mt-2 space-y-1 text-xs text-muted">
+      <p className="fkt-section-label">그래프 경로</p>
+      <p className="mt-2 text-body-c">이 자리는 T3-4다 — 조사가 실제로 지나간 경로 위에 선다.</p>
+      <ul className="mt-2 space-y-1 text-foot text-muted">
         <li>
           ▪ 출처는 <span className="id">GET /graph/paths?byRun={"{runId}"}</span> 하나뿐이다.
           그 응답은 «조사가 밟은» 경로라, run 이 없으면 그릴 대상 자체가 없다.

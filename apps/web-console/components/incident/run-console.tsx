@@ -551,7 +551,7 @@ export function RunConsole({
             </span>
             <Link
               href="/"
-              className="fkt-btn fkt-btn-secondary rounded-pill px-3.5 text-foot text-ok focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+              className="fkt-btn fkt-btn-secondary rounded-pill px-3.5 text-foot"
               data-testid="live-return-link"
             >
               Live 로 돌아가기

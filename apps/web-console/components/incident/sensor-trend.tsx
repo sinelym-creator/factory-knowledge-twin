@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { bandPaths, measurementLabel } from "@/lib/chart-band";
 import { type ActiveAlarm, CONTRACT, type Series, type SeriesWindow, apiGetBrowser } from "@/lib/contract";
 import { TZ_LABEL, stamp } from "@/lib/time";
 
@@ -95,8 +96,13 @@ export function SensorTrend({
       data-sensor={sensorId}
     >
       <div className="flex items-center gap-2">
-        <p className="id text-body-c font-semibold">{sensorId}</p>
-        <p className="text-foot text-muted">{unit}</p>
+        {/* 🔴 «무슨 데이터인가»를 먼저 말한다(운영자 09-03 15:25). 앞판은 센서 ID 만 있어
+            그것이 진동인지 온도인지 화면이 말하지 않았다. 종류를 모르면 ID 만 남는다. */}
+        <p className="text-body-c font-semibold">
+          {measurementLabel(sensorId) ?? "센서 추세"}
+          <span className="id ml-2 text-foot font-normal text-muted">{sensorId}</span>
+          <span className="ml-1.5 text-foot font-normal text-muted">{unit}</span>
+        </p>
         <div className="ml-auto flex gap-0.5 rounded-pill bg-fill/50 p-1" role="group" aria-label="추세 창">
           {(["24h", "3w"] as const).map((w) => (
             <button
@@ -109,7 +115,7 @@ export function SensorTrend({
                 window === w ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
               }`}
             >
-              {w === "24h" ? "24h" : "3주"}
+              {w === "24h" ? "최근 24시간" : "최근 3주"}
             </button>
           ))}
         </div>
@@ -169,12 +175,10 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
   const max = Math.max(...values, ...thresholds);
   const span = max - min || 1;
   const y = (v: number) => 100 - ((v - min) / span) * 96 - 2;
-  const path = series.points
-    .map((p, i) => {
-      const x = (i / Math.max(series.points.length - 1, 1)) * 100;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y(p.value).toFixed(2)}`;
-    })
-    .join(" ");
+  /* 🔴 선 하나가 아니라 «구간 최소~최대 밴드 + 중앙선»으로 그린다 — 근거는 lib/chart-band.ts
+     머리말(bucket-minmax 의 min/max 톱니가 「털」처럼 보이던 자리 · 운영자 15:25). 220px 폭에
+     90 구간이면 한 구간이 화면 3~4px 이라 톱니가 면으로 접히고 극값은 경계로 남는다. */
+  const { band, center, windows, fold } = bandPaths(series.points, y, 90);
 
   /* 🔴 **「차트가 뭉개진다」의 근인**(폐하 09-03 14:01)은 색이 아니라 «스케일»이었다:
      `viewBox 100×100` + `preserveAspectRatio="none"` 로 x 를 10배 이상 늘리면 stroke 도 같이
@@ -189,9 +193,11 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-[220px] w-full text-ai" role="img"
           aria-label={`${series.sensorId} ${series.window} 추세`}>
           <defs>
+            {/* 🔴 면은 위아래 «양쪽»이 실측 경계다 — 아래로 사라지는 그라디언트를 쓰면 최소값
+                경계가 안 보여 「범위」라는 뜻이 깨진다. 균일한 옅은 채움을 쓴다. */}
             <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="currentColor" stopOpacity="0.14" />
             </linearGradient>
           </defs>
           {series.alarmThreshold !== null && (
@@ -213,8 +219,10 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
               vectorEffect="non-scaling-stroke"
             />
           )}
-          <path d={`${path} L100,100 L0,100 Z`} fill="url(#trend-fill)" stroke="none" />
-          <path d={path} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+          {/* 변동 폭 = 면(실측 최소~최대 그대로) */}
+          <path d={band} fill="url(#trend-fill)" stroke="none" />
+          {/* 추세 = 중앙선 하나 */}
+          <path d={center} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
             strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         </svg>
         {/* y 눈금 3개 — 격자선 없이 값만(리서치 §3 「y 눈금 2~3개」) */}
@@ -246,7 +254,13 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
         </span>
         <span>
           원본 {series.sampling.sourcePoints.toLocaleString()}점 →{" "}
-          {series.sampling.returnedPoints}점 표시 ({series.sampling.method})
+          {series.sampling.returnedPoints}점 수신 ({series.sampling.method})
+          {fold > 1 && <> → {windows}구간</>}
+        </span>
+        {/* 🔴 그림의 «문법»을 화면이 말한다 — 면이 무엇이고 선이 무엇인지 모르면 같은 그림이
+            다르게 읽힌다(면을 오차로, 선을 실측으로 착각한다). */}
+        <span>
+          면 = 구간 최소~최대(실측) · 선 = 구간 평균
         </span>
       </figcaption>
     </figure>

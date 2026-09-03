@@ -85,18 +85,18 @@ export function ComparePanel({
     <div className="flex min-w-0 flex-col gap-3" data-testid="compare-panel">
       <h1 className="sr-only">⑤ 검색 전략 비교</h1>
 
-      <section className="rounded border border-edge bg-panel p-3" data-testid="compare-controls">
-        <label className="block text-xs text-muted" htmlFor="compare-question">
+      <section className="fkt-card p-5" data-testid="compare-controls">
+        <label className="block text-foot text-muted" htmlFor="compare-question">
           질문 <span className="text-muted">(승인 질문 목록)</span>
         </label>
         {questions.length === 0 ? (
-          <p className="mt-1 text-sm text-warn">
+          <p className="mt-1 text-body-c text-warn">
             승인 질문 목록을 가져오지 못했습니다 — 목록 없이 임의 질문을 만들지 않습니다.
           </p>
         ) : (
           <select
             id="compare-question"
-            className="mt-1 w-full rounded border border-edge bg-bg px-2 py-1.5 text-sm"
+            className="mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             data-testid="compare-question"
@@ -109,11 +109,19 @@ export function ComparePanel({
           </select>
         )}
 
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 text-foot">
           {STRATEGIES.map((s) => (
-            <label key={s} className="flex items-center gap-1">
+            <label
+              key={s}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-pill px-3 py-1 transition-colors duration-(--fkt-dur-1) ${
+                picked.includes(s) ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
+              }`}
+            >
+              {/* 🔴 입력은 «남긴다» — 스타일만 바꾸고 접근성·그물 표지는 그대로다.
+                  `sr-only` 로 두면 키보드 포커스와 체크 상태가 보조기술에 남는다. */}
               <input
                 type="checkbox"
+                className="sr-only"
                 checked={picked.includes(s)}
                 onChange={(e) => setPicked((p) => (e.target.checked ? [...p, s] : p.filter((x) => x !== s)))}
                 data-testid="compare-strategy"
@@ -126,27 +134,27 @@ export function ComparePanel({
             type="button"
             onClick={() => void run()}
             disabled={!usable || busy || picked.length === 0}
-            className="ml-auto rounded border border-ai/60 px-3 py-1 text-ai hover:bg-ai/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+            className="ml-auto fkt-btn fkt-btn-primary rounded-pill px-5"
             data-testid="compare-run"
             title={usable ? undefined : "이 세션은 아직 백엔드에 등록되지 않았습니다"}
           >
-            {busy ? "비교하는 중…" : "실행 ▸"}
+            {busy ? "비교하는 중…" : "실행"}
           </button>
         </div>
 
         {!usable && questions.length > 0 && (
-          <p className="mt-2 text-xs text-warn" data-testid="compare-unusable">
+          <p className="mt-2 text-foot text-warn" data-testid="compare-unusable">
             이 세션은 백엔드에 등록되지 않아 비교를 실행할 수 없습니다 — 본문 <span className="id">sessionId</span> 가
             쿠키와 같아야 서버가 받습니다(계약 v0.1.6).
           </p>
         )}
         {slow && busy && (
-          <p className="mt-2 text-xs text-muted" role="status" data-testid="compare-warming">
+          <p className="mt-2 text-foot text-muted" role="status" data-testid="compare-warming">
             검색 엔진을 준비하는 중입니다 — 첫 실행은 임베딩 모델을 올리느라 오래 걸립니다(실측 30초+ · 이후 1초 미만).
           </p>
         )}
         {why && (
-          <p className="mt-2 text-xs text-warn" role="status" data-testid="compare-error">
+          <p className="mt-2 text-foot text-warn" role="status" data-testid="compare-error">
             비교하지 못했습니다 — {why}
           </p>
         )}
@@ -160,15 +168,15 @@ export function ComparePanel({
           data-columns={results.length}
         >
           {results.map((r) => (
-            <div key={r.strategy} className="rounded border border-edge bg-panel p-3" data-testid="compare-column" data-strategy={r.strategy}>
-              <p className="flex items-baseline justify-between text-sm">
+            <div key={r.strategy} className="fkt-card p-5" data-testid="compare-column" data-strategy={r.strategy}>
+              <p className="flex items-baseline justify-between text-body-c">
                 <span>{r.strategy}</span>
-                <span className="id text-xs text-muted">{r.elapsedMs.toLocaleString()} ms</span>
+                <span className="id text-foot text-muted">{r.elapsedMs.toLocaleString()} ms</span>
               </p>
               <ol className="mt-2 space-y-2">
                 {r.hits.map((h, i) => (
                   <li key={`${h.evidenceId}-${i}`} className="border-t border-edge pt-2 first:border-0 first:pt-0" data-testid="compare-hit">
-                    <p className="text-xs">
+                    <p className="text-foot">
                       <span className="text-muted">{i + 1}</span>{" "}
                       <Link
                         href={`/evidence/${encodeURIComponent(h.evidenceId)}${runId ? `?run=${encodeURIComponent(runId)}` : ""}`}
@@ -178,13 +186,13 @@ export function ComparePanel({
                       </Link>{" "}
                       <span className="text-muted">{h.score.toFixed(3)}</span>
                     </p>
-                    <p className="mt-0.5 line-clamp-3 text-xs text-muted">{h.excerpt}</p>
+                    <p className="mt-0.5 line-clamp-3 text-foot text-muted">{h.excerpt}</p>
                   </li>
                 ))}
-                {r.hits.length === 0 && <li className="text-xs text-muted">이 전략은 결과를 내지 않았습니다.</li>}
+                {r.hits.length === 0 && <li className="text-foot text-muted">이 전략은 결과를 내지 않았습니다.</li>}
               </ol>
               {/* «차이 요약» — 집합 사실만. 우열을 말하지 않는다. */}
-              <p className="mt-3 border-t border-edge pt-2 text-xs text-muted" data-testid="compare-diff">
+              <p className="mt-3 border-t border-edge pt-2 text-foot text-muted" data-testid="compare-diff">
                 이 열에만 있는 근거 {diff?.only.get(r.strategy)?.length ?? 0}건
                 {diff && diff.shared.length > 0 && <> · 모든 열이 함께 집은 근거 {diff.shared.length}건</>}
               </p>
@@ -194,7 +202,7 @@ export function ComparePanel({
       )}
 
       {/* 🔴 측정-주장 경계 각주 — «상시» 노출(baseline §0.2 · wireframes §5) */}
-      <p className="rounded border border-warn/40 bg-panel px-3 py-2 text-xs text-warn" data-testid="compare-footnote">
+      <p className="fkt-card px-4 py-3 text-foot text-warn" data-testid="compare-footnote">
         🔴 이 수치는 이 실행 1회의 관측치입니다 — 정식 벤치마크(Target/Actual)는 Evaluation에서 냅니다.
         여기의 순위·score·소요는 전략의 우열을 판정하지 않습니다.
       </p>

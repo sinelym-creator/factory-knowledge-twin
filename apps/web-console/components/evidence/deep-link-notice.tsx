@@ -23,7 +23,7 @@ export function DeepLinkNotice({
   if (hasSession) {
     return (
       <p
-        className="text-xs text-muted"
+        className="text-foot text-muted"
         data-testid="deep-link-notice"
         data-session="present"
       >
@@ -50,29 +50,29 @@ export function DeepLinkNotice({
 
   return (
     <div
-      className="rounded border border-edge bg-panel px-3 py-2"
+      className="fkt-card p-4"
       data-testid="deep-link-notice"
       data-session="absent"
     >
-      <p className="text-sm">
+      <p className="text-body-c">
         🔗 <span className="text-ai">세션 없이 «열람만»</span> 열린 화면이다.
       </p>
-      <p className="mt-1 text-xs text-muted">
+      <p className="mt-1 text-foot text-muted">
         계약 v0.1.6 의 읽기 전용 예외 2라우트(<span className="id">GET /evidence/{"{id}"}</span> ·{" "}
         <span className="id">GET /documents/{"{docId}"}</span>)만 세션 없이 답한다. 조사 실행·작업지시
         초안·승인 이력은 세션 «소유» 자원이라 이 화면에서는 열리지 않는다 — 비어 있는 것이
         아니라 이 경로에 없는 것이다.
       </p>
       {runId && (
-        <p className="mt-1 text-xs text-muted">
+        <p className="mt-1 text-foot text-muted">
           링크에 <span className="id">?run={runId}</span> 이 붙어 있지만 무세션에서는 뜻이 없다 —
           run 은 발급 세션의 것이고, 남의 세션 자원은 존재조차 숨긴다(404).
         </p>
       )}
-      <p className="mt-2 text-xs">
+      <p className="mt-2 text-foot">
         <Link
           href="/"
-          className="rounded border border-edge px-2 py-1 text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+          className="fkt-pill bg-fill text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
         >
           세션을 만들고 조사 화면으로 →
         </Link>
