@@ -1,0 +1,285 @@
+{
+  "label": "c4f",
+  "base": "http://127.0.0.1:3109",
+  "at": "2026-09-03T06:54:27.654Z",
+  "screens": [
+    {
+      "screen": "overview",
+      "route": "/overview",
+      "testids": [
+        "app-bar",
+        "intro-reopen",
+        "mode-badge",
+        "session-chip",
+        "reset-button",
+        "fallback-banner",
+        "tour-invite",
+        "tour-start",
+        "tour-later",
+        "tour-never",
+        "headline",
+        "start-from-headline",
+        "kpi-strip",
+        "received-at",
+        "equipment-grid",
+        "hierarchy-tree",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "equipment-card",
+        "sparkline",
+        "intro-card",
+        "alarm-dock",
+        "alarm-card",
+        "alarm-raised-at",
+        "start-from-alarm",
+        "scenario-dock",
+        "headline",
+        "start-from-headline",
+        "kpi-strip",
+        "received-at",
+        "equipment-grid",
+        "hierarchy-tree",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "equipment-card",
+        "alarm-dock",
+        "alarm-card",
+        "alarm-raised-at",
+        "start-from-alarm",
+        "scenario-dock"
+      ],
+      "testidCount": 69,
+      "honestyMarkers": [],
+      "glyphMarkers": [
+        "●",
+        "▲",
+        "■",
+        "◑"
+      ],
+      "focusables": [
+        "Overview",
+        "Incidents",
+        "Compare",
+        "Overview",
+        "Incidents",
+        "Compare",
+        "안내와 둘러보기 다시 보기",
+        "⟲ 세션 리셋",
+        "배너 닫기",
+        "둘러보기 시작",
+        "나중에",
+        "다시 보지 않기",
+        "조사 시작",
+        "전체 12대",
+        "가공 라인 1 4대",
+        "가공 라인 2 4대",
+        "가공 라인 3 4대",
+        "안내 닫기",
+        "조사 시작",
+        "조사 시작",
+        "전체 12대",
+        "가공 라인 1 4대",
+        "가공 라인 2 4대",
+        "가공 라인 3 4대",
+        "조사 시작"
+      ],
+      "headings": [
+        "① Factory Overview"
+      ],
+      "textLength": 1523
+    },
+    {
+      "screen": "incident",
+      "route": "/incidents/INC-2025-019",
+      "testids": [
+        "app-bar",
+        "intro-reopen",
+        "mode-badge",
+        "session-chip",
+        "reset-button",
+        "fallback-banner",
+        "incident-header",
+        "ttae-row-idle",
+        "timeline-idle",
+        "sensor-trend",
+        "window-24h",
+        "window-3w",
+        "sensor-provenance",
+        "threshold-legend",
+        "equipment-context",
+        "candidates-idle"
+      ],
+      "testidCount": 16,
+      "honestyMarkers": [
+        "잠정",
+        "미실측",
+        "실측"
+      ],
+      "glyphMarkers": [
+        "◑"
+      ],
+      "focusables": [
+        "Overview",
+        "Incidents",
+        "Compare",
+        "Overview",
+        "Incidents",
+        "Compare",
+        "안내와 둘러보기 다시 보기",
+        "⟲ 세션 리셋",
+        "배너 닫기",
+        "최근 24시간",
+        "최근 3주"
+      ],
+      "headings": [
+        "② Incident 조사 · INC-2025-019"
+      ],
+      "textLength": 877
+    },
+    {
+      "screen": "evidence",
+      "route": "/evidence/EV-2025-001",
+      "testids": [
+        "app-bar",
+        "intro-reopen",
+        "mode-badge",
+        "session-chip",
+        "reset-button",
+        "fallback-banner",
+        "screen-unavailable",
+        "deep-link-notice"
+      ],
+      "testidCount": 8,
+      "honestyMarkers": [],
+      "glyphMarkers": [
+        "◑"
+      ],
+      "focusables": [
+        "Overview",
+        "Incidents",
+        "Compare",
+        "Overview",
+        "Incidents",
+        "Compare",
+        "안내와 둘러보기 다시 보기",
+        "⟲ 세션 리셋",
+        "배너 닫기",
+        "① Overview"
+      ],
+      "headings": [
+        "③ Evidence 뷰 · EV-2025-001"
+      ],
+      "textLength": 593
+    },
+    {
+      "screen": "work-order",
+      "route": "/work-orders/WO-2025-001",
+      "testids": [
+        "app-bar",
+        "intro-reopen",
+        "mode-badge",
+        "session-chip",
+        "reset-button",
+        "fallback-banner",
+        "screen-unavailable"
+      ],
+      "testidCount": 7,
+      "honestyMarkers": [],
+      "glyphMarkers": [
+        "◑"
+      ],
+      "focusables": [
+        "Overview",
+        "Incidents",
+        "Compare",
+        "Overview",
+        "Incidents",
+        "Compare",
+        "안내와 둘러보기 다시 보기",
+        "⟲ 세션 리셋",
+        "배너 닫기"
+      ],
+      "headings": [
+        "④ 작업지시서 · WO-2025-001"
+      ],
+      "textLength": 361
+    },
+    {
+      "screen": "compare",
+      "route": "/compare",
+      "testids": [
+        "app-bar",
+        "intro-reopen",
+        "mode-badge",
+        "session-chip",
+        "reset-button",
+        "fallback-banner",
+        "compare-panel",
+        "compare-controls",
+        "compare-question",
+        "compare-strategy",
+        "compare-strategy",
+        "compare-strategy",
+        "compare-run",
+        "compare-footnote"
+      ],
+      "testidCount": 14,
+      "honestyMarkers": [
+        "Target",
+        "Actual"
+      ],
+      "glyphMarkers": [
+        "◑"
+      ],
+      "focusables": [
+        "Overview",
+        "Incidents",
+        "Compare",
+        "Overview",
+        "Incidents",
+        "Compare",
+        "안내와 둘러보기 다시 보기",
+        "⟲ 세션 리셋",
+        "배너 닫기",
+        "EQ-CNC-204의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과",
+        "",
+        "",
+        "",
+        "실행"
+      ],
+      "headings": [
+        "⑤ 검색 전략 비교"
+      ],
+      "textLength": 1071
+    }
+  ]
+}

@@ -114,8 +114,25 @@ test.describe("셸·라우트 골격", () => {
     await enter(page);
     const bar = page.getByTestId("app-bar");
     const rail = page.locator('nav[aria-label="주요 화면"]');
-    expect(await bar.evaluate((e) => getComputedStyle(e).height)).toBe("56px");
-    expect(await rail.evaluate((e) => getComputedStyle(e).width)).toBe("56px");
+    // 🔴 **리터럴이 아니라 토큰 계산값과 맞댄다**(T6-4 ⓕ · #446·#454 와 같은 처방).
+    //    앞판은 `56px` 을 박아 두었다 — 이 행의 주어는 「치수가 토큰을 탄다」인데, 리터럴은
+    //    «이 팔레트의 이 값»을 재고 있었다. 재설계가 앱바를 52px·레일을 260px 로 바꾸자
+    //    설계대로 바뀐 화면이 빨강이 됐다(그때 죽은 것은 화면이 아니라 이 그물이다).
+    const tok = await page.evaluate(() => {
+      const cs = getComputedStyle(document.documentElement);
+      return {
+        appbar: cs.getPropertyValue("--spacing-appbar").trim(),
+        rail: cs.getPropertyValue("--spacing-rail").trim(),
+      };
+    });
+    // 🔴 토큰이 비면 초록도 빨강도 아니다 — 「잴 것이 없었다」를 통과로 만들지 않는다.
+    expect(tok.appbar, "--spacing-appbar 가 비었다 — 측정 불가").toMatch(/^\d+(\.\d+)?px$/);
+    expect(tok.rail, "--spacing-rail 이 비었다 — 측정 불가").toMatch(/^\d+(\.\d+)?px$/);
+    expect(await bar.evaluate((e) => getComputedStyle(e).height), `앱바 높이 ↔ --spacing-appbar(${tok.appbar})`).toBe(tok.appbar);
+    expect(await rail.evaluate((e) => getComputedStyle(e).width), `레일 폭 ↔ --spacing-rail(${tok.rail})`).toBe(tok.rail);
+    // 🔴 대조군 — 이 비교가 «아무 값이나» 통과시키지 않는다(같은 실행에서 보인다).
+    expect(tok.appbar).not.toBe("0px");
+    expect(await bar.evaluate((e) => getComputedStyle(e).height)).not.toBe(`${parseFloat(tok.appbar) + 4}px`);
   });
 
   test("V-2 대조군 — 토큰 «자체»는 브라우저에 살아 있다(원인이 표기임을 분리)", async ({ page }) => {
@@ -125,8 +142,9 @@ test.describe("셸·라우트 골격", () => {
       return { appbar: cs.getPropertyValue("--spacing-appbar").trim(), rail: cs.getPropertyValue("--spacing-rail").trim() };
     });
     // 🔴 토큰이 없어서가 아니다. 이 두 줄이 초록인 채로 위 행이 빨강이라는 것이 진단이다.
-    expect(t.appbar).toBe("56px");
-    expect(t.rail).toBe("56px");
+    // 🔴 값이 아니라 «선언이 살아 있는가»를 잰다 — 토큰 값 자체는 디자인이 정한다(52·260 등).
+    expect(t.appbar, "--spacing-appbar 선언이 사라졌다").toMatch(/^\d+(\.\d+)?px$/);
+    expect(t.rail, "--spacing-rail 선언이 사라졌다").toMatch(/^\d+(\.\d+)?px$/);
     // 같은 토큰 계층의 «색»은 실제로 적용된다 — 계층 전체가 죽은 게 아니라 두 표기만 죽었다.
     //
     // 🔴 **리터럴이 아니라 토큰 계산값으로 잰다**(T6-4 ⑥-0). 앞판은 `rgb(17, 24, 35)` 를
