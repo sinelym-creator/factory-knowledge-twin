@@ -1,0 +1,460 @@
+{
+  "base": "http://127.0.0.1:3112",
+  "pointerRequested": "fine",
+  "at": "2026-09-03T12:54:13.368Z",
+  "sc": {
+    "2.5.8": "The size of the target for pointer inputs is at least 24 by 24 CSS pixels, except when: Spacing / Equivalent / Inline / User agent control / Essential. (Level AA)",
+    "spacing": "Undersized targets are positioned so that if a 24 CSS pixel diameter circle is centered on the bounding box of each, the circles do not intersect another target or the circle for another undersized target.",
+    "2.5.5": "44 by 44 CSS pixels, no spacing exception. (Level AAA)",
+    "machineJudged": "Spacing 만 기계 판정. Equivalent·Inline·Essential·User-agent 는 사람 판단 — 그래서 빨강은 «AA 위반 후보»다."
+  },
+  "control": {
+    "bad": {
+      "role": "button",
+      "name": "__ctl_bad_a__",
+      "w": 13,
+      "h": 13,
+      "boxW": 12,
+      "boxH": 12,
+      "hitScanned": true,
+      "cx": 306,
+      "cy": 406,
+      "left": 300,
+      "top": 400,
+      "right": 311,
+      "bottom": 411,
+      "inlineCandidate": false,
+      "i": 16,
+      "undersized": true,
+      "aaPass": false,
+      "why": "Spacing 예외 미충족",
+      "partners": [
+        {
+          "kind": "target",
+          "role": "button",
+          "name": "조사 시작"
+        },
+        {
+          "kind": "circle",
+          "role": "button",
+          "name": "__ctl_bad_b__"
+        }
+      ],
+      "partnerCount": 2,
+      "aaaPass": false
+    },
+    "good": {
+      "role": "button",
+      "name": "__ctl_good__",
+      "w": 61,
+      "h": 61,
+      "boxW": 60,
+      "boxH": 60,
+      "hitScanned": true,
+      "cx": 1230,
+      "cy": 730,
+      "left": 1200,
+      "top": 700,
+      "right": 1259,
+      "bottom": 759,
+      "inlineCandidate": false,
+      "i": 18,
+      "undersized": false,
+      "aaPass": true,
+      "why": "24×24 이상",
+      "partners": [],
+      "aaaPass": true
+    },
+    "media": {
+      "coarse": false,
+      "fine": true
+    }
+  },
+  "routes": [
+    {
+      "label": "overview",
+      "path": "/overview",
+      "url": "http://127.0.0.1:3112/overview",
+      "media": {
+        "coarse": false,
+        "fine": true,
+        "anyHover": true
+      },
+      "total": 16,
+      "undersized24": 1,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 16,
+      "inlineCandidatesAmongAaFail": 0,
+      "aaFailures": [],
+      "aaaFailSizes": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "33×33"
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25"
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "13×21"
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×37"
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×37"
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×29"
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37"
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×29"
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "110×29"
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×29"
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "110×29"
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×29"
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "99.33×36"
+        }
+      ]
+    },
+    {
+      "label": "incident",
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "url": "http://127.0.0.1:3112/incidents/INC-2026-014?run=STATIC-GS-01",
+      "media": {
+        "coarse": false,
+        "fine": true,
+        "anyHover": true
+      },
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 41,
+      "inlineCandidatesAmongAaFail": 0,
+      "aaFailures": [],
+      "aaaFailSizes": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "33×33"
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25"
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25"
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "13×21"
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29"
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29"
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29"
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29"
+        },
+        {
+          "role": "link",
+          "name": "Live 로 돌아가기",
+          "size": "121×37"
+        },
+        {
+          "role": "button",
+          "name": "최근 24시간",
+          "size": "93×29"
+        },
+        {
+          "role": "button",
+          "name": "최근 3주",
+          "size": "72×29"
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25"
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25"
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25"
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "158.28×24"
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "64×27.5"
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "71.7×27.5"
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "95.59×27.5"
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "99.59×27.5"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "51.42×17"
+        }
+      ]
+    },
+    {
+      "label": "evidence",
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "url": "http://127.0.0.1:3112/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "media": {
+        "coarse": false,
+        "fine": true,
+        "anyHover": true
+      },
+      "total": 8,
+      "undersized24": 2,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "inlineCandidatesAmongAaFail": 0,
+      "aaFailures": [],
+      "aaaFailSizes": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37"
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "33×33"
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25"
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25"
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "13×21"
+        },
+        {
+          "role": "link",
+          "name": "① Overview",
+          "size": "70×19"
+        }
+      ]
+    }
+  ]
+}
