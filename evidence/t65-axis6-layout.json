@@ -1,0 +1,3963 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T07:49:20.309Z",
+  "cells": [
+    {
+      "screen": "overview",
+      "width": 390,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 32
+    },
+    {
+      "screen": "incident",
+      "width": 390,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 390,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 390,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 390,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 768,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 768,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 768,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 768,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 768,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 1024,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 1024,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 1024,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 1024,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 1024,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 1280,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 1280,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 1280,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 1280,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 1280,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 1440,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 1440,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 1440,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 1440,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 1440,
+      "scheme": "dark",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 390,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 390,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 390,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 390,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 390,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 768,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 768,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 768,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 768,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 768,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 1024,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 1024,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 1024,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 1024,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 1024,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 1280,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 1280,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 1280,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 1280,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 1280,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    },
+    {
+      "screen": "overview",
+      "width": 1440,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "둘러보기 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "조사 시작",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 46
+    },
+    {
+      "screen": "incident",
+      "width": 1440,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "재생",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "FM-BRG-WEAR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "EQ-CNC-204",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-CUR",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-TEMP",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "SN-204-VIB",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "AL-20260826-0041",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2026-0006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0095",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2025-0087",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "MR-2024-0004",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#005",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#006",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0028@r1#000",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0022@r1#003",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "DOC-MAN-0021@r1#001",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-00",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-01",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-02",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-03",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "GP-6c01759e7f43-04",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        },
+        {
+          "text": "근거 보기",
+          "ratio": 3.82,
+          "need": 4.5,
+          "fontSize": 13,
+          "color": "rgb(10, 132, 255)"
+        }
+      ],
+      "testidCount": 73
+    },
+    {
+      "screen": "evidence",
+      "width": 1440,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 15
+    },
+    {
+      "screen": "work-order",
+      "width": 1440,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [],
+      "testidCount": 7
+    },
+    {
+      "screen": "compare",
+      "width": 1440,
+      "scheme": "light",
+      "overflowPx": 0,
+      "clipped": [],
+      "overlaps": [],
+      "lowContrast": [
+        {
+          "text": "실행",
+          "ratio": 3.65,
+          "need": 4.5,
+          "fontSize": 15,
+          "color": "rgb(255, 255, 255)"
+        }
+      ],
+      "testidCount": 14
+    }
+  ],
+  "control": {
+    "before": {
+      "overflowPx": 0,
+      "clipped": 0,
+      "overlaps": 0,
+      "lowContrast": 3
+    },
+    "after": {
+      "overflowPx": 1720,
+      "clipped": 1,
+      "overlaps": 8,
+      "lowContrast": 4
+    },
+    "bumped": {
+      "overflow": true,
+      "clipped": true,
+      "overlaps": true,
+      "lowContrast": true
+    }
+  },
+  "summary": {
+    "cells": 50,
+    "overflowCells": [],
+    "clippedTotal": 0,
+    "overlapTotal": 0,
+    "lowContrastTotal": 470,
+    "worstOverlaps": [],
+    "clippedExamples": [],
+    "contrastExamples": [
+      {
+        "screen": "overview",
+        "width": 390,
+        "scheme": "dark",
+        "text": "둘러보기 시작",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "overview",
+        "width": 390,
+        "scheme": "dark",
+        "text": "조사 시작",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "overview",
+        "width": 390,
+        "scheme": "dark",
+        "text": "조사 시작",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "incident",
+        "width": 390,
+        "scheme": "dark",
+        "text": "재생",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 13,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "compare",
+        "width": 390,
+        "scheme": "dark",
+        "text": "실행",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "overview",
+        "width": 768,
+        "scheme": "dark",
+        "text": "둘러보기 시작",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "overview",
+        "width": 768,
+        "scheme": "dark",
+        "text": "조사 시작",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "overview",
+        "width": 768,
+        "scheme": "dark",
+        "text": "조사 시작",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "incident",
+        "width": 768,
+        "scheme": "dark",
+        "text": "재생",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 13,
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "screen": "compare",
+        "width": 768,
+        "scheme": "dark",
+        "text": "실행",
+        "ratio": 3.65,
+        "need": 4.5,
+        "fontSize": 15,
+        "color": "rgb(255, 255, 255)"
+      }
+    ],
+    "control": {
+      "overflow": true,
+      "clipped": true,
+      "overlaps": true,
+      "lowContrast": true
+    }
+  }
+}
