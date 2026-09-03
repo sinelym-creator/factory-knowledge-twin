@@ -200,12 +200,17 @@ def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
         with urllib.request.urlopen(request, timeout=timeout_sec) as response:  # noqa: S310
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
+        # 🔴 **본문 사유는 «로그에만» 남긴다**(D-24 · 리바이2 #444 회부 2). 게이트웨이가 401 에
+        #    실어 보내는 사유는 **내부 인증 헤더 이름**을 그대로 담고 있고, 앞판은 그것을 그대로
+        #    올려 `rejectedReason` → run 타임라인 → **공개 화면**까지 흘려보냈다(baseline §15.2 공개 경계).
+        #    D-23 과 같은 형태의 누출이다 — 다른 점은 새어 나간 것이 예외 이름이 아니라 우리 헤더 이름이라는 것뿐이다.
         detail = ""
         try:
             detail = json.loads(exc.read().decode("utf-8")).get("rejectedReason", "")
         except Exception:                                    # noqa: BLE001 — 사유를 못 읽어도 상태는 남긴다
             detail = ""
-        raise _Rejected(f"게이트웨이 {exc.code}{(' · ' + detail) if detail else ''}") from None
+        log.warning("게이트웨이가 거부 — HTTP %s: %s", exc.code, detail or "(본문 사유 없음)")
+        raise _Rejected(_refusal_wording(exc)) from None
     except TimeoutError:
         raise _Rejected(f"게이트웨이 타임아웃({int(timeout_sec * 1000)}ms)") from None
     except urllib.error.URLError as exc:
@@ -279,10 +284,17 @@ def _refusal_wording(exc: BaseException) -> str:
        방문자가 `ConnectionRefusedError` 를 읽었다(baseline §15.2 공개 경계 · 계약 OFF 문면).
        원문은 아래 호출부에서 **로그에만** 남긴다.
 
-    🔴 **분류는 세 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
+    🔴 **분류는 네 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
        원인을 더 잘게 나누면 그 목록이 곧 내부 구현의 지도가 된다. 방문자에게 필요한 것은
        「지금 어떤 상태인가」와 「무엇을 할 수 있는가」이지 예외 이름이 아니다.
     """
+    if isinstance(exc, urllib.error.HTTPError):
+        # 🔴 **URLError 보다 «먼저» 본다.** HTTPError 는 URLError 의 하위형이라 순서를 바꾸면
+        #    「게이트웨이가 답했다(401)」가 「게이트웨이가 답하지 않는다」로 뒤집힌다 — 방문자가
+        #    할 일이 같지 않은 두 상태다(설정을 본다 vs 게이트웨이를 켜야 한다).
+        # 🔴 **상태코드까지가 공개 한계다.** 본문 사유는 게이트웨이 «내부» 문면이라 싣지 않는다
+        #    — 그 자리가 헤더 이름을 내보낸 구멍이다.
+        return f"게이트웨이가 요청을 거부했습니다(HTTP {exc.code})"
     if isinstance(exc, (TimeoutError, asyncio.TimeoutError)):
         return "응답 시간 초과"
     if isinstance(exc, (urllib.error.URLError, ConnectionError, OSError)):
