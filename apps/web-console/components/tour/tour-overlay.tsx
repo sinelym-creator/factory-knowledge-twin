@@ -40,17 +40,23 @@ type Props =
 export function TourOverlay(props: Props) {
   if (props.mode === "invite") {
     return (
+      /* 🔴 **떠 있는 카드를 문서 흐름으로 내렸다**(검증 좌석 실측: `fixed` 우하단 카드가
+         첫 방문 화면에서 알람 독·안내 카드·설비 카드와 **6쌍씩 겹쳤다** — 1280·1440·tablet·1920).
+         「막지 않는다」는 원칙은 «클릭을 막지 않는다»였는데, 겹침은 그와 별개로 **보이는 것을
+         가린다**. 배너 형태면 둘 다 지킨다: 아무것도 가리지 않고, 배경도 그대로 조작된다. */
       <aside
-        className="fkt-card fkt-rise fixed right-5 bottom-5 z-50 w-[336px] p-5 shadow-2"
+        className="fkt-card fkt-rise mx-auto mt-5 flex w-full max-w-[1440px] flex-wrap items-center gap-x-5 gap-y-3 px-5 py-4"
         data-testid="tour-invite"
         aria-label="가이드 투어 안내"
       >
-        <p className="text-title font-semibold tracking-[-0.01em]">둘러보시겠습니까?</p>
-        <p className="mt-2 text-body-c text-muted">
-          이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 8단계로 보여 드립니다.
-          녹화된 조사로 진행하니 아무것도 실행되지 않습니다.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-body-c font-semibold">둘러보시겠습니까?</p>
+          <p className="mt-1 text-foot text-muted">
+            이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다.
+            녹화된 조사로 진행하니 아무것도 실행되지 않습니다.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={props.onStart}
@@ -71,7 +77,7 @@ export function TourOverlay(props: Props) {
           <button
             type="button"
             onClick={props.onNever}
-            className="ml-auto rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted"
+            className="rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted"
             data-testid="tour-never"
           >
             다시 보지 않기
