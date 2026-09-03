@@ -66,8 +66,8 @@ async function column(label, { width, height, reduced }) {
   stage.invite = true;
   await start.click();
 
-  // 대상이 있는 overview 스텝 두 개(0 headline · 1 alarm-card)에서 잰다.
-  for (const i of [0, 1]) {
+  // 🔴 전 스텝을 잰다 — 겹침은 스텝마다 대상 위치가 달라 한두 칸만 보면 놓친다.
+  for (let i = 0; i < 9; i += 1) {
     const callout = page.locator(`[data-testid="tour-callout"][data-index="${i}"]`);
     const shown = await callout
       .waitFor({ state: "visible", timeout: 15_000 })
@@ -124,14 +124,39 @@ async function column(label, { width, height, reduced }) {
       overflowPx: document.scrollingElement.scrollWidth - document.scrollingElement.clientWidth,
     }));
 
-    col.steps.push({ index: i, shown: true, hasSpot, spotStyle, calloutBox, scrollAxis });
+    /* 🔴 「콜아웃이 제가 가리키는 것을 덮는가」 — 이 축의 핵심 값. 규격 ⑤ 의 목적(대상을
+       보여 주며 설명한다)은 위치가 아니라 이 숫자로 깨진다. */
+    let spotCoveredPct = null;
+    if (spotStyle) {
+      const a = spotStyle.rect;
+      const b = calloutBox.rect;
+      const x = Math.max(0, Math.min(a.left + a.width, b.left + b.width) - Math.max(a.left, b.left));
+      const y = Math.max(0, Math.min(a.top + a.height, b.top + b.height) - Math.max(a.top, b.top));
+      const area = x * y;
+      spotCoveredPct = a.width * a.height > 0 ? Number(((100 * area) / (a.width * a.height)).toFixed(1)) : null;
+    }
+    col.steps.push({ index: i, shown: true, hasSpot, spotStyle, calloutBox, scrollAxis, spotCoveredPct });
     if (SHOTS) {
       fs.mkdirSync(SHOTS, { recursive: true });
       await page.screenshot({ path: `${SHOTS}/${label}-step${i}.png` });
     }
 
+    // 다음 스텝으로 — 그 스텝이 요구하는 조작 그대로(읽기/링크/직접 클릭)
+    const goto = page.locator('[data-testid="tour-goto"]');
     const next = page.locator('[data-testid="tour-next"]');
-    if (await next.count()) await next.first().click();
+    const urlBefore = page.url();
+    if (await goto.count()) {
+      await goto.first().click();
+      await page.waitForURL((u) => u.href !== urlBefore, { timeout: 10_000 }).catch(() => {});
+    } else if (await next.count()) {
+      await next.first().click();
+    } else {
+      const target = page.locator('[data-testid="candidate"]').first();
+      const chip = target.locator("a, button").first();
+      if (await chip.count()) await chip.click();
+      else if (await target.count()) await target.click();
+      await page.waitForURL((u) => u.href !== urlBefore, { timeout: 10_000 }).catch(() => {});
+    }
   }
 
   await ctx.close();
@@ -176,6 +201,15 @@ report.summary = {
   horizontalOverflowMax: Math.max(
     ...report.columns.flatMap((c) => c.steps.map((s) => s.scrollAxis?.overflowPx ?? 0)),
   ),
+  spotCoverage: report.columns.map((c) => ({
+    label: c.label,
+    perStep: c.steps.map((s) => ({ i: s.index, pct: s.spotCoveredPct })),
+    worst: Math.max(0, ...c.steps.map((s) => s.spotCoveredPct ?? 0)),
+  })),
+  ringOutlineWidth: report.columns.map((c) => ({
+    label: c.label,
+    widths: [...new Set(c.steps.map((s) => s.spotStyle?.outlineWidth).filter(Boolean))],
+  })),
 };
 
 if (OUT) fs.writeFileSync(OUT, JSON.stringify(report, null, 2));

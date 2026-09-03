@@ -227,9 +227,24 @@ async function axis2FocusReturn() {
     .locator('[data-testid="tour-callout"]')
     .waitFor({ state: "detached", timeout: 10_000 })
     .catch(() => {});
-  const after = await activeInfo(page);
+  /* 🔴 한 시점만 보면 「대상이 안 돌려줬다」와 「내가 일찍 봤다」가 같은 값을 낸다. 수리는
+     `requestAnimationFrame` 뒤에 포커스를 옮기므로 여러 시점에서 찍고 그 열을 그대로 남긴다. */
+  const samples = [];
+  const at = [0, 100, 300, 800];
+  let prev = 0;
+  for (const ms of at) {
+    await page.waitForTimeout(ms - prev);
+    prev = ms;
+    samples.push({ atMs: ms, focus: await activeInfo(page) });
+  }
+  const after = samples.at(-1)?.focus ?? null;
   await ctx.close();
-  return { focusBeforeEsc: before, focusAfterEsc: after, returnedToHelp: after?.testid === "intro-reopen" };
+  return {
+    focusBeforeEsc: before,
+    samples,
+    focusAfterEsc: after,
+    returnedToHelp: samples.some((s) => s.focus?.testid === "intro-reopen"),
+  };
 }
 
 /* ── 축 ③ ────────────────────────────────────────────────────────────────── */
