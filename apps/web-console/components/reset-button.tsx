@@ -36,7 +36,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
   return (
     <>
       <button
-        className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink"
+        className="fkt-pill bg-fill text-foot text-muted hover:text-ink"
         onClick={() => {
           setResult(null);
           setAsking(true);
@@ -49,17 +49,17 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
 
       {asking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
-          <div className="w-full max-w-sm rounded border border-edge bg-panel p-4" role="dialog" aria-modal>
-            <p className="text-sm">이 세션을 처음 상태로 되돌릴까요?</p>
-            <p className="mt-1 text-xs text-muted">
+          <div className="w-full max-w-sm fkt-card p-6" role="dialog" aria-modal>
+            <p className="text-body-c">이 세션을 처음 상태로 되돌릴까요?</p>
+            <p className="mt-1 text-foot text-muted">
               변경한 작업지시서 초안·조사 결과가 사라집니다. 다른 방문자에게는 영향이 없습니다.
             </p>
-            <div className="mt-4 flex justify-end gap-2 text-xs">
-              <button className="rounded border border-edge px-3 py-1.5 text-muted hover:text-ink"
+            <div className="mt-4 flex justify-end gap-2 text-foot">
+              <button className="fkt-btn fkt-btn-secondary rounded-pill px-4.5 text-muted hover:text-ink"
                       onClick={() => setAsking(false)} disabled={busy}>
                 취소
               </button>
-              <button className="rounded border border-edge px-3 py-1.5 text-ai hover:text-ink"
+              <button className="fkt-btn fkt-btn-secondary rounded-pill px-4.5 text-ai hover:text-ink"
                       onClick={() => void confirm()} disabled={busy}>
                 {busy ? "되돌리는 중…" : "되돌리기"}
               </button>
@@ -69,7 +69,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
       )}
 
       {result && (
-        <span className="text-xs text-muted" role="status">
+        <span className="text-foot text-muted" role="status">
           {result}
         </span>
       )}

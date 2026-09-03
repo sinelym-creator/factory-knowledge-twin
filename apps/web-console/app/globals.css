@@ -7,37 +7,43 @@
       기존 토큰 이름(bg·panel·edge·ink·muted·ok·warn·danger·ai·scrim)은 아래 @theme inline 이
       --fkt-* 로 «참조»하므로 컴포넌트 diff 0 으로 팔레트가 바뀐다(PR 1 완료 조건).
 
-   🔴 다크/라이트 = 자동(원칙 ①-7). 값만 스위치하고 구조는 같다. 라이트가 :root 기본값이고
-      다크는 prefers-color-scheme 미디어 쿼리 한 블록이다 — 컴포넌트마다 dark: 변형을 쓰지 않는다.
-      (이전 주석 「다크가 기본 · 라이트 전환은 P0 밖」은 규격서 ①-7 로 대체됐다 · D-005)
+   🔴 **다크 고정**(폐하 09-03 14:15 「다크가 더 낫다」 · 15:25 디자인 재가). 라이트 팔레트는
+      값만 그대로 두고 `:root[data-theme="light"]` 로 옮겼다 — 자동 전환을 쓰지 않는 이유는
+      아래 그 블록 머리말에 있다(「선호 없음」에서 라이트가 이겨 §10 이 거짓이 되던 자리 ·
+      검증 좌석 실측). 컴포넌트는 여전히 이름만 부르고 dark: 변형을 쓰지 않는다.
 
    총 35 토큰 = 색 14 · 폰트 2 · 크기 7 · 라운드 4 · 그림자 2 · blur 1 · 모션 5.
    ============================================================================= */
 :root {
-  color-scheme: light dark;
+  /* 🔴 다크 고정 — 브라우저 기본 위젯·스크롤바까지 다크로 맞춘다(`dark light` 로 두면
+     선호를 안 밝힌 클라이언트에서 위젯만 라이트로 남아 화면과 어긋난다). */
+  color-scheme: dark;
 
-  /* ── 색 14 (라이트 · HIG 고대비 변형 · label-2 .72 = 본문 4.5:1) ── */
-  --fkt-bg-1: #f2f2f7;                 /* 바탕 */
-  --fkt-bg-2: #ffffff;                 /* 카드·패널 */
-  --fkt-bg-3: #e5e5ea;                 /* 인셋·트랙·2차 버튼 */
-  --fkt-label-1: #000000;              /* 본문 */
-  --fkt-label-2: rgb(60 60 67 / 0.72); /* 보조 */
-  --fkt-label-3: rgb(60 60 67 / 0.5);  /* 플레이스홀더 — 본문 텍스트 금지(⑤) */
-  --fkt-label-4: rgb(60 60 67 / 0.18); /* 구분선·헤어라인 */
-  --fkt-tint: #0071e3;                 /* 틴트 = AI·evidence·현재 항목 */
-  --fkt-success: #248a3d;
-  --fkt-warning: #c93400;
-  --fkt-danger: #d70015;
-  --fkt-info: #0071a4;
-  --fkt-scrim: rgb(0 0 0 / 0.3);
-  --fkt-glass: rgb(255 255 255 / 0.72); /* 앱바·레일·모달 3면만 */
+  /* ── 색 14 (다크 = 기본 · 표면 3단 #000/#1C1C1E/#2C2C2E · 2차 텍스트는 흰색 알파) ── */
+  --fkt-bg-1: #000000;                    /* 바탕 = 순검정 */
+  --fkt-bg-2: #1c1c1e;                    /* 카드·패널 = 떠 있는 표면 */
+  --fkt-bg-3: #2c2c2e;                    /* 카드 «안» 인셋·트랙 (4단째를 만들지 않는다) */
+  --fkt-label-1: #ffffff;                 /* 본문 */
+  --fkt-label-2: rgb(235 235 245 / 0.6);  /* 보조 — 회색 hex 가 아니라 흰색 알파 */
+  --fkt-label-3: rgb(235 235 245 / 0.3);  /* 플레이스홀더 — 본문 텍스트 금지(⑤) */
+  --fkt-label-4: #38383a;                 /* 헤어라인 = «같은 카드 안 리스트 행» 사이에만 */
+  --fkt-tint: #0a84ff;                    /* 강조는 하나 = 상호작용 */
+  --fkt-success: #30d158;
+  --fkt-warning: #ff9f0a;
+  --fkt-danger: #ff453a;
+  --fkt-info: #64d2ff;
+  --fkt-fill: rgb(120 120 128 / 0.36);    /* 채움 = 반투명 그레이(회색 배경 아님) */
+  --fkt-scrim: rgb(0 0 0 / 0.55);
+  --fkt-glass: rgb(28 28 30 / 0.72);      /* 앱바·레일·모달 3면만 */
 
   /* ── 폰트 2 (시스템 스택 · 웹폰트 fetch 0 · LCP ⑤) ── */
   --fkt-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
     "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --fkt-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* ── 크기 7 (px · large 는 ≥md 34 / 모바일 28) ── */
+  /* ── 크기 9 (px · large 는 ≥md 34 / 모바일 28 · 숫자 2종은 «값이 주인공»인 자리) ── */
+  --fkt-t-kpi: 40px;      /* KPI 값 — 700 · tabular-nums · tracking -1px */
+  --fkt-t-metric: 28px;   /* 설비 카드·후보 신뢰도 값 — 600 */
   --fkt-t-large: 28px;
   --fkt-t-title: 22px;
   --fkt-t-head: 17px;
@@ -46,15 +52,15 @@
   --fkt-t-foot: 13px;     /* 현 xs */
   --fkt-t-cap: 12px;      /* ID·시각 */
 
-  /* ── 라운드 4 ── */
-  --fkt-r-card: 16px;
+  /* ── 라운드 4 (큰 연속 곡률 — 작은 radius 는 즉시 「애플 아님」) ── */
+  --fkt-r-card: 18px;
   --fkt-r-btn: 12px;
-  --fkt-r-chip: 8px;
+  --fkt-r-chip: 10px;
   --fkt-r-pill: 999px;
 
-  /* ── 그림자 2 (라이트) ── */
-  --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.04);
-  --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
+  /* ── 그림자 2 (다크 기본 = 없음 · 깊이는 표면 밝기 차로만) ── */
+  --fkt-shadow-1: none;
+  --fkt-shadow-2: 0 12px 32px rgb(0 0 0 / 0.5);
 
   /* ── blur 1 ── */
   --fkt-blur: blur(20px) saturate(180%);
@@ -81,26 +87,31 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fkt-bg-1: #000000;
-    --fkt-bg-2: #1c1c1e;
-    --fkt-bg-3: #2c2c2e;
-    --fkt-label-1: #ffffff;
-    --fkt-label-2: rgb(235 235 245 / 0.6);
-    --fkt-label-3: rgb(235 235 245 / 0.4);
-    --fkt-label-4: rgb(84 84 88 / 0.65);
-    --fkt-tint: #0a84ff;
-    --fkt-success: #30db5b;
-    --fkt-warning: #ffb340;
-    --fkt-danger: #ff6961;
-    --fkt-info: #70d7ff;
-    --fkt-scrim: rgb(0 0 0 / 0.55);
-    --fkt-glass: rgb(28 28 30 / 0.72);
-    /* 다크 그림자 = alpha ×2 + 1px label-4 헤어라인(검정 위에서 그림자만으로는 층이 안 보인다) */
-    --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.12), 0 0 0 1px var(--fkt-label-4);
-    --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.24), 0 0 0 1px var(--fkt-label-4);
-  }
+/* 라이트 = 값만 되돌린다(구조 동일). HIG 고대비 변형 · label-2 .72 = 본문 4.5:1.
+   🔴 **자동 전환(`@media (prefers-color-scheme: light)`)이 아니다.** 그 미디어는 「다크가
+      아닌 모든 경우」에 참이라(no-preference 값 폐기), 자동으로 두면 선호를 안 밝힌 기본
+      클라이언트에서 라이트가 이긴다 — 검증 좌석 실측: 전·후 모두 `rgb(242,242,247)`.
+      §10 「다크가 기본」이 그 자리에서 거짓이 되므로 **다크로 고정**하고, 라이트 팔레트는
+      명시적 선택(`data-theme="light"`)에만 남긴다. 값·구조는 그대로라 토글을 붙이면 산다. */
+:root[data-theme="light"] {
+    --fkt-bg-1: #f2f2f7;
+    --fkt-bg-2: #ffffff;
+    --fkt-bg-3: #e5e5ea;
+    --fkt-label-1: #000000;
+    --fkt-label-2: rgb(60 60 67 / 0.72);
+    --fkt-label-3: rgb(60 60 67 / 0.5);
+    --fkt-label-4: rgb(60 60 67 / 0.18);
+    --fkt-tint: #0071e3;
+    --fkt-success: #248a3d;
+    --fkt-warning: #c93400;
+    --fkt-danger: #d70015;
+    --fkt-info: #0071a4;
+    --fkt-fill: rgb(120 120 128 / 0.2);
+    --fkt-scrim: rgb(0 0 0 / 0.3);
+    --fkt-glass: rgb(255 255 255 / 0.72);
+    /* 🔴 그림자는 «라이트에만» 있다 — 다크에서 깊이는 밝기 차로만 만든다(그림자는 안 보인다). */
+    --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.04);
+    --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
 }
 
 /* =============================================================================
@@ -123,10 +134,13 @@
   --color-info: var(--fkt-info);
   --color-scrim: var(--fkt-scrim);
   --color-glass: var(--fkt-glass);
+  --color-fill: var(--fkt-fill);
 
   --font-sans: var(--fkt-font-sans);
   --font-mono: var(--fkt-font-mono);
 
+  --text-kpi: var(--fkt-t-kpi);
+  --text-metric: var(--fkt-t-metric);
   --text-large: var(--fkt-t-large);
   --text-title: var(--fkt-t-title);
   --text-head: var(--fkt-t-head);
@@ -146,8 +160,9 @@
   --ease-spring: var(--fkt-ease-spring);
   --ease-smooth: var(--fkt-ease-out);
 
-  --spacing-appbar: 56px;   /* wireframes §0 상단 바 */
-  --spacing-rail: 56px;     /* ux-direction A안 좌측 아이콘 레일 */
+  --spacing-appbar: 52px;   /* 상단 바 = sticky glass + 하단 헤어라인 */
+  --spacing-rail: 260px;    /* 🔴 좌측 레일 = 라벨형 260(아이콘만 56 은 「애플 아님」 · 폐하 14:24) */
+  --spacing-dock: 340px;    /* 우측 알람 독 */
 }
 
 /* =============================================================================
@@ -255,7 +270,7 @@ body {
       background-color var(--fkt-dur-1) linear,
       opacity var(--fkt-dur-1) linear;
   }
-  .fkt-btn:active { transform: scale(0.97); }
+  .fkt-btn:active { transform: scale(0.95); }   /* 누름 = 마이크로 인터랙션 «하나»(색 반전·테두리 점등 금지) */
   .fkt-btn:disabled { opacity: 0.4; }
   .fkt-btn-primary { background: var(--fkt-tint); color: #fff; }
   .fkt-btn-secondary { background: var(--fkt-bg-3); color: var(--fkt-label-1); }
@@ -321,6 +336,46 @@ body {
   }
   .fkt-pulse {
     animation: fkt-pulse 1.6s var(--fkt-ease-out) infinite;
+  }
+
+  /* ── 재설계 유틸 5종(폐하 14:24 「구성·레이아웃」) ─────────────────────────
+     값이 아니라 «구성»을 만드는 자리다. 카드는 테두리가 아니라 표면 밝기로 서고,
+     선은 «같은 카드 안 리스트 행» 사이에만 남는다. ──────────────────────── */
+
+  /* 섹션 라벨 — 13px/600 보조색. 대문자·넓은 letter-spacing 금지(즉시 「애플 아님」). */
+  .fkt-section-label {
+    font-size: var(--fkt-t-foot);
+    font-weight: 600;
+    color: var(--fkt-label-2);
+    letter-spacing: 0;
+  }
+
+  /* 큰 제목 — 디스플레이 크기엔 음수 tracking(애플 특유의 조밀한 헤드라인). */
+  .fkt-display {
+    font-size: var(--fkt-t-large);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+  }
+
+  /* 큰 숫자 — 값이 주인공. 라벨·단위는 종속(13~15px/400 보조색). */
+  .fkt-num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  /* inset 리스트 — 카드 «안»에서만 행 사이 1px. 첫 행 위·마지막 행 아래엔 선이 없다. */
+  .fkt-rows > * + * {
+    border-top: 1px solid var(--fkt-label-4);
+  }
+
+  /* hover = 배경만 한 단 올린다(리프트·그림자 확대 금지). */
+  .fkt-hoverable {
+    transition: background-color var(--fkt-dur-1) linear;
+  }
+  .fkt-hoverable:hover {
+    background: var(--fkt-bg-3);
   }
 
   /* 진행 바 ④-3 — 트랙 3px · 추정층(9s · 「추정」 표기는 호출부) + 실측층(--p = done/total)

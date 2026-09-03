@@ -33,10 +33,10 @@ export function CitedBody({
   if (span !== null && !valid) {
     return (
       <section data-testid="cited-body" data-highlight="out-of-range">
-        <p className="rounded border border-danger/50 bg-panel p-3 text-sm text-danger">
+        <p className="rounded border border-danger/50 bg-panel p-3 text-body-c text-danger">
           🔴 인용 좌표가 본문 범위 밖이다 — 강조를 그리지 않는다.
         </p>
-        <p className="id mt-1 text-xs text-muted">
+        <p className="id mt-1 text-foot text-muted">
           요청 좌표 [{span.start}, {span.end}) · 본문 길이 {body.length}
           {chunkId ? ` · ${chunkId}` : ""}
         </p>
@@ -48,7 +48,7 @@ export function CitedBody({
   if (!valid) {
     return (
       <section data-testid="cited-body" data-highlight="none">
-        <p className="mb-2 text-xs text-muted">
+        <p className="mb-2 text-foot text-muted">
           인용 구간 지정 없음 — 문서 전문을 그대로 보여 준다.
         </p>
         <BodyText>{body}</BodyText>
@@ -61,10 +61,10 @@ export function CitedBody({
     <section data-testid="cited-body" data-highlight="ok">
       {/* 🔴 키보드 내비 — 본문이 길면 인용까지 스크롤로만 갈 수 있어서는 안 된다.
           링크라 Tab 으로 잡히고 Enter 로 뛴다(클라이언트 JS 없이 성립한다). */}
-      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+      <p className="mb-2 flex flex-wrap items-center gap-2 text-foot text-muted">
         <a
           href="#cited"
-          className="rounded border border-edge px-2 py-0.5 text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+          className="fkt-pill bg-fill text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
         >
           ▾ 인용 구간으로 이동
         </a>
@@ -92,7 +92,7 @@ export function CitedBody({
 /** 원문은 «원문대로» — 마크다운으로 다시 그리지 않는다(그리면 본문과 좌표가 갈린다). */
 function BodyText({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="max-h-[60vh] overflow-auto rounded border border-edge bg-bg p-3 text-xs leading-relaxed whitespace-pre-wrap">
+    <pre className="max-h-[60vh] overflow-auto rounded-chip bg-inset p-3 text-foot leading-relaxed whitespace-pre-wrap">
       {children}
     </pre>
   );

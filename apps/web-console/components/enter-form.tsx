@@ -97,16 +97,16 @@ export function EnterForm() {
       className="mx-auto mt-24 flex max-w-sm flex-col items-center gap-3 text-center"
       data-testid="entry-form"
     >
-      <p className="text-sm" role="status">
+      <p className="text-body-c" role="status">
         세션을 만들고 조사 화면으로 들어갑니다…
       </p>
-      <p className="text-xs text-muted">
+      <p className="text-foot text-muted">
         이 세션의 변경은 다른 방문자에게 보이지 않습니다. 자동으로 넘어가지 않으면 아래를
         눌러 주세요.
       </p>
       <button
         type="submit"
-        className="rounded border border-edge px-3 py-1.5 text-xs text-ai hover:bg-panel focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+        className="fkt-btn fkt-btn-primary rounded-pill px-5 text-body-c"
         data-testid="enter-button"
       >
         입장하기 →
