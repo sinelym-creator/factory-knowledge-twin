@@ -170,15 +170,38 @@ test.describe("T3-4 — 조사 실행 축", () => {
    *    가린다. 그래서 아래 «허용 자리가 실재하는가» 불변식을 함께 둔다: 목록이 아무것도 물지
    *    않으면 그물이 죽은 것이므로 초록을 내지 않는다.
    */
-  test("🔴 코드 축 — live/replay 렌더 분기는 허용 목록(testid) 밖 0", async () => {
+  test("🔴 코드 축 — live/replay 렌더 분기는 허용 목록(testid·심볼) 밖 0", async () => {
     const files = [
       "components/incident/run-console.tsx",
       "components/incident/run-panels.tsx",
       "lib/run-events.ts",
     ];
     // ttae-replay-note = TTAE 배지 문구 · live-return-offer = T4-2a ⓓ Live 복귀 «제안»(강제 이동 아님).
-    const ALLOW = ["ttae-replay-note", "live-return-offer"];
-    const branches: { at: string; testid: string | null }[] = [];
+    const ALLOW_TESTID = ["ttae-replay-note", "live-return-offer"];
+    /**
+     * 🔴 **그리지 않는 허용 자리**(T6-2 ③ · #435 승인). 합성 대기 표시의 게이트는 «함수 안의 한 줄»이라
+     *    testid 를 달 자리가 없다. 그렇다고 목록에 testid 를 하나 더 얹는 방식으로 통과시키면 그것은
+     *    「그리는 것으로 가른다」는 이 규칙의 근거를 버리는 일이고, 위양성 수정은 언제나 **전부 통과시키는
+     *    쪽**으로 미끄러진다. 그래서 허용을 «파일 + 함수 이름» 으로 준다:
+     *      · 줄 번호가 아니므로 그 함수가 옮겨 다녀도 따라간다
+     *      · 다른 파일이나 다른 함수에 같은 분기가 생기면 그대로 잡힌다
+     *      · 그 함수 «안»에서 분기가 둘로 늘어도 잡힌다(정확히 1건만 허용)
+     *    이 자리가 판 검출력은 브라우저 축이 되사온다 — `t6-6-synthesis-pending.spec.ts` 가
+     *    live·꼬리 보임 / replay·꼬리 0 / live·되감기 0 을 손잡이 하나씩 다른 열로 실측한다.
+     */
+    const ALLOW_SYMBOL = [{ file: "components/incident/run-panels.tsx", fn: "synthesizing" }];
+
+    /** 이 줄을 «감싸는» 최상위 함수 이름. 사이에 최상위 닫힘(`^}`)이 오면 그 함수 밖이다. */
+    const enclosingFn = (lines: string[], i: number): string | null => {
+      for (let k = i - 1; k >= 0; k -= 1) {
+        if (/^\}/.test(lines[k])) return null;
+        const m = lines[k].match(/^(?:export\s+)?function\s+(\w+)/);
+        if (m) return m[1];
+      }
+      return null;
+    };
+
+    const branches: { at: string; file: string; testid: string | null; fn: string | null }[] = [];
     for (const rel of files) {
       const lines = readFileSync(join(APP, rel), "utf8").split("\n");
       lines.forEach((line, i) => {
@@ -186,16 +209,31 @@ test.describe("T3-4 — 조사 실행 축", () => {
         if (line.trim().startsWith("*")) return;
         // 분기가 «여는» 블록의 첫 요소에서 testid 를 읽는다 — 그리는 것으로 가른다.
         const opened = lines.slice(i + 1, i + 4).join("\n");
-        branches.push({ at: `${rel}:${i + 1} ${line.trim()}`, testid: opened.match(/data-testid="([^"]+)"/)?.[1] ?? null });
+        branches.push({
+          at: `${rel}:${i + 1} ${line.trim()}`,
+          file: rel,
+          testid: opened.match(/data-testid="([^"]+)"/)?.[1] ?? null,
+          fn: enclosingFn(lines, i),
+        });
       });
     }
-    const outside = branches.filter((b) => b.testid === null || !ALLOW.includes(b.testid));
+    const allowed = (b: { file: string; testid: string | null; fn: string | null }) =>
+      (b.testid !== null && ALLOW_TESTID.includes(b.testid)) ||
+      ALLOW_SYMBOL.some((a) => a.file === b.file && a.fn === b.fn);
+
+    const outside = branches.filter((b) => !allowed(b));
     expect(outside.map((b) => b.at), `허용 목록 밖 모드 분기: ${outside.map((b) => b.at).join(" | ")}`).toHaveLength(0);
     // 🔴 허용 자리가 «실재»해야 한다 — 0 을 물면 규칙이 죽은 것이지 통과가 아니다.
-    for (const id of ALLOW) {
+    for (const id of ALLOW_TESTID) {
       expect(
         branches.filter((b) => b.testid === id).map((b) => b.at),
         `허용 자리 ${id} 가 실재하지 않는다 — 허용 목록이 아무것도 물지 않았다`,
+      ).toHaveLength(1);
+    }
+    for (const a of ALLOW_SYMBOL) {
+      expect(
+        branches.filter((b) => b.file === a.file && b.fn === a.fn).map((b) => b.at),
+        `허용 자리 ${a.file}:${a.fn}() 가 실재하지 않거나 둘 이상이다 — 심볼 허용은 정확히 한 줄이다`,
       ).toHaveLength(1);
     }
   });

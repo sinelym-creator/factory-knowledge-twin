@@ -69,7 +69,17 @@ test.describe("세션 리셋", () => {
     await page.getByRole("button", { name: "취소" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     expect(calls).toEqual([]);
-    await expect(page.getByRole("status")).not.toContainText("되돌렸습니다");
+    /* 🔴 D-22 §④ — 재려는 것은 「성공 문면이 화면에 없다」인데, 옛 단언
+     *   `expect(page.getByRole("status")).not.toContainText("되돌렸습니다")` 은 그것을 재지 못했다.
+     *   이 화면에서 `role=status` 를 다는 것은 **FallbackBanner 하나뿐**이고, 그 배너는 모드가
+     *   replay·unavailable 일 때만 선다. 그래서 결과가 «문면»이 아니라 «배너의 존재»에 묶였다 —
+     *   mode=live 열에서는 읽을 영역이 없어 `element(s) not found` 로 빨강이 났고, 그 빨강은
+     *   대상의 것이 아니었다(취소 뒤 `/reset` 0건 · 문면 0 · dialog 0 — 두 모드에서 같다).
+     *   ⇒ 롤이 아니라 **문면의 수**를 센다. 검출력은 대조군이 재고 있다:
+     *   `_ctrl` 아닌 `reset-modal-detection-control.spec.ts` 4칸(replay/live × 취소/성공모킹) —
+     *   문면 0 인 두 칸은 초록, 문면 1 인 두 칸은 빨강(1/1). 옛 단언은 같은 4칸에서 3칸 빨강이었다.
+     */
+    await expect(page.getByText("되돌렸습니다")).toHaveCount(0);
   });
 
   test("되돌리기 → 계약 경로 그대로 나간다 (POST /api/sessions/{sid}/reset · E1)", async ({ page }) => {

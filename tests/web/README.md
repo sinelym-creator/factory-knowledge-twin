@@ -14,6 +14,7 @@ T1-9 독립 검증에서 세운 4종. 판정 근거는 `evidence/t1-9-shell-e2e-
 | `t41_csp_walk.mjs` | 🔴 **CSP 무해성 전 동선**(T4-1 ④) — 3층 수집(DOM 위반·콘솔 `Refused`·requestfailed) + 자극 계수기 · 일부러 어긴 2절을 못 잡으면 `exit 2` | 필요 |
 | `t41_live_status_timeout.mjs` | 🔴 **상한과 «화면이 말한 시각»을 따로**(T4-1 ⑤ · D-3) — 답하지 않는 API 를 세우고 셸을 그쪽으로 «빌드»해야 성립한다 | 필요(블랙홀 빌드) |
 | `t41_cors_browser_drill.mjs` + `_origin_page_server.mjs` | 🔴 **브라우저가 CORS 를 집행하는가**(T4-1 ③) — 셸에서 재면 CSP 가 먼저 막아 못 가른다 · CSP 없는 맨 origin 2벌 | 필요(allowlist 주입) |
+| `e2e/t6-6-synthesis-pending.spec.ts` + `_synthesis_hold_server.mjs` | 🔴 **합성 대기 표시가 «지금 도는 것»에만 뜨는가**(T6-2 ③) — 손잡이 하나씩 다른 4열(live·꼬리 / live·되감기 / replay·되감기 / replay·꼬리 = 사실 축) · 게이트웨이가 없으면 조사가 **214ms 에 완주**해 무대가 없다 | 필요(hold 스텁 8787) |
 
 ## 세 가지 규율
 
@@ -72,6 +73,24 @@ node _origin_page_server.mjs 8066 &   ;   node _origin_page_server.mjs 8068 &
 FKT_CORS_ORIGINS=http://127.0.0.1:8066 docker compose up -d ai-api
 node t41_cors_browser_drill.mjs
 ```
+
+## T6-6 ③ 대기 표시 — 무대를 세워야 «도는 중»이 존재한다
+
+게이트웨이가 없으면 조사는 대본 축으로 **214ms 만에 완주**한다(실측). 그러면 화면이 그려지기 전에
+끝나 있어 「synthesize 가 running 인 창」이 아예 없고, 그때의 「안 보인다」는 결함이 아니라 **정보 0**
+이다(표본 1개 · running 0개). 순수 blackhole 로는 부족하다 — `GET /health` 가 200 을 못 주면
+ai-api 는 live 합성을 **부르지도 않는다**. 그래서 hold 스텁은 `/health` 에 200 을 주고 `/synthesize`
+만 붙잡는다.
+
+```
+node _synthesis_hold_server.mjs 8787      # /health→200 · /synthesize→붙잡음 · /release→풀고 건수 응답
+FKT_API_BASE=http://127.0.0.1:8010 FKT_WEB_BASE=http://127.0.0.1:3101 npx playwright test e2e/t6-6-synthesis-pending.spec.ts --workers=1
+curl -X POST http://127.0.0.1:8787/release   # 🔴 측정이 끝나면 반드시 내린다
+```
+
+🔴 **끝나면 스텁을 내린다.** 이 포트가 켜져 있는 동안 같은 ai-api 를 쓰는 다른 측정의 전제
+(`/live/status.online`)가 바뀐다 — 「GW OFF 에서 쟀다」는 문장이 조용히 거짓이 된다.
+🔴 스텁은 Claude 를 부르지 않는다(**구독 호출 0건**). 합성을 하는 척도 하지 않고 붙잡기만 한다.
 
 🔴 **이 머신에서 회귀를 돌릴 때(13대 실측)**: `PYTHONIOENCODING=utf-8`(cp949 stdout 이
 드릴의 성공 인쇄에서 죽인다) · `FKT_PYTHON=<정본 리포>/services/ai-api/.venv/Scripts/python.exe`

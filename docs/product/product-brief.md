@@ -49,5 +49,5 @@ size_limit: 6KB
 
 - 모든 데이터는 synthetic — 실제 회사·설비·고객 데이터 없음.
 - 실제 설비 제어 없음 — 작업지시·승인은 sandbox 안에서만.
-- 공개 서비스는 replay/로컬 모델로 동작 — Claude 구독을 공개 API로 노출하지 않음.
+- 공개 서비스는 replay/로컬 모델로 동작 — Claude 구독을 공개 API로 노출하지 않음 · LLM 합성(진단 근거 문장)은 **운영자 PC 의 Claude Code CLI 구독 경유 로컬 게이트웨이**로만 실행(Anthropic API 미사용 · 폐하 결정 3 09-02 · T6-1) — 공개 방문자는 그 실행 기록본을 replay 로 본다.
 - 배포 시점 수치는 «잠정 목표» — 실측 후 Target/Actual/PASS·FAIL로 분리 표기.

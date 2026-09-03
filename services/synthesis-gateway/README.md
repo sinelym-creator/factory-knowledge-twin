@@ -27,10 +27,41 @@ $env:FKT_LOCAL_SYNTHESIS_GATEWAY = 'http://127.0.0.1:8787'
 
 | env | 기본값 | 무엇 |
 |---|---|---|
-| `SYNTHESIS_GATEWAY_PORT` | `8787` | 바인드 포트(127.0.0.1 고정) |
-| `SYNTHESIS_TIMEOUT_MS` | `60000` | CLI 상한. ai-api 클라이언트는 여기에 5s 여유를 더해 기다린다 |
+| `SYNTHESIS_GATEWAY_BIND` | `127.0.0.1` | 바인드 주소. 루프백이 아닌데 토큰이 없으면 **기동을 거부한다** |
+| `SYNTHESIS_GATEWAY_PORT` | `8787` | 바인드 포트 |
+| `SYNTHESIS_GATEWAY_TOKEN` | (없음) | 설정하면 `/health` 를 포함한 **모든** 경로가 `X-FKT-Gateway-Token` 을 요구한다 |
+| `SYNTHESIS_GATEWAY_TIMEOUT_MS` | `60000` | 이 게이트웨이의 CLI 상한 |
 | `SYNTHESIS_CLI_BIN` | `claude` | Claude Code CLI 실행 파일 |
-| `SYNTHESIS_MODEL` | (미지정) | 비우면 CLI 기본 모델. 아래 실측을 보고 비워 두었다 |
+| `SYNTHESIS_MODEL` | `opus` | 모델 별칭. 빈 문자열을 «명시»하면 CLI 기본 |
+| `SYNTHESIS_EFFORT` | `low` | 사고 깊이. 빈 문자열이면 플래그 자체를 안 붙인다 |
+
+🔴 **타임아웃 이름은 층마다 다르다.** 이 게이트웨이는 `SYNTHESIS_GATEWAY_TIMEOUT_MS` 를,
+ai-api 클라이언트는 `SYNTHESIS_TIMEOUT_MS`(+5s margin)를 읽는다. 불변식은
+**「게이트웨이 상한 < 클라이언트 예산」** — 게이트웨이가 먼저 504 로 «사유»를 내고 클라이언트는
+그 답을 받을 만큼만 더 기다린다. 예전엔 두 층이 **같은 이름**을 읽어서, 한 셸에서 값을 키우면
+두 상한이 함께 올라가고 「어느 쪽이 끊었나」가 사라졌다(09-02 지연 드릴 0/4 무효의 진범 후보).
+구 이름만 준 채로 뜨면 게이트웨이가 경고 1줄을 낸다 — 조용히 기본값으로 도는 일이 없게.
+
+## 소유자 스위치 (T6-2)
+
+이 게이트웨이는 **소유자 PC 의 호스트 프로세스**다. 켜고 끄는 것이 곧 Live 합성의 ON/OFF 이고,
+배포 컨테이너는 재기동하지 않는다.
+
+```powershell
+pwsh -File services/synthesis-gateway/switch.ps1 on      # 띄우고 /health 로 확인까지
+pwsh -File services/synthesis-gateway/switch.ps1 status
+pwsh -File services/synthesis-gateway/switch.ps1 off      # 이 게이트웨이인지 확인하고 종료
+```
+
+- ai-api 의 `GET /api/live/status` 는 이제 **실도달 프로브**다 — 게이트웨이 `GET /health` 를
+  실제로 두드린 결과(짧은 타임아웃 · 몇 초 캐시 · 합성 소모 0)이지 「env 문자열이 있는가」가
+  아니다. 그래서 **끄면 캐시 만료 뒤 화면이 REPLAY 로 내려간다.**
+- 토큰을 쓰면 ai-api 에도 **같은 값**을 준다 — 이름은 층을 따라 `FKT_SYNTHESIS_GATEWAY_TOKEN`
+  이다(게이트웨이 쪽은 `SYNTHESIS_GATEWAY_TOKEN`). 합성 요청과 도달 프로브 **양쪽**에 같은
+  헤더(`X-FKT-Gateway-Token`)가 실린다.
+- 세션 하나가 Live 조사를 쓸 수 있는 횟수는 ai-api 쪽 상한이다
+  (`FKT_RUN_CAP_PER_SESSION` · 기본 3/시간 · 넘기면 `429 session_run_cap_exceeded` +
+  `Retry-After`). 넘겨도 **녹화 재생은 그대로 열려 있다** — 재생은 구독을 쓰지 않는다.
 
 ## 왜 이 형상인가 (실측 근거)
 
@@ -45,8 +76,13 @@ $env:FKT_LOCAL_SYNTHESIS_GATEWAY = 'http://127.0.0.1:8787'
 
 - 최속 관측 18.2s. **내부 API 시간만 해도 10.9s 로 이미 10s 를 넘는다** — 프로세스를 상주시켜
   기동 오버헤드(≈7~10s)를 없애도 10s 안에 들지 못한다.
-- 「더 작은 모델이 더 빠르다」는 직관은 **실측이 반증했다**. 그래서 `SYNTHESIS_MODEL` 을 비워
-  둔다(CLI 기본). 지정은 할 수 있으나, 지정하기 전에 다시 재라.
+- 「더 작은 모델이 더 빠르다」는 직관은 **실측이 반증했다**. 지정하기 전에 다시 재라.
+- **09-03 재측**(같은 입력 GS-01 · effort=medium · 합성 단계 벽시계): `opus` 10.5~10.6s ·
+  `sonnet` 14.8~15.2s(n=4) · `haiku` **44.7~60.1s**(n=3). 품질 지표(1순위 정답 일치 · 인용
+  집합 밖 0 · 가드 거부 0 · `insufficient=False` · 결정적 순위 대비 재정렬 0)는 **세 모델이
+  동률**이었고, 갈린 축은 지연뿐이다 — 이 입력에서 `haiku` 를 고를 근거는 없다. 기본값을
+  `opus` 로 두는 이유가 이것이다(운영자 결정 09-03 · 셋 중 가장 빠르고 품질은 동률 · 단
+  후보가 2건뿐이라 재정렬 검출력은 낮다).
 - Target 10s / Actual 18.2~22.4s 는 baseline 개정 회부 사안이다(오케 판정 09-02 19:33).
 
 ### 「답한 모델」을 입력 토큰으로 고르는 이유

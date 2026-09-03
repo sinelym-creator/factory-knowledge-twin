@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -23,14 +25,34 @@ from typing import Any
 
 from .synthesize import LIVE_GATE_ENV, Candidate
 
-# 게이트웨이의 상한(기본 60000ms)과 «같은 이름»을 읽고, 그보다 조금 더 기다린다.
-# 클라이언트가 먼저 끊으면 게이트웨이가 답할 수 있었던 건도 timeout 으로 기록된다.
+log = logging.getLogger(__name__)
+
+# 🔴 **불변식: 게이트웨이 상한 < 이 예산**(= 아래 값 + margin). 게이트웨이가 먼저 504 로
+#    사유를 내고, 클라이언트는 그 답을 받을 만큼만 더 기다린다 — 클라이언트가 먼저 끊으면
+#    게이트웨이가 답할 수 있었던 건까지 「타임아웃」으로 뭉뚱그려지고, 어느 쪽이 끊었는지
+#    사후에 가릴 수 없다.
+# 🔴 그래서 이름을 **분리했다**(32대 09-03). 예전엔 이 예산과 게이트웨이 상한이 둘 다
+#    `SYNTHESIS_TIMEOUT_MS` 였다 — 한 셸에서 export 하면 두 값이 함께 움직여 불변식이
+#    무의미해지고, 크게 주면 드릴 상한(300s)까지 넘겨 «사유 없는 무효»가 된다(31대 드릴 0/4).
+#    게이트웨이 쪽 이름 = `SYNTHESIS_GATEWAY_TIMEOUT_MS`.
 TIMEOUT_ENV = "SYNTHESIS_TIMEOUT_MS"
 DEFAULT_TIMEOUT_MS = 60_000
 CLIENT_MARGIN_MS = 5_000
 
 UNKNOWN_MODEL = "claude-code-cli:unknown"
 _MAX_EXCERPT = 600
+
+# 🔴 게이트웨이와 «같은 비밀»이되 이름의 접두어는 층을 따른다 — ai-api 쪽 env 는 `FKT_`
+#    (LIVE_GATE_ENV 와 같은 관례)이고 게이트웨이 쪽은 `SYNTHESIS_` 다. 이름을 새로 짓지 않고
+#    `run.ps1` 이 이미 안내하던 문면(`FKT_SYNTHESIS_GATEWAY_TOKEN`)을 그대로 쓴다 —
+#    이미 참을 말하는 층에서 낱말을 빌리는 편이 낱말을 하나 더 만드는 것보다 안전하다.
+#    값이 없으면 헤더를 아예 붙이지 않는다(토큰 없는 게이트웨이와 그대로 호환).
+TOKEN_ENV = "FKT_SYNTHESIS_GATEWAY_TOKEN"
+TOKEN_HEADER = "X-FKT-Gateway-Token"
+
+# 도달 프로브 — `/live/status` 가 「env 가 있다」가 아니라 「닿는다」를 답하게 하는 자리.
+PROBE_TIMEOUT_SEC = 2.0
+PROBE_CACHE_SEC = 5.0
 
 
 @dataclass
@@ -124,11 +146,54 @@ def _request_body(anchor: Any, candidates: list[Candidate], evidence_text: dict[
     return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
 
+def _headers(base: dict[str, str] | None = None) -> dict[str, str]:
+    """토큰이 설정돼 있으면 붙인다 — 값은 로그·예외 문면 어디에도 싣지 않는다."""
+    headers = dict(base or {})
+    token = os.environ.get(TOKEN_ENV, "").strip()
+    if token:
+        headers[TOKEN_HEADER] = token
+    return headers
+
+
+_probe_cache: dict[str, Any] = {"at": 0.0, "online": False}
+
+
+def probe_reachable() -> bool:
+    """게이트웨이에 «실제로 닿는가» — `GET /health` 1회. 결과는 몇 초 캐시한다.
+
+    🔴 「env 가 있다」와 「닿는다」는 다른 사실이다. 앞의 것만 보고 online=true 를 주면
+       화면은 갈 수 없는 길을 권하고, 방문자는 진행 표시 뒤에서 거부를 만난다
+       (31대 드릴이 정확히 그 형태로 무효가 났다 — 자극이 게이트웨이에 닿지 않았다).
+
+    🔴 캐시가 필요한 이유: 배지는 폴링된다. 캐시가 없으면 방문자 수만큼 게이트웨이를
+       두드리고, 그 두드림이 합성 1건과 같은 단일 스레드 서버를 막는다.
+       반대로 캐시가 길면 「방금 껐는데 아직 켜져 보인다」가 된다 — 그래서 몇 초다.
+    """
+    url = gateway_url()
+    if not url:
+        return False
+    now = time.monotonic()
+    if now - float(_probe_cache["at"]) < PROBE_CACHE_SEC:
+        return bool(_probe_cache["online"])
+    online = False
+    try:
+        request = urllib.request.Request(                    # noqa: S310 — 루프백 고정 URL
+            f"{url}/health", headers=_headers(), method="GET"
+        )
+        with urllib.request.urlopen(request, timeout=PROBE_TIMEOUT_SEC) as response:  # noqa: S310
+            online = response.status == 200
+    except Exception:                                        # noqa: BLE001 — 못 닿는 것도 «답»이다
+        online = False
+    _probe_cache["at"] = now
+    _probe_cache["online"] = online
+    return online
+
+
 def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
     request = urllib.request.Request(                        # noqa: S310 — 127.0.0.1 고정 URL
         f"{url}/synthesize",
         data=body,
-        headers={"Content-Type": "application/json; charset=utf-8"},
+        headers=_headers({"Content-Type": "application/json; charset=utf-8"}),
         method="POST",
     )
     try:
@@ -144,7 +209,12 @@ def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
     except TimeoutError:
         raise _Rejected(f"게이트웨이 타임아웃({int(timeout_sec * 1000)}ms)") from None
     except urllib.error.URLError as exc:
-        raise _Rejected(f"게이트웨이 미도달({type(exc.reason).__name__})") from None
+        # 🔴 **여기가 방문자가 실제로 읽는 자리다**(33대 브라우저 실측: 화면 문면 =
+        #    「게이트웨이 미도달(ConnectionRefusedError)」). D-23 수리를 아래 `except
+        #    Exception` 에만 걸었더니 이 `_Rejected` 경로는 세 줄 위에서 그대로 샜다 —
+        #    가드가 «전량 거부»로 승격시키는 경로라 예외 그물에 닿지 않는다.
+        log.warning("게이트웨이 미도달 — %s: %s", type(exc.reason).__name__, exc.reason)
+        raise _Rejected(_refusal_wording(exc)) from None
     except json.JSONDecodeError:
         raise _Rejected("게이트웨이 응답을 JSON 으로 읽지 못했다") from None
 
@@ -201,6 +271,27 @@ def apply_guard(
     return reordered, cleaned
 
 
+def _refusal_wording(exc: BaseException) -> str:
+    """예외를 «방문자가 읽을 문장»으로 바꾼다 — D-23(09-03 리바이2 회부 · 오케 판정).
+
+    🔴 **클래스명·호스트·포트를 싣지 않는다.** 앞판은 `f"합성 중 예외({type(exc).__name__})"`
+       였고, 그 문자열이 `rejectedReason` → run 타임라인 → **공개 화면**까지 그대로 흘러
+       방문자가 `ConnectionRefusedError` 를 읽었다(baseline §15.2 공개 경계 · 계약 OFF 문면).
+       원문은 아래 호출부에서 **로그에만** 남긴다.
+
+    🔴 **분류는 세 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
+       원인을 더 잘게 나누면 그 목록이 곧 내부 구현의 지도가 된다. 방문자에게 필요한 것은
+       「지금 어떤 상태인가」와 「무엇을 할 수 있는가」이지 예외 이름이 아니다.
+    """
+    if isinstance(exc, (TimeoutError, asyncio.TimeoutError)):
+        return "응답 시간 초과"
+    if isinstance(exc, (urllib.error.URLError, ConnectionError, OSError)):
+        # URLError 는 연결 거부·DNS·경로 없음을 한꺼번에 덮는다. 셋 다 방문자에게는 같은
+        # 사실이다 — 게이트웨이가 지금 답하지 않는다.
+        return "소유자 게이트웨이 OFF(미도달)"
+    return "합성 중 오류"
+
+
 async def synthesize(
     candidates: list[Candidate],
     *,
@@ -233,11 +324,13 @@ async def synthesize(
             rejected_reason=str(exc),
         )
     except Exception as exc:                                  # noqa: BLE001 — 축 하나가 run 을 죽이지 않는다
+        # 🔴 원문은 «여기서만» 남는다. 아래 사유에는 클래스명이 들어가지 않는다(D-23).
+        log.warning("live 합성 실패 — %s: %s", type(exc).__name__, exc)
         return LiveResult(
             axis="live-rejected",
             candidates=candidates,
             model=model,
-            rejected_reason=f"합성 중 예외({type(exc).__name__})",
+            rejected_reason=_refusal_wording(exc),
         )
 
     return LiveResult(axis="live", candidates=reordered, model=model, rationale=rationale)

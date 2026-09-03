@@ -105,6 +105,16 @@ function describe(code: string | undefined, why: string, retryAfterSec: number |
       offerReplay: true,
     };
   }
+  if (code === "session_run_cap_exceeded") {
+    // 🔴 `rate_limited` 와 «다른 문장»이다. 저쪽은 「잠시 후 다시」이고 이쪽은 「이 시간에는
+    //    재생으로 계속」이다 — 한 문장으로 합치면 방문자는 60초 뒤에 다시 눌러 또 막힌다.
+    //    상한의 뜻은 「지금 붐빈다」가 아니라 「이 세션의 Live 몫을 다 썼다」다.
+    return {
+      code,
+      text: `이 세션의 Live 조사 횟수를 다 썼습니다${after}. 녹화 재생으로는 계속 볼 수 있습니다.`,
+      offerReplay: true,
+    };
+  }
   if (code === "rate_limited") {
     return { code, text: `요청이 너무 잦습니다${after}.`, offerReplay: false };
   }

@@ -35,6 +35,7 @@ size_limit: 8KB
 | web console (Next.js) | Vercel Hobby | always-on·무료 구간 |
 | replay fixture | 리포/배포 번들 | 결정적 재생 — 백엔드 불요 |
 | ai-api (FastAPI+LangGraph) | 노트북 docker | Claude/로컬 모델·DB 인접 |
+| synthesis-gateway (Claude Code CLI · 구독) | 🔴 **운영자 PC 호스트 프로세스**(`127.0.0.1:8787` · compose 무등재 · T6-1 · 폐하 결정 3 09-02) | LLM 합성 = **운영자 구독 Claude Code CLI 경유 · Anthropic API 키 0** · 컨테이너는 `FKT_LOCAL_SYNTHESIS_GATEWAY` 로만 도달(배포 컨테이너 env 0 = 결정적 축) · 인용 id ∉ run 근거집합 = 전량 거부(`axis=live-rejected` 드러냄 · 조용한 폴백 0) · 공개 방문자 = Claude 실행 기록본 replay |
 | PostgreSQL+pgvector · Neo4j | 노트북 docker volume | 공개 리포에 volume 미포함(§34.6) |
 | ingestion-indexer | 노트북 docker (배치) | seed→index 재생성 재현성 |
 
@@ -51,7 +52,7 @@ size_limit: 8KB
 경계 B: Vercel ↔ Tunnel ↔ FastAPI · 준공개 — allowlist 시나리오·고정 Cypher template·
                                     parameterized SQL·요청 크기 제한·동시 실행 1~2 bounded queue
 경계 C: FastAPI ↔ DB/모델         · 사설 — 컨테이너 네트워크 내부 · secret은 env 주입
-🔴 어떤 경계에서도: 임의 SQL/Cypher/코드 실행 경로 없음 · Claude 구독 비노출(공개 요청 = replay/로컬 모델)
+🔴 어떤 경계에서도: 임의 SQL/Cypher/코드 실행 경로 없음 · Claude 구독 비노출(공개 요청 = replay/로컬 모델 · LLM 합성은 운영자 PC 의 Claude Code CLI 구독 경유 로컬 게이트웨이 · API 키 0 · T6-1)
    · 실제 설비 제어 없음 · synthetic data만
 ```
 

@@ -136,6 +136,30 @@ class LiveCapacityExhausted(StarletteHTTPException):
         )
 
 
+class SessionRunCapExceeded(StarletteHTTPException):
+    """세션 단위 조사 실행 상한 — 계약 v0.1.12 `429 session_run_cap_exceeded`.
+
+    🔴 `rate_limited`(분당 · 폭주 방지)와 **다른 code** 다. 화면이 이 둘을 가르지 못하면
+       「잠시 후 다시」와 「이 시간은 재생으로 계속」이 같은 배너가 되고, 방문자는 60초 뒤에
+       다시 눌러 또 막힌다.
+    🔴 오류 형상은 `{error:{code,message}}` **그대로**다 — 본문에 `fallback` 같은 필드를
+       더하지 않는다(계약 11행 · 형상을 넓히는 것은 계약 개정이지 구현 판단이 아니다).
+       화면의 replay 강등은 `code` 분기로 한다.
+    """
+
+    def __init__(self, retry_after_sec: int, limit: int) -> None:
+        super().__init__(
+            status_code=429,
+            detail={
+                "code": "session_run_cap_exceeded",
+                "message": (
+                    f"세션 조사 상한({limit}/시간) · 녹화 재생으로 계속"
+                ),
+            },
+            headers={"Retry-After": str(retry_after_sec)},
+        )
+
+
 # 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
 #    이 목록과 아래 `dependency_guard` 가 **그 변환의 유일한 정의**다(V-7 정정 · 「1곳 수렴」).
 #    전에는 compare 만 자기 안에 이 목록을 갖고 있었고, 나중에 열린 읽기 라우트에는 그 자리가

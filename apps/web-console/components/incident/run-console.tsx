@@ -566,7 +566,7 @@ export function RunConsole({
           </div>
           {children}
         </section>
-        <CandidateList state={state} runId={runId} />
+        <CandidateList state={state} runId={runId} showingPast={showingPast} />
       </div>
 
       {/* 하단 가로 스트립 — §11.2 배치 그대로(좌 timeline · 중앙 센서 · 우 후보 · 하단 evidence) */}
