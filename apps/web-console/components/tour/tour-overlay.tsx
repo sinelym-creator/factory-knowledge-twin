@@ -174,6 +174,10 @@ function TourStepView({
     return () => ro.disconnect();
   }, [index, step.id]);
 
+  /* 첫 걸음 = 가리킬 대상이 없는 «환영 카드». 대상을 못 찾은 상태(`missing`)와는 다르다 —
+     이쪽은 설계상 없는 것이라 「자리를 못 찾았다」 안내를 띄우지 않는다. */
+  const isWelcome = index === 0 && !step.target;
+
   const pad = 8;
   const hole: Rect | null = rect
     ? {
@@ -334,7 +338,12 @@ function TourStepView({
             ? `top-[var(--tour-top)] left-[var(--tour-left)] w-[360px] max-md:inset-x-3 max-md:w-auto ${
                 sheetGoesTop ? "max-md:top-3 max-md:bottom-auto" : "max-md:top-auto max-md:bottom-3"
               }`
-            : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
+            : isWelcome
+              ? /* 🔴 환영 카드만 «화면 중앙»이다. 대상이 없는 다른 스텝(완료 등)은 있던
+                   자리(우하단)에 그대로 둔다 — 가운데로 옮기면 그 스텝들이 새로 덮는다.
+                   <md 는 규격 ⑤ 대로 바텀 시트를 유지한다. */
+                "inset-x-3 bottom-3 md:inset-x-auto md:top-1/2 md:bottom-auto md:left-1/2 md:w-[360px] md:-translate-x-1/2 md:-translate-y-1/2"
+              : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
         }`}
         ref={calloutRef}
         style={hole ? style : undefined}
