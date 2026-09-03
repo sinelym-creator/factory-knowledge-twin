@@ -445,6 +445,13 @@ env(9)     FKT_TRUST_FORWARDED_FOR · FKT_CORS_ORIGINS · FKT_POSTGRES_DSN · FK
    `fkt-senku2-q3-ai-api:latest` · Exited). sha 를 붙이면 충돌이 구조적으로 없고 이름만 보고
    어느 세대인지 안다. 🔴 **낡은 세대의 정리(삭제)는 destructive 라 운영자·오케 회귀 사안**이다.
 4. 위 형상 그대로 새 컨테이너 기동(포트·네트워크·바인드 2 · env 9 + 필요 시 7-2 의 env 2 · `FKT_BUILD_SHA=<새sha>`).
+   🔴 **`FKT_BUILD_SHA` 는 «승계하지 않는다» — 새 이미지의 값을 쓴다.** 구 컨테이너의 env 를
+   기계적으로 옮기는 방식(`docker inspect` → `-e` 재부여)은 이 키까지 옮기는데, 구 이미지는
+   `FKT_BUILD_SHA=unknown` 으로 구워져 있어 sha 의 «정본이 런타임 `-e`» 였다. 실측(09-03 09:19 ·
+   센쿠2 33대 1차 시도): 새 컨테이너의 이미지 env 는 `ad788d3` 인데 `/api/health.build` 는
+   **`4685d80`** — 새 코드가 낡은 sha 로 자기를 소개했다. 「이미지에 이미 있던 env 는 빼고
+   런타임에 추가된 것만 옮긴다」는 정확한 필터가 바로 이 도장을 통과시킨다. 자기 정체를 말하는
+   값은 승계 목록에서 «명시적으로» 제외한다(그래서 5단의 완료 조건이 있다).
 5. **완료 조건 = `GET /api/health` 의 `build` 가 «새 sha»**. 컨테이너가 떴다는 것과 새 코드가 답한다는 것은 다른 사실이다.
 6. 되돌리기: 새 컨테이너 stop/rm → `docker rename fkt-deploy-ai-api-<구sha> fkt-deploy-ai-api` → start
    → 🔴 `/api/health.build` 가 **구 sha** 로 돌아온 것까지 확인해야 되돌리기가 끝난다.
