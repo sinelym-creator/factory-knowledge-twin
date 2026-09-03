@@ -1,0 +1,643 @@
+{
+  "base": "http://127.0.0.1:3111",
+  "at": "2026-09-03T12:17:08.968Z",
+  "passes": {
+    "keyboardOnly": {
+      "openedByKeyboard": {
+        "reached": true,
+        "tabs": 7
+      },
+      "stepsCompleted": 9,
+      "reachedLastStep": true,
+      "steps": [
+        {
+          "step": 1,
+          "title": "지금 무슨 일이 났는지부터",
+          "kind": "next",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "지금 무슨 일이 났는지부터",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-next",
+            "label": "다음",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 2,
+          "title": "알람은 «울린 행»의 값이 앵커다",
+          "kind": "next",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "알람은 «울린 행»의 값이 앵커다",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-next",
+            "label": "다음",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 3,
+          "title": "조사를 시작하면 에이전트가 5단계를 돕니다",
+          "kind": "goto",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "조사를 시작하면 에이전트가 5단계를 돕니다",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-goto",
+            "label": "녹화 재생으로 조사 보기",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 4,
+          "title": "다섯 단계가 실제로 지나간 자리",
+          "kind": "next",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "다섯 단계가 실제로 지나간 자리",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-next",
+            "label": "다음",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 5,
+          "title": "후보마다 근거 ID 가 붙는다",
+          "kind": "next",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "후보마다 근거 ID 가 붙는다",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-next",
+            "label": "다음",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 6,
+          "title": "근거 칩을 직접 눌러 보세요",
+          "kind": "click-target",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "근거 칩을 직접 눌러 보세요",
+            "href": null
+          },
+          "tabsToControl": 9,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "a",
+            "inCallout": false,
+            "testid": "candidate",
+            "label": "MR-2025-0087",
+            "href": "/evidence/MR-2025-0087?run=STATIC-GS-01"
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 7,
+          "title": "출처·시각·신선도를 함께 말한다",
+          "kind": "next",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "출처·시각·신선도를 함께 말한다",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-next",
+            "label": "다음",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 8,
+          "title": "AI 는 제안까지, 승인은 사람이",
+          "kind": "next",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "AI 는 제안까지, 승인은 사람이",
+            "href": null
+          },
+          "tabsToControl": 2,
+          "key": "Enter",
+          "advanced": true,
+          "focusOnControl": {
+            "tag": "button",
+            "inCallout": true,
+            "testid": "tour-next",
+            "label": "다음",
+            "href": null
+          },
+          "controlReachableByTab": true
+        },
+        {
+          "step": 9,
+          "title": "둘러보기가 끝났습니다",
+          "kind": "end",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "둘러보기가 끝났습니다",
+            "href": null
+          },
+          "tabsToControl": null,
+          "key": null,
+          "advanced": null,
+          "note": "마지막 스텝 — 넘길 곳이 없다"
+        }
+      ]
+    },
+    "focusAndAria": {
+      "steps": [
+        {
+          "step": 1,
+          "title": "지금 무슨 일이 났는지부터",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "지금 무슨 일이 났는지부터",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 21,
+          "trapped": false,
+          "leakSample": [
+            "button:start-from-headline:조사 시작",
+            "button:hierarchy-tree:전체 12대",
+            "button:hierarchy-tree:가공 라인 1 4대",
+            "button:hierarchy-tree:가공 라인 2 4대",
+            "button:hierarchy-tree:가공 라인 3 4대",
+            "button:intro-card:안내 닫기"
+          ]
+        },
+        {
+          "step": 2,
+          "title": "알람은 «울린 행»의 값이 앵커다",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "알람은 «울린 행»의 값이 앵커다",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 21,
+          "trapped": false,
+          "leakSample": [
+            "button:start-from-headline:조사 시작",
+            "button:hierarchy-tree:전체 12대",
+            "button:hierarchy-tree:가공 라인 1 4대",
+            "button:hierarchy-tree:가공 라인 2 4대",
+            "button:hierarchy-tree:가공 라인 3 4대",
+            "button:intro-card:안내 닫기"
+          ]
+        },
+        {
+          "step": 3,
+          "title": "조사를 시작하면 에이전트가 5단계를 돕니다",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "조사를 시작하면 에이전트가 5단계를 돕니다",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 21,
+          "trapped": false,
+          "leakSample": [
+            "button:start-from-headline:조사 시작",
+            "button:hierarchy-tree:전체 12대",
+            "button:hierarchy-tree:가공 라인 1 4대",
+            "button:hierarchy-tree:가공 라인 2 4대",
+            "button:hierarchy-tree:가공 라인 3 4대",
+            "button:intro-card:안내 닫기"
+          ]
+        },
+        {
+          "step": 4,
+          "title": "다섯 단계가 실제로 지나간 자리",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "다섯 단계가 실제로 지나간 자리",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 23,
+          "trapped": false,
+          "leakSample": [
+            "button:replay-restart:처음으로",
+            "button:replay-back:한 이벤트 뒤로",
+            "button:replay-play:재생",
+            "button:replay-forward:한 이벤트 앞으로",
+            "a:live-return-link:Live 로 돌아가기",
+            "button:window-24h:최근 24시간"
+          ]
+        },
+        {
+          "step": 5,
+          "title": "후보마다 근거 ID 가 붙는다",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "후보마다 근거 ID 가 붙는다",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 23,
+          "trapped": false,
+          "leakSample": [
+            "button:replay-restart:처음으로",
+            "button:replay-back:한 이벤트 뒤로",
+            "button:replay-play:재생",
+            "button:replay-forward:한 이벤트 앞으로",
+            "a:live-return-link:Live 로 돌아가기",
+            "button:window-24h:최근 24시간"
+          ]
+        },
+        {
+          "step": 6,
+          "title": "근거 칩을 직접 눌러 보세요",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "근거 칩을 직접 눌러 보세요",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 24,
+          "trapped": false,
+          "leakSample": [
+            "button:replay-restart:처음으로",
+            "button:replay-back:한 이벤트 뒤로",
+            "button:replay-play:재생",
+            "button:replay-forward:한 이벤트 앞으로",
+            "a:live-return-link:Live 로 돌아가기",
+            "button:window-24h:최근 24시간"
+          ]
+        },
+        {
+          "step": 7,
+          "title": "출처·시각·신선도를 함께 말한다",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "출처·시각·신선도를 함께 말한다",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": {
+              "aria-hidden": "true",
+              "role": null
+            },
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 19,
+          "trapped": false,
+          "leakSample": [
+            "a:deep-link-notice:① Overview",
+            "body:-:(document.body)",
+            "a:nav-overview:Overview",
+            "a:nav-incidents:Incidents",
+            "a:nav-compare:Compare",
+            "a:intro-reopen:안내와 둘러보기 다시 보기"
+          ]
+        },
+        {
+          "step": 8,
+          "title": "AI 는 제안까지, 승인은 사람이",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "AI 는 제안까지, 승인은 사람이",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": null,
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 19,
+          "trapped": false,
+          "leakSample": [
+            "a:deep-link-notice:① Overview",
+            "body:-:(document.body)",
+            "a:nav-overview:Overview",
+            "a:nav-incidents:Incidents",
+            "a:nav-compare:Compare",
+            "a:intro-reopen:안내와 둘러보기 다시 보기"
+          ]
+        },
+        {
+          "step": 9,
+          "title": "둘러보기가 끝났습니다",
+          "focusAtOpen": {
+            "tag": "p",
+            "inCallout": true,
+            "testid": "tour-title",
+            "label": "둘러보기가 끝났습니다",
+            "href": null
+          },
+          "focusAtOpenIsTitle": true,
+          "aria": {
+            "callout": {
+              "role": "region",
+              "aria-label": "가이드 투어",
+              "aria-labelledby": null,
+              "aria-live": "polite",
+              "aria-modal": null,
+              "aria-describedby": null,
+              "tabindex": null,
+              "aria-atomic": null
+            },
+            "spotlight": null,
+            "title": {
+              "tag": "p",
+              "id": null,
+              "tabindex": "-1"
+            },
+            "bodyInert": false,
+            "bodyAriaHidden": false
+          },
+          "tabRingLen": 25,
+          "leakCount": 19,
+          "trapped": false,
+          "leakSample": [
+            "a:deep-link-notice:① Overview",
+            "body:-:(document.body)",
+            "a:nav-overview:Overview",
+            "a:nav-incidents:Incidents",
+            "a:nav-compare:Compare",
+            "a:intro-reopen:안내와 둘러보기 다시 보기"
+          ]
+        }
+      ]
+    },
+    "escape": {
+      "stateBefore": "{\"v\":1,\"status\":\"active\",\"step\":1}",
+      "escapeClosedCallout": true,
+      "stateAfter": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "focusAfterEscape": {
+        "tag": "a",
+        "inCallout": false,
+        "testid": "intro-reopen",
+        "label": "안내와 둘러보기 다시 보기",
+        "href": "/overview?intro=1&tour=1"
+      },
+      "focusReturnedToReopen": true,
+      "reopenedAtTitle": "알람은 «울린 행»의 값이 앵커다",
+      "resumedWhereLeftOff": true
+    }
+  }
+}
