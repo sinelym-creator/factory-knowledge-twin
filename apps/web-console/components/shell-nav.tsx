@@ -44,6 +44,11 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
               aria-current={active ? "page" : undefined}
               /* 행 높이 36 · 좌우 12 · r10 — 선택은 «채움 + 흰 글자», 아이콘만 틴트. */
               data-testid={n.testid}
+              /* 🔴 레일과 바가 «같은 `data-testid`» 를 쓴다 — 좁은 폭에서는 레일이
+                 `display:none` 이라 사람 눈엔 하나지만 DOM 에는 둘 다 있다. 그래서 히트 실측이
+                 «숨은 쪽»을 집어 「측정 불가」가 났다(D-41). 🔴 testid 를 바꾸면 이미 그걸
+                 쓰는 선택자·증거가 같이 죽으므로, **가르는 축을 하나 «더한다»**. */
+              data-nav-variant="rail"
               /* 🔴 `.fkt-hit` 은 세로 히트를 44 로 편다(coarse). 리듬이 44 라야 그 44 가
                  이웃을 안 밟는다 — 그래서 간격 8 과 «같이» 붙인다(둘 중 하나만은 회귀다). */
               className={`fkt-hit flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition-colors duration-(--fkt-dur-1) ${
@@ -72,7 +77,11 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
             href={n.href}
             aria-current={active ? "page" : undefined}
             data-testid={n.testid}
-            className={`rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) ${
+            data-nav-variant="bar"
+            /* 🔴 레일에만 `fkt-hit` 이 붙어 있었다 — 바는 실측에서 72~75x28 로 서고
+               세로 히트가 44 에 못 미쳤다(D-26 · 390 실측 3건). 같은 줄에 나란한 항목이라
+               넓어지는 축은 «세로»뿐이고, 이웃(좌우)을 밟지 않는다. */
+            className={`fkt-hit rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) ${
               active ? "bg-ai/12 font-semibold text-ai" : "hover:text-ink"
             }`}
           >
