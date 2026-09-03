@@ -128,6 +128,7 @@
     --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
 }
 
+
 /* =============================================================================
    Tailwind 이름 → 규격 토큰 «참조»(inline). 유틸리티가 var(--fkt-*) 를 그대로 물고 나가므로
    다크/라이트 스위치가 런타임에 산다(값을 복사하는 @theme 이면 라이트 값으로 굳는다).
@@ -297,6 +298,23 @@ body {
     .fkt-btn { min-height: 2.75rem; }
   }
 
+  /* ── 강제 색상(윈도우 고대비) ─────────────────────────────────────────────────
+     🔴 시스템 팔레트가 배경을 «지운다». 그래서 칸을 배경색으로만 나눈 자리는 경계가 통째로
+     사라진다 — 실측(2026-09-03)에서 설비 카드 12장·KPI 타일·알람 패널의 경계가 전멸했고,
+     「조사 시작」이 평문이 됐다. 색 하나에만 기댄 것은 여기서 전부 죽는다.
+     🔴 색은 시스템 키워드로만 준다(임의 색은 어차피 덮인다) · `forced-color-adjust: none`
+        을 쓰지 않는다 — 그건 사용자가 고른 팔레트를 우리가 되돌리는 것이다.
+     ✅ 발광은 여기서 손대지 않는다 — 브라우저가 이미 끈다(실측: 화면 전체 그림자 1→0). */
+  @media (forced-colors: active) {
+    .fkt-card { border: 1px solid CanvasText; }
+    .fkt-btn-primary { border: 1px solid ButtonBorder; }
+    /* 🔴 «선택된 탭»은 따로 짚는다 — `.fkt-pill` 에 얹으면 안 닿는다. 그 탭은 pill 이 아니라
+       `bg-fill`(반투명 그레이)로만 상태를 말하는 버튼이고, 강제 색상에서 그 배경이 사라지면
+       `font-semibold` 굵기 하나로만 버틴다. 사정거리 = overview-body.tsx:383(설비 탭 4개) ·
+       sensor-trend.tsx:112(추세 창 2개) — 두 자리가 같은 패턴이다. */
+    [aria-pressed="true"] { border: 1px solid Highlight; }
+  }
+
   /* 🔴 히트 영역만 넓히는 자리 — «보이는 크기는 그대로»(원칙 ④). 배지·아이콘을 44px 로 키우면
      레이아웃 결함을 접근성 이름으로 만드는 것이라, 늘리는 것은 «눌리는 영역»뿐이다.
      🔴 `pointer-events:none` 을 주지 않는다 — 죽이면 그림일 뿐이고 실제로도 안 눌린다.
@@ -351,7 +369,11 @@ body {
      설정에서 투명도 감소와 대비 증가 상태를 고려한다」). 반투명은 장식이 아니라 «앞뒤 관계»를
      말하는 재질이므로, 끌 때도 그 관계는 남긴다 — blur 만 걷고 배경은 불투명 표면으로 바꿔
      계층은 그대로 둔다(미지원 폴백과 같은 자리로 착지한다). */
-  @media (prefers-reduced-transparency: reduce) {
+  /* 🔴 강제 색상(윈도우 고대비)에도 «같은» 처방을 건다 — 한 규칙 두 조건. 앞서는 투명도
+     감소에만 걸려 있어서, 시스템 팔레트를 쓰는 사람에게는 blur 가 그대로 남았다(실측
+     2026-09-03: `backdrop-filter: blur(20px) saturate(1.8)` 잔존). 처방을 두 자리에 나눠
+     적으면 한쪽만 고쳐진다 — 그래서 조건을 늘리지 규칙을 늘리지 않는다. */
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
     .fkt-glass {
       background: var(--fkt-bg-2);
       -webkit-backdrop-filter: none;
