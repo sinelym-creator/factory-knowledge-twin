@@ -21,6 +21,7 @@ size_limit: 4KB
 | `THIRD_PARTY_NOTICES.md` | 의존성 라이선스 인벤토리(실측 09-02 · JS 341(prod 59) · Python 80 · unknown 0 · copyleft prod 1 = sharp LGPL 바이너리 · 모델 e5-small MIT(E2) · synthetic 데이터) — baseline §35.5 · #360 | 의존성 변경 시 재실측 |
 | `docs/baseline/poc-baseline-v0.2.md` | 단일 baseline 정본 — **v0.3 축소 적용 개정 09-02(#356 · 1-A~1-G · 파일명 유지)** | §0.3 절차로만 |
 | `docs/plan/ticket-ledger.md` | 티켓 원장 = 진행률 유일 산법 | 단위 완료·분모 변경 시 |
+| `docs/plan/test-plan-v1.md` | 🔴 **테스트 계획 v1 = 케이스 대장 60건**(U 단위 10 · I 통합 12 · E 화면 13 · **X 예외 25** — 멱등 5·폴백 6 포함) · 판정선·사정거리 · 폐하 하명 09-04 07:16~07:20 | 케이스 추가·판정선 변경 시 |
 | `docs/plan/tickets/` | 티켓 상세(1티켓 1파일) | 발주 시 생성 |
 | `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) — 001 7일 계획 · 002 UX 방향 A · 003 Q-30 이력 잔존 · **004 §35.7 최종 관문 「Release 후보 — 축소 적용(v0.3)」 + D-21 ⓐ(폐하 「전건 권장안 승인」 09-02 16:59 · id 1544617819784609803)** | 확정 시 · **005 운영자 확정 결정 12건 09-03(#431 · 요청 = 확정 결정 기록)** |
 | `apps/web-console/components/tour/` | T6-5 가이드 투어 — `tour-steps.ts`(9스텝 표 · 대상 testid·문구) · `tour-provider.tsx`(상태 `localStorage fkt.tour.v1` · Esc·Enter·클릭 감지 · OFF 렌더 0) · `tour-overlay.tsx`(스포트라이트 딤+구멍 · 콜아웃 · 초대 카드 · 진행 점) |
