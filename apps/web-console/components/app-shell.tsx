@@ -52,7 +52,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex min-w-0 flex-1 flex-col">
           {/* ── 앱바 52 — sticky glass + 하단 헤어라인 1px(리서치 §7-2) ────────── */}
           <header
-            className="fkt-glass sticky top-0 z-20 flex h-(--spacing-appbar) shrink-0 items-center gap-4 border-b border-edge px-5"
+            /* 🔴 390 가로 스크롤의 근인이 이 줄이었다(실측: 우측 액션 묶음 폭 237~327 →
+               scrollWidth 593~682). 배지·칩·리셋은 P0 표지라 «숨길» 수 없으므로 좁은 폭에서는
+               줄을 늘린다 — 높이를 고정(h-)에서 최소(min-h-)로 바꾸고 wrap 을 연다. */
+            className="fkt-glass sticky top-0 z-20 flex min-h-(--spacing-appbar) shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-edge px-5 py-1.5 md:flex-nowrap md:py-0"
             data-testid="app-bar"
           >
             <span className="text-body-c font-semibold">Factory Knowledge Twin</span>
@@ -60,7 +63,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <ShellNav variant="bar" />
             </nav>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1.5">
               {/* 🔴 안내 카드 재노출 — wireframes §0.1 ① 「앱바 `?` 아이콘으로 언제든 다시
                   연다」. 이 자리가 없어서 한 번 닫은 사람은 영영 못 열었다(결함 D-1의 절반).
                   링크로 둔다: 어느 화면에 있든 `/overview` 로 데려가면서 열리고, 클라이언트
