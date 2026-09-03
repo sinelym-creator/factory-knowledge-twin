@@ -103,6 +103,9 @@ function TourStepView({
   onSkip,
   onGoto,
 }: Extract<Props, { mode: "step" }>) {
+  /* 🔴 진행 조건은 `readAdvance()` 로만 읽는다(규격 ⑧-3) — 화면이 `advance` 를 직접 뜯어보면
+     조건을 읽는 자리가 둘이 되고, 그게 앞판이 어긋난 이유다. */
+  const plan = readAdvance(step);
   const [rect, setRect] = useState<Rect | null>(null);
   const [missing, setMissing] = useState(false);
   const titleRef = useRef<HTMLParagraphElement | null>(null);
@@ -155,9 +158,94 @@ function TourStepView({
     };
   }, [step.target, onRoute, index]);
 
+  /* 🔴 **포커스 경계**(규격 ⑧-4 · 폐하 재가 09-03 ⓒ). 규격에 이 규정 «자체»가 없었다.
+     ① `info` 단계 — 순회는 말풍선 «안»만. 배경은 `inert`.
+     ② `interactive` 단계 — 순회 = 말풍선 ∪ 대상(및 자손). 🔴 대상을 닫으면 그 단계를 못 넘긴다.
+     ③ 진입 초기 포커스 — `info` = 말풍선 첫 버튼 / `interactive` = **대상 요소**.
+        이것이 D-37 의 「대상까지 Tab 9회」를 **0회**로 만드는 자리다.
+     🔴 `aria-modal` 은 붙이지 않는다(⑧-5) — `interactive` 단계는 다이얼로그 «밖» 대상을
+        눌러야 하는데, 붙이면 스크린리더가 그 대상을 탐색 트리에서 지운다.
+     🔴 배경에 `aria-hidden` 도 쓰지 않는다 — 포커스는 여전히 들어간다(가리기만 한다). */
   useEffect(() => {
-    titleRef.current?.focus();
-  }, [index]);
+    const callout = calloutRef.current;
+    if (!callout) return;
+    const targetEl =
+      plan.ui === "await" ? document.querySelector<HTMLElement>(`[data-testid="${plan.of}"]`) : null;
+    const allowed: HTMLElement[] = targetEl ? [callout, targetEl] : [callout];
+
+    /* 허용 노드로 가는 «조상 경로»는 통과시키고 그 형제만 `inert` 로 덮는다.
+       최상위를 통째로 덮으면 대상까지 같이 죽는다 — 그게 ② 를 깨는 자리다. */
+    const keep = new Set<Element>();
+    for (const el of allowed) {
+      let n: Element | null = el;
+      while (n) {
+        keep.add(n);
+        n = n.parentElement;
+      }
+    }
+    const changed: HTMLElement[] = [];
+    const supportsInert = typeof HTMLElement !== "undefined" && "inert" in HTMLElement.prototype;
+    if (supportsInert) {
+      const walk = (parent: Element) => {
+        for (const child of Array.from(parent.children)) {
+          if (!(child instanceof HTMLElement)) continue;
+          if (allowed.includes(child)) continue;
+          if (keep.has(child)) {
+            walk(child);
+            continue;
+          }
+          if (child.inert) continue;
+          child.inert = true;
+          changed.push(child);
+        }
+      };
+      walk(document.body);
+    }
+
+    /* 🔴 폴백 = «포커스가 새면 되돌린다». `tabindex` 를 문서 전체에 저장·복원하지 않는
+       이유: `interactive` 단계의 클릭이 곧 화면 이동이라 복원 시점에 그 DOM 이 이미 없다 —
+       그러면 「투어 OFF = 화면 변화 0」(규격 ⑤)이 깨진 채로 남는다. 이 감시는 아무것도 바꾸지
+       않으므로 언마운트로 흔적 없이 사라진다. `inert` 가 있는 브라우저에서도 뒷받침으로 둔다. */
+    const inRange = (n: EventTarget | null) =>
+      n instanceof Node && allowed.some((a) => a === n || a.contains(n));
+    const onFocusIn = (e: FocusEvent) => {
+      if (inRange(e.target)) return;
+      const first = callout.querySelector<HTMLElement>(
+        'button, a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      (first ?? callout).focus();
+    };
+    document.addEventListener("focusin", onFocusIn, true);
+
+    /* ③ 초기 포커스. 🔴 «한 번만» 부르면 안 된다 — 클릭으로 넘어온 단계는 그 클릭이 곧 화면
+       이동이라, 이 시점에 대상이 아직 DOM 에 없다(실측: `interactive` 초기 포커스가 `body`).
+       그래서 다음 프레임과 정착 후 한 번 더 시도하되, **이미 범위 안에 포커스가 있으면
+       건드리지 않는다** — 사람이 이미 Tab 으로 옮겨 둔 자리를 빼앗지 않기 위해서다. */
+    const focusInitial = () => {
+      if (inRange(document.activeElement)) return;
+      const t =
+        plan.ui === "await"
+          ? document.querySelector<HTMLElement>(`[data-testid="${plan.of}"]`)
+          : null;
+      if (t && !allowed.includes(t)) allowed.push(t);
+      const el =
+        t ??
+        callout.querySelector<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])') ??
+        titleRef.current;
+      el?.focus();
+    };
+    focusInitial();
+    const raf = window.requestAnimationFrame(focusInitial);
+    const settle = window.setTimeout(focusInitial, SETTLE_MS);
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(settle);
+      document.removeEventListener("focusin", onFocusIn, true);
+      for (const el of changed) el.inert = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, step.id, plan.ui, plan.ui === "await" ? plan.of : ""]);
 
   /* 🔴 콜아웃의 «실제» 높이를 재서 배치에 쓴다. 220px 로 어림잡던 값이 실물과 어긋나
      데스크톱에서도 대상을 16.6% 덮었다(리바이2 34대 실측 1440 스텝 4). 추정으로 배치하면
@@ -181,9 +269,6 @@ function TourStepView({
   /* 첫 걸음 = 가리킬 대상이 없는 «환영 카드». 대상을 못 찾은 상태(`missing`)와는 다르다 —
      이쪽은 설계상 없는 것이라 「자리를 못 찾았다」 안내를 띄우지 않는다. */
   const isWelcome = index === 0 && !step.target;
-  /* 🔴 진행 조건은 `readAdvance()` 로만 읽는다(규격 ⑧-3) — 화면이 `advance` 를 직접 뜯어보면
-     조건을 읽는 자리가 둘이 되고, 그게 앞판이 어긋난 이유다. */
-  const plan = readAdvance(step);
 
   const pad = 8;
   const hole: Rect | null = rect
