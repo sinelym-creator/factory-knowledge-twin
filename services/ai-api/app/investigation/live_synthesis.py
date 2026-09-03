@@ -21,7 +21,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 from .synthesize import LIVE_GATE_ENV, Candidate
 
@@ -49,6 +49,9 @@ _MAX_EXCERPT = 600
 #    값이 없으면 헤더를 아예 붙이지 않는다(토큰 없는 게이트웨이와 그대로 호환).
 TOKEN_ENV = "FKT_SYNTHESIS_GATEWAY_TOKEN"
 TOKEN_HEADER = "X-FKT-Gateway-Token"
+# 스트리밍을 «요청»하는 낱말 — 게이트웨이와 «같은 문자열»이어야 한다(양쪽에 적는 값이라
+# 이름을 새로 짓지 않고 계약 문면 그대로 쓴다).
+NDJSON_MIME = "application/x-ndjson"
 
 # 도달 프로브 — `/live/status` 가 「env 가 있다」가 아니라 「닿는다」를 답하게 하는 자리.
 PROBE_TIMEOUT_SEC = 2.0
@@ -189,16 +192,37 @@ def probe_reachable() -> bool:
     return online
 
 
-def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
+def _post(
+    url: str,
+    body: bytes,
+    timeout_sec: float,
+    on_sentence: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """게이트웨이 1회. `on_sentence` 를 주면 **스트리밍을 «요청»하고** 줄마다 부른다.
+
+    🔴 **옵트인이다.** 콜백이 없으면 `Accept` 를 붙이지 않고, 게이트웨이는 앞판과 같은 단일
+       JSON 으로 답한다 — 이 파일이 구 게이트웨이와도 계속 돈다(둘 중 하나만 배포된 창이 반드시
+       생긴다).
+
+    🔴 **스트리밍을 «요청»했다고 «받았다»가 아니다.** 구 게이트웨이는 Accept 를 무시하고 단일
+       JSON 을 준다. 그래서 응답의 Content-Type 으로 갈라 읽는다 — 요청한 형식을 전제하고 읽으면
+       그 창에서 전건 실패한다.
+    """
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    if on_sentence is not None:
+        headers["Accept"] = NDJSON_MIME
     request = urllib.request.Request(                        # noqa: S310 — 127.0.0.1 고정 URL
         f"{url}/synthesize",
         data=body,
-        headers=_headers({"Content-Type": "application/json; charset=utf-8"}),
+        headers=_headers(headers),
         method="POST",
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout_sec) as response:  # noqa: S310
-            return json.loads(response.read().decode("utf-8"))
+            ctype = (response.headers.get("Content-Type") or "").lower()
+            if on_sentence is None or NDJSON_MIME not in ctype:
+                return json.loads(response.read().decode("utf-8"))
+            return _read_ndjson(response, on_sentence)
     except urllib.error.HTTPError as exc:
         # 🔴 **본문 사유는 «로그에만» 남긴다**(D-24 · 리바이2 #444 회부 2). 게이트웨이가 401 에
         #    실어 보내는 사유는 **내부 인증 헤더 이름**을 그대로 담고 있고, 앞판은 그것을 그대로
@@ -222,6 +246,41 @@ def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
         raise _Rejected(_refusal_wording(exc)) from None
     except json.JSONDecodeError:
         raise _Rejected("게이트웨이 응답을 JSON 으로 읽지 못했다") from None
+
+
+def _read_ndjson(response: Any, on_sentence: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
+    """chunked NDJSON 을 줄 단위로 읽는다. 문장 줄은 흘리고, 마지막 result 줄을 돌려준다.
+
+    🔴 **오류는 «본문 안»으로도 온다.** 첫 줄이 나간 뒤에는 상태코드를 바꿀 수 없으므로
+       게이트웨이가 `{"kind":"error"}` 로 사유를 싣는다 — 그 줄을 그대로 거부로 올린다.
+       읽고 버리면 「문장 몇 개 받고 조용히 끝난 run」이 된다.
+
+    🔴 **result 줄이 없으면 실패다.** 문장이 아무리 많이 왔어도 판정은 마지막 줄이고, 그 줄이
+       없으면 가드가 볼 것이 없다(부분 채택 0).
+    """
+    result: dict[str, Any] | None = None
+    for raw in response:
+        line = raw.decode("utf-8").strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(obj, dict):
+            continue
+        kind = obj.get("kind")
+        if kind == "sentence":
+            sentence = obj.get("sentence")
+            if isinstance(sentence, dict):
+                on_sentence(sentence)
+        elif kind == "error":
+            raise _Rejected(str(obj.get("rejectedReason") or "게이트웨이가 사유 없이 끊었다"))
+        elif kind == "result" and isinstance(obj.get("result"), dict):
+            result = obj["result"]
+    if result is None:
+        raise _Rejected("게이트웨이가 결과 줄 없이 끝냈다")
+    return result
 
 
 def apply_guard(
@@ -307,6 +366,7 @@ def _refusal_wording(exc: BaseException) -> str:
 async def synthesize(
     candidates: list[Candidate],
     *,
+    on_sentence: Callable[[dict[str, Any]], None] | None = None,
     anchor: Any,
     state: dict[str, Any],
     evidence_ids: list[str],
@@ -325,7 +385,7 @@ async def synthesize(
 
     model: str | None = None
     try:
-        response = await asyncio.to_thread(_post, url, body, budget_sec)
+        response = await asyncio.to_thread(_post, url, body, budget_sec, on_sentence)
         model = response.get("model") if isinstance(response.get("model"), str) else UNKNOWN_MODEL
         reordered, rationale = apply_guard(response, candidates, set(evidence_ids))
     except _Rejected as exc:

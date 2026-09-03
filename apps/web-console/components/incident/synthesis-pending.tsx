@@ -34,7 +34,7 @@ const TICK_MS = 250;
 /** 끝을 모르는 바의 상한. 100 은 「끝났다」는 뜻이라 쓰지 않는다. */
 const CAP_PERCENT = 92;
 
-export function SynthesisPending() {
+export function SynthesisPending({ skeleton = true }: { skeleton?: boolean }) {
   const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
@@ -93,7 +93,12 @@ export function SynthesisPending() {
       </div>
 
       {/* 후보 카드 «자리»를 미리 잡는다 — 결과가 도착할 때 화면이 튀지 않게. 2건은 자리표시일
-          뿐 실제 후보 수가 아니라, 읽는 기술에는 숨긴다. */}
+          뿐 실제 후보 수가 아니라, 읽는 기술에는 숨긴다.
+
+          🔴 **선표시가 서면 이 자리표시는 끈다**(T6-3 ①). 결정적 순위 카드가 이미 그 자리를
+             차지했는데 스켈레톤을 함께 그리면, 화면이 「아직 올 카드가 더 있다」고 말한다 —
+             올 것은 «문장»이지 카드가 아니다(카드 수는 그때 이미 확정돼 있다). */}
+      {skeleton ? (
       <ul className="mt-3 space-y-3" aria-hidden>
         {[0, 1].map((i) => (
           <li
@@ -107,6 +112,7 @@ export function SynthesisPending() {
           </li>
         ))}
       </ul>
+      ) : null}
     </div>
   );
 }
