@@ -1,0 +1,68 @@
+########## RUN1 화면 축 (base · 900 · 3폭 · pointer 2) ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 라우트 발견 ===
+  overview = /overview
+  compare = /compare
+  work-order = /work-orders/WO-2025-0087
+  document = /documents/DOC-MAN-0021
+
+=== 본 측정 24/24 칸 사용 ===
+  [fine · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+     390×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+     390×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+     390×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7
+     768×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+     768×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+     768×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+     768×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+    1440×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+    1440×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7
+  [coarse · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 8/16
+     390×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 5/8
+     390×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 3/6
+     390×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 3/7
+     768×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 11/16
+     768×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 8/8
+     768×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 6/6
+     768×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 6/7
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16
+    1440×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 7/8
+    1440×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 5/6
+    1440×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 5/7
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 0/24
+RC1=0
+########## RUN2 상태 축 (overview · base/modal/tour · 2폭) ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 본 측정 0/12 칸 사용 ===
+  [fine · base] 사용 가능한 칸 0 — 안 잼
+  [fine · modal] 사용 가능한 칸 0 — 안 잼
+  [fine · tour] 사용 가능한 칸 0 — 안 잼
+  [coarse · base] 사용 가능한 칸 0 — 안 잼
+  [coarse · modal] 사용 가능한 칸 0 — 안 잼
+  [coarse · tour] 사용 가능한 칸 0 — 안 잼
+
+=== 안 잰 칸 12 (🔴 «위반 0» 이 아니다) ===
+  C-Program-Files-Git-overview/base: 다른 곳에 내림(/overview) × 4
+  C-Program-Files-Git-overview/modal: 다른 곳에 내림(/overview) × 4
+  C-Program-Files-Git-overview/tour: 다른 곳에 내림(/overview) × 4
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 0/0
+RC2=0
+########## RUN3 높이 축 (base · 480/640 · 2폭 · 2화면) ##########
+RC3=1
+########## RUN4 투어 × 낮은 높이 ##########
