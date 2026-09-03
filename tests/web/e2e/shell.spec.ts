@@ -128,8 +128,38 @@ test.describe("셸·라우트 골격", () => {
     expect(t.appbar).toBe("56px");
     expect(t.rail).toBe("56px");
     // 같은 토큰 계층의 «색»은 실제로 적용된다 — 계층 전체가 죽은 게 아니라 두 표기만 죽었다.
+    //
+    // 🔴 **리터럴이 아니라 토큰 계산값으로 잰다**(T6-4 ⑥-0). 앞판은 `rgb(17, 24, 35)` 를
+    //    박아 두었다 — 그 행은 「토큰이 적용된다」를 재는 게 아니라 «이 팔레트의 이 값»을
+    //    재고 있었고, 팔레트를 갈아 끼우면 설계대로 바뀐 화면이 빨강이 된다(T6-4 PR 1).
+    //    그래서 판정선을 「앱바 배경 == 앱바 표면 토큰의 계산값 중 하나」로 옮긴다.
+    //    허용 집합이 둘 이상인 이유: PR 2 에서 앱바가 패널면(`--fkt-bg-2` / 별칭
+    //    `--color-panel`)에서 유리면(`--fkt-glass`)으로 바뀐다. 두 면 다 «토큰에서 온 값»이다.
+    const surfaces = await page.evaluate(() => {
+      const names = ["--fkt-bg-2", "--fkt-glass", "--color-panel"];
+      const root = getComputedStyle(document.documentElement);
+      const probe = document.createElement("div");
+      probe.style.position = "fixed";
+      probe.style.opacity = "0";
+      probe.style.pointerEvents = "none";
+      document.body.appendChild(probe);
+      const out: Record<string, string> = {};
+      for (const n of names) {
+        // 선언 자체가 없으면 «허용 집합에 넣지 않는다» — 없는 토큰을 통과 사유로 쓰지 않기 위해서다.
+        if (!root.getPropertyValue(n).trim()) continue;
+        probe.style.setProperty("background-color", `var(${n})`);
+        out[n] = getComputedStyle(probe).backgroundColor;
+      }
+      probe.remove();
+      return out;
+    });
     const barBg = await page.getByTestId("app-bar").evaluate((e) => getComputedStyle(e).backgroundColor);
-    expect(barBg).toBe("rgb(17, 24, 35)"); // --color-panel #111823
+    const allowed = Object.values(surfaces);
+    // 🔴 토큰이 하나도 안 풀리면 이 행은 초록도 빨강도 아니다 — 잴 것이 없었다는 뜻이다.
+    expect(allowed.length, "앱바 표면 토큰이 하나도 안 풀렸다 — 측정 불가").toBeGreaterThan(0);
+    expect(allowed, `앱바 배경 ${barBg} · 토큰 ${JSON.stringify(surfaces)}`).toContain(barBg);
+    // 대조군 — 이 멤버십 검사가 «아무거나 통과시키는 눈»이 아님을 같은 자리에서 보인다.
+    expect(allowed, `허용 집합 ${JSON.stringify(allowed)}`).not.toContain("rgb(255, 0, 0)");
   });
 
   test("다크가 기본이다(§10) — 배경이 밝게 뜨지 않는다", async ({ page }) => {
