@@ -72,7 +72,7 @@ export function DeepLinkNotice({
       <p className="mt-2 text-foot">
         <Link
           href="/"
-          className="fkt-pill bg-fill text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+          className="fkt-hit fkt-pill bg-fill text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
         >
           세션을 만들고 조사 화면으로 →
         </Link>

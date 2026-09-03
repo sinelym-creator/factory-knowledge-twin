@@ -77,7 +77,7 @@ export function TourOverlay(props: Props) {
           <button
             type="button"
             onClick={props.onNever}
-            className="rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted"
+            className="fkt-hit rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted"
             data-testid="tour-never"
           >
             다시 보지 않기

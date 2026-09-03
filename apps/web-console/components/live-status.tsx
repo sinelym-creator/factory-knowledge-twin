@@ -206,7 +206,7 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
           `checking` 은 아직 물어보는 중이다. 셋을 한 자리에서 제안하면 살아 있는 Live 를
           정적이 가로챈다(오케 판정 R-3). */}
       {mode === "unavailable" && <StaticReplayOffer />}
-      <button className="text-muted hover:text-ink" onClick={() => setClosed(true)} aria-label="배너 닫기">
+      <button className="fkt-hit text-muted hover:text-ink" onClick={() => setClosed(true)} aria-label="배너 닫기">
         ✕
       </button>
     </div>
