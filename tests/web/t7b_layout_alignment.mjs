@@ -111,15 +111,51 @@ const READ = () => {
     for (const c of kids) walk(c, depth + 1);
   };
   walk(main, 0);
+  // 랜드마크 측정이 «같은 손»으로 잉크를 재도록 내보낸다 — 두 벌이면 규격도 두 벌이다.
+  window.__fktInkTop = firstInkTop;
   return { groups, mainBox: boxOf(main) };
 };
 
-const report = { at: new Date().toISOString(), base: BASE, note: "관측 · 판정 아님 · 처방 전 기준선", rows: [], errors: [] };
+/**
+ * 🔴 이름 붙인 자리 — 오케가 코드에서 특정해 준 좌표(overview-body.tsx 208·246·249·318·406).
+ *    나도 소스에서 대조했다(같은 줄 번호 실측). 구조 탐색이 못 잡은 split 을 여기서 «직접» 짚는다.
+ *    🔴 없는 자리는 **0 이 아니라 「못 잰 것」**으로 돌려준다 — 셀렉터가 죽으면 조용히 초록이 난다.
+ */
+const LANDMARKS = {
+  overview: [
+    { id: "equipment-grid", sel: '[data-testid="equipment-grid"]' },
+    { id: "equipment-first-card", sel: '[data-testid="equipment-grid"] [data-testid="equipment-card"]' },
+    { id: "overview-aside", sel: 'aside[aria-label="알람과 시나리오"]' },
+    // 🔴 「aside 는 바로 alarm-dock 으로 시작한다」는 소스 읽기의 결론이었는데, **런타임은 다르다** —
+    //    안내 카드(「처음 오셨나요?」 h=326)가 그 위에 있다. 그래서 «첫 자식»을 이름으로 따로 잡는다:
+    //    비교해야 할 것은 정해진 컴포넌트가 아니라 **각 열에서 처음 보이는 카드**다.
+    { id: "equipment-tab-row", sel: '[data-testid="equipment-grid"] > *:first-child' },
+    { id: "aside-first-card", sel: 'aside[aria-label="알람과 시나리오"] > *:first-child' },
+    { id: "alarm-dock", sel: '[data-testid="alarm-dock"]' },
+    { id: "scenario-dock", sel: '[data-testid="scenario-dock"]' },
+  ],
+};
+/** 비교 축 = 「좌측 열의 첫 카드」 ↔ 「우측 묶음의 첫 카드」. 상자와 잉크를 둘 다 본다. */
+const PAIRS = {
+  overview: [
+    // 🔴 이 축이 하명의 축이다 — 「각 열에서 처음 보이는 카드」의 윗선.
+    ["equipment-first-card", "aside-first-card"],
+    // 열 상자 자체(이건 맞아 있을 수 있다 — 그래서 둘 다 본다)
+    ["equipment-grid", "overview-aside"],
+    // 참고: 정해진 컴포넌트끼리(안내 카드가 없는 상태에서의 모습)
+    ["equipment-first-card", "alarm-dock"],
+  ],
+};
+
+const report = { at: new Date().toISOString(), base: BASE, note: "관측 · 판정 아님 · 처방 전 기준선", rows: [], landmarks: [], errors: [] };
 
 for (const name of BROWSERS) {
   const browser = await launchBrowser(name);
   for (const width of WIDTHS) {
-    const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: "dark" });
+    // 🔴 `reducedMotion` 을 강제한다. 두 회차에서 `equipment-first-card` 의 top 이 627.7 / 635.7 로
+    //    8px 흔들렸다 — `fkt-stagger` 가 아직 앉는 중이었다. 흔들리는 기준선은 「처방이 고쳤다」와
+    //    「애니메이션 위상이 달랐다」를 못 가른다.
+    const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
     const page = await ctx.newPage();
     try {
       await enterShell(page, BASE);
@@ -129,6 +165,61 @@ for (const name of BROWSERS) {
         await page.waitForTimeout(450);
         const v = await page.evaluate(READ);
         report.rows.push({ browser: name, width, screen: s.id, ...v });
+
+        const marks = LANDMARKS[s.id];
+        if (marks) {
+          const got = await page.evaluate(
+            ({ marks, pairs }) => {
+              const inkOf = window.__fktInkTop;
+              const boxes = {};
+              for (const m of marks) {
+                const el = document.querySelector(m.sel);
+                if (!el) {
+                  boxes[m.id] = { found: false };
+                  continue;
+                }
+                const r = el.getBoundingClientRect();
+                boxes[m.id] = {
+                  found: true,
+                  top: Math.round(r.top * 10) / 10,
+                  left: Math.round(r.left * 10) / 10,
+                  w: Math.round(r.width),
+                  h: Math.round(r.height),
+                  inkTop: inkOf(el),
+                };
+              }
+              const out = [];
+              for (const [a, b] of pairs) {
+                const A = boxes[a];
+                const B = boxes[b];
+                if (!A?.found || !B?.found) {
+                  out.push({ a, b, measurable: false, why: "자리 없음" });
+                  continue;
+                }
+                // 🔴 나란히 서 있지 않으면(세로 스택) 상단 비교는 «뜻이 없다» — 0 이 아니라 미측이다.
+                const sideBySide = Math.abs(A.left - B.left) > 8;
+                out.push({
+                  a,
+                  b,
+                  measurable: sideBySide,
+                  why: sideBySide ? null : "세로 스택(같은 열) — 상단 비교 무의미",
+                  boxDeltaPx: sideBySide ? Math.round((A.top - B.top) * 10) / 10 : null,
+                  inkDeltaPx:
+                    sideBySide && A.inkTop != null && B.inkTop != null
+                      ? Math.round((A.inkTop - B.inkTop) * 10) / 10
+                      : null,
+                  aTop: A.top,
+                  bTop: B.top,
+                  aInk: A.inkTop,
+                  bInk: B.inkTop,
+                });
+              }
+              return { boxes, pairs: out };
+            },
+            { marks, pairs: PAIRS[s.id] },
+          );
+          report.landmarks.push({ browser: name, width, screen: s.id, ...got });
+        }
       }
     } catch (e) {
       report.errors.push({ browser: name, width, message: String(e).slice(0, 300) });
@@ -156,3 +247,16 @@ for (const r of report.rows) {
 }
 console.log(JSON.stringify({ rows: report.rows.length, misalignedGroups: out.length, errors: report.errors.length }, null, 1));
 for (const l of out) console.log(l);
+
+console.log("--- 이름 붙인 자리(overview) ---");
+for (const L of report.landmarks) {
+  for (const [id, b] of Object.entries(L.boxes)) {
+    console.log(`  ${L.screen}@${L.width} ${id.padEnd(22)} ${b.found ? `top=${b.top} ink=${b.inkTop} left=${b.left} ${b.w}x${b.h}` : "🔴 자리 없음(못 잰 것)"}`);
+  }
+  for (const pr of L.pairs) {
+    console.log(
+      `  ${L.screen}@${L.width} [${pr.a} ↔ ${pr.b}] ` +
+        (pr.measurable ? `상자Δ=${pr.boxDeltaPx}px 잉크Δ=${pr.inkDeltaPx}px (${pr.aTop}/${pr.aInk} vs ${pr.bTop}/${pr.bInk})` : `미측 — ${pr.why}`),
+    );
+  }
+}
