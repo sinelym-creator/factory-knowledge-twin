@@ -40,8 +40,16 @@ if (!OUT) throw new Error("--out 이 필요하다");
 fs.mkdirSync(OUT, { recursive: true });
 
 const BROWSERS = arg("browsers", "chromium,webkit,firefox").split(",");
-const WIDTHS = [390, 768, 1024, 1280];
-const SCHEMES = ["light", "dark"];
+const WIDTHS = arg("widths", "390,768,1024,1280").split(",").map(Number);
+const SCHEMES = arg("schemes", "light,dark").split(",");
+/**
+ * 🔴 pointer 축(T7 재측 준비 · 2026-09-03). 기본값 "false" = 종전 거동(마우스 열만).
+ *    처방이 `max-width` → `(pointer: coarse)` 로 바뀌면 **폭이 아니라 pointer 로 갈려야** 하므로
+ *    같은 그물이 두 열을 다 떠야 한다. `--pointers false,true` 로 2차원을 연다.
+ *    🔴 손잡이는 `hasTouch` 하나인데 엔진은 `pointer:fine`·`hover:none` 까지 함께 민다(실측).
+ *       그래서 «요청한 손잡이»가 아니라 «실제 매체 질의 값»을 칸마다 따로 기록한다.
+ */
+const POINTERS = arg("pointers", "false").split(",").map((v) => v === "true");
 const SCREENS = [
   { id: "overview", route: "/overview" },
   { id: "incident", route: "/incidents/INC-2025-019" },
@@ -56,6 +64,23 @@ const TOUCH_SEL =
 
 /** 한 화면에서 축 ①② 를 읽는다 — 판정하지 않고 «값»만 돌려준다. */
 const READ = (sel) => {
+  // 🔴 «요청한 손잡이»가 아니라 «대상이 실제로 보는 값». 자극이 실재했는지는 여기서만 갈린다.
+  const media = {
+    pointerCoarse: matchMedia("(pointer: coarse)").matches,
+    pointerFine: matchMedia("(pointer: fine)").matches,
+    hoverNone: matchMedia("(hover: none)").matches,
+  };
+  // 위반을 «수»가 아니라 «자리»로 말하려면 안정된 이름표가 필요하다 — 처방 후
+  // 「몇 건 남았나」가 아니라 「어느 자리가 남았나」를 말해야 부분 수리를 잡는다.
+  const placeOf = (n) => {
+    const tid = n.closest("[data-testid]")?.getAttribute("data-testid") ?? null;
+    const parts = [];
+    for (let e = n; e && e !== document.body && parts.length < 4; e = e.parentElement) {
+      const cls = String(e.className || "").split(/\s+/).filter(Boolean)[0];
+      parts.unshift(e.tagName.toLowerCase() + (cls ? "." + cls : ""));
+    }
+    return { testid: tid, path: parts.join(">") };
+  };
   const el = document.scrollingElement ?? document.documentElement;
   const scrollWidth = el.scrollWidth;
   const clientWidth = el.clientWidth;
@@ -87,6 +112,7 @@ const READ = (sel) => {
       text: (n.textContent || "").trim().slice(0, 28),
       w,
       h,
+      ...placeOf(n),
       // 🔴 문단 속 인라인 링크는 «세그먼트»가 아니다 — 지우지 않고 «표시»만 해서
       //    두 수(문면 그대로 / 위젯 모양만)를 둘 다 보고에 남긴다.
       inline: cs.display === "inline",
@@ -113,6 +139,7 @@ const READ = (sel) => {
   const g = glassNodes[0] ? getComputedStyle(glassNodes[0]) : null;
 
   return {
+    media,
     scrollWidth,
     clientWidth,
     overflow: scrollWidth > clientWidth,
@@ -189,6 +216,25 @@ for (const name of BROWSERS) {
     const after = await page.evaluate(READ, TOUCH_SEL);
 
     const tiny = after.touchUnder.find((u) => u.w === 20 && u.h === 20);
+    await ctx.close();
+
+    // 🔴 pointer 축이 이 엔진에서 «갈리는가». 처방이 `(pointer: coarse)` 로 바뀌면 이 축이
+    //    판정선이 된다 — 두 열이 안 갈리면 처방 후 초록은 「고쳐졌다」가 아니라 «안 잰 것»이다.
+    const mediaOf = async (hasTouch) => {
+      const c = await browser.newContext({ viewport: { width: 1024, height: 800 }, hasTouch });
+      const pg = await c.newPage();
+      await pg.setContent("<html><body>probe</body></html>");
+      const m = await pg.evaluate(() => ({
+        pointerCoarse: matchMedia("(pointer: coarse)").matches,
+        pointerFine: matchMedia("(pointer: fine)").matches,
+        hoverNone: matchMedia("(hover: none)").matches,
+      }));
+      await c.close();
+      return m;
+    };
+    const mMouse = await mediaOf(false);
+    const mTouch = await mediaOf(true);
+
     report.controls.push({
       browser: name,
       overflowDetectorFired: !before.overflow && after.overflow,
@@ -196,8 +242,12 @@ for (const name of BROWSERS) {
       overflowAfter: `${after.scrollWidth}/${after.clientWidth}`,
       touchDetectorFired: Boolean(tiny),
       touchUnderDelta: after.touchUnder.length - before.touchUnder.length,
+      // 🔴 손잡이 하나(`hasTouch`)가 세 매체 질의를 함께 민다 — 그 사실을 열로 남긴다.
+      //    처방이 `hover` 를 섞어 쓰면 이 그물은 「어느 쪽이 걸었나」를 못 가른다.
+      pointerAxisFired: mMouse.pointerCoarse === false && mTouch.pointerCoarse === true,
+      pointerMouseColumn: mMouse,
+      pointerTouchColumn: mTouch,
     });
-    await ctx.close();
   }
 
   // ── 축 ③: 폴백을 «강제»한 열 vs 안 한 열 ────────────────────────────────
@@ -255,20 +305,21 @@ for (const name of BROWSERS) {
 
   // ── 본 측정 ────────────────────────────────────────────────────────────
   for (const scheme of SCHEMES) {
+   for (const hasTouch of POINTERS) {
     for (const width of WIDTHS) {
       let ctx;
       try {
-        ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, deviceScaleFactor: 1 });
+        ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, deviceScaleFactor: 1, hasTouch });
         const page = await ctx.newPage();
         await enterShell(page, BASE);
         for (const s of SCREENS) {
           await page.goto(`${BASE}${s.route}`, { waitUntil: "domcontentloaded" });
           await settle(page);
           const v = await page.evaluate(READ, TOUCH_SEL);
-          const cell = { browser: name, scheme, width, screen: s.id, route: s.route, ...v };
+          const cell = { browser: name, scheme, width, hasTouch, screen: s.id, route: s.route, ...v };
           // 증상 있는 칸만 찍는다 — 전 칸 촬영은 상한 안에 안 들어온다(그것도 「안 잰 것」).
           if ((v.overflow || v.touchUnder.length > 0) && shots < 14) {
-            const file = `t7a_${name}_${scheme}_${width}_${s.id}.png`;
+            const file = `t7a_${name}_${scheme}_${width}_${hasTouch ? "coarse" : "fine"}_${s.id}.png`;
             await page.screenshot({ path: path.join(OUT, file), fullPage: false });
             cell.shot = file;
             shots++;
@@ -276,11 +327,12 @@ for (const name of BROWSERS) {
           report.cells.push(cell);
         }
       } catch (e) {
-        report.errors.push({ browser: name, scheme, width, stage: "sweep", message: String(e).slice(0, 300) });
+        report.errors.push({ browser: name, scheme, width, hasTouch, stage: "sweep", message: String(e).slice(0, 300) });
       } finally {
         if (ctx) await ctx.close().catch(() => {});
       }
     }
+   }
   }
   await browser.close();
   console.error(`[t7a] ${name} 완료 — 누적 ${report.cells.length}칸`);
@@ -296,10 +348,53 @@ for (const c of report.cells) {
   b.touchAll += c.touchUnder.length;
   b.touchWidget += c.touchUnder.filter((u) => !u.inline).length;
 }
+// 🔴 처방이 `max-width` → `(pointer: coarse)` 로 바뀌면 **폭이 아니라 pointer 로 갈려야** 한다.
+//    그래서 계수를 «폭 × pointer» 2차원으로 편다. 한 축으로 접으면 그 이동이 안 보인다.
+const grid = {};
+for (const c of report.cells) {
+  const k = `${c.width}|${c.hasTouch ? "coarse" : "fine"}`;
+  const g = (grid[k] ??= { cells: 0, overflow: 0, uniq: new Set(), uniqWidget: new Set() });
+  g.cells++;
+  if (c.overflow) g.overflow++;
+  for (const u of c.touchUnder) {
+    const id = `${u.tag}|${u.role || "-"}|${u.text}`;
+    g.uniq.add(id);
+    if (!u.inline) g.uniqWidget.add(id);
+  }
+}
+for (const k of Object.keys(grid)) {
+  grid[k] = { cells: grid[k].cells, overflow: grid[k].overflow, uniq: grid[k].uniq.size, uniqWidget: grid[k].uniqWidget.size };
+}
+
+// 위반을 «자리»로 고정한다 — 처방(`.fkt-hit` 이름표)이 «어디에 붙었나»를 재는 축.
+const places = new Map();
+for (const c of report.cells) {
+  for (const u of c.touchUnder) {
+    const id = `${u.tag}|${u.role || "-"}|${u.text}`;
+    const e = places.get(id) ?? {
+      id, tag: u.tag, text: u.text, inline: u.inline, cls: u.cls,
+      testid: u.testid, path: u.path,
+      screens: new Set(), widths: new Set(), pointers: new Set(), engines: new Set(), dims: new Set(),
+    };
+    e.screens.add(c.screen); e.widths.add(c.width);
+    e.pointers.add(c.hasTouch ? "coarse" : "fine"); e.engines.add(c.browser);
+    e.dims.add(`${u.w}x${u.h}`);
+    places.set(id, e);
+  }
+}
+report.places = [...places.values()].map((e) => ({
+  ...e,
+  screens: [...e.screens], widths: [...e.widths].sort((a, b) => a - b),
+  pointers: [...e.pointers], engines: [...e.engines], dims: [...e.dims],
+}));
+
 report.summary = {
-  expectedCells: BROWSERS.length * SCHEMES.length * WIDTHS.length * SCREENS.length,
+  expectedCells: BROWSERS.length * SCHEMES.length * POINTERS.length * WIDTHS.length * SCREENS.length,
   measuredCells: report.cells.length,
+  axes: { browsers: BROWSERS, schemes: SCHEMES, widths: WIDTHS, pointers: POINTERS },
   byBrowser,
+  byWidthPointer: grid,
+  places: report.places.length,
   shots,
 };
 fs.writeFileSync(path.join(OUT, "t7a-browser-compat.json"), JSON.stringify(report, null, 2), "utf8");
@@ -312,7 +407,10 @@ console.log(
 );
 
 // 🔴 대조군이 안 울면 그 회차 초록은 근거가 아니다.
-const dead = report.controls.filter((c) => !c.overflowDetectorFired || !c.touchDetectorFired);
+const needPointer = POINTERS.length > 1;
+const dead = report.controls.filter(
+  (c) => !c.overflowDetectorFired || !c.touchDetectorFired || (needPointer && !c.pointerAxisFired),
+);
 if (report.controls.length === 0 || dead.length) {
   console.error("🔴 대조군 불발 — 판정기가 울지 않는 브라우저가 있다:", JSON.stringify(dead));
   process.exit(2);
