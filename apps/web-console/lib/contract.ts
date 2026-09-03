@@ -508,6 +508,11 @@ async function call<T>(
   init?: RequestInit,
   base = "",
   timeoutMs = TIMEOUT_MS,
+  /* 🔴 **재시도 상한을 첫 시도와 «따로» 받는다.** 하나로 묶어 두면 첫 시도 상한을
+     올리는 순간 최악 체감이 `2 x 상한 + 지연` 으로 같이 부푼다 — 콜드 한 번을 살리려고
+     모든 실패 경로를 두 배로 기다리게 만드는 거래다. 기본값은 첫 시도와 같으므로 이
+     매개변수를 안 주는 호출부의 동작은 한 자리도 바뀌지 않는다. */
+  retryTimeoutMs = timeoutMs,
 ): Promise<Reply<T>> {
   const first = await attempt<T>(path, init, base, timeoutMs);
   if (first.state === "ok") return first;
@@ -515,7 +520,7 @@ async function call<T>(
   if (!isRetryableCall(init, base)) return first;
 
   await sleep(retryDelayMs(first));
-  const second = await attempt<T>(path, init, base, timeoutMs);
+  const second = await attempt<T>(path, init, base, retryTimeoutMs);
   // 🔴 재시도 «뒤에도» 실패하면 그대로 돌려준다 — 화면이 읽는 문면은 달라지지 않는다.
   if (second.state === "ok") return { ...second, retried: true };
   return { ...second, retried: true };
@@ -1010,8 +1015,32 @@ export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolea
   return call<{ ok: boolean }>(CONTRACT.resetSession(sid), { method: "POST" }, base);
 }
 
+/**
+ * 🔴 **콜드 왕복은 서버가 느린 것이 아니다** — 스자쿠 30대 실측(공개면 API):
+ * 첫 호출 **1.83s** · 2~5회 **0.46~0.47s** · 본문은 5회 동일. 즉 느린 것은 첫 연결이고,
+ * 그 1.83s 는 `TIMEOUT_MS`(2s) 를 거의 채운다 — 조금만 느려도 첫 화면이 「끊겼다」고 말한다.
+ *
+ * 그래서 **첫 «시도»에만** 5s 를 준다. 바꾸지 «않는» 것을 먼저 적어 둔다:
+ *   ① 이후 폴링(30s 주기)은 `TIMEOUT_MS`(2s) 그대로 — 매 주기 5초씩 매달리지 않는다.
+ *   ② 같은 호출 안의 **재시도도 2s** — 올리면 최악이 `2 x 5000 + 지연` 이 된다.
+ *   ③ `READ_TIMEOUT_MS`·`ENTER_TIMEOUT_MS`·`COMPARE_TIMEOUT_MS` 는 무접촉.
+ * 최악 체감 = 5000(첫 시도) + 지연 + 2000(재시도) 이고, 그것도 **번들당 첫 1회에만** 든다.
+ *
+ * 이 플래그는 번들마다 따로 산다(서버·브라우저 각 1회) — 그게 맞다 · 콜드는 그 둘이 따로 겪는다.
+ */
+const LIVE_FIRST_TIMEOUT_MS = 5000;
+let liveStatusWarmed = false;
+
 export function liveStatus(base = ""): Promise<Reply<LiveStatus>> {
-  return call<LiveStatus>(CONTRACT.liveStatus, { cache: "no-store" }, base);
+  const cold = !liveStatusWarmed;
+  liveStatusWarmed = true;
+  return call<LiveStatus>(
+    CONTRACT.liveStatus,
+    { cache: "no-store" },
+    base,
+    cold ? LIVE_FIRST_TIMEOUT_MS : TIMEOUT_MS,
+    TIMEOUT_MS,
+  );
 }
 
 /**
