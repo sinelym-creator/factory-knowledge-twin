@@ -1,0 +1,97 @@
+{
+  "at": "2026-09-03T11:07:39.705Z",
+  "note": "조회만 · 코드 0줄 · 배포 무접촉",
+  "rows": [
+    {
+      "id": "public",
+      "base": "https://factory-knowledge-twin.vercel.app",
+      "note": "공개 배포면",
+      "samples": [
+        {
+          "wantMs": 5000,
+          "elapsedMs": 5015,
+          "badge": "◑REPLAY"
+        },
+        {
+          "wantMs": 15000,
+          "elapsedMs": 15006,
+          "badge": "◑REPLAY"
+        }
+      ],
+      "net": [
+        {
+          "url": "https://factory-knowledge-twin.vercel.app/api/live/status",
+          "status": 200,
+          "body": "{\"online\":false,\"checkedAt\":\"2026-09-03T11:07:43.914785Z\"}",
+          "at": 1788433664143,
+          "tMs": -4730
+        },
+        {
+          "url": "https://factory-knowledge-twin.vercel.app/api/live/status",
+          "status": 200,
+          "body": "{\"online\":false,\"checkedAt\":\"2026-09-03T11:07:48.096675Z\"}",
+          "at": 1788433668310,
+          "tMs": -563
+        }
+      ],
+      "failed": [],
+      "consoleErrs": [],
+      "landed": {
+        "href": "https://factory-knowledge-twin.vercel.app/overview",
+        "origin": "https://factory-knowledge-twin.vercel.app"
+      }
+    },
+    {
+      "id": "local-3102",
+      "base": "http://127.0.0.1:3102",
+      "note": "내 무대(같은 코드 · FKT_API_BASE=8010)",
+      "samples": [
+        {
+          "wantMs": 5000,
+          "elapsedMs": 5007,
+          "badge": "◑REPLAY"
+        },
+        {
+          "wantMs": 15000,
+          "elapsedMs": 15014,
+          "badge": "◑REPLAY"
+        }
+      ],
+      "net": [
+        {
+          "url": "http://127.0.0.1:3102/api/live/status",
+          "status": 200,
+          "body": "{\"online\":false,\"checkedAt\":\"2026-09-03T11:08:04.055000Z\"}",
+          "at": 1788433684070,
+          "tMs": -109
+        },
+        {
+          "url": "http://127.0.0.1:3102/api/live/status",
+          "status": 200,
+          "body": "{\"online\":false,\"checkedAt\":\"2026-09-03T11:08:04.185070Z\"}",
+          "at": 1788433684193,
+          "tMs": 14
+        }
+      ],
+      "failed": [],
+      "consoleErrs": [],
+      "landed": {
+        "href": "http://127.0.0.1:3102/overview",
+        "origin": "http://127.0.0.1:3102"
+      }
+    },
+    {
+      "id": "local-8011",
+      "base": "http://127.0.0.1:8011",
+      "note": "대조군(다른 좌석 무대)",
+      "samples": [],
+      "net": [],
+      "failed": [],
+      "consoleErrs": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "error": "TimeoutError: locator.click: Timeout 10000ms exceeded."
+    }
+  ],
+  "errors": []
+}
