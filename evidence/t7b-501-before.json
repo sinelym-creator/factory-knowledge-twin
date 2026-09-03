@@ -1,0 +1,383 @@
+{
+  "base": "http://127.0.0.1:3112",
+  "at": "2026-09-03T13:01:22.427Z",
+  "sc": {
+    "2.4.11": "When a user interface component receives keyboard focus, the component is not entirely hidden due to author-created content. (Level AA)",
+    "2.4.12": "When a user interface component receives keyboard focus, no part of the component is hidden by author-created content. (Level AAA)",
+    "note": "퍼센트 문턱은 SC 에 없다. 내부 목표치는 별도 열."
+  },
+  "control": {
+    "inside": {
+      "kind": "button",
+      "testid": null,
+      "label": "ctl",
+      "href": null,
+      "inCallout": false,
+      "rect": {
+        "x": 436,
+        "y": 379,
+        "w": 40,
+        "h": 20
+      },
+      "area": 800,
+      "overlapPx": 800,
+      "ratio": 1,
+      "entirelyHidden": true,
+      "anyPartHidden": true,
+      "offscreen": false,
+      "calloutOffscreen": false,
+      "scrollY": 0
+    },
+    "outside": {
+      "kind": "button",
+      "testid": null,
+      "label": "ctl",
+      "href": null,
+      "inCallout": false,
+      "rect": {
+        "x": 8,
+        "y": 8,
+        "w": 40,
+        "h": 20
+      },
+      "area": 800,
+      "overlapPx": 0,
+      "ratio": 0,
+      "entirelyHidden": false,
+      "anyPartHidden": false,
+      "offscreen": false,
+      "calloutOffscreen": false,
+      "scrollY": 0
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "title": "지금 무슨 일이 났는지부터",
+      "kind": "next",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 6,
+      "offscreenStops": 0,
+      "outsideStops": 32,
+      "aa_2_4_11_violations": [],
+      "aaa_2_4_12_violations": [
+        {
+          "testid": "hierarchy-tree",
+          "label": "전체 12대",
+          "ratio": 0.45
+        },
+        {
+          "testid": "hierarchy-tree",
+          "label": "가공 라인 1 4대",
+          "ratio": 0.45
+        },
+        {
+          "testid": "hierarchy-tree",
+          "label": "가공 라인 2 4대",
+          "ratio": 0.3802
+        }
+      ],
+      "aaCount": 0,
+      "aaaCount": 3,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 0,
+      "scrollMax": 312
+    },
+    {
+      "step": 2,
+      "title": "알람은 «울린 행»의 값이 앵커다",
+      "kind": "next",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 6,
+      "offscreenStops": 0,
+      "outsideStops": 32,
+      "aa_2_4_11_violations": [
+        {
+          "testid": "intro-card",
+          "label": "안내 닫기",
+          "ratio": 1,
+          "rect": {
+            "x": 1372,
+            "y": 526,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "testid": "start-from-alarm",
+          "label": "조사 시작",
+          "ratio": 1,
+          "rect": {
+            "x": 1096,
+            "y": 718,
+            "w": 99,
+            "h": 36
+          }
+        }
+      ],
+      "aaa_2_4_12_violations": [
+        {
+          "testid": "intro-card",
+          "label": "안내 닫기",
+          "ratio": 1
+        },
+        {
+          "testid": "start-from-alarm",
+          "label": "조사 시작",
+          "ratio": 1
+        }
+      ],
+      "aaCount": 2,
+      "aaaCount": 2,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 312,
+      "scrollMax": 312
+    },
+    {
+      "step": 3,
+      "title": "조사를 시작하면 에이전트가 5단계를 돕니다",
+      "kind": "goto",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 6,
+      "offscreenStops": 4,
+      "outsideStops": 32,
+      "aa_2_4_11_violations": [],
+      "aaa_2_4_12_violations": [],
+      "aaCount": 0,
+      "aaaCount": 0,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 312,
+      "scrollMax": 312
+    },
+    {
+      "step": 4,
+      "title": "다섯 단계가 실제로 지나간 자리",
+      "kind": "next",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 2,
+      "offscreenStops": 0,
+      "outsideStops": 37,
+      "aa_2_4_11_violations": [
+        {
+          "testid": "evidence-card",
+          "label": "근거 보기",
+          "ratio": 1,
+          "rect": {
+            "x": 318,
+            "y": 770,
+            "w": 51,
+            "h": 17
+          }
+        }
+      ],
+      "aaa_2_4_12_violations": [
+        {
+          "testid": "evidence-card",
+          "label": "근거 보기",
+          "ratio": 0.9723
+        }
+      ],
+      "aaCount": 1,
+      "aaaCount": 1,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 0,
+      "scrollMax": 623
+    },
+    {
+      "step": 5,
+      "title": "후보마다 근거 ID 가 붙는다",
+      "kind": "next",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 2,
+      "offscreenStops": 0,
+      "outsideStops": 37,
+      "aa_2_4_11_violations": [
+        {
+          "testid": "candidate",
+          "label": "MR-2025-0087",
+          "ratio": 1,
+          "rect": {
+            "x": 1119,
+            "y": 750,
+            "w": 107,
+            "h": 24
+          }
+        },
+        {
+          "testid": "candidate",
+          "label": "DOC-MAN-0021@r1#006",
+          "ratio": 1,
+          "rect": {
+            "x": 1070,
+            "y": 780,
+            "w": 158,
+            "h": 24
+          }
+        },
+        {
+          "testid": "candidate",
+          "label": "FM-BRG-WEAR",
+          "ratio": 1,
+          "rect": {
+            "x": 1234,
+            "y": 780,
+            "w": 100,
+            "h": 24
+          }
+        },
+        {
+          "testid": "evidence-card",
+          "label": "근거 보기",
+          "ratio": 1,
+          "rect": {
+            "x": 1154,
+            "y": 770,
+            "w": 51,
+            "h": 17
+          }
+        }
+      ],
+      "aaa_2_4_12_violations": [
+        {
+          "testid": "candidate",
+          "label": "MR-2025-0087",
+          "ratio": 1
+        },
+        {
+          "testid": "candidate",
+          "label": "DOC-MAN-0021@r1#006",
+          "ratio": 1
+        },
+        {
+          "testid": "candidate",
+          "label": "FM-BRG-WEAR",
+          "ratio": 1
+        },
+        {
+          "testid": "evidence-card",
+          "label": "근거 보기",
+          "ratio": 1
+        }
+      ],
+      "aaCount": 4,
+      "aaaCount": 4,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 333,
+      "scrollMax": 623
+    },
+    {
+      "step": 6,
+      "title": "근거 칩을 직접 눌러 보세요",
+      "kind": "click-target",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 1,
+      "offscreenStops": 0,
+      "outsideStops": 38,
+      "aa_2_4_11_violations": [
+        {
+          "testid": "evidence-card",
+          "label": "근거 보기",
+          "ratio": 1,
+          "rect": {
+            "x": 1154,
+            "y": 770,
+            "w": 51,
+            "h": 17
+          }
+        }
+      ],
+      "aaa_2_4_12_violations": [
+        {
+          "testid": "evidence-card",
+          "label": "근거 보기",
+          "ratio": 1
+        }
+      ],
+      "aaCount": 1,
+      "aaaCount": 1,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 186,
+      "scrollMax": 623
+    },
+    {
+      "step": 7,
+      "title": "출처·시각·신선도를 함께 말한다",
+      "kind": "next",
+      "hasSpotlight": true,
+      "stops": 40,
+      "inCalloutStops": 8,
+      "offscreenStops": 0,
+      "outsideStops": 28,
+      "aa_2_4_11_violations": [],
+      "aaa_2_4_12_violations": [],
+      "aaCount": 0,
+      "aaaCount": 0,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 0,
+      "scrollMax": 0
+    },
+    {
+      "step": 8,
+      "title": "AI 는 제안까지, 승인은 사람이",
+      "kind": "next",
+      "hasSpotlight": false,
+      "stops": 40,
+      "inCalloutStops": 8,
+      "offscreenStops": 0,
+      "outsideStops": 28,
+      "aa_2_4_11_violations": [],
+      "aaa_2_4_12_violations": [],
+      "aaCount": 0,
+      "aaaCount": 0,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 0,
+      "scrollMax": 0
+    },
+    {
+      "step": 9,
+      "title": "둘러보기가 끝났습니다",
+      "kind": "goto",
+      "hasSpotlight": false,
+      "stops": 40,
+      "inCalloutStops": 8,
+      "offscreenStops": 0,
+      "outsideStops": 28,
+      "aa_2_4_11_violations": [],
+      "aaa_2_4_12_violations": [],
+      "aaCount": 0,
+      "aaaCount": 0,
+      "calloutOffscreenStops": 0,
+      "scrollAtOpen": 0,
+      "scrollMax": 0
+    }
+  ],
+  "total": {
+    "aaUnique": [
+      "intro-card:안내 닫기",
+      "start-from-alarm:조사 시작",
+      "evidence-card:근거 보기",
+      "candidate:MR-2025-0087",
+      "candidate:DOC-MAN-0021@r1#006",
+      "candidate:FM-BRG-WEAR"
+    ],
+    "aaaUnique": [
+      "hierarchy-tree:전체 12대",
+      "hierarchy-tree:가공 라인 1 4대",
+      "hierarchy-tree:가공 라인 2 4대",
+      "intro-card:안내 닫기",
+      "start-from-alarm:조사 시작",
+      "evidence-card:근거 보기",
+      "candidate:MR-2025-0087",
+      "candidate:DOC-MAN-0021@r1#006",
+      "candidate:FM-BRG-WEAR"
+    ],
+    "stepsWithAA": 4,
+    "stepsWithAAA": 5
+  }
+}
