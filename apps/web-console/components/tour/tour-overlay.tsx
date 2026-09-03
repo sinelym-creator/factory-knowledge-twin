@@ -182,7 +182,17 @@ function TourStepView({
     if (!callout) return;
     const targetEl =
       plan.ui === "await" ? document.querySelector<HTMLElement>(`[data-testid="${plan.of}"]`) : null;
-    const allowed: HTMLElement[] = targetEl ? [callout, targetEl] : [callout];
+    /* 🔴 **안내 카드는 «배경»이 아니다**(D-1 재개방). 규격 ⑧-4 의 주어는 「배경을 막는다」인데,
+       앱바 「?」는 `/overview?intro=1&tour=1` 로 가서 **안내와 투어를 «함께» 띄운다** — 그때
+       안내 카드를 배경으로 분류하면 그 카드의 「안내 닫기」가 `inert` 뒤로 들어가 «출구가
+       사라진다»(검증 실측: 재진입 시 5×5 격자 25/25 점을 셸 본문이 먹고 클릭이 8초 타임아웃 ·
+       첫 진입에서는 21/25 가 카드 것이라 눌린다). 🔴 같은 버튼이 «경로에 따라» 눌리고 안
+       눌리는 것은 설계일 수 없다. 그래서 함께 뜬 것은 허용 노드에 넣는다.
+       카드가 없으면(이미 닫았거나 처음이 아니면) 아무 일도 없다 — 투어 OFF 화면은 불변이다. */
+    const introEl = document.querySelector<HTMLElement>('[data-testid="intro-card"]');
+    const allowed: HTMLElement[] = [callout];
+    if (targetEl) allowed.push(targetEl);
+    if (introEl) allowed.push(introEl);
 
     /* 허용 노드로 가는 «조상 경로»는 통과시키고 그 형제만 `inert` 로 덮는다.
        최상위를 통째로 덮으면 대상까지 같이 죽는다 — 그게 ② 를 깨는 자리다. */
