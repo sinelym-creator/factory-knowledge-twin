@@ -319,6 +319,34 @@ body {
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .fkt-glass { background: var(--fkt-bg-2); }
   }
+  /* 🔴 투명도 감소를 켠 사람에게는 Glass 를 끈다(HIG 접근성 · 폐하 자료 §7.2 「접근성
+     설정에서 투명도 감소와 대비 증가 상태를 고려한다」). 반투명은 장식이 아니라 «앞뒤 관계»를
+     말하는 재질이므로, 끌 때도 그 관계는 남긴다 — blur 만 걷고 배경은 불투명 표면으로 바꿔
+     계층은 그대로 둔다(미지원 폴백과 같은 자리로 착지한다). */
+  @media (prefers-reduced-transparency: reduce) {
+    .fkt-glass {
+      background: var(--fkt-bg-2);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  /* 🔴 발광은 «하나»에만 — AI 조사 실행 버튼(폐하 자료 §15 「AI 분석 실행 버튼에는 약한
+     Blue Glow」 · §8 「선택·활성화·실행처럼 의미 있는 상황에만」 · §15 피해야 할 것 「모든 버튼과
+     카드에 Glow」). 밝은 네온 테두리가 아니라 «낮은 불투명도로 번지는 빛»이라 테두리를 만들지
+     않고 아래로 퍼뜨린다. 투명도 감소에서는 끈다(빛도 재질이다). */
+  .fkt-glow-ai {
+    box-shadow: 0 4px 18px -6px color-mix(in srgb, var(--fkt-tint) 55%, transparent);
+  }
+  .fkt-glow-ai:hover {
+    box-shadow: 0 6px 24px -6px color-mix(in srgb, var(--fkt-tint) 70%, transparent);
+  }
+  .fkt-glow-ai:disabled {
+    box-shadow: none;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .fkt-glow-ai, .fkt-glow-ai:hover { box-shadow: none; }
+  }
 
   /* 진입 ④-1 · 스태거 ④-2(40ms × n · ≤8) · pop ④-5 · 시트 ④-9 · pulse ④-10 */
   .fkt-rise {
