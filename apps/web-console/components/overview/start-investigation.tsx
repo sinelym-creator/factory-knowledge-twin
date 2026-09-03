@@ -21,11 +21,16 @@ export function StartInvestigation({
   sessionId,
   sessionOrigin,
   testId,
+  glow = false,
 }: {
   scenarioId: string;
   sessionId: string | null;
   sessionOrigin: string | null;
   testId: string;
+  /** 🔴 발광은 «화면의 주 행동» 한 자리에만. 같은 「조사 시작」이라도 알람 목록 안의 것은
+      반복 요소라, 거기까지 빛나면 자료 §15 의 「모든 버튼에 Glow」 쪽으로 기운다(§3.1
+      「주요 행동은 하나를 가장 강하게 강조한다」). 기본값은 꺼짐이다. */
+  glow?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -60,7 +65,7 @@ export function StartInvestigation({
            중요한 동작이 가장 작아 보였다. press 는 scale(0.95) 하나뿐이다(색 반전 금지). */
         /* 🔴 이 화면에서 «빛나는» 것은 이 버튼 하나다 — AI 조사 실행(자료 §15). 다른 1차
            버튼에는 붙이지 않는다: 전부 빛나면 아무것도 강조되지 않는다. */
-        className="fkt-btn fkt-btn-primary fkt-glow-ai rounded-pill px-5"
+        className={`fkt-btn fkt-btn-primary rounded-pill px-5${glow ? " fkt-glow-ai" : ""}`}
         title={usable ? undefined : "이 세션은 아직 백엔드에 등록되지 않았습니다"}
       >
         {busy ? "조사 시작 중…" : "조사 시작"}
