@@ -126,16 +126,26 @@ async function runColumn(label, { tamperToStep = null, reloadAfterReopen = false
      있었는데, 그 회차의 「안 열렸다」는 대상이 아니라 내 손의 빨강이다. 자극이 실재했는지부터
      세우고, 끝내 못 닿으면 그 열은 판정에서 뺀다(무대 미구비). */
   const reopen = page.locator('[data-testid="intro-reopen"]');
-  let navigated = false;
-  for (let tryN = 1; tryN <= 3 && !navigated; tryN += 1) {
-    await reopen.first().click({ timeout: 10_000 });
-    navigated = await page
-      .waitForURL(/tour=1/, { timeout: 5_000 })
-      .then(() => true)
-      .catch(() => false);
-    col.reopenTries = tryN;
-  }
-  col.reopenNavigated = navigated;
+  /* 클릭이 링크에 «닿았는지»를 센다 — 자극 실림의 유일한 증거다(URL 전이는 별 축이다). */
+  await page.evaluate(() => {
+    window.__levi2ReopenHits = 0;
+    document.addEventListener(
+      "click",
+      (e) => {
+        const el = e.target;
+        if (el instanceof Element && el.closest('[data-testid="intro-reopen"]')) {
+          window.__levi2ReopenHits += 1;
+        }
+      },
+      true,
+    );
+  });
+  await reopen.first().click({ timeout: 10_000 });
+  col.reopenClicked = (await page.evaluate(() => window.__levi2ReopenHits ?? 0)) > 0;
+  col.reopenNavigated = await page
+    .waitForURL(/tour=1/, { timeout: 5_000 })
+    .then(() => true)
+    .catch(() => false);
   /* 🔴 손잡이 하나만 다른 열: 같은 URL 에 «마운트»를 강제한다. 클라이언트 이동만으로 안 열리고
      새로고침에서 열리면, 진범은 저장이 아니라 「다시 마운트되지 않는 재개 경로」다. */
   if (reloadAfterReopen) {
@@ -161,8 +171,12 @@ async function runColumn(label, { tamperToStep = null, reloadAfterReopen = false
     spotlight: await page.locator('[data-testid="tour-spotlight"]').count(),
     targetMissingNote: await page.locator('[data-testid="tour-target-missing"]').count(),
   };
-  col.verdict = !col.reopenNavigated
-    ? "stimulus-missing" // 자극이 안 실렸다 — 이 열은 대상에 대해 아무것도 말하지 않는다
+  /* 🔴 판정선 개정(오케 28대 09-03 · #470): 이 축이 묻는 것은 「URL 이 바뀌었나」가 아니라
+     **「투어가 그 스텝에서 열렸나」**다. 수리는 열기를 이동에서 떼어냈으므로(클릭이 이벤트도
+     함께 쏘고 Provider 가 듣는다) URL 전이 실패는 **기록**이지 판정이 아니다. 다만 «클릭이
+     닿았는가»는 여전히 세야 한다 — 안 닿은 회차는 대상에 대해 아무것도 말하지 않는다. */
+  col.verdict = !col.reopenClicked
+    ? "stimulus-missing"
     : col.resume.index === TARGET_STEP
       ? "index-preserved"
       : "index-lost";
@@ -188,7 +202,7 @@ const reload = report.columns.find((c) => c.label === "target-reload");
 const control = report.columns.find((c) => c.label === "control-step0");
 report.controlDiscriminates = control?.verdict === "index-lost";
 report.summary = {
-  targetRuns: targets.map((c) => ({ label: c.label, navigated: c.reopenNavigated, tries: c.reopenTries, reopened: c.resume?.reopened, index: c.resume?.index, url: c.resume?.url, stored: c.resume?.stored })),
+  targetRuns: targets.map((c) => ({ label: c.label, clicked: c.reopenClicked, navigated: c.reopenNavigated, reopened: c.resume?.reopened, index: c.resume?.index, url: c.resume?.url, stored: c.resume?.stored })),
   targetVerdicts: targets.map((c) => c.verdict),
   reloadColumn: { reopened: reload?.resume?.reopened, index: reload?.resume?.index, stored: reload?.resume?.stored, verdict: reload?.verdict },
   controlResumeIndex: control?.resume?.index ?? null,

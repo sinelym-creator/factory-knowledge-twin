@@ -127,15 +127,23 @@ async function column(label, { width, height, reduced }) {
     /* 🔴 「콜아웃이 제가 가리키는 것을 덮는가」 — 이 축의 핵심 값. 규격 ⑤ 의 목적(대상을
        보여 주며 설명한다)은 위치가 아니라 이 숫자로 깨진다. */
     let spotCoveredPct = null;
+    let headCoveredPct = null;
     if (spotStyle) {
       const a = spotStyle.rect;
       const b = calloutBox.rect;
-      const x = Math.max(0, Math.min(a.left + a.width, b.left + b.width) - Math.max(a.left, b.left));
-      const y = Math.max(0, Math.min(a.top + a.height, b.top + b.height) - Math.max(a.top, b.top));
-      const area = x * y;
-      spotCoveredPct = a.width * a.height > 0 ? Number(((100 * area) / (a.width * a.height)).toFixed(1)) : null;
+      const overlap = (r) => {
+        const x = Math.max(0, Math.min(r.left + r.width, b.left + b.width) - Math.max(r.left, b.left));
+        const y = Math.max(0, Math.min(r.top + r.height, b.top + b.height) - Math.max(r.top, b.top));
+        return x * y;
+      };
+      spotCoveredPct = a.width * a.height > 0 ? Number(((100 * overlap(a)) / (a.width * a.height)).toFixed(1)) : null;
+      /* 🔴 판정선 개정(오케 28대 채택 · 09-03): 「덮임 0%」는 **화면보다 큰 대상**에는 영원히
+         도달 못 하는 기준이다(스텝 4 실측: 대상 800px / 뷰포트 844px). 규격 ⑤ 의 목적은
+         「대상을 **보여 주며** 설명한다」이므로, 대상의 **머리(상단 1/3)** 가 보이는가로 잰다. */
+      const head = { left: a.left, top: a.top, width: a.width, height: a.height / 3 };
+      headCoveredPct = head.width * head.height > 0 ? Number(((100 * overlap(head)) / (head.width * head.height)).toFixed(1)) : null;
     }
-    col.steps.push({ index: i, shown: true, hasSpot, spotStyle, calloutBox, scrollAxis, spotCoveredPct });
+    col.steps.push({ index: i, shown: true, hasSpot, spotStyle, calloutBox, scrollAxis, spotCoveredPct, headCoveredPct });
     if (SHOTS) {
       fs.mkdirSync(SHOTS, { recursive: true });
       await page.screenshot({ path: `${SHOTS}/${label}-step${i}.png` });
@@ -205,6 +213,12 @@ report.summary = {
     label: c.label,
     perStep: c.steps.map((s) => ({ i: s.index, pct: s.spotCoveredPct })),
     worst: Math.max(0, ...c.steps.map((s) => s.spotCoveredPct ?? 0)),
+  })),
+  /* 개정 판정선 — 대상의 머리가 보이는가(0 이어야 통과) */
+  headCoverage: report.columns.map((c) => ({
+    label: c.label,
+    perStep: c.steps.map((s) => ({ i: s.index, pct: s.headCoveredPct })),
+    worst: Math.max(0, ...c.steps.map((s) => s.headCoveredPct ?? 0)),
   })),
   ringOutlineWidth: report.columns.map((c) => ({
     label: c.label,

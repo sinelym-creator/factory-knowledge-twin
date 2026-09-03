@@ -1,0 +1,126 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T08:23:03.682Z",
+  "columns": [
+    {
+      "label": "normal",
+      "reduceTransparency": false,
+      "media": {
+        "reducedTransparency": false,
+        "reducedMotion": false
+      },
+      "glowClassCount": 1,
+      "glowRendered": [
+        {
+          "text": "조사 시작",
+          "boxShadow": "color(srgb 0.0392157 0.517647 1 / 0.55) 0px 4px 18px -6px",
+          "isNone": false
+        }
+      ],
+      "primariesWithShadow": [],
+      "primaryCount": 3,
+      "glass": [
+        {
+          "testid": "nav",
+          "backdropFilter": "blur(20px) saturate(1.8)",
+          "background": "rgba(28, 28, 30, 0.72)",
+          "alpha": 0.72
+        },
+        {
+          "testid": "app-bar",
+          "backdropFilter": "blur(20px) saturate(1.8)",
+          "background": "rgba(28, 28, 30, 0.72)",
+          "alpha": 0.72
+        }
+      ],
+      "glassCount": 2
+    },
+    {
+      "label": "reduced-transparency",
+      "reduceTransparency": true,
+      "media": {
+        "reducedTransparency": true,
+        "reducedMotion": false
+      },
+      "glowClassCount": 1,
+      "glowRendered": [
+        {
+          "text": "조사 시작",
+          "boxShadow": "none",
+          "isNone": true
+        }
+      ],
+      "primariesWithShadow": [],
+      "primaryCount": 3,
+      "glass": [
+        {
+          "testid": "nav",
+          "backdropFilter": "none",
+          "background": "rgb(28, 28, 30)",
+          "alpha": 1
+        },
+        {
+          "testid": "app-bar",
+          "backdropFilter": "none",
+          "background": "rgb(28, 28, 30)",
+          "alpha": 1
+        }
+      ],
+      "glassCount": 2
+    }
+  ],
+  "summary": {
+    "stimulusLanded": true,
+    "controlUntouched": true,
+    "glow": {
+      "normalClassCount": 1,
+      "normalRendered": [
+        {
+          "text": "조사 시작",
+          "boxShadow": "color(srgb 0.0392157 0.517647 1 / 0.55) 0px 4px 18px -6px",
+          "isNone": false
+        }
+      ],
+      "otherPrimariesWithShadow": [],
+      "primaryCount": 3
+    },
+    "glass": {
+      "normal": [
+        {
+          "testid": "nav",
+          "backdropFilter": "blur(20px) saturate(1.8)",
+          "background": "rgba(28, 28, 30, 0.72)",
+          "alpha": 0.72
+        },
+        {
+          "testid": "app-bar",
+          "backdropFilter": "blur(20px) saturate(1.8)",
+          "background": "rgba(28, 28, 30, 0.72)",
+          "alpha": 0.72
+        }
+      ],
+      "reduced": [
+        {
+          "testid": "nav",
+          "backdropFilter": "none",
+          "background": "rgb(28, 28, 30)",
+          "alpha": 1
+        },
+        {
+          "testid": "app-bar",
+          "backdropFilter": "none",
+          "background": "rgb(28, 28, 30)",
+          "alpha": 1
+        }
+      ],
+      "glassCount": 2
+    },
+    "reducedGlow": [
+      {
+        "text": "조사 시작",
+        "boxShadow": "none",
+        "isNone": true
+      }
+    ]
+  }
+}
