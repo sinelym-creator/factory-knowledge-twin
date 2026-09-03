@@ -46,18 +46,54 @@ test.describe("세션 리셋", () => {
     // 만족했지만, UX 폴리시 패스가 @theme 만 훑으면 이 한 곳이 빠진다.
     // 고쳐진 것: --color-scrim 토큰 + `bg-scrim`.
     // 🔴 값을 고정하지 않는다 — 색은 D-002 유보분이다. 재는 것은 「토큰을 지나는가」뿐이다.
+    // 🔴 **판정선 갱신(38대 · 2026-09-04)** — 앞판은 `--color-scrim` 이라는 «이름»이 브라우저에
+    //    있는지 물었다. 그 이름은 Tailwind v4 `@theme inline` 이 **일부러 CSS 변수로 안 내보낸다**
+    //    (값을 유틸에 인라인한다). 실측: `--color-scrim`="" 이고 **`--color-bg` 도 ""** —
+    //    즉 `--color-*` 가 «전부» 없다. 이름 하나의 사고가 아니라 설계층이 바뀐 것이다.
+    //    ⇒ 원래 재려던 것(**「스크림이 토큰 계층을 지나는가 · 하드코딩 색값이 아닌가」**)을
+    //      **살아 있는 축**으로 다시 묻는다: ⓐ 유틸이 `bg-scrim` 인가 ⓑ 칠해진 색이 실토큰
+    //      `--fkt-scrim` 과 «같은 색»인가. 🔴 색값 자체는 여전히 고정하지 않는다(D-002 유보분).
     await enter(page);
     await page.getByTestId("reset-button").click();
     const scrim = page.locator(".fixed.inset-0").first();
     await expect(scrim).toBeVisible();
-    const [bg, token] = await scrim.evaluate((e) => [
-      getComputedStyle(e).backgroundColor,
-      getComputedStyle(document.documentElement).getPropertyValue("--color-scrim").trim(),
-    ]);
-    expect(token, "--color-scrim 토큰이 브라우저에 없다").not.toBe("");
-    // 적용된 배경이 «투명하지 않다» = 선언이 유효했다(V-2 처럼 무효 선언이면 버려진다)
-    expect(bg).not.toBe("rgba(0, 0, 0, 0)");
-    expect(bg).toMatch(/^rgba?\(/);
+
+    const m = await scrim.evaluate((e) => {
+      const root = getComputedStyle(document.documentElement);
+      /* 토큰 문자열(#0000008c)과 계산된 색(rgba(0,0,0,0.55))은 표기가 다르다 —
+         브라우저에게 «같은 색인지»를 직접 물어 표기 차이로 빨강이 나지 않게 한다. */
+      const probe = document.createElement("div");
+      probe.style.display = "none";
+      document.body.appendChild(probe);
+      const resolve = (v: string) => {
+        probe.style.backgroundColor = "";
+        probe.style.backgroundColor = v;
+        return getComputedStyle(probe).backgroundColor;
+      };
+      const tokenRaw = root.getPropertyValue("--fkt-scrim").trim();
+      const out = {
+        bg: getComputedStyle(e).backgroundColor,
+        cls: (e.className ?? "").toString(),
+        tokenRaw,
+        tokenResolved: tokenRaw ? resolve(tokenRaw) : "",
+        legacyName: root.getPropertyValue("--color-scrim").trim(),
+        /* 🔴 같은 실행 대조군 — «다른 색»을 넣으면 이 비교가 실제로 갈리는가.
+           안 갈리면 이 초록은 비교가 죽은 초록이다. */
+        controlDifferent: resolve("rgba(0, 0, 0, 0.31)"),
+      };
+      probe.remove();
+      return out;
+    });
+
+    expect(m.tokenRaw, "실토큰 --fkt-scrim 이 브라우저에 없다 — 토큰 계층 자체가 죽었다").not.toBe("");
+    expect(m.cls, "스크림이 토큰 유틸(bg-scrim)을 안 쓴다 — 하드코딩 색값 쪽이다").toContain("bg-scrim");
+    expect(m.bg, "적용된 배경이 투명하다 — 선언이 무효로 버려졌다").not.toBe("rgba(0, 0, 0, 0)");
+    expect(m.bg).toMatch(/^rgba?\(/);
+    expect(m.bg, "칠해진 색이 실토큰 --fkt-scrim 과 다르다 — 토큰 계층을 안 지난다").toBe(m.tokenResolved);
+    expect(
+      m.controlDifferent,
+      "대조군 불발 — 다른 색을 넣었는데도 같은 값이 나온다(이 비교는 아무것도 못 가른다)",
+    ).not.toBe(m.tokenResolved);
   });
 
   test("취소 → 모달만 닫히고 아무 일도 없다", async ({ page }) => {
