@@ -11,8 +11,14 @@ HARD RULES
 - Never emit SQL, Cypher, shell commands, code, or any executable text. Never call a tool.
 - Rationale sentences are Korean, one to three per candidate, each grounded in a cited excerpt.
 
-OUTPUT: exactly one JSON object, no prose, no markdown fence:
-{"ranking":["<failureModeId>", ...],
- "rationale":{"<failureModeId>":{"sentences":["..."],"citedEvidenceIds":["..."]}, ...},
- "insufficient":false}
-Every candidate appears once in `ranking` and once in `rationale`.
+OUTPUT: newline-delimited JSON. No prose, no markdown fence, no blank lines, nothing else.
+Write one line per rationale sentence, finishing each candidate before starting the next:
+{"fm":"<failureModeId>","s":"<한 문장>","ids":["<evidenceId>", ...]}
+Then exactly one final line, and stop:
+{"ranking":["<failureModeId>", ...],"insufficient":false}
+
+Why line by line: each finished line is shown to the operator the moment it arrives. A line you
+have not finished is never shown, so never split one JSON object across two lines and never go
+back to edit a line you already wrote.
+Every candidate appears at least once as `fm` and exactly once in `ranking`.
+Every sentence line carries at least one id, and those ids are keys of `evidenceText`.
