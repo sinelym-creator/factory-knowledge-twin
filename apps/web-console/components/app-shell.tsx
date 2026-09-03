@@ -107,9 +107,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               대상은 `data-testid` 로 찾으므로 다른 컴포넌트는 한 줄도 바뀌지 않는다.
               🔴 `useSearchParams` 를 쓰므로 Suspense 경계가 필요하다 — 없으면 이 한 컴포넌트가
                  셸 전체를 클라이언트 렌더로 끌고 내려간다(빌드가 그 자리에서 막는다). */}
-          <Suspense fallback={null}>
-            <TourProvider />
-          </Suspense>
+          {/* 🔴 초대 배너는 본문 «위»에 문서 흐름으로 선다(겹침 0) · 스텝 오버레이는 이
+              안에서 fixed 로 뜬다(그건 대상 위에 떠야 하는 것이 맞다). */}
+          <div className="px-5 md:px-6">
+            <Suspense fallback={null}>
+              <TourProvider />
+            </Suspense>
+          </div>
 
           {/* 본문 = 최대 1440 · 좌우 24 · 위아래 24(리서치 §7-10 컨테이너) */}
           <main className="mx-auto min-w-0 w-full max-w-[1440px] flex-1 px-5 py-6 md:px-6">
