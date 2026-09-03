@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 
 import { IconMark, IconQuestion } from "@/components/icons";
 import { FallbackBanner, LiveStatusProvider, ModeBadge } from "@/components/live-status";
 import { ResetButton } from "@/components/reset-button";
 import { ShellNav } from "@/components/shell-nav";
 import { StaticVisitorChip } from "@/components/static-visitor";
+import { TourProvider } from "@/components/tour/tour-provider";
 import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
 
 /**
@@ -64,13 +66,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   링크로 둔다: 어느 화면에 있든 `/overview` 로 데려가면서 열리고, 클라이언트
                   JS 없이 키보드로 잡힌다. */}
               <Link
-                href="/overview?intro=1"
+                href="/overview?intro=1&tour=1"
                 className="fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill text-[18px] text-muted hover:text-ink"
-                title="처음 오셨나요? 안내 다시 보기"
+                title="처음 오셨나요? 안내와 둘러보기 다시 보기"
                 data-testid="intro-reopen"
               >
                 <IconQuestion />
-                <span className="sr-only">안내 다시 보기</span>
+                <span className="sr-only">안내와 둘러보기 다시 보기</span>
               </Link>
               <ModeBadge />
               {/* 🔴 정적 재생본 방문자 — 서버 세션 칩과 «같은 자리, 다른 사실»이다.
@@ -97,6 +99,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* fallback 배너 슬롯 — 조건이 설 때만 자리를 차지한다(§0 조건부) */}
           <FallbackBanner sessionPending={session?.origin === "pending"} />
+
+          {/* T6-5 가이드 투어 — 🔴 **OFF 면 렌더 0**(폐하 13:46). 상태는 브라우저에만 있고,
+              대상은 `data-testid` 로 찾으므로 다른 컴포넌트는 한 줄도 바뀌지 않는다.
+              🔴 `useSearchParams` 를 쓰므로 Suspense 경계가 필요하다 — 없으면 이 한 컴포넌트가
+                 셸 전체를 클라이언트 렌더로 끌고 내려간다(빌드가 그 자리에서 막는다). */}
+          <Suspense fallback={null}>
+            <TourProvider />
+          </Suspense>
 
           {/* 본문 = 최대 1440 · 좌우 24 · 위아래 24(리서치 §7-10 컨테이너) */}
           <main className="mx-auto min-w-0 w-full max-w-[1440px] flex-1 px-5 py-6 md:px-6">
