@@ -149,6 +149,27 @@ function StaticReplayOffer() {
   );
 }
 
+/**
+ * 예외 «이름»을 방문자의 낱말로 — D-23 의 세 번째 층(33대 브라우저 실측).
+ *
+ * 🔴 `why` 는 `e.name` 이다(`lib/contract.ts` 재시도 로그 주석). 그대로 괄호에 넣으면 공개
+ *    화면이 `TimeoutError` 를 읽는다 — 실측(09-03 09:0x · 8787 을 blackhole 로 잡아 둔 창):
+ *    배너 문면 = 「Live 상태를 확인하지 못했습니다(TimeoutError)」. ai-api·게이트웨이 두 층을
+ *    고치면서 이 층을 빼먹었다: 같은 규칙(baseline §15.2)이 세 층에 걸려 있었다.
+ *
+ * 🔴 **원문을 버리는 것이 아니다.** 회차마다의 `console.warn("[enter] …", why, cause)` 가
+ *    남는다 — 「DNS 인가 TLS 인가 타임아웃인가」를 가르는 축은 그 줄이지 이 괄호가 아니다.
+ *
+ * 🔴 분류는 ai-api `_refusal_wording` 과 **같은 세 종**으로 맞춘다. 층마다 다른 낱말을
+ *    지어내면 같은 사건이 화면 자리마다 다른 이름을 갖는다.
+ */
+function visitorWhy(why: string | null | undefined): string {
+  if (!why) return "미연결";
+  if (why === "TimeoutError" || why === "AbortError") return "응답 시간 초과";
+  if (why === "TypeError") return "미도달";
+  return "미연결";
+}
+
 /** fallback 배너 슬롯 — 조건이 설 때만 자리를 차지한다(§0 「조건부」). */
 export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) {
   const { mode, why } = useContext(LiveContext);
@@ -165,7 +186,7 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
         //    그래서 «지금 상태»(미도달)와 «대체 경로»(결정적 집계)만 말한다.
         "Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다."
       : mode === "unavailable"
-        ? `Live 상태를 확인하지 못했습니다(${why ?? "미연결"}). 백엔드가 아직 연결되지 않았습니다 — 오류가 아닙니다.`
+        ? `Live 상태를 확인하지 못했습니다(${visitorWhy(why)}). 백엔드가 아직 연결되지 않았습니다 — 오류가 아닙니다.`
         : sessionPending
           ? "이 세션은 아직 백엔드에 등록되지 않았습니다(미연결). 화면 흐름은 동일합니다."
           : null;
