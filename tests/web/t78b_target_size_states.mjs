@@ -25,7 +25,7 @@
  *     --states base,modal,tour --routes discover --out evidence/x.json
  */
 import fs from "node:fs";
-import { SCAN, judge, PLANT, REMOVE, judgeControls, die } from "./_target_size_lib.mjs";
+import { SCAN, judge, PLANT, REMOVE, judgeControls, die, FIND_SCROLLERS, CLEAR_SCROLLERS, SCROLL_ONE } from "./_target_size_lib.mjs";
 import { createRequire } from "node:module";
 
 const require_ = createRequire(import.meta.url);
@@ -46,6 +46,20 @@ const POINTERS = arg("pointer", "both") === "both" ? ["fine", "coarse"] : [arg("
 const STATES = list(arg("states", "base,modal,tour"));
 const ROUTES_ARG = arg("routes", "discover");
 const OUT = arg("out", "");
+/* 🔴 **내부 스크롤 컨테이너 스윕 — 켜기/끄기 두 열.**
+   창 단위 스윕으로도 남는 「안 잼」의 대부분이 컨테이너 «안»에 있었다(T7-8b 278개 · 전부 incident).
+   그런데 컨테이너를 굴리면 그 안의 요소가 뷰포트에서 «움직이므로», 정체 키가 부실하면
+   **「안 잼이 줄었다」와 「내가 대상을 불렸다」가 같은 모양**이 된다.
+   ⇒ **같은 칸을 `on`/`off` 두 번 돌려 `측정 + 안 잼 = distinct 총계`가 «불변»인지 본다.**
+      총계가 늘면 그건 발견이 아니라 **내 중복 계수**다. */
+const CONTAINERS = arg("containers", "on") !== "off";
+/* 🔴 **스텝 상한도 «내 손잡이»다.** 390 에서 안 잼이 14로 남았을 때, 그것이 «화면의 사실»인지
+   «내 상한이 자른 것»인지부터 갈라야 한다. 그래서 상한을 인자로 빼고 올려 보는 열을 만든다. */
+/* 🔴 **실측으로 올렸다** — 기본값 y6/x4 로는 390 폭에서 「안 잼 14」가 남았는데, 상한만 올리자
+   **0** 이 됐다(측정 41/41). ⇒ 그 14는 **화면의 사실이 아니라 내 상한이 자른 것**이었다.
+   상한은 넉넉히 두고, **잘렸으면 `truncated` 로 신고**한다(침묵하는 절단이 폴백과 같은 병이다). */
+const CONT_STEPS_Y = Number(arg("cont-steps-y", 16));
+const CONT_STEPS_X = Number(arg("cont-steps-x", 32));
 
 /* 🔴 씨앗 화면 = 링크를 «주울» 자리. 이것도 인자다. */
 const SEEDS = list(arg("seeds", "/overview,/incidents/INC-2026-014?run=STATIC-GS-01,/evidence/MR-2025-0087?run=STATIC-GS-01"));
@@ -240,6 +254,9 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
     const maxSteps = legacy ? 1 : Math.max(1, Math.min(8, Math.ceil(first.scrollHeight / Math.max(1, stepH))));
     const seen = new Map();   // key -> { measured, row }
     const steps = [];
+    const KEY = (t) => t.pinned
+      ? `${t.role}|${t.name}|v|${Math.round(t.left)}|${Math.round(t.top)}`
+      : `${t.role}|${t.name}|c|${Math.round(t.contLeft)}|${Math.round(t.contTop)}`;
     for (let k = 0; k < maxSteps; k++) {
       const y = k * stepH;
       await page.evaluate((yy) => window.scrollTo(0, yy), y);
@@ -262,9 +279,9 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
       /* 🔴 고정·스티키 요소는 «뷰포트» 좌표로, 흐르는 요소는 «문서» 좌표로 센다 —
          한 쪽만 쓰면 앱바가 스텝마다 새 대상이 되거나(문서 좌표), 스크롤로 자리를 옮긴
          같은 요소가 서로 다른 대상으로 갈린다(뷰포트 좌표). */
-      const keyOf = (t) => t.pinned
-        ? `${t.role}|${t.name}|v|${Math.round(t.left)}|${Math.round(t.top)}`
-        : `${t.role}|${t.name}|d|${Math.round(t.docLeft)}|${Math.round(t.docTop)}`;
+      /* 🔴 좌표계 셋 — 고정·스티키는 «뷰포트», 그 밖은 «콘텐츠»(조상 스크롤을 되더한 위치).
+         문서 좌표(`top+scrollY`)를 쓰면 **컨테이너가 굴러갈 때** 같은 요소가 새 대상이 된다. */
+      const keyOf = KEY;
       for (const t of rows) {
         const k2 = keyOf(t);
         if (!seen.has(k2)) seen.set(k2, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name });
@@ -282,6 +299,51 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
         if (e && !e.allRow) { e.allRow = r; seen.set(k2, e); }
       }
     }
+    /* ── 🔴 **컨테이너 스윕** — 창을 다 훑고도 못 잡은 것을 «안»에서 훑는다 ────────── */
+    let scrollers = [];
+    if (CONTAINERS) {
+      scrollers = await page.evaluate(FIND_SCROLLERS);
+      for (const sc of scrollers) {
+        const spanY = Math.max(1, sc.clientHeight);
+        const spanX = Math.max(1, sc.clientWidth);
+        const nY = sc.vy ? Math.min(CONT_STEPS_Y, Math.ceil(sc.scrollHeight / spanY)) : 1;
+        const nX = sc.vx ? Math.min(CONT_STEPS_X, Math.ceil(sc.scrollWidth / spanX)) : 1;
+        sc.stepsY = nY; sc.stepsX = nX; sc.needY = Math.ceil(sc.scrollHeight / spanY); sc.needX = Math.ceil(sc.scrollWidth / spanX);
+        for (let a = 0; a < nY; a++) {
+          for (let b = 0; b < nX; b++) {
+            const moved = await page.evaluate(SCROLL_ONE, { i: sc.i, top: a * spanY, left: b * spanX });
+            if (!moved.ok) continue;
+            await page.waitForTimeout(200);
+            const snap = await page.evaluate(SCAN);
+            const rows = snap.targets.filter((t) => !t.planted);
+            const inView = rows.filter((t) => t.inViewport && t.hitScanned);
+            const liveRows = judge(inView.filter((t) => !t.inert));
+            const allRows = judge(inView);
+            steps.push({
+              scroller: sc.i, scrollerLabel: sc.label, top: moved.top, left: moved.left,
+              seenInStep: rows.length, judgedInView: inView.length,
+              offscreenOrUnscanned: rows.length - inView.length,
+              allTotal: allRows.length, liveTotal: liveRows.length,
+              aaFail: liveRows.filter((r) => !r.aaPass).length,
+              aaaFail: liveRows.filter((r) => !r.aaaPass).length,
+            });
+            for (const t of rows) { const k = KEY(t); if (!seen.has(k)) seen.set(k, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name }); }
+            for (const r of liveRows) {
+              const k = KEY(r);
+              const e = seen.get(k) ?? { measured: false, inert: r.inert, role: r.role, name: r.name };
+              if (!e.measured || (e.row && r.aaPass === false && e.row.aaPass !== false)) { e.measured = true; e.row = r; }
+              seen.set(k, e);
+            }
+            for (const r of allRows) { const k = KEY(r); const e = seen.get(k); if (e && !e.allRow) { e.allRow = r; seen.set(k, e); } }
+          }
+        }
+      }
+      await page.evaluate(CLEAR_SCROLLERS);
+    }
+    /* 🔴 «필요한 스텝»과 «실제 밟은 스텝»을 나란히 남긴다 — 잘렸으면 그게 보인다. */
+    cell.scrollers = scrollers.map((s2) => ({ i: s2.i, tag: s2.tag, label: s2.label, vy: s2.vy, vx: s2.vx, scrollHeight: s2.scrollHeight, clientHeight: s2.clientHeight, scrollWidth: s2.scrollWidth, clientWidth: s2.clientWidth, stepsY: s2.stepsY, stepsX: s2.stepsX, needY: s2.needY, needX: s2.needX, truncated: (s2.needY > s2.stepsY) || (s2.needX > s2.stepsX) }));
+    cell.containersSwept = CONTAINERS;
+
     await page.evaluate(() => window.scrollTo(0, 0));
 
     const entries = [...seen.values()];
@@ -305,6 +367,7 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
     cell.inertExcluded = allMeasured.length - liveMeasured.length;
     /* 🔴 **「안 잼」을 «0» 과 갈라서 센다.** 스윕 뒤에도 창 안에서 히트 스캔이 안 된 대상 —
        내부 스크롤 컨테이너 안이거나 다른 요소에 덮여 중심이 안 잡히는 것들이다. */
+    cell.distinct = entries.length;   // 🔴 측정 + 안 잼 = 이 수. on/off 두 열에서 «불변»이어야 한다.
     cell.unmeasured = unmeasured.length;
     cell.unmeasuredNames = unmeasured.slice(0, 12).map((e) => `${e.role}:${e.name}`);
     cell.aaFailures = liveMeasured.filter((r) => !r.aaPass).map((r) => ({
@@ -427,7 +490,7 @@ for (const pointer of POINTERS) for (const state of STATES) {
   if (!cs.length) { console.log(`  [${pointer} · ${state}] 사용 가능한 칸 0 — 안 잼`); continue; }
   console.log(`  [${pointer} · ${state}]`);
   for (const c of cs) {
-    console.log(`    ${String(c.width).padStart(4)}×${String(c.height).padEnd(4)} ${c.route.padEnd(11)} 스텝 ${String(c.steps.length).padStart(1)} · 대상 ${String(c.nonInert.total).padStart(3)}(all ${String(c.all.total).padStart(3)}·inert제외 ${c.inertExcluded}) · AA통과 ${c.nonInert.total - c.nonInert.aaFailCount}/${c.nonInert.total}${c.nonInert.aaFailCount ? ` 🔴${c.nonInert.aaFailCount}` : ""} · AAA통과 ${c.nonInert.total - c.nonInert.aaaFailCount}/${c.nonInert.total}${c.unmeasured ? ` · 🔴안잼 ${c.unmeasured}` : ""}`);
+    console.log(`    ${String(c.width).padStart(4)}×${String(c.height).padEnd(4)} ${c.route.padEnd(11)} 스텝 ${String(c.steps.length).padStart(1)} · 대상 ${String(c.nonInert.total).padStart(3)}(all ${String(c.all.total).padStart(3)}·inert제외 ${c.inertExcluded}) · AA통과 ${c.nonInert.total - c.nonInert.aaFailCount}/${c.nonInert.total}${c.nonInert.aaFailCount ? ` 🔴${c.nonInert.aaFailCount}` : ""} · AAA통과 ${c.nonInert.total - c.nonInert.aaaFailCount}/${c.nonInert.total}${c.unmeasured ? ` · 🔴안잼 ${c.unmeasured}` : ""} · distinct ${c.distinct}${c.containersSwept ? ` · 컨테이너 ${c.scrollers.length}` : " · 컨테이너 OFF"}`);
     if (c.unmeasured) console.log(`         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): ${c.unmeasuredNames.join(" · ")}`);
     for (const f of c.aaFailures) console.log(`         🔴 AA ${f.role} 「${f.name}」 ${f.size} — 교차 ${f.partnerCount}: ${f.partners.map((x) => `${x.kind}:${x.name}`).join(" | ")}${f.inlineCandidate ? " ⟨Inline 예외 후보 — 사람 판단⟩" : ""}`);
     for (const f of (c.aaaFailures ?? [])) console.log(`         ▫ AAA(목표) ${f.role} 「${f.name}」 ${f.size}`);

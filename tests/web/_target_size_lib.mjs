@@ -121,6 +121,13 @@ export const SCAN = () => {
          문서 좌표로만 잡으면 앱바·배너가 **스텝마다 새 대상으로 계수**된다(37대 실측: 390px
          overview 가 16 → 36 으로 부풀었다 — 다섯 스텝 × 다섯 요소). 화면에 고정된 것은
          **뷰포트 좌표가 그 대상의 정체**다. 조상까지 훑어 «핀 여부»를 값으로 남긴다. */
+      /* 🔴 **세 번째 좌표계 — «콘텐츠 좌표».** 내부 스크롤 컨테이너를 훑기 시작하면, 창은
+         그대로인데 그 안의 요소가 **뷰포트에서 움직인다** ⇒ 문서 좌표(`top + scrollY`)도 바뀌고,
+         정체 키를 그것으로 잡으면 **같은 요소가 컨테이너 스텝마다 새 대상**이 된다(앱바가
+         16→36 이 됐던 것과 같은 형태 · [[좌표계가 정체를 정한다]]).
+         ⇒ **조상들의 `scrollTop/Left` 를 되더해** 스크롤 상태와 무관한 위치를 만든다. */
+      contTop: (() => { let sy = 0; for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) sy += a.scrollTop || 0; return Number((r.top + window.scrollY + sy).toFixed(1)); })(),
+      contLeft: (() => { let sx = 0; for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) sx += a.scrollLeft || 0; return Number((r.left + window.scrollX + sx).toFixed(1)); })(),
       pinned: (() => {
         for (let a = el; a && a !== document.documentElement; a = a.parentElement) {
           const pos = getComputedStyle(a).position;
@@ -141,6 +148,8 @@ export const SCAN = () => {
     t.docTop = Number((t.top + window.scrollY).toFixed(1));
     t.docLeft = Number((t.left + window.scrollX).toFixed(1));
   }
+  return finish(targets);
+  function finish(targets) {
   return {
     targets,
     scrollX: window.scrollX, scrollY: window.scrollY,
@@ -153,6 +162,42 @@ export const SCAN = () => {
     dialogOpen: document.querySelectorAll('[role="dialog"]').length,
     inertRoots: document.querySelectorAll("[inert]").length,
   };
+  }
+};
+
+/* ── 🔴 내부 스크롤 컨테이너 찾기 ────────────────────────────────────────────
+   창 단위 스윕으로도 «안 잼»이 남는 대부분이 여기 있었다(T7-8b: 278개 · 전부 incident 한 화면).
+   컨테이너를 찾아 «표시»해 두고(호출부가 인덱스로 굴린다), 다 쓰면 표시를 지운다.
+   🔴 표시는 `data-*` 한 개다 — 레이아웃도, 이 그물의 대상 선택자도 건드리지 않는다.
+      그래도 «내가 페이지를 만졌다»는 사실이므로 값으로 남긴다(`marked`). */
+export const FIND_SCROLLERS = () => {
+  const out = [];
+  for (const el of Array.from(document.querySelectorAll("*"))) {
+    const cs = getComputedStyle(el);
+    const vy = (cs.overflowY === "auto" || cs.overflowY === "scroll") && el.scrollHeight > el.clientHeight + 2;
+    const vx = (cs.overflowX === "auto" || cs.overflowX === "scroll") && el.scrollWidth > el.clientWidth + 2;
+    if (!vy && !vx) continue;
+    const i = out.length;
+    el.setAttribute("data-sweep-scroller", String(i));
+    out.push({
+      i, vy, vx,
+      scrollHeight: el.scrollHeight, clientHeight: el.clientHeight,
+      scrollWidth: el.scrollWidth, clientWidth: el.clientWidth,
+      tag: el.tagName.toLowerCase(),
+      label: (el.getAttribute("aria-label") || (el.textContent ?? "").replace(/\s+/g, " ").trim()).slice(0, 40),
+    });
+    if (out.length >= 8) break;
+  }
+  return out;
+};
+export const CLEAR_SCROLLERS = () =>
+  document.querySelectorAll("[data-sweep-scroller]").forEach((el) => el.removeAttribute("data-sweep-scroller"));
+export const SCROLL_ONE = ({ i, top, left }) => {
+  const el = document.querySelector(`[data-sweep-scroller="${i}"]`);
+  if (!el) return { ok: false };
+  el.scrollIntoView({ block: "center", inline: "center" });
+  el.scrollTop = top; el.scrollLeft = left;
+  return { ok: true, top: el.scrollTop, left: el.scrollLeft };
 };
 
 /* ── 판정 산식(SC 문면 그대로) ───────────────────────────────────────────── */
