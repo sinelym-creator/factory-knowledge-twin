@@ -1,0 +1,1753 @@
+{
+  "base": "http://127.0.0.1:3115",
+  "at": "2026-09-03T15:47:12.726Z",
+  "axes": {
+    "widths": [
+      390,
+      768,
+      1440
+    ],
+    "heights": [
+      900
+    ],
+    "pointers": [
+      "fine",
+      "coarse"
+    ],
+    "states": [
+      "base"
+    ],
+    "routes": [
+      "overview=/overview",
+      "compare=/compare",
+      "work-order=/work-orders/WO-2025-0087",
+      "document=/documents/DOC-MAN-0021"
+    ]
+  },
+  "sc": {
+    "2.5.8": "at least 24 by 24 CSS pixels, except: Spacing / Equivalent / Inline / User agent control / Essential. (AA)",
+    "spacing": "if a 24 CSS pixel diameter circle is centered on the bounding box of each undersized target, the circles do not intersect another target or the circle for another undersized target.",
+    "2.5.5": "44 by 44 CSS pixels, no exception. (AAA)",
+    "machineJudged": "Spacing 만 기계 판정 — 빨강은 «AA 위반 후보»다.",
+    "populationNote": "inert 조상 아래 요소는 pointer 로 활성화 불가 ⇒ SC 의 target 이 아니다. all / nonInert 두 수를 다 낸다."
+  },
+  "calibration": [
+    {
+      "path": "/overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    },
+    {
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "total": 41,
+      "undersized24": 20,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    },
+    {
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "total": 8,
+      "undersized24": 2,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    }
+  ],
+  "discovery": {
+    "routes": [
+      [
+        "overview",
+        "/overview"
+      ],
+      [
+        "compare",
+        "/compare"
+      ],
+      [
+        "work-order",
+        "/work-orders/WO-2025-0087"
+      ],
+      [
+        "document",
+        "/documents/DOC-MAN-0021"
+      ]
+    ],
+    "unreachable": [],
+    "hrefSample": [
+      "/overview",
+      "/incidents/INC-2025-019",
+      "/compare",
+      "/overview?intro=1&tour=1",
+      "/",
+      "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "/evidence/DOC-MAN-0021%40r1%23006?run=STATIC-GS-01",
+      "/evidence/FM-BRG-WEAR?run=STATIC-GS-01",
+      "/evidence/EQ-CNC-204?run=STATIC-GS-01",
+      "/evidence/SN-204-CUR?run=STATIC-GS-01",
+      "/evidence/SN-204-TEMP?run=STATIC-GS-01",
+      "/evidence/SN-204-VIB?run=STATIC-GS-01",
+      "/evidence/AL-20260826-0041?run=STATIC-GS-01",
+      "/evidence/MR-2026-0006?run=STATIC-GS-01",
+      "/evidence/MR-2025-0095?run=STATIC-GS-01",
+      "/evidence/MR-2024-0004?run=STATIC-GS-01",
+      "/evidence/DOC-MAN-0021%40r1%23005?run=STATIC-GS-01",
+      "/evidence/DOC-MAN-0028%40r1%23000?run=STATIC-GS-01",
+      "/evidence/DOC-MAN-0022%40r1%23003?run=STATIC-GS-01",
+      "/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "/evidence/GP-6c01759e7f43-00?run=STATIC-GS-01",
+      "/evidence/GP-6c01759e7f43-01?run=STATIC-GS-01",
+      "/evidence/GP-6c01759e7f43-02?run=STATIC-GS-01",
+      "/evidence/GP-6c01759e7f43-03?run=STATIC-GS-01",
+      "/evidence/GP-6c01759e7f43-04?run=STATIC-GS-01"
+    ],
+    "idSample": [
+      "MR-2024-0004",
+      "MR-2026-0006",
+      "MR-2025-0087",
+      "DOC-MAN-0021",
+      "MR-2025-0095",
+      "WO-2025-0087",
+      "DOC-MAN-0028",
+      "DOC-MAN-0022",
+      "WO-2026-0113"
+    ]
+  },
+  "cells": [
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "compare",
+      "path": "/compare",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 14,
+      "httpStatus": 200,
+      "landed": "/compare",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "work-order",
+      "path": "/work-orders/WO-2025-0087",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 9,
+      "httpStatus": 200,
+      "landed": "/work-orders/WO-2025-0087",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 6,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 6
+      },
+      "nonInert": {
+        "total": 6,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 6
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "document",
+      "path": "/documents/DOC-MAN-0021",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 10,
+      "httpStatus": 200,
+      "landed": "/documents/DOC-MAN-0021",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "compare",
+      "path": "/compare",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 14,
+      "httpStatus": 200,
+      "landed": "/compare",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "work-order",
+      "path": "/work-orders/WO-2025-0087",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 9,
+      "httpStatus": 200,
+      "landed": "/work-orders/WO-2025-0087",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 6,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 6
+      },
+      "nonInert": {
+        "total": 6,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 6
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "document",
+      "path": "/documents/DOC-MAN-0021",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 10,
+      "httpStatus": 200,
+      "landed": "/documents/DOC-MAN-0021",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 7,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "compare",
+      "path": "/compare",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 14,
+      "httpStatus": 200,
+      "landed": "/compare",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "work-order",
+      "path": "/work-orders/WO-2025-0087",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 9,
+      "httpStatus": 200,
+      "landed": "/work-orders/WO-2025-0087",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 6,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 6
+      },
+      "nonInert": {
+        "total": 6,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 6
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "document",
+      "path": "/documents/DOC-MAN-0021",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 10,
+      "httpStatus": 200,
+      "landed": "/documents/DOC-MAN-0021",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 7,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 8
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 8
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "compare",
+      "path": "/compare",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 14,
+      "httpStatus": 200,
+      "landed": "/compare",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 8,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 3
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 3
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "work-order",
+      "path": "/work-orders/WO-2025-0087",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 9,
+      "httpStatus": 200,
+      "landed": "/work-orders/WO-2025-0087",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 6,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 3
+      },
+      "nonInert": {
+        "total": 6,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 3
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "document",
+      "path": "/documents/DOC-MAN-0021",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 10,
+      "httpStatus": 200,
+      "landed": "/documents/DOC-MAN-0021",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 7,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 4
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 4
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 5
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 5
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "compare",
+      "path": "/compare",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 14,
+      "httpStatus": 200,
+      "landed": "/compare",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 8,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 0
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 0
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "work-order",
+      "path": "/work-orders/WO-2025-0087",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 9,
+      "httpStatus": 200,
+      "landed": "/work-orders/WO-2025-0087",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 6,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 0
+      },
+      "nonInert": {
+        "total": 6,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 0
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "document",
+      "path": "/documents/DOC-MAN-0021",
+      "state": "base",
+      "width": 768,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 10,
+      "httpStatus": 200,
+      "landed": "/documents/DOC-MAN-0021",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 768,
+      "innerH": 900,
+      "all": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "compare",
+      "path": "/compare",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 14,
+      "httpStatus": 200,
+      "landed": "/compare",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 8,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "work-order",
+      "path": "/work-orders/WO-2025-0087",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 9,
+      "httpStatus": 200,
+      "landed": "/work-orders/WO-2025-0087",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 6,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "nonInert": {
+        "total": 6,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "document",
+      "path": "/documents/DOC-MAN-0021",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 10,
+      "httpStatus": 200,
+      "landed": "/documents/DOC-MAN-0021",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    }
+  ],
+  "skipped": [],
+  "controlBroken": [],
+  "total": {
+    "cellsAttempted": 24,
+    "cellsUsable": 24,
+    "aaFailCellsNonInert": 0,
+    "aaFailUnique": [],
+    "inertActiveCells": 0
+  }
+}

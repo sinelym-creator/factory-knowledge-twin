@@ -274,7 +274,17 @@ if (ROUTES_ARG === "discover") {
   discovery = await discoverRoutes();
   routes = discovery.routes;
 } else {
-  routes = list(ROUTES_ARG).map((p) => [p.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "") || "root", p]);
+  /* 🔴 **셸이 인자를 바꾼다.** Git Bash(MSYS)는 `/overview` 같은 인자를 «POSIX 경로»로 보고
+     `C:/Program Files/Git/overview` 로 **번역해** 넘긴다 — RUN2 가 통째로 0칸이 된 원인이다.
+     (그물이 착지 경로를 검사한 덕에 «/overview 를 쟀다»고 잘못 적히지는 않았다.)
+     ⇒ 앞의 `/` 를 «요구하지 않고», 번역돼 온 절대경로에서 **마지막 조각만** 되살린다. */
+  routes = list(ROUTES_ARG).map((raw) => {
+    let p = raw;
+    const m = /^[A-Za-z]:[\/].*?[\/]([^\/]+(?:[?#].*)?)$/.exec(p);
+    if (m) p = m[1];                 // 셸이 번역한 절대경로 → 마지막 조각
+    if (!p.startsWith("/")) p = `/${p}`;
+    return [p.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "") || "root", p];
+  });
 }
 
 /* ── ③ 본 측정 ───────────────────────────────────────────────────────────── */
