@@ -48,16 +48,21 @@
     "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --fkt-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* ── 크기 9 (px · large 는 ≥md 34 / 모바일 28 · 숫자 2종은 «값이 주인공»인 자리) ── */
-  --fkt-t-kpi: 40px;      /* KPI 값 — 700 · tabular-nums · tracking -1px */
-  --fkt-t-metric: 28px;   /* 설비 카드·후보 신뢰도 값 — 600 */
-  --fkt-t-large: 28px;
-  --fkt-t-title: 22px;
-  --fkt-t-head: 17px;
-  --fkt-t-body: 17px;
-  --fkt-t-body-c: 15px;   /* 패널 본문(현 sm) */
-  --fkt-t-foot: 13px;     /* 현 xs */
-  --fkt-t-cap: 12px;      /* ID·시각 */
+  /* ── 크기 9 (rem · large 는 ≥md 2.125 / 모바일 1.75 · 숫자 2종은 «값이 주인공»인 자리) ──
+     🔴 **rem 인 이유** = 브라우저 «기본 글꼴 크기» 설정을 따라가기 위해서다(§9 ① · 접근성 3종
+     중 「큰 글자」). px 로 두면 사용자가 글꼴을 24px 로 키워도 **글자는 그대로이고 rem 으로 짠
+     레이아웃 상자만 커진다** — 얻는 것이 큰 글자가 아니라 낮아진 정보 밀도다(실측: 카드 폭
+     195→417px 인데 카드 이름은 15px 고정 · 2026-09-03).
+     🔴 환산 기준 16px · `clamp()` 상한을 두지 않는다(상한을 두면 그 위에서 다시 안 따라온다). */
+  --fkt-t-kpi: 2.5rem;      /* KPI 값 — 700 · tabular-nums · tracking -1px */
+  --fkt-t-metric: 1.75rem;   /* 설비 카드·후보 신뢰도 값 — 600 */
+  --fkt-t-large: 1.75rem;
+  --fkt-t-title: 1.375rem;
+  --fkt-t-head: 1.0625rem;
+  --fkt-t-body: 1.0625rem;
+  --fkt-t-body-c: 0.9375rem;   /* 패널 본문(현 sm) */
+  --fkt-t-foot: 0.8125rem;     /* 현 xs */
+  --fkt-t-cap: 0.75rem;      /* ID·시각 */
 
   /* ── 라운드 4 (큰 연속 곡률 — 작은 radius 는 즉시 「애플 아님」) ── */
   --fkt-r-card: 18px;
@@ -90,7 +95,7 @@
 
 @media (min-width: 48rem) {
   :root {
-    --fkt-t-large: 34px;
+    --fkt-t-large: 2.125rem;
   }
 }
 
