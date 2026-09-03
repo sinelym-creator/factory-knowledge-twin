@@ -174,6 +174,10 @@ function TourStepView({
     return () => ro.disconnect();
   }, [index, step.id]);
 
+  /* 첫 걸음 = 가리킬 대상이 없는 «환영 카드». 대상을 못 찾은 상태(`missing`)와는 다르다 —
+     이쪽은 설계상 없는 것이라 「자리를 못 찾았다」 안내를 띄우지 않는다. */
+  const isWelcome = index === 0 && !step.target;
+
   const pad = 8;
   const hole: Rect | null = rect
     ? {
@@ -187,6 +191,8 @@ function TourStepView({
   /* 콜아웃 배치 — 대상 아래에 공간이 있으면 아래, 없으면 위. <md 는 바텀 시트(규격 ⑤).
      🔴 좌표를 클램프한다: 화면 밖으로 나간 콜아웃은 「보이지만 읽을 수 없는」 상태가 된다. */
   const CALLOUT_W = 360;
+  /* 진입 스태거 최대 지연 280ms + `--fkt-dur-3` 400ms — 그 뒤면 주변이 제자리다. */
+  const SETTLE_MS = 700;
   const below = hole ? hole.top + hole.height + 12 : 0;
   const fitsBelow = hole ? below + calloutH + 12 < window.innerHeight : false;
   /* 🔴 <md 는 바텀 시트라 «항상 화면 아래»에 선다 — 그래서 대상이 아래쪽에 있으면 시트가
@@ -229,6 +235,23 @@ function TourStepView({
     null,
   );
   const holeKey = hole ? `${hole.top}:${hole.left}:${hole.width}:${hole.height}` : "";
+  /* 🔴 **자리를 고를 때 주변이 아직 안 와 있었다.** 진입 애니메이션(스태거)이 끝나기 전에는
+     주변 카드가 제자리에 없어 두 후보 다 «덮는 게 적다»로 나오고, 그러면 anchor 가 이긴다.
+     step1 이 그 자리였다 — 검증 실측(PR #496): 정착 뒤 같은 산식은 `14414 < 18575×0.8` 로
+     beside 를 고른다. 즉 **처방이 자기 규칙을 못 지키는 자리**였다.
+     대상이 안 움직이므로 `holeKey` 는 불변이고, 그래서 **재계산이 영영 안 온다.**
+
+     🔴 **주변 내용을 deps 에 넣지 않는다.** 넣으면 화면이 변할 때마다 자리가 흔들려
+     바로 위 성문의 «결정적» 조건이 죽고, 재측의 판정선도 같이 죽는다.
+     대신 **«시점»을 하나 더 둔다** — 스텝이 열리고 정착한 뒤 **딱 한 번** 다시 고른다.
+     매 프레임이 아니고 내용에 반응하지도 않는다 — 고정된 두 시점뿐이라 여전히 결정적이다.
+     정착 = 스태거 최대 지연(280ms) + 진입 길이(`--fkt-dur-3` = 400ms) 뒤. */
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    setSettled(false);
+    const t = setTimeout(() => setSettled(true), SETTLE_MS);
+    return () => clearTimeout(t);
+  }, [index, step.id]);
   useLayoutEffect(() => {
     if (!hole) {
       setPlacement(null);
@@ -266,7 +289,7 @@ function TourStepView({
         : { left: anchorLeft, side: "anchor", covered: a },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, step.id, calloutH, holeKey]);
+  }, [index, step.id, calloutH, holeKey, settled]);
 
   const style: React.CSSProperties = hole
     ? ({
@@ -315,7 +338,12 @@ function TourStepView({
             ? `top-[var(--tour-top)] left-[var(--tour-left)] w-[360px] max-md:inset-x-3 max-md:w-auto ${
                 sheetGoesTop ? "max-md:top-3 max-md:bottom-auto" : "max-md:top-auto max-md:bottom-3"
               }`
-            : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
+            : isWelcome
+              ? /* 🔴 환영 카드만 «화면 중앙»이다. 대상이 없는 다른 스텝(완료 등)은 있던
+                   자리(우하단)에 그대로 둔다 — 가운데로 옮기면 그 스텝들이 새로 덮는다.
+                   <md 는 규격 ⑤ 대로 바텀 시트를 유지한다. */
+                "inset-x-3 bottom-3 md:inset-x-auto md:top-1/2 md:bottom-auto md:left-1/2 md:w-[360px] md:-translate-x-1/2 md:-translate-y-1/2"
+              : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
         }`}
         ref={calloutRef}
         style={hole ? style : undefined}

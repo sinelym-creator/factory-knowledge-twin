@@ -34,7 +34,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen">
         {/* ── 좌측 레일 260 — glass 위에 라벨형 항목(리서치 §7-2·3) ───────────── */}
         <nav
-          className="fkt-glass hidden w-(--spacing-rail) shrink-0 flex-col gap-1 px-3 py-4 md:flex"
+          /* 🔴 간격 8 — 행 36 + 간격 8 = 리듬 44. 간격 4 면 44 히트가 이웃을 6px 씩 침범한다. */
+          className="fkt-glass hidden w-(--spacing-rail) shrink-0 flex-col gap-2 px-3 py-4 md:flex"
           aria-label="주요 화면"
         >
           <div className="mb-5 flex items-center gap-2.5 px-3">
