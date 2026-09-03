@@ -92,10 +92,13 @@ def is_loopback(host: str) -> bool:
 class SynthesisError(Exception):
     """게이트웨이가 결과를 못 냈다 — 사유를 달고 올라간다(조용한 폴백 0)."""
 
-    def __init__(self, reason: str, status: int = 502) -> None:
+    def __init__(self, reason: str, status: int = 502, code: str | None = None) -> None:
         super().__init__(reason)
         self.reason = reason
         self.status = status
+        # 🔴 사유 «문면»은 사람이 읽는 것이고, `code` 는 기계가 읽는 것이다(D-24b). ai-api 가
+        #    문면을 정규식으로 갈라 분류하면 이 파일의 한 낱말이 바뀌는 순간 조용히 오분류된다.
+        self.code = code
 
 
 def _pick_model(envelope: dict) -> str:
@@ -410,7 +413,15 @@ def synthesize(req: dict, on_sentence=None) -> dict:
         for line in _strip_one_fence(raw_result).splitlines():
             _consume(line)
 
-    out = _validate_response(_assemble(sentences, final), wanted_ids, evidence_ids)
+    # 🔴 `_assemble` 은 «구조» 축(마지막 줄이 왔는가)이라 try 밖이다. 안에 넣으면 구조 실패가
+    #    「근거 결속 실패」로 분류돼 방문자가 다른 사실을 읽는다.
+    assembled = _assemble(sentences, final)
+    try:
+        out = _validate_response(assembled, wanted_ids, evidence_ids)
+    except SynthesisError as exc:
+        # 이 함수의 실패는 전부 한 축이다 — 모델 답이 «우리가 준» 후보·근거에 묶이지 않았다.
+        exc.code = exc.code or "evidence_binding"
+        raise
     out["model"] = _pick_model(envelope)
     out["elapsedMs"] = elapsed_ms
     out["_log"] = {
@@ -584,7 +595,11 @@ class Handler(BaseHTTPRequestHandler):
         except SynthesisError as exc:
             self.log_message("synthesize 거부(stream) · %s", exc.reason)
             if self._stream_open:
-                self._chunk({"kind": "error", "status": exc.status, "rejectedReason": exc.reason})
+                # 🔴 `reasonCode` 는 «분류»만 넘긴다 — 문면은 각 층이 자기 독자에게 맞게 쓴다.
+                error_line = {"kind": "error", "status": exc.status, "rejectedReason": exc.reason}
+                if exc.code:
+                    error_line["reasonCode"] = exc.code
+                self._chunk(error_line)
                 self._end_chunks()
             else:
                 self._send(exc.status, {"rejectedReason": exc.reason})

@@ -79,7 +79,28 @@ class LiveResult:
 
 
 class _Rejected(Exception):
-    """가드가 응답을 물렸다 — 사유를 그대로 이벤트에 싣는다."""
+    """가드가 응답을 물렸다 — 이 메시지가 «그대로» 이벤트에 실린다.
+
+    🔴 그래서 여기 담는 것은 **이미 방문자가 읽을 문장**이어야 한다. 남의 층(게이트웨이·CLI)이
+       준 문자열을 그대로 넣으면 그 층의 내부 문면이 공개 화면까지 간다(D-23 · D-24 · D-24b 가
+       전부 그 형태였다). 남의 말은 `_refusal_wording` 을 태우고, 원문은 로그에 남긴다.
+    """
+
+
+class _GatewayStreamError(RuntimeError):
+    """게이트웨이가 200 을 낸 «뒤» 본문 안에서 끊었다 — 상태코드로 말할 수 없는 자리.
+
+    🔴 이 형은 **분류하기 위해** 있다. NDJSON 첫 줄이 나간 뒤에는 상태코드를 바꿀 수 없어
+       게이트웨이가 사유를 본문(`kind=error`)으로 싣는데, 그 사유는 게이트웨이 내부 문면이다.
+       그대로 올리면 D-24 와 같은 누출이 되므로 사유는 로그에 두고 이 형으로 바꿔 던진다.
+
+    🔴 `code` 는 게이트웨이가 준 **분류**다(문면 아님). 문면을 정규식으로 갈라 분류하는 길도
+       있었지만, 그러면 게이트웨이의 한 낱말이 바뀔 때 화면이 조용히 다른 사실을 말한다.
+    """
+
+    def __init__(self, reason: str, code: str | None = None) -> None:
+        super().__init__(reason)
+        self.code = code
 
 
 def gateway_url() -> str:
@@ -275,7 +296,19 @@ def _read_ndjson(response: Any, on_sentence: Callable[[dict[str, Any]], None]) -
             if isinstance(sentence, dict):
                 on_sentence(sentence)
         elif kind == "error":
-            raise _Rejected(str(obj.get("rejectedReason") or "게이트웨이가 사유 없이 끊었다"))
+            # 🔴 **게이트웨이의 «자기 문면»을 그대로 올리지 않는다**(D-24b · D-24 와 같은 경계).
+            #    여기 오는 문자열은 게이트웨이가 자기 검사에 쓴 말이라, 우리 화면의 낱말이 아니다.
+            #    원문은 로그에만 두고 분류를 태운다.
+            reason = str(obj.get("rejectedReason") or "")
+            code = obj.get("reasonCode")
+            log.warning(
+                "게이트웨이가 스트림 도중 거부 — code=%s · %s",
+                code or "(없음)",
+                reason or "(사유 없음)",
+            )
+            raise _Rejected(
+                _refusal_wording(_GatewayStreamError(reason, code if isinstance(code, str) else None))
+            )
         elif kind == "result" and isinstance(obj.get("result"), dict):
             result = obj["result"]
     if result is None:
@@ -343,10 +376,21 @@ def _refusal_wording(exc: BaseException) -> str:
        방문자가 `ConnectionRefusedError` 를 읽었다(baseline §15.2 공개 경계 · 계약 OFF 문면).
        원문은 아래 호출부에서 **로그에만** 남긴다.
 
-    🔴 **분류는 네 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
+    🔴 **분류는 다섯 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
        원인을 더 잘게 나누면 그 목록이 곧 내부 구현의 지도가 된다. 방문자에게 필요한 것은
        「지금 어떤 상태인가」와 「무엇을 할 수 있는가」이지 예외 이름이 아니다.
     """
+    if isinstance(exc, _GatewayStreamError):
+        # 🔴 **상태코드가 없는 자리다**(D-24b). 게이트웨이가 200 을 낸 뒤 본문 안에서 끊었으므로
+        #    아래 「…(HTTP {code})」를 쓸 수 없다 — 없는 코드를 지어내는 대신 코드를 말하지 않는다.
+        #    방문자에게 필요한 것은 코드가 아니라 «지금 무엇인가»다: 잠정 문장은 걷히고 순위는
+        #    결정적 집계로 남는다(그 뒷문장은 화면이 이미 말한다).
+        if exc.code == "evidence_binding":
+            # 🔴 **정보를 경계 때문에 버리지 않는다**(오케 판정 14:59). 「모델 답이 우리가 준
+            #    근거에 묶이지 않았다」는 운영자의 행동을 바꾸는 사실이다 — 게이트웨이의 «말»은
+            #    올리지 않되, 같은 사실을 «우리 어휘»로 다시 쓴다(원문 id·헤더명은 로그에만).
+            return "합성 결과가 근거 검증을 통과하지 못했습니다"
+        return "게이트웨이가 응답 도중 요청을 거부했습니다"
     if isinstance(exc, urllib.error.HTTPError):
         # 🔴 **URLError 보다 «먼저» 본다.** HTTPError 는 URLError 의 하위형이라 순서를 바꾸면
         #    「게이트웨이가 답했다(401)」가 「게이트웨이가 답하지 않는다」로 뒤집힌다 — 방문자가
