@@ -160,9 +160,18 @@ function TourStepView({
      추정만큼 겹친다. */
   const calloutRef = useRef<HTMLElement | null>(null);
   const [calloutH, setCalloutH] = useState(220);
+  /* 🔴 스텝이 바뀔 때 한 번만 재면 «한 프레임 늦은 높이»로 배치한다 — 리바이2 34대 실측:
+     규칙대로면 top 이 699 여야 할 칸이 632 에 앉았고, 역산하면 그때 쓰인 높이는 직전 스텝의
+     것(256)이었다. 그래서 옆 칸이 새로 겹쳤다. 높이가 «변할 때마다» 다시 재게 둔다. */
   useLayoutEffect(() => {
     const el = calloutRef.current;
-    if (el) setCalloutH(el.getBoundingClientRect().height);
+    if (!el) return;
+    const measure = () => setCalloutH(el.getBoundingClientRect().height);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [index, step.id]);
 
   const pad = 8;
