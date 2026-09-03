@@ -204,7 +204,7 @@ export function OverviewBody({
 
       {/* ── ③ 설비 그리드 + 알람 독(보조 열) ──────────────────────────────────── */}
       <div className="flex min-w-0 flex-col gap-8 xl:flex-row xl:gap-6">
-        <section className="min-w-0 flex-1" aria-label="설비 목록">
+        <section className="min-w-0 flex-1" data-testid="equipment-grid" aria-label="설비 목록">
           <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-2">
             <p className="fkt-section-label">설비 {shown.length}대</p>
             {/* 🔴 계층 트리 → «라인 필터 칩»으로 형태만 바꿨다(리서치 §7 「하나의 주인공 +
