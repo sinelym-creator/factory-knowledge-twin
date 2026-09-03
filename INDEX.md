@@ -27,6 +27,8 @@ size_limit: 4KB
 | `apps/web-console/lib/chart-band.ts` | 시계열 «구간 min~max 밴드 + 중앙선» 공용 유틸(스파크라인·센서 추세가 같은 손) + 센서 종류 라벨(모르면 id 유지) — T6-4 「차트 라인 뭉개짐」 처방 |
 | `apps/web-console/components/{icons.tsx,shell-nav.tsx}` | 선형 SVG 아이콘 12종(유니코드 글리프 대체) · 셸 내비(레일 라벨형/앱바 텍스트 · 목록 1곳) |
 | `docs/design/` | 디자인 규격서 — **`t6-4-apple-design-spec.md`**(T6-4 애플 감성 전면 · ①원칙 ②토큰 35 ③변경표 ④애니메이션 10 ⑤접근성 ⑥검증 ⑦PR 분할 ⑧반응형·호환 · #433/#434 · 09-03) · **`t6-5-guided-tour-spec.md`**(가이드 투어 9단계 · 누락 등록 09-03) · 🔴 **`t7-1-accessibility-verdict.md`**(T7-1 통합 판정 — 4축 두 열 · **두 프로브 오차 방향이 반대** · 못 잰 것 5 · §6 「**닿지 않는 계측**」 규율 · 09-03) | T6-4 PR 마다 대조 |
+| `docs/tour/` | 기법 노트 — **`technique-notes.md`**(클린룸 1단계 산출물 · 관찰→명세→구현 3단 · 출처/기법/우리 용어 3칸 · **참고하지 않기로 한 것**도 함께). 🔴 **가져온 코드가 0 이라 고지 의무는 없다** — 적는 이유는 **관찰→명세→구현의 벽을 보일 수 있다는 것 자체가 방어**이기 때문이다(09-03 신설) |
+| `.github/` | `workflows/`(CI) + **`pull_request_template.md`**(09-03 신설 — 근거 등급 · **못 쟴 것** · 투어 클린룸 체크 4 · 접근성 **두 열**(AA/AAA) 강제) |
 | `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
 | `docs/deployment/runbook.md` | **운영 runbook(T5-4 · PR#335)** — 재부팅 후 절차(손잡이 = `restart` 정책 1:1 · 로그온 0단 · `health-check.ps1` 두 층 `-Containers` 필수) · 자동 시작 두 축 · Funnel OFF/ON 실측(§2-1 · off 는 8443 핸들러까지 제거 · 복원 `--bg --https=8443 8010` · reset 금지) · Gate 6 8행(실측 2행 절차 · 미실측 6행 명시) · clean env 3단(compose→migrate→seed · `VOLUME_ROOT` 리포 밖 · D-13) · D-14 배포 상한·열쇠 창 | 운영 형상 변경·T4-4 실측 추가 시 |
 | `packages/contracts/` | API·이벤트 계약(🔴 동결 v0.1 · 오케 전용 write) | 개정 절차로만 |
