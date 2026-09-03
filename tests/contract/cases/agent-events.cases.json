@@ -1177,6 +1177,60 @@
           }
         }
       }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 kind=preliminary 인데 sentence 를 함께 실으면 거부(배타)",
+      "expect": "reject",
+      "why": "한 이벤트가 두 종류를 동시에 주장하면 소비자가 무엇을 그릴지 갈린다(오케 판정 14:25)",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": 0,
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR"
+            ],
+            "axis": "deterministic"
+          },
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "x",
+            "citedEvidenceIds": [
+              "EV-2025-001"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 kind=sentence 인데 preliminary 를 함께 실으면 거부(배타)",
+      "expect": "reject",
+      "why": "반대 방향도 같은 결속이 서는가",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "sentence",
+          "seq": 1,
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "x",
+            "citedEvidenceIds": [
+              "EV-2025-001"
+            ]
+          },
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR"
+            ],
+            "axis": "deterministic"
+          }
+        }
+      }
     }
   ]
 }

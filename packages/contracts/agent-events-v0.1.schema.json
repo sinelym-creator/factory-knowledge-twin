@@ -131,7 +131,9 @@
       },
       "allOf": [
         { "if": { "properties": { "kind": { "const": "preliminary" } } }, "then": { "required": ["step", "kind", "seq", "preliminary"] } },
-        { "if": { "properties": { "kind": { "const": "sentence" } } },    "then": { "required": ["step", "kind", "seq", "sentence"] } }
+        { "if": { "properties": { "kind": { "const": "sentence" } } },    "then": { "required": ["step", "kind", "seq", "sentence"] } },
+        { "if": { "properties": { "kind": { "const": "preliminary" } } }, "then": { "properties": { "sentence": { "enum": [], "description": "🔴 배타 — 선표시 이벤트에 문장을 함께 싣지 않는다(오케 판정 09-03 14:25 · #443 도 한쪽만 emit). 빈 enum = 어떤 값도 통과하지 못한다 = 「이 자리에 오면 안 된다」." } } } },
+        { "if": { "properties": { "kind": { "const": "sentence" } } },    "then": { "properties": { "preliminary": { "enum": [], "description": "🔴 배타 — 문장 이벤트에 선표시를 함께 싣지 않는다(같은 판정)." } } } }
       ]
     },
     "stepCompleted": {
