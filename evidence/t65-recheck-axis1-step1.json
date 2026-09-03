@@ -1,0 +1,218 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T08:03:53.137Z",
+  "targetStep": 1,
+  "columns": [
+    {
+      "label": "target#1",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 1,
+        "stepId": "alarm",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":1}",
+        "text": "알람은 «울린 행»의 값이 앵커다 임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 울린 그 알람 행의 값입니다 — 둘이 다를 수 있어서 화면은 울린 값을 씁니다. 2/9 건너뛰기 다음",
+        "hasGoto": 0,
+        "hasNext": 1,
+        "hasAwaitClick": 0,
+        "spotlight": 1,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target#2",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": false,
+        "url": "http://127.0.0.1:3107/overview",
+        "index": null,
+        "stepId": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+        "text": null,
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "stimulus-missing",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "reopenTries": 3,
+      "reopenNavigated": false
+    },
+    {
+      "label": "target#3",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": false,
+        "url": "http://127.0.0.1:3107/overview",
+        "index": null,
+        "stepId": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+        "text": null,
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "stimulus-missing",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "reopenTries": 3,
+      "reopenNavigated": false
+    },
+    {
+      "label": "target-reload",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": false,
+        "url": "http://127.0.0.1:3107/overview",
+        "index": null,
+        "stepId": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+        "text": null,
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "stimulus-missing",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "reopenTries": 3,
+      "reopenNavigated": false
+    },
+    {
+      "label": "control-step0",
+      "tamperToStep": 0,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 0,
+        "stepId": "headline",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":0}",
+        "text": "지금 무슨 일이 났는지부터 서버가 활성 알람 중 가장 심각한 1건을 골라 문장으로 만듭니다. 순위를 정하는 것은 서버이고, 화면은 그 첫 줄을 크게 보여 줍니다. 이 화면의 값은 전부 synthetic 데이터입니다. 1/9 건너뛰기 다음",
+        "hasGoto": 0,
+        "hasNext": 1,
+        "hasAwaitClick": 0,
+        "spotlight": 1,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-lost",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "storedAfterTamper": "{\"v\":1,\"status\":\"skipped\",\"step\":0}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    }
+  ],
+  "stage": {
+    "entered": true,
+    "invite": true,
+    "reachedTarget": true
+  },
+  "controlDiscriminates": true,
+  "summary": {
+    "targetRuns": [
+      {
+        "label": "target#1",
+        "navigated": true,
+        "tries": 1,
+        "reopened": true,
+        "index": 1,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":1}"
+      },
+      {
+        "label": "target#2",
+        "navigated": false,
+        "tries": 3,
+        "reopened": false,
+        "index": null,
+        "url": "http://127.0.0.1:3107/overview",
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+      },
+      {
+        "label": "target#3",
+        "navigated": false,
+        "tries": 3,
+        "reopened": false,
+        "index": null,
+        "url": "http://127.0.0.1:3107/overview",
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+      }
+    ],
+    "targetVerdicts": [
+      "index-preserved",
+      "stimulus-missing",
+      "stimulus-missing"
+    ],
+    "reloadColumn": {
+      "reopened": false,
+      "index": null,
+      "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "verdict": "stimulus-missing"
+    },
+    "controlResumeIndex": 0,
+    "controlDiscriminates": true
+  }
+}
