@@ -170,12 +170,16 @@ function TourStepView({
   const CALLOUT_W = 360;
   const below = hole ? hole.top + hole.height + 12 : 0;
   const fitsBelow = hole ? below + 220 < window.innerHeight : false;
+  /* 🔴 좌표를 «인라인 값»이 아니라 «변수»로 넘긴다. 인라인 `top`/`width` 는 클래스보다
+     세서 `max-md:top-auto`·`max-md:w-auto` 를 무력화한다 — 그러면 <md 에서 top 과 bottom 이
+     «동시에» 고정돼 시트가 화면 높이의 66% 로 늘어나고, 그 몸통이 가리켜야 할 대상을 덮는다
+     (리바이2 34대 실측 390: 스텝 2 에서 대상의 98.4% 를 덮음 · 1440 은 0%). 변수로 넘기면
+     데스크톱은 그대로 좌표를 쓰고, <md 에서는 미디어쿼리가 이겨 진짜 바텀 시트가 된다. */
   const style: React.CSSProperties = hole
-    ? {
-        top: fitsBelow ? below : Math.max(12, hole.top - 232),
-        left: Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12)),
-        width: CALLOUT_W,
-      }
+    ? ({
+        "--tour-top": `${fitsBelow ? below : Math.max(12, hole.top - 232)}px`,
+        "--tour-left": `${Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12))}px`,
+      } as React.CSSProperties)
     : {};
 
   return (
@@ -183,14 +187,17 @@ function TourStepView({
       {/* 딤 + 구멍 — 클릭은 통과한다(pointer-events:none) */}
       {hole && (
         <div
-          className="pointer-events-none fixed z-40 rounded-card transition-all duration-(--fkt-dur-3) ease-spring"
+          /* 🔴 링 굵기는 클래스로 둔다(인라인 outline 은 미디어쿼리를 못 탄다) — 규격 ④-6
+             「모션을 줄인 사람에게는 pulse 대신 «정지 링 3px»」. 움직임을 뺀 자리를 굵기로 갚는다. */
+          className="pointer-events-none fixed z-40 rounded-card outline-2 motion-reduce:outline-[3px] transition-all duration-(--fkt-dur-3) ease-spring"
           style={{
             top: hole.top,
             left: hole.left,
             width: hole.width,
             height: hole.height,
             boxShadow: "0 0 0 9999px var(--fkt-scrim)",
-            outline: "2px solid var(--fkt-tint)",
+            outlineStyle: "solid",
+            outlineColor: "var(--fkt-tint)",
             outlineOffset: 0,
           }}
           aria-hidden
@@ -200,7 +207,9 @@ function TourStepView({
 
       <section
         className={`fkt-card fkt-sheet fixed z-50 p-5 shadow-2 ${
-          hole ? "max-md:inset-x-3 max-md:top-auto max-md:bottom-3 max-md:w-auto" : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
+          hole
+            ? "top-[var(--tour-top)] left-[var(--tour-left)] w-[360px] max-md:inset-x-3 max-md:top-auto max-md:bottom-3 max-md:w-auto"
+            : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
         }`}
         style={hole ? style : undefined}
         role="region"
