@@ -15,9 +15,9 @@ import { IconAlert, IconCompare, IconGrid } from "@/components/icons";
  * 🔴 「현재」 판정은 «경로 앞부분»이다 — /incidents/INC-… 에서도 Incidents 가 켜져야 한다.
  */
 export const NAV = [
-  { href: "/overview", label: "Overview", Icon: IconGrid },
-  { href: "/incidents/INC-2025-019", label: "Incidents", Icon: IconAlert },
-  { href: "/compare", label: "Compare", Icon: IconCompare },
+  { href: "/overview", label: "Overview", Icon: IconGrid, testid: "nav-overview" },
+  { href: "/incidents/INC-2025-019", label: "Incidents", Icon: IconAlert, testid: "nav-incidents" },
+  { href: "/compare", label: "Compare", Icon: IconCompare, testid: "nav-compare" },
 ] as const;
 
 function sectionOf(href: string) {
@@ -39,7 +39,8 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
               href={n.href}
               aria-current={active ? "page" : undefined}
               /* 행 높이 36 · 좌우 12 · r10 — 선택은 «채움 + 흰 글자», 아이콘만 틴트. */
-              className={`flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition-colors duration-(--fkt-dur-1) ${
+              data-testid={n.testid}
+              className={`fkt-hit flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition-colors duration-(--fkt-dur-1) ${
                 active
                   ? "bg-fill font-semibold text-ink"
                   : "text-muted hover:bg-inset hover:text-ink"
@@ -64,7 +65,8 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
             key={n.href}
             href={n.href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) ${
+            data-testid={n.testid}
+            className={`fkt-hit rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) ${
               active ? "bg-ai/12 font-semibold text-ai" : "hover:text-ink"
             }`}
           >

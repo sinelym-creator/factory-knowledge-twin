@@ -289,8 +289,31 @@ body {
   .fkt-btn-primary { background: var(--fkt-tint-strong); color: #fff; }   /* 흰 라벨 4.7:1 */
   .fkt-btn-secondary { background: var(--fkt-bg-3); color: var(--fkt-label-1); }
   .fkt-btn-tertiary { background: transparent; color: var(--fkt-tint-text); }
-  @media (max-width: 47.99rem) {
-    .fkt-btn { min-height: 2.75rem; }   /* 터치 타깃 ≥44(⑧) */
+  /* 터치 타깃 ≥44(⑧). 🔴 조건은 «창 너비»가 아니라 «입력 장치»다 — `max-width:47.99rem` 로
+     두면 터치 태블릿·터치 노트북(≥768px)이 36px 로 떨어지고, 창을 좁힌 마우스 사용자는
+     필요 없는 44px 를 받는다. 손가락인지 포인터인지는 폭이 말해 주지 않는다.
+     🔴 `hover` 를 함께 걸지 않는다 — 두 조건을 섞으면 재측에서 「어느 쪽이 걸었나」를 못 가른다. */
+  @media (pointer: coarse) {
+    .fkt-btn { min-height: 2.75rem; }
+  }
+
+  /* 🔴 히트 영역만 넓히는 자리 — «보이는 크기는 그대로»(원칙 ④). 배지·아이콘을 44px 로 키우면
+     레이아웃 결함을 접근성 이름으로 만드는 것이라, 늘리는 것은 «눌리는 영역»뿐이다.
+     🔴 `pointer-events:none` 을 주지 않는다 — 죽이면 그림일 뿐이고 실제로도 안 눌린다.
+     🔴 `min-height` 가 아니라 `::before` 인 이유가 그것이다. 다만 replaced element
+     (`<select>` 등)에는 의사 요소 박스가 «물리적으로» 안 생긴다 — 그 자리는 패딩으로 따로 푼다
+     (실측 2026-09-03: computed 는 44×44 를 내는데 요소 밖 히트 테스트는 부모를 답한다). */
+  @media (pointer: coarse) {
+    .fkt-hit { position: relative; }
+    .fkt-hit::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: max(100%, 2.75rem);
+      height: max(100%, 2.75rem);
+      transform: translate(-50%, -50%);
+    }
   }
 
   /* pill — 배지·칩 999 · 상태색은 호출부가 color 로 주고 배경은 currentColor 12% */

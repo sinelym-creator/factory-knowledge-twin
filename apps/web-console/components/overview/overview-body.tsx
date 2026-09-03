@@ -243,7 +243,11 @@ export function OverviewBody({
           )}
         </section>
 
-        <aside className="w-full shrink-0 space-y-4 xl:w-(--spacing-dock)" aria-label="알람과 시나리오">
+        <aside
+          className="w-full shrink-0 space-y-4 xl:w-(--spacing-dock)"
+          aria-label="알람과 시나리오"
+          data-testid="overview-dock"
+        >
           {showIntro && <IntroCard onClose={closeIntro} />}
 
           <section className="fkt-card overflow-hidden" data-testid="alarm-dock">
@@ -381,7 +385,7 @@ function LineChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
+      className={`fkt-hit rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
         active ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
       }`}
       title={id}
@@ -443,7 +447,7 @@ function IntroCard({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rounded-pill text-muted hover:text-ink"
+          className="fkt-hit fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rounded-pill text-muted hover:text-ink"
           aria-label="안내 닫기"
         >
           ✕

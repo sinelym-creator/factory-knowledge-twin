@@ -36,7 +36,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
   return (
     <>
       <button
-        className="fkt-pill bg-fill text-foot text-muted hover:text-ink"
+        className="fkt-hit fkt-pill bg-fill text-foot text-muted hover:text-ink"
         onClick={() => {
           setResult(null);
           setAsking(true);
