@@ -140,7 +140,27 @@ test.describe("모드 배지", () => {
     await expect(badge).toContainText("REPLAY");
     // rewrite 를 지나 ai-api 까지 «닿아» 온 답이라는 것 — 배너가 online:false 문구로 선다.
     // 🔴 「끊겼다·전환했다」가 아니라 «게이트 없음»이다(Q-69 · baseline §0.2).
-    await expect(page.getByTestId("fallback-banner")).toContainText("Live AI 게이트가 없습니다");
+    //
+    // 🔴 **낱말이 아니라 주장을 잰다.** 앞판은 「Live AI 게이트가 없습니다」 완전일치였고,
+    //    문면이 「Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) …」 로 개정되자
+    //    이 행이 죽었다. 그때 죽은 것은 **화면이 아니라 이 그물**이다 — 화면은 여전히 같은
+    //    사실을 말하고 있었다. 그래서 축을 두 갈래로 나눠 적는다:
+    //      ⓐ 배너가 «게이트가 없다/꺼져 있다»는 **사실**을 말하는가
+    //      ⓑ 「끊겼다·전환했다」로 **모르는 것을 아는 척**하지 않는가(이쪽이 Q-69 의 요점)
+    //    🔴 문면을 읽어 문자열로 판정한다 — `not.toContainText` 는 매칭 0개일 때도 도는 자리라
+    //       「배너가 없다」와 「배너가 그 말을 안 한다」가 같은 초록이 된다.
+    const banner = page.getByTestId("fallback-banner");
+    await expect(banner).toBeVisible();
+    const copy = ((await banner.textContent()) ?? "").replace(/\s+/g, " ").trim();
+    const SAYS_GATE_ABSENT = /(게이트(웨이)?가 없|꺼져 있|미도달|OFF)/;
+    const CLAIMS_SWITCH_OR_DROP = /(끊겼|끊어졌|연결이 끊|전환(했|됐|되었))/;
+    expect(copy, `배너 문면: ${copy}`).toMatch(SAYS_GATE_ABSENT);
+    expect(copy, `배너 문면: ${copy}`).not.toMatch(CLAIMS_SWITCH_OR_DROP);
+    // 🔴 대조군 — 이 판정선이 «아무 문면이나» 통과시키지 않는다는 것을 같은 실행에서 보인다.
+    //    (여기서 초록이 안 나오면 위 두 줄의 초록은 눈이 먼 초록이다)
+    const WRONG = "Live 연결이 끊겼습니다 — Replay 로 전환했습니다";
+    expect(WRONG).not.toMatch(SAYS_GATE_ABSENT);
+    expect(WRONG).toMatch(CLAIMS_SWITCH_OR_DROP);
   });
 
   test("배지는 색 없이도 읽힌다 — 아이콘+텍스트 병행(§10·§11.3)", async ({ page }) => {
