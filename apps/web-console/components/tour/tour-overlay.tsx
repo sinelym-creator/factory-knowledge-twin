@@ -155,6 +155,16 @@ function TourStepView({
     titleRef.current?.focus();
   }, [index]);
 
+  /* 🔴 콜아웃의 «실제» 높이를 재서 배치에 쓴다. 220px 로 어림잡던 값이 실물과 어긋나
+     데스크톱에서도 대상을 16.6% 덮었다(리바이2 34대 실측 1440 스텝 4). 추정으로 배치하면
+     추정만큼 겹친다. */
+  const calloutRef = useRef<HTMLElement | null>(null);
+  const [calloutH, setCalloutH] = useState(220);
+  useLayoutEffect(() => {
+    const el = calloutRef.current;
+    if (el) setCalloutH(el.getBoundingClientRect().height);
+  }, [index, step.id]);
+
   const pad = 8;
   const hole: Rect | null = rect
     ? {
@@ -169,7 +179,14 @@ function TourStepView({
      🔴 좌표를 클램프한다: 화면 밖으로 나간 콜아웃은 「보이지만 읽을 수 없는」 상태가 된다. */
   const CALLOUT_W = 360;
   const below = hole ? hole.top + hole.height + 12 : 0;
-  const fitsBelow = hole ? below + 220 < window.innerHeight : false;
+  const fitsBelow = hole ? below + calloutH + 12 < window.innerHeight : false;
+  /* 🔴 <md 는 바텀 시트라 «항상 화면 아래»에 선다 — 그래서 대상이 아래쪽에 있으면 시트가
+     그 위에 앉는다(리바이2 34대 실측 390 스텝 2: 대상의 100% 가 덮여 링이 아예 안 보였다).
+     scrollIntoView({block:'center'}) 로는 못 피한다: 대상이 화면 가운데 와도 시트는 여전히
+     아래 200~300px 을 차지한다. 그래서 «시트를 반대편으로 보낸다» — 대상이 시트 자리와 겹칠
+     높이면 위에 붙인다. 규격 ⑤ 의 목적은 「하단에 붙는 것」이 아니라 «대상을 보여 주며
+     설명하는 것»이다. */
+  const sheetGoesTop = hole ? hole.top + hole.height > window.innerHeight - calloutH - 24 : false;
   /* 🔴 좌표를 «인라인 값»이 아니라 «변수»로 넘긴다. 인라인 `top`/`width` 는 클래스보다
      세서 `max-md:top-auto`·`max-md:w-auto` 를 무력화한다 — 그러면 <md 에서 top 과 bottom 이
      «동시에» 고정돼 시트가 화면 높이의 66% 로 늘어나고, 그 몸통이 가리켜야 할 대상을 덮는다
@@ -177,7 +194,7 @@ function TourStepView({
      데스크톱은 그대로 좌표를 쓰고, <md 에서는 미디어쿼리가 이겨 진짜 바텀 시트가 된다. */
   const style: React.CSSProperties = hole
     ? ({
-        "--tour-top": `${fitsBelow ? below : Math.max(12, hole.top - 232)}px`,
+        "--tour-top": `${fitsBelow ? below : Math.max(12, hole.top - calloutH - 12)}px`,
         "--tour-left": `${Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12))}px`,
       } as React.CSSProperties)
     : {};
@@ -208,9 +225,12 @@ function TourStepView({
       <section
         className={`fkt-card fkt-sheet fixed z-50 p-5 shadow-2 ${
           hole
-            ? "top-[var(--tour-top)] left-[var(--tour-left)] w-[360px] max-md:inset-x-3 max-md:top-auto max-md:bottom-3 max-md:w-auto"
+            ? `top-[var(--tour-top)] left-[var(--tour-left)] w-[360px] max-md:inset-x-3 max-md:w-auto ${
+                sheetGoesTop ? "max-md:top-3 max-md:bottom-auto" : "max-md:top-auto max-md:bottom-3"
+              }`
             : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
         }`}
+        ref={calloutRef}
         style={hole ? style : undefined}
         role="region"
         aria-label="가이드 투어"
