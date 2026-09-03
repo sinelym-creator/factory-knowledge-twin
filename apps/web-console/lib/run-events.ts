@@ -50,6 +50,19 @@ export type RunCandidate = {
   rationale?: { sentences: string[]; citedEvidenceIds: string[] };
 };
 
+/**
+ * 🔴 **잠정이다.** `step.progress` 가 싣는 것은 판정이 아니라 「지금까지 아는 것」이고,
+ *    판정은 여전히 `step.completed(synthesize).synthesis` 하나다(계약 v0.1.13 · 부분 채택 0).
+ *    그래서 여기에는 «축»을 두지 않는다 — 축을 두면 화면이 이것을 결과로 읽는다.
+ *
+ * 🔴 `ranking` 은 **id 만** 온다(계약 형상). 라벨은 `run.completed` 의 후보에 실려 오므로,
+ *    선표시 카드는 그때까지 id 로 선다 — 없는 라벨을 지어내지 않는다.
+ */
+export type RunProgress = {
+  ranking: string[];
+  sentences: { failureModeId: string; text: string; citedEvidenceIds: string[] }[];
+};
+
 type Envelope = { runId: string; seq: number; ts: string; mode: string };
 
 export type RunEvent = Envelope &
@@ -66,6 +79,16 @@ export type RunEvent = Envelope &
     | { type: "run.queued"; payload: { position: number; estimatedWaitSec: number | null } }
     | { type: "run.started"; payload: { scenarioId?: string; question?: string } }
     | { type: "plan.updated"; payload: { steps: string[] } }
+    | {
+        type: "step.progress";
+        payload: {
+          step: string;
+          kind: "preliminary" | "sentence";
+          seq: number;
+          preliminary?: { ranking: string[]; axis: "deterministic" };
+          sentence?: { failureModeId: string; text: string; citedEvidenceIds: string[] };
+        };
+      }
     | { type: "step.started"; payload: { step: string } }
     | { type: "step.evidence"; payload: { step: string; evidence: RunEvidence } }
     | {
@@ -128,6 +151,8 @@ export type RunState = {
   steps: StepView[];
   evidence: (RunEvidence & { step: string })[];
   candidates: RunCandidate[];
+  /** 🔴 합성이 «도는 동안»만 뜻이 있는 잠정값. 최종 후보(`run.completed`)가 오면 그쪽이 정본이다. */
+  progress: RunProgress | null;
   /** 🔴 진행 중 = 수신한 `step.completed.elapsedMs` 의 «누적 합»(§2.2 ⓐ). */
   elapsedMs: number;
   /** 완료 시 서버가 확정한 값. 없으면 null — 여기에 누적 합을 대신 넣지 않는다(다른 사실이다). */
@@ -152,6 +177,7 @@ const EMPTY: RunState = {
   steps: [],
   evidence: [],
   candidates: [],
+  progress: null,
   elapsedMs: 0,
   totalElapsedMs: null,
   workOrderDraftId: null,
@@ -179,7 +205,7 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
     return v;
   };
 
-  const s: RunState = { ...EMPTY, steps: [], evidence: [], candidates: [] };
+  const s: RunState = { ...EMPTY, steps: [], evidence: [], candidates: [], progress: null };
 
   for (const e of events) {
     s.mode = e.mode ?? s.mode;
@@ -208,6 +234,23 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
         const v = ensure(e.payload.step);
         v.evidenceCount += 1;
         s.evidence.push({ ...e.payload.evidence, step: e.payload.step });
+        break;
+      }
+      case "step.progress": {
+        // 🔴 지금 이 이벤트를 내는 단계는 `synthesize` 하나다. 그래도 단계를 확인하고 지나간다 —
+        //    다른 단계가 나중에 같은 type 을 쓰기 시작하면, 이 화면은 그것을 «합성 진행»으로
+        //    그리게 된다.
+        if (e.payload.step !== "synthesize") break;
+        const cur = s.progress ?? { ranking: [], sentences: [] };
+        if (e.payload.kind === "preliminary" && e.payload.preliminary) {
+          cur.ranking = e.payload.preliminary.ranking ?? [];
+        } else if (e.payload.kind === "sentence" && e.payload.sentence) {
+          // 🔴 도착 순서 그대로 쌓는다. `seq` 로 다시 정렬하지 않는 이유: 폴링은 «묶음»으로
+          //    오지만 묶음 «안»의 순서는 서버가 낸 순서 그대로이고, 이 배열은 그 순서로만
+          //    읽힌다. 되감기도 이벤트 배열을 잘라 다시 접으므로 여기서 상태를 들 필요가 없다.
+          cur.sentences = [...cur.sentences, e.payload.sentence];
+        }
+        s.progress = cur;
         break;
       }
       case "step.completed": {

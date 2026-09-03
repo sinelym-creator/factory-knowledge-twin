@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SynthesisPending } from "./synthesis-pending";
 import {
   type RunCandidate,
+  type RunProgress,
   type RunEvidence,
   type RunState,
   type RunSynthesis,
@@ -146,6 +147,57 @@ function SynthesisBadge({ synthesis }: { synthesis?: RunSynthesis }) {
   );
 }
 
+/**
+ * 합성 «잠정» 카드 — 결정적 순위 선표시 + 도착한 문장 (T6-3 ① ② · 계약 v0.1.13).
+ *
+ * 🔴 **여기 있는 것은 전부 걷힐 수 있다.** 판정은 `step.completed(synthesize).synthesis` 하나이고,
+ *    거부되면 이 블록은 통째로 사라진다(부분 채택 0 · v0.1.11). 그래서 배지가 「순위 계산됨 ·
+ *    AI 근거 작성 중」이라고 «지금 상태»를 말한다 — 「이것이 답이다」라고 말하지 않는다.
+ *
+ * 🔴 **라벨이 없다.** 선표시가 싣는 것은 `failureModeId` 뿐이고(계약 형상), 라벨은 최종 후보에
+ *    실려 온다. 없는 이름을 지어내는 대신 id 를 그대로 보인다 — 곧 라벨로 «바뀌는» 것이 아니라
+ *    같은 카드가 이름을 얻는 것이고, 그때 순위도 최종본으로 확정된다.
+ */
+function ProvisionalCandidates({ progress }: { progress: RunProgress }) {
+  return (
+    <div className="mt-2" data-testid="synthesis-provisional" data-count={progress.ranking.length}>
+      <p className="text-xs text-ai" data-testid="synthesis-provisional-badge">
+        순위 계산됨 · AI 근거 작성 중
+      </p>
+      <ul className="mt-2 space-y-3">
+        {progress.ranking.map((fmId, i) => {
+          const said = progress.sentences.filter((s) => s.failureModeId === fmId);
+          return (
+            <li
+              key={fmId}
+              className="border-t border-edge pt-2 first:border-0 first:pt-0"
+              data-testid="provisional-candidate"
+              data-failure-mode={fmId}
+              data-sentences={said.length}
+            >
+              <p className="text-sm text-ink">
+                <span className="text-muted">{i + 1}.</span> <span className="id">{fmId}</span>
+              </p>
+              {said.length === 0 ? (
+                // 🔴 «빈 자리»를 남긴다. 문장이 아직 없다는 사실이 화면에 보여야, 나중에 채워질
+                //    자리인지 원래 없는 것인지를 방문자가 가른다(§6.2 빈 화면 0).
+                <p className="mt-1 text-xs text-muted">근거 문장 대기 중…</p>
+              ) : (
+                said.map((s, j) => (
+                  <p key={j} className="fkt-rise mt-1 text-xs text-ink/90">
+                    {s.text}
+                    <span className="id ml-1 text-muted">{s.citedEvidenceIds.join(" · ")}</span>
+                  </p>
+                ))
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 export function CandidateList({
   state,
   runId,
@@ -172,7 +224,14 @@ export function CandidateList({
         ) : null;
       })()}
       {state.candidates.length === 0 && synthesizing(state, showingPast) ? (
-        <SynthesisPending />
+        <>
+          {/* 🔴 선표시와 대기 표시는 «공존»한다(계약 v0.1.13 화면). 순위는 이미 아는 사실이고,
+              대기 표시는 아직 모르는 것(문장)에 대한 말이다 — 하나가 다른 하나를 대신하지 않는다. */}
+          {state.progress && state.progress.ranking.length > 0 ? (
+            <ProvisionalCandidates progress={state.progress} />
+          ) : null}
+          <SynthesisPending skeleton={!state.progress || state.progress.ranking.length === 0} />
+        </>
       ) : state.candidates.length === 0 ? (
         <p className="mt-2 text-sm text-muted">
           {state.status === "running"
