@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { TOUR_STEPS, TOUR_TOTAL, type TourStep } from "@/components/tour/tour-steps";
+import { TOUR_STEPS, TOUR_TOTAL, readAdvance, type TourStep } from "@/components/tour/tour-steps";
 import { TourOverlay } from "@/components/tour/tour-overlay";
 import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
 
@@ -159,7 +159,7 @@ export function TourProvider() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") stop("skipped");
       // Enter = 다음(읽는 스텝만) — 입력 요소 안에서는 가만히 있는다.
-      if (e.key === "Enter" && step.advance.kind === "next") {
+      if (e.key === "Enter" && readAdvance(step).ui === "next") {
         const el = e.target as HTMLElement | null;
         const tag = el?.tagName?.toLowerCase();
         if (tag !== "input" && tag !== "textarea" && tag !== "select" && tag !== "button" && tag !== "a") {
@@ -175,8 +175,10 @@ export function TourProvider() {
      🔴 capture 로 듣고 «즉시» 저장한다: 그 클릭이 라우팅을 일으키면 이 컴포넌트는 다음
         화면에서 새로 마운트되고, 그때 남아 있는 것은 저장소뿐이다. */
   useEffect(() => {
-    if (!step || step.advance.kind !== "click" || !step.target) return;
-    const sel = `[data-testid="${step.target}"]`;
+    if (!step) return;
+    const plan = readAdvance(step);
+    if (plan.ui !== "await" || plan.on !== "click") return;
+    const sel = `[data-testid="${plan.of}"]`;
     const onClick = (e: MouseEvent) => {
       const el = e.target as HTMLElement | null;
       if (el?.closest(sel)) advance();

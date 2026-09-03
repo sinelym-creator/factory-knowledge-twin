@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import type { TourStep } from "@/components/tour/tour-steps";
+import { readAdvance, type TourStep } from "@/components/tour/tour-steps";
 
 /**
  * T6-5 가이드 투어 — 보이는 부분(스포트라이트 · 콜아웃 · 초대 카드 · 진행 점).
@@ -177,6 +177,9 @@ function TourStepView({
   /* 첫 걸음 = 가리킬 대상이 없는 «환영 카드». 대상을 못 찾은 상태(`missing`)와는 다르다 —
      이쪽은 설계상 없는 것이라 「자리를 못 찾았다」 안내를 띄우지 않는다. */
   const isWelcome = index === 0 && !step.target;
+  /* 🔴 진행 조건은 `readAdvance()` 로만 읽는다(규격 ⑧-3) — 화면이 `advance` 를 직접 뜯어보면
+     조건을 읽는 자리가 둘이 되고, 그게 앞판이 어긋난 이유다. */
+  const plan = readAdvance(step);
 
   const pad = 8;
   const hole: Rect | null = rect
@@ -407,16 +410,16 @@ function TourStepView({
             >
               건너뛰기
             </button>
-            {step.advance.kind === "link" ? (
+            {plan.ui === "link" ? (
               <button
                 type="button"
-                onClick={() => onGoto(step.advance.kind === "link" ? step.advance.href : "/overview")}
+                onClick={() => onGoto(plan.to)}
                 className="fkt-btn fkt-btn-primary rounded-pill px-4 text-foot"
                 data-testid="tour-goto"
               >
-                {step.advance.kind === "link" ? step.advance.label : "다음"}
+                {plan.label}
               </button>
-            ) : step.advance.kind === "click" && !missing ? (
+            ) : plan.ui === "await" && !missing ? (
               <span className="fkt-pill text-ai" data-testid="tour-await-click">
                 직접 눌러 보세요
               </span>
