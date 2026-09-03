@@ -39,18 +39,9 @@ const BASE = arg("base", "http://127.0.0.1:3111");
 const OUT = arg("out", "");
 const RING = Number(arg("ring", "40"));
 
-const TITLES = [
-  "지금 무슨 일이 났는지부터",
-  "알람은 «울린 행»의 값이 앵커다",
-  "조사를 시작하면 에이전트가 5단계를 돕니다",
-  "다섯 단계가 실제로 지나간 자리",
-  "후보마다 근거 ID 가 붙는다",
-  "근거 칩을 직접 눌러 보세요",
-  "출처·시각·신선도를 함께 말한다",
-  "AI 는 제안까지, 승인은 사람이",
-  "둘러보기가 끝났습니다",
-];
-const ADVANCE = ["next", "next", "goto", "next", "next", "click-target", "next", "next", "end"];
+/* 🔴 스텝 제목·진행 수단을 «표»로 박지 않는다 — PR#501 이 step1 의 제목과 대상을 바꿨고,
+   박아 둔 표는 그 순간 낡는다(「판정선은 설계와 함께 늙는다」). 화면이 지금 뭐라 하는지 읽는다. */
+const TOTAL_STEPS = 9;
 
 /** 지금 포커스를 받은 컴포넌트가 말풍선(불투명 · author-created)에 얼마나 가려졌는가. */
 const PROBE = () => {
@@ -97,14 +88,31 @@ const readTitle = (page) =>
     return el ? (el.textContent ?? "").trim() : null;
   }).catch(() => null);
 
-const waitTitle = async (page, title, ms = 25000) => {
+/** 이전 제목과 «달라질 때까지» 기다린다 — 제목 표를 박지 않으므로 전이만 본다. */
+const waitNewTitle = async (page, prev, ms = 25000) => {
   const t0 = Date.now();
   for (;;) {
-    if ((await readTitle(page)) === title) return true;
-    if (Date.now() - t0 > ms) return false;
+    const t = await readTitle(page);
+    if (t && t !== prev) return t;
+    if (Date.now() - t0 > ms) return null;
     await new Promise((r) => setTimeout(r, 150));
   }
 };
+
+/** 지금 화면이 주는 진행 수단이 무엇인가 — 표가 아니라 DOM 에서 읽는다. */
+const advanceKind = (page) =>
+  page.evaluate(() => {
+    const vis = (sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+    if (vis('[data-testid="tour-await-click"]')) return "click-target";
+    if (vis('[data-testid="tour-goto"]')) return "goto";
+    if (vis('[data-testid="tour-next"]')) return "next";
+    return "end";
+  });
 
 const die = (why, extra) => {
   console.error(`[exit2] ${why}`);
@@ -129,8 +137,11 @@ await page.goto(`${BASE}/overview`, { waitUntil: "domcontentloaded" });
 await page.waitForSelector('[data-testid="tour-invite"]', { timeout: 20000 });
 await page.click('[data-testid="tour-start"]');
 
-for (let i = 0; i < 9; i++) {
-  if (!(await waitTitle(page, TITLES[i]))) die(`step ${i + 1} 도달 못 함`, { url: page.url() });
+let prevTitle = null;
+for (let i = 0; i < TOTAL_STEPS; i++) {
+  const title = await waitNewTitle(page, prevTitle);
+  if (!title) die(`step ${i + 1} 도달 못 함`, { url: page.url(), prevTitle });
+  prevTitle = title;
   await page.waitForTimeout(650);
 
   /* ⓑ 같은 실행 대조군 — 🔴 **양방향**으로 건다.
@@ -180,9 +191,15 @@ for (let i = 0; i < 9; i++) {
   const aaViol = outside.filter((s) => s.entirelyHidden);
   const aaaViol = outside.filter((s) => s.anyPartHidden);
   const uniq = (arr) => [...new Map(arr.map((s) => [`${s.kind}:${s.testid}:${s.label}`, s])).values()];
+  const kind = await advanceKind(page);
+  /* 🔴 이 스텝에 스포트라이트(구멍)가 있는가 — `target:null` 이면 없다.
+     PR#501 이 step1 을 환영 카드로 바꿨으므로 «구멍이 사라졌는지»가 이번 축이다. */
+  const hasSpotlight = await page.evaluate(() => !!document.querySelector('[data-testid="tour-spotlight"]'));
   out.steps.push({
     step: i + 1,
-    title: TITLES[i],
+    title,
+    kind,
+    hasSpotlight,
     stops: stops.length,
     inCalloutStops: stops.filter((s) => s.inCallout).length,
     offscreenStops: stops.filter((s) => s.offscreen).length,
@@ -203,9 +220,10 @@ for (let i = 0; i < 9; i++) {
   await page.evaluate((y) => window.scrollTo(0, y), scroll0);
   await page.waitForTimeout(400);
 
-  if (ADVANCE[i] === "next") await page.click('[data-testid="tour-next"]');
-  else if (ADVANCE[i] === "goto") await page.click('[data-testid="tour-goto"]');
-  else if (ADVANCE[i] === "click-target") {
+  if (kind === "end") break;
+  if (kind === "next") await page.click('[data-testid="tour-next"]');
+  else if (kind === "goto") await page.click('[data-testid="tour-goto"]');
+  else if (kind === "click-target") {
     const chip = page.locator('[data-testid="candidate"] a[href^="/evidence/"]').first();
     await chip.waitFor({ state: "visible", timeout: 15000 });
     await chip.click();
