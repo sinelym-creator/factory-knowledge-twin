@@ -78,10 +78,29 @@ export function TourProvider() {
     setState(loaded);
   }, [wants]);
 
-  const commit = useCallback((next: TourState) => {
-    writeState(next);
-    setState(next);
-  }, []);
+  /* 🔴 «투어는 꺼졌는데 URL 은 켜졌다고 말하는» 상태를 남기지 않는다.
+     `?tour=1` 이 붙은 채 Esc 로 끊으면, 앱바 `?`(= `/overview?intro=1&tour=1`)를 다시 눌러도
+     `wants` 가 true→true 라 아래 effect 의 deps 가 움직이지 않는다 — 리마운트가 없는 회차에는
+     메모리의 `skipped` 가 그대로 남아 «재개가 렌더 0 으로 끝난다»(리바이2 34대 실측: 3회 중 2회
+     안 열림 · 새로고침 열만 100% 열림 = 마운트가 강제되기 때문). 저장(step)은 원래도 멀쩡했다
+     — 깨진 것은 «표시 경로»였다. 상태가 active 를 벗어나는 자리에서 URL 도 함께 끄면, 다음 `?`
+     클릭이 «항상» false→true 전이가 되어 재개가 결정적으로 열린다. */
+  const clearTourParam = useCallback(() => {
+    if (!wants) return;
+    const rest = new URLSearchParams(params.toString());
+    rest.delete("tour");
+    const qs = rest.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [wants, params, pathname, router]);
+
+  const commit = useCallback(
+    (next: TourState) => {
+      writeState(next);
+      setState(next);
+      if (next.status !== "active") clearTourParam();
+    },
+    [clearTourParam],
+  );
 
   const step: TourStep | null =
     state?.status === "active" ? (TOUR_STEPS[state.step] ?? null) : null;
@@ -100,6 +119,19 @@ export function TourProvider() {
     (how: "skipped" | "done") => {
       if (!state) return;
       commit({ v: 1, status: how, step: state.step });
+      /* 🔴 끊고 나면 포커스를 «왔던 자리»로 돌려놓는다 — 앱바의 `?`(재개 링크)다.
+         오버레이가 사라질 때 포커스가 있던 요소도 함께 사라지므로, 두지 않으면 브라우저가
+         포커스를 문서 맨 앞(`body`)으로 떨어뜨린다(리바이2 34대 실측: Esc 3회 전부 `body`).
+         키보드만 쓰는 사람에게 그것은 「방금 있던 자리로 돌아가려면 Tab 을 처음부터 다시
+         밟아라」와 같다 — 규격 ⑤ 「Esc = 종료(포커스 = `?` 링크로 복귀)」의 명문이다.
+         🔴 언마운트가 «끝난 뒤»에 옮겨야 해서 다음 프레임에서 잡는다(같은 틱에 부르면
+         사라지는 오버레이가 포커스를 도로 가져간다). */
+      if (typeof window !== "undefined") {
+        window.requestAnimationFrame(() => {
+          const back = document.querySelector('[data-testid="intro-reopen"]');
+          if (back instanceof HTMLElement) back.focus();
+        });
+      }
     },
     [state, commit],
   );
