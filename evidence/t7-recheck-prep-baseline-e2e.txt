@@ -78,7 +78,7 @@ e2e\reset-modal-detection-control.spec.ts:68:7 › 리셋 «취소» 칸의 검�
       58 |     // 적용된 배경이 «투명하지 않다» = 선언이 유효했다(V-2 처럼 무효 선언이면 버려진다)
       59 |     expect(bg).not.toBe("rgba(0, 0, 0, 0)");
       60 |     expect(bg).toMatch(/^rgba?\(/);
-        at C:\Users\sinel\repos\_wt\levi2-compat\tests\web\e2e\reset-modal.spec.ts:57:53
+        at <wt>\tests\web\e2e\reset-modal.spec.ts:57:53
 
     Error Context: test-results\reset-modal-세션-리셋-R-3-회귀-—-모달-스크림이-토큰-계층을-«지난다»-하드코딩-색값-아님-\error-context.md
 
@@ -140,8 +140,8 @@ Error response from daemon: container 79ccd791673001462530eec80b7dbecca4556aa8d0
       184 |     "docker",
       185 |     ["exec", PG_CONTAINER, "psql", "-U", "fkt", "-d", "fkt", "-t", "-A", "-c", sql],
       186 |     { encoding: "utf8" },
-        at psql (C:\Users\sinel\repos\_wt\levi2-compat\tests\web\e2e\t3-3-evidence.spec.ts:183:22)
-        at C:\Users\sinel\repos\_wt\levi2-compat\tests\web\e2e\t3-3-evidence.spec.ts:199:17
+        at psql (<wt>\tests\web\e2e\t3-3-evidence.spec.ts:183:22)
+        at <wt>\tests\web\e2e\t3-3-evidence.spec.ts:199:17
 
     Error Context: test-results\t3-3-evidence-🔴-STALE-주입-—-낡음이-«화면-배지»까지-온다-Q-20-울음-판정선-\error-context.md
 
@@ -213,8 +213,8 @@ e2e\t6-6-synthesis-pending.spec.ts:226:7 › T6-6 ③ — 합성 대기 표시 �
       154 |       "🔴 무대 없음 — `/api/live/status.online` 이 false 다. 게이트웨이가 없으면 합성은 대본 축으로 " +
       155 |         "즉시 끝나고(실측 214ms) 「도는 중」이 존재하지 않는다. 이 축의 빨강은 처방이 아니라 무대의 것이다.\n" +
       156 |         "   무대를 세우고 다시 돌려라(구독 0 · 측정 뒤 반드시 내린다):\n" +
-        at requireHoldStage (C:\Users\sinel\repos\_wt\levi2-compat\tests\web\e2e\t6-6-synthesis-pending.spec.ts:153:11)
-        at C:\Users\sinel\repos\_wt\levi2-compat\tests\web\e2e\t6-6-synthesis-pending.spec.ts:237:5
+        at requireHoldStage (<wt>\tests\web\e2e\t6-6-synthesis-pending.spec.ts:153:11)
+        at <wt>\tests\web\e2e\t6-6-synthesis-pending.spec.ts:237:5
 
     Error Context: test-results\t6-6-synthesis-pending-T6--0b585-ize-가-도는-창에서-보인다-·-②-완주-뒤-0\error-context.md
 
@@ -300,7 +300,7 @@ e2e\t6-6-synthesis-pending.spec.ts:365:7 › T6-6 ③ — 합성 대기 표시 �
       230 |     for (const r of refused) {
       231 |       const code = ((r.body as { error?: { code?: string } }).error ?? {}).code;
       232 |       expect(code, "503 인데 code 가 live_capacity_exhausted 가 아니다 — 셸이 code 로 분기할 수 없다").toBe(
-        at C:\Users\sinel\repos\_wt\levi2-compat\tests\web\e2e\t42b-shell-axes.spec.ts:229:60
+        at <wt>\tests\web\e2e\t42b-shell-axes.spec.ts:229:60
 
     Error Context: test-results\t42b-shell-axes-T4-2b-셸-축--d9f5d-다-—-503-이면-정적-재생본이-실제로-완주한다\error-context.md
 
