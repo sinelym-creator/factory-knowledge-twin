@@ -186,7 +186,15 @@ function TourStepView({
      아래 200~300px 을 차지한다. 그래서 «시트를 반대편으로 보낸다» — 대상이 시트 자리와 겹칠
      높이면 위에 붙인다. 규격 ⑤ 의 목적은 「하단에 붙는 것」이 아니라 «대상을 보여 주며
      설명하는 것»이다. */
-  const sheetGoesTop = hole ? hole.top + hole.height > window.innerHeight - calloutH - 24 : false;
+  /* 🔴 단 «대상이 화면보다 클 때»는 뒤집지 않는다. 뒤집기는 대상이 시트보다 작을 때만
+     통한다 — 목록 컨테이너처럼 대상이 뷰포트를 거의 채우면 시트를 어디 두어도 겹치고, 그때
+     위로 보내면 «머리»(상단 1/3 · 사람이 먼저 읽는 곳)를 덮는다. 리바이2 34대 실측 390 스텝 4:
+     전체 덮임은 23.4→23.3 으로 그대로인데 머리 덮임은 **0% → 69.9%** 로 악화했다. 하단에
+     남으면 꼬리만 가린다. 같은 처방이 한 기준에서는 개선이고 다른 기준에서는 악화였다. */
+  const targetFillsViewport = hole ? hole.height > window.innerHeight - calloutH - 24 : false;
+  const sheetGoesTop = hole
+    ? !targetFillsViewport && hole.top + hole.height > window.innerHeight - calloutH - 24
+    : false;
   /* 🔴 좌표를 «인라인 값»이 아니라 «변수»로 넘긴다. 인라인 `top`/`width` 는 클래스보다
      세서 `max-md:top-auto`·`max-md:w-auto` 를 무력화한다 — 그러면 <md 에서 top 과 bottom 이
      «동시에» 고정돼 시트가 화면 높이의 66% 로 늘어나고, 그 몸통이 가리켜야 할 대상을 덮는다
