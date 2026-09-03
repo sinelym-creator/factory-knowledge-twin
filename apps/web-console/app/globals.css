@@ -1,112 +1,375 @@
 @import "tailwindcss";
 
 /* =============================================================================
-   토큰 계층 — 🔴 «확정 팔레트가 아니다»
+   T6-4 애플 감성 토큰 계층 — 정본 = docs/design/t6-4-apple-design-spec.md v1.0 ②
 
-   ux-direction.md 경고: 「mock의 색값·간격은 확정 팔레트가 아니다 … 최종 시각은 기능 완료 후
-   «UX 폴리시 패스»에서 확정한다(D-002 유보 ①③). 채택된 A안에서 확정된 것은 레이아웃 구조·
-   정보 위계이며 색값이 아니다.」
+   🔴 값은 «여기 한 곳»에만 적는다. 컴포넌트는 bg-panel·text-muted 같은 «이름»만 부른다.
+      기존 토큰 이름(bg·panel·edge·ink·muted·ok·warn·danger·ai·scrim)은 아래 @theme inline 이
+      --fkt-* 로 «참조»하므로 컴포넌트 diff 0 으로 팔레트가 바뀐다(PR 1 완료 조건).
 
-   그래서 색값은 «여기 한 곳»에만 적는다. 컴포넌트는 bg-panel·text-muted처럼 토큰 이름만
-   부른다 — 폴리시 패스에서 값이 바뀌어도 고칠 곳이 이 블록 하나가 되게 한다.
-   아래 값은 ux-direction A안 §③의 «잠정» 값이다.
+   🔴 다크/라이트 = 자동(원칙 ①-7). 값만 스위치하고 구조는 같다. 라이트가 :root 기본값이고
+      다크는 prefers-color-scheme 미디어 쿼리 한 블록이다 — 컴포넌트마다 dark: 변형을 쓰지 않는다.
+      (이전 주석 「다크가 기본 · 라이트 전환은 P0 밖」은 규격서 ①-7 로 대체됐다 · D-005)
+
+   총 35 토큰 = 색 14 · 폰트 2 · 크기 7 · 라운드 4 · 그림자 2 · blur 1 · 모션 5.
    ============================================================================= */
-@theme {
-  --color-bg: #0b0f14;      /* 배경 3단 뉴트럴 ① */
-  --color-panel: #111823;   /* ② 패널 */
-  --color-edge: #1e2a38;    /* ③ 경계 */
-  --color-ink: #dbe4ef;     /* 본문 텍스트 */
-  --color-muted: #7d8fa5;   /* 보조 텍스트 */
-  --color-ok: #31c48d;      /* 정상 */
-  --color-warn: #f0a742;    /* 주의 */
-  --color-danger: #f0555c;  /* 위험 */
-  --color-ai: #38bdf8;      /* AI·evidence·graph path — 상태색과 계열 분리(§10) */
-  /* 모달 스크림 — 🔴 토큰 계층 «밖»에 남아 있던 유일한 색값이었다(R-3 · levi2 실측).
-     bg-black/60은 하드코딩 최소라는 AC는 만족하지만, 폴리시 패스에서 @theme만 훑으면
-     이 한 곳이 빠진다. 「고칠 곳이 이 블록 하나」라는 규칙에 예외를 두지 않는다. */
-  --color-scrim: rgb(0 0 0 / 0.6);
+:root {
+  color-scheme: light dark;
 
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  /* ── 색 14 (라이트 · HIG 고대비 변형 · label-2 .72 = 본문 4.5:1) ── */
+  --fkt-bg-1: #f2f2f7;                 /* 바탕 */
+  --fkt-bg-2: #ffffff;                 /* 카드·패널 */
+  --fkt-bg-3: #e5e5ea;                 /* 인셋·트랙·2차 버튼 */
+  --fkt-label-1: #000000;              /* 본문 */
+  --fkt-label-2: rgb(60 60 67 / 0.72); /* 보조 */
+  --fkt-label-3: rgb(60 60 67 / 0.5);  /* 플레이스홀더 — 본문 텍스트 금지(⑤) */
+  --fkt-label-4: rgb(60 60 67 / 0.18); /* 구분선·헤어라인 */
+  --fkt-tint: #0071e3;                 /* 틴트 = AI·evidence·현재 항목 */
+  --fkt-success: #248a3d;
+  --fkt-warning: #c93400;
+  --fkt-danger: #d70015;
+  --fkt-info: #0071a4;
+  --fkt-scrim: rgb(0 0 0 / 0.3);
+  --fkt-glass: rgb(255 255 255 / 0.72); /* 앱바·레일·모달 3면만 */
+
+  /* ── 폰트 2 (시스템 스택 · 웹폰트 fetch 0 · LCP ⑤) ── */
+  --fkt-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --fkt-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ── 크기 7 (px · large 는 ≥md 34 / 모바일 28) ── */
+  --fkt-t-large: 28px;
+  --fkt-t-title: 22px;
+  --fkt-t-head: 17px;
+  --fkt-t-body: 17px;
+  --fkt-t-body-c: 15px;   /* 패널 본문(현 sm) */
+  --fkt-t-foot: 13px;     /* 현 xs */
+  --fkt-t-cap: 12px;      /* ID·시각 */
+
+  /* ── 라운드 4 ── */
+  --fkt-r-card: 16px;
+  --fkt-r-btn: 12px;
+  --fkt-r-chip: 8px;
+  --fkt-r-pill: 999px;
+
+  /* ── 그림자 2 (라이트) ── */
+  --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.04);
+  --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
+
+  /* ── blur 1 ── */
+  --fkt-blur: blur(20px) saturate(180%);
+
+  /* ── 모션 5 (transform/opacity 만 · reduced-motion 은 아래 전역 규칙이 0 으로) ── */
+  --fkt-dur-1: 120ms;   /* hover·press */
+  --fkt-dur-2: 240ms;   /* 진입·배지 */
+  --fkt-dur-3: 400ms;   /* 페이지·시트 */
+  --fkt-ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --fkt-ease-out: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* ── T6-2 ③ 호환 별칭 — synthesis-pending.tsx 가 부르는 이름을 규격 토큰으로 넘긴다.
+        컴포넌트를 안 고치고 값만 규격에 맞추는 자리(PR 2 에서 이름을 갈아탄 뒤 제거). ── */
+  --fkt-duration-enter: var(--fkt-dur-3);
+  --fkt-shimmer-duration: 1.4s;          /* ④-4 */
+  --fkt-radius-pill: var(--fkt-r-pill);
+  --fkt-progress-height: 3px;            /* ④-3 */
+  --fkt-font-system: var(--fkt-font-sans);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --fkt-t-large: 34px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fkt-bg-1: #000000;
+    --fkt-bg-2: #1c1c1e;
+    --fkt-bg-3: #2c2c2e;
+    --fkt-label-1: #ffffff;
+    --fkt-label-2: rgb(235 235 245 / 0.6);
+    --fkt-label-3: rgb(235 235 245 / 0.4);
+    --fkt-label-4: rgb(84 84 88 / 0.65);
+    --fkt-tint: #0a84ff;
+    --fkt-success: #30db5b;
+    --fkt-warning: #ffb340;
+    --fkt-danger: #ff6961;
+    --fkt-info: #70d7ff;
+    --fkt-scrim: rgb(0 0 0 / 0.55);
+    --fkt-glass: rgb(28 28 30 / 0.72);
+    /* 다크 그림자 = alpha ×2 + 1px label-4 헤어라인(검정 위에서 그림자만으로는 층이 안 보인다) */
+    --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.12), 0 0 0 1px var(--fkt-label-4);
+    --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.24), 0 0 0 1px var(--fkt-label-4);
+  }
+}
+
+/* =============================================================================
+   Tailwind 이름 → 규격 토큰 «참조»(inline). 유틸리티가 var(--fkt-*) 를 그대로 물고 나가므로
+   다크/라이트 스위치가 런타임에 산다(값을 복사하는 @theme 이면 라이트 값으로 굳는다).
+   기존 이름은 전부 보존(컴포넌트 diff 0) · 신규 = inset·placeholder·info·glass·radius·shadow.
+   ============================================================================= */
+@theme inline {
+  --color-bg: var(--fkt-bg-1);
+  --color-panel: var(--fkt-bg-2);
+  --color-inset: var(--fkt-bg-3);
+  --color-edge: var(--fkt-label-4);
+  --color-ink: var(--fkt-label-1);
+  --color-muted: var(--fkt-label-2);
+  --color-placeholder: var(--fkt-label-3);
+  --color-ok: var(--fkt-success);
+  --color-warn: var(--fkt-warning);
+  --color-danger: var(--fkt-danger);
+  --color-ai: var(--fkt-tint);
+  --color-info: var(--fkt-info);
+  --color-scrim: var(--fkt-scrim);
+  --color-glass: var(--fkt-glass);
+
+  --font-sans: var(--fkt-font-sans);
+  --font-mono: var(--fkt-font-mono);
+
+  --text-large: var(--fkt-t-large);
+  --text-title: var(--fkt-t-title);
+  --text-head: var(--fkt-t-head);
+  --text-body: var(--fkt-t-body);
+  --text-body-c: var(--fkt-t-body-c);
+  --text-foot: var(--fkt-t-foot);
+  --text-cap: var(--fkt-t-cap);
+
+  --radius-card: var(--fkt-r-card);
+  --radius-btn: var(--fkt-r-btn);
+  --radius-chip: var(--fkt-r-chip);
+  --radius-pill: var(--fkt-r-pill);
+
+  --shadow-1: var(--fkt-shadow-1);
+  --shadow-2: var(--fkt-shadow-2);
+
+  --ease-spring: var(--fkt-ease-spring);
+  --ease-smooth: var(--fkt-ease-out);
 
   --spacing-appbar: 56px;   /* wireframes §0 상단 바 */
   --spacing-rail: 56px;     /* ux-direction A안 좌측 아이콘 레일 */
 }
 
 /* =============================================================================
-   모션·형태 토큰 — T6-2 ③ 이 쓰고, T6-4 「애플 감성」 규격서가 이어받는다.
-
-   🔴 색과 «같은 규율»이다: 값은 여기 한 곳에만 적고 컴포넌트는 이름만 부른다. 지금 쓰는 곳이
-      합성 대기 표시 하나뿐이어도 토큰으로 빼 두는 이유는, 규격서가 도착했을 때 고칠 자리가
-      이 블록이 되게 하기 위해서다(컴포넌트마다 0.35s 를 흩뿌리면 그때 전수 검색을 한다).
-
-   🔴 `prefers-reduced-motion` 은 «토큰 층»에서 존중한다. 컴포넌트마다 미디어 쿼리를 쓰면
-      한 곳을 빠뜨리는 날 그 컴포넌트만 계속 움직인다 — 접근성은 기본값이어야지 옵트인이
-      아니다(§11.3).
+   전역 — 바탕·본문·포커스·reduced-motion·ID 모노.
    ============================================================================= */
-:root {
-  /* iOS 계열 스프링 이징 — 끝에서 살짝 überschoot 없이 감속만 한다(과한 바운스 0). */
-  --fkt-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
-  --fkt-duration-enter: 0.34s;
-  --fkt-shimmer-duration: 1.6s;
-  --fkt-radius-pill: 999px;
-  --fkt-progress-height: 3px;
-  /* 시스템 폰트 스택 — 지금은 합성 대기 표시에만 쓴다. 전면 적용 여부는 T6-4 규격서가 정한다
-     (본문 폰트를 이 조각에서 바꾸면 규격 없이 화면 전체 인상이 바뀐다). */
-  --fkt-font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
-    "Segoe UI", system-ui, sans-serif;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --fkt-duration-enter: 0.01s;
-    --fkt-shimmer-duration: 0s;
-  }
-}
-
-@keyframes fkt-rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fkt-shimmer {
-  from { background-position: -160% 0; }
-  to   { background-position: 260% 0; }
-}
-
-.fkt-rise {
-  animation: fkt-rise var(--fkt-duration-enter) var(--fkt-ease-spring) both;
-}
-
-/* 🔴 shimmer 는 «배경 이동»이다 — 크기·위치를 건드리지 않으므로 레이아웃을 다시 계산하지
-   않는다. reduced-motion 에서는 duration 0 이라 정지한 띠로 남는다(사라지지 않는다: 자리
-   표시라는 뜻은 유지해야 한다). */
-.fkt-shimmer {
-  background-image: linear-gradient(
-    90deg,
-    var(--color-edge) 0%,
-    color-mix(in srgb, var(--color-edge) 55%, var(--color-muted)) 50%,
-    var(--color-edge) 100%
-  );
-  background-size: 200% 100%;
-  animation: fkt-shimmer var(--fkt-shimmer-duration) linear infinite;
-}
-
-/* 🔴 다크가 «기본»이다(§10 neutral dark). 라이트 모드 전환은 P0 범위 밖이라 두지 않는다 —
-   prefers-color-scheme에 반응하는 스캐폴드 기본값을 그대로 두면 밝은 배경에서 토큰이 깨진다. */
 html {
-  color-scheme: dark;
+  background: var(--fkt-bg-1);
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+  background: var(--fkt-bg-1);
+  color: var(--fkt-label-1);
+  font-family: var(--fkt-font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 포커스 = 전역 1규칙(⑤). 컴포넌트가 따로 그린 outline-ai 도 같은 색이라 겹쳐도 어긋나지 않는다. */
+:focus-visible {
+  outline: 2px solid var(--fkt-tint);
+  outline-offset: 2px;
+}
+
+/* reduced-motion = 토큰 층이 아니라 «전역 1규칙»으로 끈다(④ 전역). 값·문구는 DOM 에 상주하므로
+   정지해도 정보 손실 0(⑤). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
 }
 
 /* ID·수치는 모노스페이스(ux-direction A안 §③ — 근거 추적 단위인 ID를 눈으로 잡기 위해) */
 .id {
-  font-family: var(--font-mono);
+  font-family: var(--fkt-font-mono);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
+}
+
+/* =============================================================================
+   애니메이션 카탈로그 ④ — CSS 전용 · transform/opacity 만 · will-change 금지.
+   ============================================================================= */
+@keyframes fkt-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fkt-pop {
+  0%   { transform: scale(0.92); }
+  60%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fkt-sheet {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fkt-sheet-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fkt-pulse {
+  50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+@keyframes fkt-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+@keyframes fkt-progress-estimate {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(0.9); }
+}
+
+/* =============================================================================
+   유틸 8종(⑦ PR 1) — 컴포넌트가 PR 2 부터 갈아탄다. 여기서는 «정의»만 하고 쓰는 곳 0.
+   ============================================================================= */
+@layer components {
+  /* 카드 — 테두리 대신 배경 계층 + 그림자(원칙 ①-1) */
+  .fkt-card {
+    background: var(--fkt-bg-2);
+    border-radius: var(--fkt-r-card);
+    box-shadow: var(--fkt-shadow-1);
+  }
+
+  /* 버튼 — 1차 틴트 채움 / 2차 bg-3 / 3차 틴트 텍스트 · h36(모바일 44) · press ④-8 */
+  .fkt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    padding-inline: 0.875rem;
+    border-radius: var(--fkt-r-btn);
+    font-size: var(--fkt-t-body-c);
+    font-weight: 600;
+    line-height: 1;
+    transition:
+      transform var(--fkt-dur-1) var(--fkt-ease-out),
+      background-color var(--fkt-dur-1) linear,
+      opacity var(--fkt-dur-1) linear;
+  }
+  .fkt-btn:active { transform: scale(0.97); }
+  .fkt-btn:disabled { opacity: 0.4; }
+  .fkt-btn-primary { background: var(--fkt-tint); color: #fff; }
+  .fkt-btn-secondary { background: var(--fkt-bg-3); color: var(--fkt-label-1); }
+  .fkt-btn-tertiary { background: transparent; color: var(--fkt-tint); }
+  @media (max-width: 47.99rem) {
+    .fkt-btn { min-height: 2.75rem; }   /* 터치 타깃 ≥44(⑧) */
+  }
+
+  /* pill — 배지·칩 999 · 상태색은 호출부가 color 로 주고 배경은 currentColor 12% */
+  .fkt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 1.5rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--fkt-r-pill);
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    font-size: var(--fkt-t-foot);
+    font-weight: 600;
+    line-height: 1;
+  }
+  /* 6px 상태 점 — pulse 는 .fkt-pulse 를 함께 준다(checking·live·진행 단계) */
+  .fkt-dot {
+    display: inline-block;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* glass — 앱바·레일·모달 3면만(⑤ 성능) · backdrop-filter 미지원 = 불투명 폴백(⑧) */
+  .fkt-glass {
+    background: var(--fkt-glass);
+    -webkit-backdrop-filter: var(--fkt-blur);
+    backdrop-filter: var(--fkt-blur);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .fkt-glass { background: var(--fkt-bg-2); }
+  }
+
+  /* 진입 ④-1 · 스태거 ④-2(40ms × n · ≤8) · pop ④-5 · 시트 ④-9 · pulse ④-10 */
+  .fkt-rise {
+    animation: fkt-rise var(--fkt-dur-3) var(--fkt-ease-spring) both;
+  }
+  .fkt-stagger > * {
+    animation: fkt-rise var(--fkt-dur-3) var(--fkt-ease-spring) both;
+  }
+  .fkt-stagger > :nth-child(2) { animation-delay: 40ms; }
+  .fkt-stagger > :nth-child(3) { animation-delay: 80ms; }
+  .fkt-stagger > :nth-child(4) { animation-delay: 120ms; }
+  .fkt-stagger > :nth-child(5) { animation-delay: 160ms; }
+  .fkt-stagger > :nth-child(6) { animation-delay: 200ms; }
+  .fkt-stagger > :nth-child(7) { animation-delay: 240ms; }
+  .fkt-stagger > :nth-child(n + 8) { animation-delay: 280ms; }
+  .fkt-pop {
+    animation: fkt-pop var(--fkt-dur-2) var(--fkt-ease-spring) both;
+  }
+  .fkt-sheet {
+    animation: fkt-sheet var(--fkt-dur-3) var(--fkt-ease-spring) both;
+  }
+  @media (max-width: 47.99rem) {
+    .fkt-sheet { animation-name: fkt-sheet-up; }   /* <md = 바텀 시트 */
+  }
+  .fkt-pulse {
+    animation: fkt-pulse 1.6s var(--fkt-ease-out) infinite;
+  }
+
+  /* 진행 바 ④-3 — 트랙 3px · 추정층(9s · 「추정」 표기는 호출부) + 실측층(--p = done/total)
+     · [data-status=done] = scaleX(1) 스냅. 자식은 absolute 라 트랙 높이만 레이아웃에 든다. */
+  .fkt-progress {
+    position: relative;
+    height: var(--fkt-progress-height);
+    border-radius: var(--fkt-r-pill);
+    background: var(--fkt-bg-3);
+    overflow: hidden;
+  }
+  .fkt-progress > * {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--fkt-tint);
+    transform-origin: left;
+  }
+  .fkt-progress-estimate {
+    animation: fkt-progress-estimate 9s var(--fkt-ease-out) both;
+  }
+  .fkt-progress-actual {
+    transform: scaleX(var(--p, 0));
+    transition: transform var(--fkt-dur-2) var(--fkt-ease-out);
+  }
+  .fkt-progress[data-status="done"] > * {
+    animation: none;
+    transform: scaleX(1);
+    transition-duration: var(--fkt-dur-1);
+  }
+
+  /* shimmer ④-4 — ::after 가 «이동»한다(레이아웃 재계산 0). reduced 에서는 정지한 띠로
+     남는다(사라지지 않는다: 자리 표시라는 뜻은 유지해야 한다). */
+  .fkt-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: var(--fkt-bg-3);
+    border-radius: var(--fkt-r-chip);
+  }
+  .fkt-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--fkt-bg-2) 60%, transparent) 50%,
+      transparent 100%
+    );
+    animation: fkt-shimmer var(--fkt-shimmer-duration) linear infinite;
+  }
 }
