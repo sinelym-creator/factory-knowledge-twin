@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 
+import { IconMark, IconQuestion } from "@/components/icons";
 import { FallbackBanner, LiveStatusProvider, ModeBadge } from "@/components/live-status";
 import { ResetButton } from "@/components/reset-button";
+import { ShellNav } from "@/components/shell-nav";
 import { StaticVisitorChip } from "@/components/static-visitor";
 import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
 
@@ -10,17 +12,16 @@ import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
  * 전역 셸 (wireframes §0) — 5화면 공통. P0 11항 중 4항(세션 격리·리셋·Live 감지·Replay
  * fallback)을 «어디서든 보이게» 담는 자리다.
  *
- * 구조는 ux-direction A안(Control Room): 좌측 아이콘 레일 + 상단 앱바(내비/모드/세션/리셋).
- * 🔴 셸이 담는 것은 «구조»까지다 — 계층 트리(260px)·알람 도크(360px)는 화면별 내용이라
- *    Phase 3 티켓이 채운다. 여기서 미리 그리면 5화면이 서로 다른 자리에 같은 것을 갖게 된다.
+ * 구조는 ux-direction A안(Control Room)의 재수립본: **좌측 260px 라벨 레일 + 52px glass 앱바**.
+ * 🔴 폐하 09-03 14:24 「지금 디자인으로는 안 된다 · 레이아웃도 다시」 → 셸에서 바뀐 것 3:
+ *    ① 아이콘만 있던 56px 레일 → 라벨형 260px(무엇을 누르는지 글자가 말한다)
+ *    ② 유니코드 글리프(▣▲⧉?⟲) → 선형 SVG(글리프는 폰트마다 굵기·정렬이 달라 값싸 보인다)
+ *    ③ 1px 테두리로 나누던 면 → **표면 밝기 차**로 나눈다(테두리는 리스트 행 사이에만)
+ * 🔴 셸이 담는 것은 «구조»까지다 — 화면별 내용(트리·도크)은 화면이 채운다.
  * 🔴 chat-first 금지(§10) — 셸에 입력창을 두지 않는다.
+ * 🔴 내비는 두 벌 다 DOM 에 있다(레일 = ≥md · 앱바 텍스트 = <md). 뷰포트마다 «하나만»
+ *    보이므로 화면에는 중복이 없고, 목록·순서는 `shell-nav.tsx` 한 곳에서 온다.
  */
-
-const NAV = [
-  { href: "/overview", label: "Overview", icon: "▣" },
-  { href: "/incidents/INC-2025-019", label: "Incidents", icon: "▲" },
-  { href: "/compare", label: "Compare", icon: "⧉" },
-];
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = parseSession((await cookies()).get(SESSION_COOKIE)?.value);
@@ -28,39 +29,33 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <LiveStatusProvider>
       <div className="flex min-h-screen">
-        {/* 좌측 아이콘 레일 — 화면이 늘어나도 내비가 자리를 먹지 않는다(A안 §②) */}
+        {/* ── 좌측 레일 260 — glass 위에 라벨형 항목(리서치 §7-2·3) ───────────── */}
         <nav
-          className="flex w-(--spacing-rail) shrink-0 flex-col items-center gap-1 border-r border-edge bg-panel py-3"
+          className="fkt-glass hidden w-(--spacing-rail) shrink-0 flex-col gap-1 px-3 py-4 md:flex"
           aria-label="주요 화면"
         >
-          <span className="mb-3 text-ai" aria-hidden>
-            ▣
-          </span>
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="flex h-9 w-9 items-center justify-center rounded text-muted hover:bg-bg hover:text-ink"
-              title={n.label}
-            >
-              <span aria-hidden>{n.icon}</span>
-              <span className="sr-only">{n.label}</span>
-            </Link>
-          ))}
+          <div className="mb-5 flex items-center gap-2.5 px-3">
+            <IconMark className="text-[22px] text-ai" />
+            <span className="text-body-c font-semibold">Factory Twin</span>
+          </div>
+
+          <p className="mb-1 px-3 text-cap font-semibold text-placeholder">화면</p>
+          <ShellNav variant="rail" />
+
+          <p className="mt-auto px-3 text-cap text-placeholder">
+            synthetic PoC · 실제 공장 데이터가 아닙니다
+          </p>
         </nav>
 
         <div className="flex min-w-0 flex-1 flex-col">
+          {/* ── 앱바 52 — sticky glass + 하단 헤어라인 1px(리서치 §7-2) ────────── */}
           <header
-            className="flex h-(--spacing-appbar) shrink-0 items-center gap-4 border-b border-edge bg-panel px-4"
+            className="fkt-glass sticky top-0 z-20 flex h-(--spacing-appbar) shrink-0 items-center gap-4 border-b border-edge px-5"
             data-testid="app-bar"
           >
-            <span className="text-sm font-semibold">Factory Knowledge Twin</span>
-            <nav className="flex gap-3 text-xs text-muted" aria-label="화면 이동">
-              {NAV.map((n) => (
-                <Link key={n.href} href={n.href} className="hover:text-ink">
-                  {n.label}
-                </Link>
-              ))}
+            <span className="text-body-c font-semibold">Factory Knowledge Twin</span>
+            <nav className="flex gap-1 text-foot text-muted md:hidden" aria-label="화면 이동">
+              <ShellNav variant="bar" />
             </nav>
 
             <div className="ml-auto flex items-center gap-2">
@@ -70,11 +65,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   JS 없이 키보드로 잡힌다. */}
               <Link
                 href="/overview?intro=1"
-                className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+                className="fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill text-[18px] text-muted hover:text-ink"
                 title="처음 오셨나요? 안내 다시 보기"
                 data-testid="intro-reopen"
               >
-                <span aria-hidden>?</span>
+                <IconQuestion />
                 <span className="sr-only">안내 다시 보기</span>
               </Link>
               <ModeBadge />
@@ -83,7 +78,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <StaticVisitorChip />
               {session && (
                 <span
-                  className="id rounded border border-edge px-2 py-1 text-xs text-muted"
+                  className="fkt-pill id bg-fill text-cap text-muted"
                   title={
                     session.origin === "api"
                       ? "이 세션의 변경은 다른 방문자에게 보이지 않습니다"
@@ -92,7 +87,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   data-testid="session-chip"
                   data-origin={session.origin}
                 >
-                  ⬡ {chipLabel(session)}
+                  {chipLabel(session)}
                   {session.origin === "pending" && <span className="ml-1 text-warn">*</span>}
                 </span>
               )}
@@ -103,7 +98,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           {/* fallback 배너 슬롯 — 조건이 설 때만 자리를 차지한다(§0 조건부) */}
           <FallbackBanner sessionPending={session?.origin === "pending"} />
 
-          <main className="min-w-0 flex-1 p-4">{children}</main>
+          {/* 본문 = 최대 1440 · 좌우 24 · 위아래 24(리서치 §7-10 컨테이너) */}
+          <main className="mx-auto min-w-0 w-full max-w-[1440px] flex-1 px-5 py-6 md:px-6">
+            {children}
+          </main>
         </div>
       </div>
     </LiveStatusProvider>

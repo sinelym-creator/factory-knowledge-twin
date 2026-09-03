@@ -9,10 +9,17 @@ import type { ActiveAlarm, Overview, OverviewEquipment, Scenario } from "@/lib/c
 import { TZ_LABEL, clock, stamp } from "@/lib/time";
 
 /**
- * ① Overview 본문 (wireframes §1) — 좌 트리 280 · 중앙 카드 그리드 · 우 도크 380.
+ * ① Overview 본문 (wireframes §1) — 재수립본(폐하 09-03 14:24 「디자인·레이아웃 다시」).
  *
+ * 🔴 **레이아웃 원칙 = 화면마다 «하나의 주인공»**. 이 화면의 주인공은 지표가 아니라 «지금 무슨
+ *    일이 났는가»라는 문장이다. 그래서 순서가 바뀌었다: 큰 헤드라인 문장 + 조사 시작 → KPI 4카드
+ *    → 설비 그리드 + 알람 독. 앞판은 작은 글자 한 줄로 시작해 무엇을 먼저 봐야 할지 말하지
+ *    않았다(폐하 14:24 「내용 구성이 아니라 디자인이 문제 · 레이아웃도 더 신경」).
+ * 🔴 **분리는 테두리가 아니라 표면 밝기 차로 한다.** 선은 «같은 카드 안 리스트 행» 사이에만
+ *    남는다(`.fkt-rows`) — 모든 면에 1px 을 두르는 것이 「애플 아님」의 1번 신호였다.
  * 🔴 **상태는 색«만»으로 말하지 않는다**(§10 · baseline §11.3): 점 색 + 도형(●▲■) + 글자를
- *    함께 쓴다. 색각 이상에서 색만 다른 두 카드는 같은 카드다.
+ *    함께 쓴다. 색각 이상에서 색만 다른 두 카드는 같은 카드다. 재설계에서도 이 규율은 그대로다 —
+ *    도형은 «장식»이 아니라 문구의 일부라 SVG 로 바꾸지 않았다(선형 아이콘은 내비·액션에만).
  * 🔴 **모르는 status를 «정상»으로 접지 않는다.** SSOT enum이 늘면 여기가 먼저 모르게 되는데,
  *    그때 조용히 ●(정상)로 그리면 이상한 설비가 멀쩡해 보인다 — 모르면 ■로 세우고 원문을
  *    툴팁에 남긴다(눈에 보이는 쪽으로 틀린다).
@@ -145,155 +152,181 @@ export function OverviewBody({
     [overview.lines, lineFilter],
   );
   const lineTotal = overview.lines.length;
+  const equipTotal = overview.lines.reduce((n, l) => n + l.equipment.length, 0);
+  const headMark = headline.alarmId ? UNKNOWN_MARK : STATUS_MARK.normal;
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
-      {/* 🔴 화면 제목(h1)은 이제 «세그먼트 레이아웃»에 있다(`app/overview/layout.tsx`).
-          여전히 있되, Suspense 경계 «밖»이라 스트리밍 교체 창에 두 벌이 되지 않는다.
-          제목을 여기에 «도로» 두지 마라 — 그 순간 두 곳이 같은 제목을 그린다. */}
-      {/* ── 상태 헤드라인 (B요소 ①) ─────────────────────────────────────── */}
-      <section
-        className="flex items-center gap-3 rounded border border-edge bg-panel px-4 py-3"
-        data-testid="headline"
-      >
-        <span className={headline.alarmId ? "text-danger" : "text-ok"} aria-hidden>
-          {headline.alarmId ? "■" : "●"}
-        </span>
-        <p className="min-w-0 flex-1 text-sm">{headline.text}</p>
+    <div className="flex min-w-0 flex-col gap-8">
+      {/* 🔴 화면 제목(h1)은 «세그먼트 레이아웃»에 있다(`app/overview/layout.tsx`).
+          Suspense 경계 «밖»이라 스트리밍 교체 창에 두 벌이 되지 않는다. 제목을 여기에
+          «도로» 두지 마라 — 그 순간 두 곳이 같은 제목을 그린다. */}
+
+      {/* ── ① 히어로 = 이 화면의 주인공(리서치 §3 「헤드라인 문장 먼저」) ─────────── */}
+      <section className="fkt-rise max-w-[760px]" data-testid="headline">
+        <p className="fkt-section-label flex items-center gap-1.5">
+          <span className={headMark.tone} aria-hidden>
+            {headMark.icon}
+          </span>
+          지금 공장 상태
+        </p>
+        <p className="fkt-display mt-2.5">{headline.text}</p>
         {headline.alarmId && (
           // 🔴 이 버튼과 알람 카드의 버튼은 «같은 동작»이다(§1 인터랙션 ⑥ — 진입 이중화).
           //    처음 온 방문자는 문장에서, 익숙한 사용자는 도크에서 출발한다.
-          <StartInvestigation
-            scenarioId={scenarios[0]?.scenarioId ?? "GS-01"}
-            sessionId={sessionId}
-            sessionOrigin={sessionOrigin}
-            testId="start-from-headline"
-          />
+          <div className="mt-5">
+            <StartInvestigation
+              scenarioId={scenarios[0]?.scenarioId ?? "GS-01"}
+              sessionId={sessionId}
+              sessionOrigin={sessionOrigin}
+              testId="start-from-headline"
+            />
+          </div>
         )}
       </section>
 
-      {/* ── KPI 스트립 ──────────────────────────────────────────────────── */}
-      <section
-        className="flex flex-wrap items-center gap-x-6 gap-y-1 rounded border border-edge bg-panel px-4 py-2 text-xs"
-        data-testid="kpi-strip"
-        aria-label="공장 지표"
-      >
-        <Kpi label="가동 라인" value={`${overview.kpi.lineActive}/${lineTotal}`} />
-        <Kpi label="활성 알람" value={overview.kpi.alarmCount} />
-        {/* 🔴 계약 필드는 openIncidents 지만 SSOT에 'open' 상태값은 없다 — 서버가
-            status<>'closed' 로 센다(계약 v0.1.7 판정). 화면 낱말은 그 뜻대로 «진행»이다. */}
-        <Kpi label="진행 Incident" value={overview.kpi.openIncidents} />
-        <Kpi label="승인 대기 WO" value={overview.kpi.pendingWorkOrders} />
-        <span className="ml-auto text-muted" data-testid="received-at">
+      {/* ── ② KPI 4카드 — 값이 주인공, 라벨은 종속(리서치 §7-5) ────────────────── */}
+      <section aria-label="공장 지표">
+        <div
+          className="fkt-stagger grid grid-cols-2 gap-4 xl:grid-cols-4"
+          data-testid="kpi-strip"
+        >
+          <KpiCard label="가동 라인" value={overview.kpi.lineActive} unit={`/ ${lineTotal}`} />
+          <KpiCard label="활성 알람" value={overview.kpi.alarmCount} unit="건" alert />
+          {/* 🔴 계약 필드는 openIncidents 지만 SSOT에 'open' 상태값은 없다 — 서버가
+              status<>'closed' 로 센다(계약 v0.1.7 판정). 화면 낱말은 그 뜻대로 «진행»이다. */}
+          <KpiCard label="진행 Incident" value={overview.kpi.openIncidents} unit="건" />
+          <KpiCard label="승인 대기 WO" value={overview.kpi.pendingWorkOrders} unit="건" />
+        </div>
+        <p className="mt-3 text-foot text-placeholder" data-testid="received-at">
           {plantName} · 이 화면을 받은 시각 {clock(receivedAt) ?? "—"} {TZ_LABEL}
-        </span>
+        </p>
       </section>
 
-      <div className="flex min-w-0 gap-3">
-        {/* ── 계층 트리 ─────────────────────────────────────────────────── */}
-        <nav
-          className="w-70 shrink-0 rounded border border-edge bg-panel p-3"
-          aria-label="공장 계층"
-          data-testid="hierarchy-tree"
-        >
-          <p className="id text-xs text-muted">{plantName}</p>
-          <ul className="mt-2 space-y-1">
-            <li>
-              <TreeButton
+      {/* ── ③ 설비 그리드 + 알람 독(보조 열) ──────────────────────────────────── */}
+      <div className="flex min-w-0 flex-col gap-8 xl:flex-row xl:gap-6">
+        <section className="min-w-0 flex-1" aria-label="설비 목록">
+          <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+            <p className="fkt-section-label">설비 {shown.length}대</p>
+            {/* 🔴 계층 트리 → «라인 필터 칩»으로 형태만 바꿨다(리서치 §7 「하나의 주인공 +
+                보조」). 280px 나무를 왼쪽에 세우면 주인공이 셋(트리·그리드·도크)이 된다.
+                기능·testid·라인 목록은 그대로다 — 바뀐 것은 형태뿐이다. */}
+            <nav
+              className="flex min-w-0 flex-wrap gap-1.5"
+              aria-label="공장 계층"
+              data-testid="hierarchy-tree"
+            >
+              <LineChip
                 active={lineFilter === null}
                 onClick={() => setLineFilter(null)}
-                label={`전체 (${overview.lines.reduce((n, l) => n + l.equipment.length, 0)}대)`}
+                label={`전체 ${equipTotal}대`}
               />
-            </li>
-            {overview.lines.map((l) => (
-              <li key={l.lineId}>
-                <TreeButton
+              {overview.lines.map((l) => (
+                <LineChip
+                  key={l.lineId}
                   active={lineFilter === l.lineId}
                   onClick={() => setLineFilter(l.lineId)}
-                  label={`${l.name} (${l.equipment.length}대)`}
+                  label={`${l.name} ${l.equipment.length}대`}
                   id={l.lineId}
                 />
-              </li>
-            ))}
-          </ul>
-        </nav>
+              ))}
+            </nav>
+          </div>
 
-        {/* ── 설비 카드 그리드 ───────────────────────────────────────────── */}
-        <section className="min-w-0 flex-1" data-testid="equipment-grid" aria-label="설비 목록">
-          <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+          <div className="fkt-stagger grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {shown.map((e) => (
               <EquipmentCard key={e.equipmentId} equipment={e} alarms={overview.activeAlarms} />
             ))}
           </div>
           {shown.length === 0 && (
-            <p className="rounded border border-edge bg-panel p-4 text-sm text-muted">
-              이 라인에 등록된 설비가 없습니다.
-            </p>
+            <p className="fkt-card p-6 text-body-c text-muted">이 라인에 등록된 설비가 없습니다.</p>
           )}
         </section>
 
-        {/* ── 우측 도크 ─────────────────────────────────────────────────── */}
-        <aside className="w-95 shrink-0 space-y-3" aria-label="알람과 시나리오">
+        <aside className="w-full shrink-0 space-y-4 xl:w-(--spacing-dock)" aria-label="알람과 시나리오">
           {showIntro && <IntroCard onClose={closeIntro} />}
 
-          <section className="rounded border border-edge bg-panel p-3" data-testid="alarm-dock">
-            <p className="text-xs text-muted">활성 알람 {overview.activeAlarms.length}건</p>
+          <section className="fkt-card overflow-hidden" data-testid="alarm-dock">
+            <p className="fkt-section-label px-5 pt-4 pb-1">
+              활성 알람 {overview.activeAlarms.length}건
+            </p>
             {overview.activeAlarms.length === 0 ? (
-              <p className="mt-2 text-sm text-muted">지금 울고 있는 알람이 없습니다.</p>
+              <p className="px-5 pb-4 text-body-c text-muted">지금 울고 있는 알람이 없습니다.</p>
             ) : (
-              <ul className="mt-2 space-y-3">
+              <ul className="fkt-rows">
                 {overview.activeAlarms.map((a) => {
                   const sev = severityMark(a.severity);
                   return (
-                  <li
-                    key={a.alarmId}
-                    className="border-t border-edge pt-2 first:border-0 first:pt-0"
-                    data-testid="alarm-card"
-                    data-severity={a.severity}
-                  >
-                    <p className={`text-xs ${sev.tone}`}>
-                      <span aria-hidden>{sev.icon}</span> {sev.label} · {a.severity}
-                    </p>
-                    <p className="id mt-1 text-xs">{a.alarmId}</p>
-                    <p className="id text-xs text-muted">
-                      {a.equipmentId} · {a.sensorId}
-                    </p>
-                    {/* 🔴 발생 시각 — §1 알람 패널 표시 7항 중 하나였고 빠져 있었다(회부 R-1).
-                        목업의 「12:03」 자리다. 시각이 없으면 「지금 난 일」과 「며칠 전부터
-                        울고 있는 일」이 같은 줄로 보인다 — seed 의 이 알람은 후자다. */}
-                    <p className="mt-1 text-xs text-muted" data-testid="alarm-raised-at">
-                      발생 {stamp(a.raisedAt) ?? a.raisedAt} {TZ_LABEL}
-                    </p>
-                    <p className="mt-1 text-xs text-muted">
-                      임계 {a.thresholdValue} → 관측 {a.observedValue}
-                    </p>
-                    <div className="mt-2">
-                      <StartInvestigation
-                        scenarioId={scenarios[0]?.scenarioId ?? "GS-01"}
-                        sessionId={sessionId}
-                        sessionOrigin={sessionOrigin}
-                        testId="start-from-alarm"
-                      />
-                    </div>
-                  </li>
+                    <li
+                      key={a.alarmId}
+                      className="px-5 py-4"
+                      data-testid="alarm-card"
+                      data-severity={a.severity}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* 색 타일 = 상태색 15% 배경 + 도형(색«만»이 아니다) */}
+                        <span
+                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-chip text-cap ${sev.tone}`}
+                          style={{ background: "color-mix(in srgb, currentColor 15%, transparent)" }}
+                          title={sev.label}
+                          aria-hidden
+                        >
+                          {sev.icon}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="id truncate text-body-c font-semibold" title={a.alarmId}>
+                            {a.alarmId}
+                          </p>
+                          <p className={`text-foot ${sev.tone}`}>
+                            {sev.label} · {a.severity}
+                          </p>
+                          {/* 🔴 발생 시각 — §1 알람 패널 표시 7항 중 하나였고 빠져 있었다(회부 R-1).
+                              시각이 없으면 「지금 난 일」과 「며칠 전부터 울고 있는 일」이 같은
+                              줄로 보인다 — seed 의 이 알람은 후자다.
+                              🔴 같은 줄 우측에 두면 340px 폭에서 id 를 세 줄로 깨뜨렸다(실측) —
+                                 두 사실을 위아래로 나눈다. */}
+                          <p className="mt-0.5 text-foot text-placeholder" data-testid="alarm-raised-at">
+                            발생 {stamp(a.raisedAt) ?? a.raisedAt} {TZ_LABEL}
+                          </p>
+                        </div>
+                      </div>
+                      <dl className="mt-3 flex gap-2 rounded-chip bg-inset px-3 py-2 text-foot">
+                        <dt className="text-muted">설비</dt>
+                        <dd className="id min-w-0 flex-1 truncate">
+                          {a.equipmentId} · {a.sensorId}
+                        </dd>
+                        <dt className="text-muted">임계 → 관측</dt>
+                        <dd className="id fkt-num font-semibold">
+                          {a.thresholdValue} → {a.observedValue}
+                        </dd>
+                      </dl>
+                      <div className="mt-3">
+                        <StartInvestigation
+                          scenarioId={scenarios[0]?.scenarioId ?? "GS-01"}
+                          sessionId={sessionId}
+                          sessionOrigin={sessionOrigin}
+                          testId="start-from-alarm"
+                        />
+                      </div>
+                    </li>
                   );
                 })}
               </ul>
             )}
           </section>
 
-          <section className="rounded border border-edge bg-panel p-3" data-testid="scenario-dock">
-            <p className="text-xs text-muted">승인된 시나리오</p>
+          <section className="fkt-card overflow-hidden" data-testid="scenario-dock">
+            <p className="fkt-section-label px-5 pt-4 pb-1">승인된 시나리오</p>
             {scenarios.length === 0 ? (
-              <p className="mt-2 text-sm text-muted">승인된 시나리오를 가져오지 못했습니다.</p>
+              <p className="px-5 pb-4 text-body-c text-muted">
+                승인된 시나리오를 가져오지 못했습니다.
+              </p>
             ) : (
-              <ul className="mt-2 space-y-1 text-sm">
+              <ul className="fkt-rows">
                 {scenarios.map((s) => (
-                  <li key={s.scenarioId}>
-                    <span className="text-ai" aria-hidden>
-                      ◉
-                    </span>{" "}
-                    <span className="id text-xs">{s.scenarioId}</span> {s.title}
+                  <li key={s.scenarioId} className="flex items-center gap-3 px-5 py-3.5">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-pill bg-ai" aria-hidden />
+                    <span className="min-w-0 flex-1 text-body-c">{s.title}</span>
+                    <span className="id shrink-0 text-cap text-placeholder">{s.scenarioId}</span>
                   </li>
                 ))}
               </ul>
@@ -305,15 +338,33 @@ export function OverviewBody({
   );
 }
 
-function Kpi({ label, value }: { label: string; value: string | number }) {
+/** KPI 카드 — 값 40px/700 tabular-nums · 라벨 13px/600 보조 · 단위는 baseline 정렬(리서치 §1-6). */
+function KpiCard({
+  label,
+  value,
+  unit,
+  alert,
+}: {
+  label: string;
+  value: string | number;
+  unit?: string;
+  /** 값이 0 보다 크면 위험색으로 «값만» 물든다 — 카드 배경을 물들이지 않는다(강조는 하나). */
+  alert?: boolean;
+}) {
+  const hot = alert && Number(value) > 0;
   return (
-    <span>
-      <span className="text-muted">{label}</span> <span className="id font-semibold">{value}</span>
-    </span>
+    <article className="fkt-card px-5 py-4">
+      <p className="fkt-section-label">{label}</p>
+      <p className="mt-2 flex items-baseline gap-1.5">
+        <span className={`fkt-num text-kpi leading-none ${hot ? "text-danger" : ""}`}>{value}</span>
+        {unit && <span className="text-body-c text-muted">{unit}</span>}
+      </p>
+    </article>
   );
 }
 
-function TreeButton({
+/** 라인 필터 칩 — pill · 선택은 채움 + 흰 글자(테두리 0). */
+function LineChip({
   active,
   onClick,
   label,
@@ -329,12 +380,12 @@ function TreeButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`w-full rounded px-2 py-1 text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai ${
-        active ? "bg-bg text-ink" : "text-muted hover:bg-bg hover:text-ink"
+      className={`rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
+        active ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
       }`}
+      title={id}
     >
       {label}
-      {id && <span className="id ml-1 text-xs text-muted">{id}</span>}
     </button>
   );
 }
@@ -350,60 +401,60 @@ function EquipmentCard({
   const mine = alarms.filter((a) => a.equipmentId === equipment.equipmentId);
   return (
     <article
-      className="rounded border border-edge bg-panel p-3 focus-within:outline focus-within:outline-2 focus-within:outline-ai"
+      className="fkt-card fkt-hoverable flex min-h-[148px] flex-col p-4 focus-within:outline focus-within:outline-2 focus-within:outline-ai"
       data-testid="equipment-card"
       data-equipment={equipment.equipmentId}
       data-status={equipment.status}
     >
-      <div className="flex items-center gap-2">
-        <span className={mark.tone} title={mark.label} aria-hidden>
+      <div className="flex items-center gap-2.5">
+        {/* 색 원 + 도형 — 리서치 §3 「색 원 안 심볼」을 색각 규율과 합친 자리 */}
+        <span
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-pill text-cap ${mark.tone}`}
+          style={{ background: "color-mix(in srgb, currentColor 15%, transparent)" }}
+          title={mark.label}
+          aria-hidden
+        >
           {mark.icon}
         </span>
-        <span className="id min-w-0 flex-1 truncate text-xs">{equipment.equipmentId}</span>
-        {mine.length > 0 && <span className="text-xs text-danger">알람 {mine.length}</span>}
+        <span className="min-w-0 flex-1 truncate text-body-c font-semibold">{equipment.name}</span>
+        {mine.length > 0 && (
+          <span className="fkt-pill shrink-0 text-danger">알람 {mine.length}</span>
+        )}
       </div>
-      <p className="mt-1 truncate text-sm">{equipment.name}</p>
-      <p className="text-xs text-muted">
-        {mark.label} · {equipment.lineName}
+      <p className="mt-1 truncate text-foot text-muted">
+        <span className="id">{equipment.equipmentId}</span> · {mark.label} · {equipment.lineName}
       </p>
       {/* 🔴 스파크라인은 «브라우저»가 series를 따로 부른다 — overview 응답에 시계열을 싣지
           않는 것이 계약 v0.1.7의 결정이고(집계 비대 방지), 그 덕에 이 카드가 브라우저
           네트워크 축의 실물 표본이 된다. */}
-      <Sparkline
-        equipmentId={equipment.equipmentId}
-        sensorId={equipment.sensorIds[0] ?? null}
-      />
+      <div className="mt-auto">
+        <Sparkline equipmentId={equipment.equipmentId} sensorId={equipment.sensorIds[0] ?? null} />
+      </div>
     </article>
   );
 }
 
 function IntroCard({ onClose }: { onClose: () => void }) {
   return (
-    <section
-      className="rounded border border-ai/40 bg-panel p-3"
-      data-testid="intro-card"
-      aria-label="처음 오셨나요"
-    >
+    <section className="fkt-card p-5" data-testid="intro-card" aria-label="처음 오셨나요">
       <div className="flex items-start gap-2">
-        <p className="flex-1 text-sm font-semibold">처음 오셨나요?</p>
+        <p className="flex-1 text-title font-semibold tracking-[-0.01em]">처음 오셨나요?</p>
         <button
           type="button"
           onClick={onClose}
-          className="rounded px-1 text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+          className="fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rounded-pill text-muted hover:text-ink"
           aria-label="안내 닫기"
         >
           ✕
         </button>
       </div>
-      <p className="mt-2 text-xs text-muted">
-        이 화면은 synthetic 공장 1곳의 상태입니다.
-      </p>
-      <ol className="mt-2 space-y-1 text-xs">
-        <li>① 지금 설비에 알람이 떠 있습니다</li>
-        <li>② 「조사 시작」을 누르면 AI가 근거를 모읍니다</li>
-        <li>③ 원인 후보와 작업지시서 초안을 사람이 승인합니다</li>
+      <p className="mt-2 text-body-c text-muted">이 화면은 synthetic 공장 1곳의 상태입니다.</p>
+      <ol className="fkt-rows mt-4 list-decimal rounded-chip bg-inset pl-0 text-body-c [&>li]:list-inside">
+        <li className="px-3.5 py-2.5">지금 설비에 알람이 떠 있습니다</li>
+        <li className="px-3.5 py-2.5">「조사 시작」을 누르면 AI가 근거를 모읍니다</li>
+        <li className="px-3.5 py-2.5">원인 후보와 작업지시서 초안을 사람이 승인합니다</li>
       </ol>
-      <p className="mt-2 text-xs text-muted">언제든 ⟲ 로 처음으로 돌아갑니다.</p>
+      <p className="mt-3 text-foot text-placeholder">언제든 리셋으로 처음으로 돌아갑니다.</p>
     </section>
   );
 }

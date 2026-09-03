@@ -89,15 +89,15 @@ export function SensorTrend({
 
   return (
     <section
-      className="rounded border border-edge bg-panel p-3"
+      className="fkt-card p-5"
       data-testid="sensor-trend"
       data-sensor-source={source}
       data-sensor={sensorId}
     >
       <div className="flex items-center gap-2">
-        <p className="id text-xs">{sensorId}</p>
-        <p className="text-xs text-muted">{unit}</p>
-        <div className="ml-auto flex gap-1" role="group" aria-label="추세 창">
+        <p className="id text-body-c font-semibold">{sensorId}</p>
+        <p className="text-foot text-muted">{unit}</p>
+        <div className="ml-auto flex gap-0.5 rounded-pill bg-fill/50 p-1" role="group" aria-label="추세 창">
           {(["24h", "3w"] as const).map((w) => (
             <button
               key={w}
@@ -105,8 +105,8 @@ export function SensorTrend({
               onClick={() => setWindow(w)}
               aria-pressed={window === w}
               data-testid={`window-${w}`}
-              className={`rounded border px-2 py-0.5 text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai ${
-                window === w ? "border-ai text-ai" : "border-edge text-muted hover:text-ink"
+              className={`rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
+                window === w ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
               }`}
             >
               {w === "24h" ? "24h" : "3주"}
@@ -118,11 +118,11 @@ export function SensorTrend({
       <SensorProvenance source={source} alarm={alarm} alarmIds={alarmIds} />
 
       {why && (
-        <p className="mt-3 text-sm text-warn" role="status">
+        <p className="mt-4 text-body-c text-warn" role="status">
           추세를 가져오지 못했다: {why}
         </p>
       )}
-      {!why && !series && <p className="mt-3 text-sm text-muted">불러오는 중…</p>}
+      {!why && !series && <p className="mt-4 text-body-c text-muted">불러오는 중…</p>}
       {series && <Chart series={series} alarm={source === "alarm" ? alarm : null} />}
     </section>
   );
@@ -140,7 +140,7 @@ function SensorProvenance({
 }) {
   if (source === "alarm" && alarm) {
     return (
-      <p className="mt-1 text-xs text-muted" data-testid="sensor-provenance">
+      <p className="mt-2 text-foot text-muted" data-testid="sensor-provenance">
         <span className="text-ai">이 incident 를 울린 알람의 센서</span> ·{" "}
         <span className="id">{alarm.alarmId}</span> · 발생 {stamp(alarm.raisedAt) ?? alarm.raisedAt}{" "}
         {TZ_LABEL}
@@ -149,7 +149,7 @@ function SensorProvenance({
   }
   // 🔴 「알람 센서가 아니다」를 «말한다». 앞판은 같은 자리에 아무 말 없이 첫 센서를 그렸다.
   return (
-    <p className="mt-1 text-xs text-warn" data-testid="sensor-provenance">
+    <p className="mt-2 text-foot text-warn" data-testid="sensor-provenance">
       ⚠ 알람 센서가 아니다 — 이 설비의 첫 센서다.{" "}
       {alarmIds.length === 0
         ? "이 incident 에 연결된 알람이 없다."
@@ -176,29 +176,57 @@ function Chart({ series, alarm }: { series: Series; alarm: ActiveAlarm | null })
     })
     .join(" ");
 
+  /* 🔴 **「차트가 뭉개진다」의 근인**(폐하 09-03 14:01)은 색이 아니라 «스케일»이었다:
+     `viewBox 100×100` + `preserveAspectRatio="none"` 로 x 를 10배 이상 늘리면 stroke 도 같이
+     늘어나 선이 방향마다 다른 굵기로 찌그러진다(대각선은 뭉개지고 수직선은 굵어진다).
+     → `vectorEffect="non-scaling-stroke"` 로 선 굵기를 화면 픽셀에 고정하고, 굵기를 2px
+     round-cap 으로 올린다. 축·격자는 지우고 눈금 3개만 «SVG 밖»에 둔다(안에 두면 글자도 늘어난다). */
+  const ticks = [max, min + span / 2, min];
+
   return (
-    <figure className="mt-3">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-48 w-full" role="img"
-        aria-label={`${series.sensorId} ${series.window} 추세`}>
-        {series.alarmThreshold !== null && (
-          <line x1="0" y1={y(series.alarmThreshold)} x2="100" y2={y(series.alarmThreshold)}
-            stroke="currentColor" className="text-danger/50" strokeDasharray="1 2" strokeWidth="0.4" />
-        )}
-        {series.warnThreshold !== null && (
-          <line x1="0" y1={y(series.warnThreshold)} x2="100" y2={y(series.warnThreshold)}
-            stroke="currentColor" className="text-warn" strokeDasharray="2 2" strokeWidth="0.5" />
-        )}
-        {/* 🔴 알람 «행»의 임계 = 서사의 앵커(계약 v0.1.7-정정 2차). 센서 임계표와 갈릴 수
-            있으므로 별도 선으로 긋는다 — 겹치면 겹친 대로가 사실이다. */}
-        {alarm?.thresholdValue !== null && alarm?.thresholdValue !== undefined && (
-          <line
-            x1="0" y1={y(alarm.thresholdValue)} x2="100" y2={y(alarm.thresholdValue)}
-            stroke="currentColor" className="text-danger" strokeWidth="0.35"
-          />
-        )}
-        <path d={path} fill="none" stroke="currentColor" className="text-ai" strokeWidth="0.6" />
-      </svg>
-      <figcaption className="mt-2 flex flex-wrap gap-x-4 text-xs text-muted">
+    <figure className="mt-4">
+      <div className="relative">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-[220px] w-full text-ai" role="img"
+          aria-label={`${series.sensorId} ${series.window} 추세`}>
+          <defs>
+            <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {series.alarmThreshold !== null && (
+            <line x1="0" y1={y(series.alarmThreshold)} x2="100" y2={y(series.alarmThreshold)}
+              stroke="currentColor" className="text-danger/50" strokeDasharray="2 4" strokeWidth="1"
+              vectorEffect="non-scaling-stroke" />
+          )}
+          {series.warnThreshold !== null && (
+            <line x1="0" y1={y(series.warnThreshold)} x2="100" y2={y(series.warnThreshold)}
+              stroke="currentColor" className="text-warn" strokeDasharray="4 4" strokeWidth="1"
+              vectorEffect="non-scaling-stroke" />
+          )}
+          {/* 🔴 알람 «행»의 임계 = 서사의 앵커(계약 v0.1.7-정정 2차). 센서 임계표와 갈릴 수
+              있으므로 별도 선으로 긋는다 — 겹치면 겹친 대로가 사실이다. */}
+          {alarm?.thresholdValue !== null && alarm?.thresholdValue !== undefined && (
+            <line
+              x1="0" y1={y(alarm.thresholdValue)} x2="100" y2={y(alarm.thresholdValue)}
+              stroke="currentColor" className="text-danger" strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+          <path d={`${path} L100,100 L0,100 Z`} fill="url(#trend-fill)" stroke="none" />
+          <path d={path} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+            strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        </svg>
+        {/* y 눈금 3개 — 격자선 없이 값만(리서치 §3 「y 눈금 2~3개」) */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-col justify-between py-0.5 text-cap text-placeholder" aria-hidden>
+          {ticks.map((t, i) => (
+            <span key={i} className="id bg-panel/80 px-1">
+              {Number.isInteger(t) ? t : t.toFixed(1)}
+            </span>
+          ))}
+        </div>
+      </div>
+      <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-foot text-muted">
         {/* 🔴 「기준선」이라는 낱말로 한쪽을 지목하지 않는다 — 두 임계는 뜻이 다른 두 선이다. */}
         <span data-testid="threshold-legend">
           임계 <span className="text-warn">warn {series.warnThreshold}</span>
