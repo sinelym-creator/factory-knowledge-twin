@@ -259,7 +259,12 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
         aaFail: liveRows.filter((r) => !r.aaPass).length,
         aaaFail: liveRows.filter((r) => !r.aaaPass).length,
       });
-      const keyOf = (t) => `${t.role}|${t.name}|${Math.round(t.docLeft)}|${Math.round(t.docTop)}`;
+      /* 🔴 고정·스티키 요소는 «뷰포트» 좌표로, 흐르는 요소는 «문서» 좌표로 센다 —
+         한 쪽만 쓰면 앱바가 스텝마다 새 대상이 되거나(문서 좌표), 스크롤로 자리를 옮긴
+         같은 요소가 서로 다른 대상으로 갈린다(뷰포트 좌표). */
+      const keyOf = (t) => t.pinned
+        ? `${t.role}|${t.name}|v|${Math.round(t.left)}|${Math.round(t.top)}`
+        : `${t.role}|${t.name}|d|${Math.round(t.docLeft)}|${Math.round(t.docTop)}`;
       for (const t of rows) {
         const k2 = keyOf(t);
         if (!seen.has(k2)) seen.set(k2, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name });

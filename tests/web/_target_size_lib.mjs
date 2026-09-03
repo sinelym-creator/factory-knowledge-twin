@@ -117,6 +117,17 @@ export const SCAN = () => {
       bottom: Number((hit ? hit.bottom : r.bottom).toFixed(2)),
       inlineCandidate,
       inert: !!inertAncestor,
+      /* 🔴 **고정·스티키는 «문서 좌표»가 스크롤마다 달라진다.** 스윕에서 대상을 세는 키를
+         문서 좌표로만 잡으면 앱바·배너가 **스텝마다 새 대상으로 계수**된다(37대 실측: 390px
+         overview 가 16 → 36 으로 부풀었다 — 다섯 스텝 × 다섯 요소). 화면에 고정된 것은
+         **뷰포트 좌표가 그 대상의 정체**다. 조상까지 훑어 «핀 여부»를 값으로 남긴다. */
+      pinned: (() => {
+        for (let a = el; a && a !== document.documentElement; a = a.parentElement) {
+          const pos = getComputedStyle(a).position;
+          if (pos === "fixed" || pos === "sticky") return true;
+        }
+        return false;
+      })(),
       planted: el.id.startsWith("__ctl_"),
     });
   }
