@@ -154,6 +154,13 @@ const READ = (sel) => {
       hitW: hit.w,
       hitH: hit.h,
       hitOwnedCenter: hit.ownedCenter,
+      // 🔴 층을 둘 다 적는다 — `::before` 의 **computed** 치수(소수 그대로)와, 실제로 **눌리는**
+      //    지점(내 스캔 · 정수 해상도)은 다른 층이다. 두 값이 갈리면 «어느 층에서 잃는지»가 보인다.
+      beforeBox: (() => {
+        const b = getComputedStyle(n, "::before");
+        if (!b || b.content === "none") return null;
+        return { w: b.width, h: b.height, pos: b.position };
+      })(),
       hitPasses: hit.ownedCenter && Math.min(hit.w, hit.h) >= 44,
       ...placeOf(n),
       // 🔴 문단 속 인라인 링크는 «세그먼트»가 아니다 — 지우지 않고 «표시»만 해서
@@ -276,6 +283,18 @@ for (const name of BROWSERS) {
         '#__hitctrl_on::before{content:"";position:absolute;inset:-10px}' +
         '#__hitctrl_off::before{content:"";position:absolute;inset:-10px;pointer-events:none}';
       document.head.appendChild(st);
+      // 🔴 판정선 교정(T7 재측 조건 1) — 「두 사람의 44 가 다른 44 일 수 있다」.
+      //    구현 좌석의 프로브는 48 을 47 로 읽었다(1px 먹음). 내 히트 스캔은 1px 해상도라
+      //    반대로 **1px 더 준다**(기준선에서 히트 = 시각 +1). 어느 쪽이든 **43 을 44 로 통과시키거나
+      //    44 를 43 으로 떨어뜨리면 처방의 공로와 내 오차가 섞인다.**
+      //    그래서 48·44·43 세 표본을 같은 실행에 심어 **내 판정선이 각각 무엇을 내는지** 찍는다.
+      for (const px of [48, 44, 43]) {
+        const cal = document.createElement("button");
+        cal.id = `__cal_${px}`;
+        cal.textContent = `C${px}`;
+        cal.style.cssText = `position:fixed;left:320px;top:${px === 48 ? 120 : px === 44 ? 220 : 320}px;width:${px}px;height:${px}px;padding:0;z-index:99999;background:#333;font-size:6px;line-height:1`;
+        document.body.appendChild(cal);
+      }
       for (const id of ["__hitctrl_on", "__hitctrl_off"]) {
         const b = document.createElement("button");
         b.id = id;
@@ -287,6 +306,38 @@ for (const name of BROWSERS) {
     const after = await page.evaluate(READ, TOUCH_SEL);
 
     const tiny = after.touchUnder.find((u) => u.w === 20 && u.h === 20);
+    // 44·48 은 시각이 이미 ≥44 라 `touchUnder` 에 안 들어온다 — 그래서 페이지에서 직접 읽는다.
+    const cal = await page.evaluate(() => {
+      const out = {};
+      for (const px of [48, 44, 43]) {
+        const n = document.getElementById(`__cal_${px}`);
+        if (!n) {
+          out[px] = null;
+          continue;
+        }
+        const r = n.getBoundingClientRect();
+        const cx = Math.round(r.left + r.width / 2);
+        const cy = Math.round(r.top + r.height / 2);
+        const owns = (el) => Boolean(el) && (el === n || n.contains(el));
+        const scan = (dx, dy) => {
+          let d = 0;
+          for (let k = 1; k <= 80; k++) {
+            const x = cx + dx * k;
+            const y = cy + dy * k;
+            if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) break;
+            if (!owns(document.elementFromPoint(x, y))) break;
+            d = k;
+          }
+          return d;
+        };
+        out[px] = {
+          visual: `${Math.round(r.width * 10) / 10}x${Math.round(r.height * 10) / 10}`,
+          hit: `${scan(-1, 0) + scan(1, 0) + 1}x${scan(0, -1) + scan(0, 1) + 1}`,
+        };
+      }
+      return out;
+    });
+
     const hitOn = after.touchUnder.find((u) => u.text === "A" && u.w === 30);
     const hitOff = after.touchUnder.find((u) => u.text === "B" && u.w === 30);
     await ctx.close();
@@ -324,6 +375,8 @@ for (const name of BROWSERS) {
       hitCtrlOn: hitOn ? { visual: `${hitOn.w}x${hitOn.h}`, hit: `${hitOn.hitW}x${hitOn.hitH}`, passes: hitOn.hitPasses } : null,
       hitCtrlOff: hitOff ? { visual: `${hitOff.w}x${hitOff.h}`, hit: `${hitOff.hitW}x${hitOff.hitH}`, passes: hitOff.hitPasses } : null,
       // 🔴 ⓐ 는 시각 30×30 그대로인데 히트가 «커져야» 하고, ⓑ 는 안 커져야 한다.
+      // 🔴 교정표 — 판정문 맨 앞에 둔다. 이 값을 안 보고 44 를 말하면 남의 44 를 말하는 것이다.
+      calibration: cal,
       hitAxisFired:
         Boolean(hitOn && hitOff) &&
         hitOn.hitW > hitOn.w &&

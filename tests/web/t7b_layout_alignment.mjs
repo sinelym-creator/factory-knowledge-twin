@@ -27,6 +27,11 @@ if (!OUT) throw new Error("--out 이 필요하다");
 fs.mkdirSync(OUT, { recursive: true });
 
 const BROWSERS = arg("browsers", "chromium").split(",");
+/**
+ * 🔴 안내 카드를 «닫은» 열(T7 재측 조건 3). 열린 상태에서만 재면 「고쳤다」를 못 말한다 —
+ *    닫히면 우측 첫 카드가 `alarm-dock` 으로 바뀌어 비교 대상 자체가 달라진다.
+ */
+const DISMISS_INTRO = arg("dismissIntro", "no") === "yes";
 const WIDTHS = arg("widths", "768,1024,1280").split(",").map(Number);
 const SCREENS = [
   { id: "overview", route: "/overview" },
@@ -125,11 +130,18 @@ const LANDMARKS = {
   overview: [
     { id: "equipment-grid", sel: '[data-testid="equipment-grid"]' },
     { id: "equipment-first-card", sel: '[data-testid="equipment-grid"] [data-testid="equipment-card"]' },
-    { id: "overview-aside", sel: 'aside[aria-label="알람과 시나리오"]' },
+    { id: "overview-aside", sel: '[data-testid="overview-dock"], aside[aria-label="알람과 시나리오"]' },
     // 🔴 「aside 는 바로 alarm-dock 으로 시작한다」는 소스 읽기의 결론이었는데, **런타임은 다르다** —
     //    안내 카드(「처음 오셨나요?」 h=326)가 그 위에 있다. 그래서 «첫 자식»을 이름으로 따로 잡는다:
     //    비교해야 할 것은 정해진 컴포넌트가 아니라 **각 열에서 처음 보이는 카드**다.
-    { id: "equipment-tab-row", sel: '[data-testid="equipment-grid"] > *:first-child' },
+    // 🔴 «첫 자식»으로 짚은 것이 처방과 함께 늙었다(2026-09-03 실측). 처방 전 `aside` 의 첫 자식은
+    //    안내 카드였는데, 처방이 **양 열에 라벨 행을 새로 넣어** 첫 자식이 라벨이 됐다.
+    //    그러면 「좌측 카드 ↔ 우측 라벨」을 비교하게 되어 **고쳐진 것을 안 고쳐졌다고 읽는다**.
+    //    ⇒ 자리를 «순서»로 짚는다: 두 열의 **같은 인덱스** 자식끼리 비교한다.
+    { id: "grid-row0", sel: '[data-testid="equipment-grid"] > *:nth-child(1)' },
+    { id: "grid-row1", sel: '[data-testid="equipment-grid"] > *:nth-child(2)' },
+    { id: "dock-row0", sel: '[data-testid="overview-dock"] > *:nth-child(1), aside[aria-label="알람과 시나리오"] > *:nth-child(1)' },
+    { id: "dock-row1", sel: '[data-testid="overview-dock"] > *:nth-child(2), aside[aria-label="알람과 시나리오"] > *:nth-child(2)' },
     { id: "aside-first-card", sel: 'aside[aria-label="알람과 시나리오"] > *:first-child' },
     { id: "alarm-dock", sel: '[data-testid="alarm-dock"]' },
     { id: "scenario-dock", sel: '[data-testid="scenario-dock"]' },
@@ -138,7 +150,10 @@ const LANDMARKS = {
 /** 비교 축 = 「좌측 열의 첫 카드」 ↔ 「우측 묶음의 첫 카드」. 상자와 잉크를 둘 다 본다. */
 const PAIRS = {
   overview: [
-    // 🔴 이 축이 하명의 축이다 — 「각 열에서 처음 보이는 카드」의 윗선.
+    // 🔴 하명의 축 = 두 열의 «같은 순서» 자식끼리. 이름이 아니라 순서로 짚어야 설계가 움직여도 산다.
+    ["grid-row0", "dock-row0"],
+    ["grid-row1", "dock-row1"],
+    // 참고(늙은 축 — 처방 전 정의): 좌측 첫 카드 ↔ 우측 첫 자식
     ["equipment-first-card", "aside-first-card"],
     // 열 상자 자체(이건 맞아 있을 수 있다 — 그래서 둘 다 본다)
     ["equipment-grid", "overview-aside"],
@@ -159,6 +174,15 @@ for (const name of BROWSERS) {
     const page = await ctx.newPage();
     try {
       await enterShell(page, BASE);
+      if (DISMISS_INTRO) {
+        await page.goto(`${BASE}/overview`, { waitUntil: "domcontentloaded" });
+        await page.waitForTimeout(400);
+        // 안내 카드의 닫기(✕)만 누른다 — 못 찾으면 «닫았다»고 말하지 않는다.
+        const x = page.locator('[data-testid="intro-card"] button').first();
+        const ok = await x.click({ timeout: 4000 }).then(() => true).catch(() => false);
+        report.introDismissed = ok;
+        await page.waitForTimeout(400);
+      }
       for (const s of SCREENS) {
         await page.goto(`${BASE}${s.route}`, { waitUntil: "domcontentloaded" });
         await page.waitForLoadState("load").catch(() => {});
