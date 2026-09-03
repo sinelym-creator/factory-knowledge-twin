@@ -498,3 +498,672 @@ inert 가 실제로 걸린 칸: 0/36
 AAA(목표) 미달 요소: ["link:Overview 77×29","link:Incidents 73×29","link:Compare 74×29","link:안내와 둘러보기 다시 보기 45×33","button:⟲ 세션 리셋 65×25","button:배너 닫기 45×21","button:둘러보기 시작 122×37","button:나중에 75×37","button:다시 보지 않기 97×29","button:조사 시작 101×37","button:안내 닫기 29×29","button:조사 시작 101×34","button:전체 12대 77×20","button:가공 라인 1 4대 110×20","button:가공 라인 2 4대 111×20","button:가공 라인 3 4대 111×29","link:Overview 75×29","link:Incidents 75×29","link:Compare 75×29","button:⟲정적 재생본 기억 리셋 35×25","button:처음으로 29×29","button:한 이벤트 뒤로 29×29","button:재생 67×29","button:한 이벤트 앞으로 29×29","link:Live 로 돌아가기 71×43","link:MR-2025-0087 109×25","button:전체 19 65×29","button:record 9 73×29","button:doc-chunk 5 97×29","link:DOC-MAN-0021@r1#006 122×25","link:FM-BRG-WEAR 102×25","button:graph-path 5 101×29","link:근거 보기 53×19","link:근거 보기 30×19","link:Overview 122×37","link:Incidents 122×37","link:Compare 122×37","button:전체 12대 77×29","button:가공 라인 2 4대 111×29","button:가공 라인 1 4대 110×29","button:가공 라인 3 4대 110×29","link:Live 로 돌아가기 89×37","button:최근 24시간 93×29","button:최근 3주 72×29","link:① Overview 70×19","link:Live 로 돌아가기 121×37","button:최근 3주 41×107","link:Incidents 73×26","button:전체 12대 77×33","button:안내 닫기 29×45","link:Overview 75×26","link:안내와 둘러보기 다시 보기 45×39","button:배너 닫기 45×40"]
 RCA=0
 ########## R-B 화면 축 재측 · :3115 ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 라우트 발견 ===
+  overview = /overview
+  compare = /compare
+  work-order = /work-orders/WO-2025-0087
+  document = /documents/DOC-MAN-0021
+
+=== 본 측정 24/24 칸 사용 ===
+  [fine · base]
+     390×900  overview    스텝 5 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 4
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×34
+         ▫ AAA(목표) button 「전체 12대」 77×20
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×20
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×20
+         ▫ AAA(목표) button 「가공 라인 3 4대」 111×29
+     390×900  compare     스텝 1 · 대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 75×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「실행」 69×37
+     390×900  work-order  스텝 1 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+     390×900  document    스텝 2 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:① Overview
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+     768×900  overview    스텝 4 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 2
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:가공 라인 1 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+     768×900  compare     스텝 1 · 대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「실행」 69×37
+     768×900  work-order  스텝 1 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+     768×900  document    스텝 2 · 대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) link 「① Overview」 71×19
+    1440×900  overview    스텝 2 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+    1440×900  compare     스텝 1 · 대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「실행」 69×37
+    1440×900  work-order  스텝 1 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+    1440×900  document    스텝 2 · 대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) link 「① Overview」 71×19
+  [coarse · base]
+     390×900  overview    스텝 5 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 11/16 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) button 「전체 12대」 77×33
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+     390×900  compare     스텝 1 · 대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 5/8
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 75×29
+     390×900  work-order  스텝 1 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 3/6
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+     390×900  document    스텝 2 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 3/6 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:① Overview
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+     768×900  overview    스텝 4 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 15/16 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+     768×900  compare     스텝 1 · 대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 8/8
+     768×900  work-order  스텝 1 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 6/6
+     768×900  document    스텝 2 · 대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 6/7 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview
+         ▫ AAA(목표) link 「① Overview」 71×19
+    1440×900  overview    스텝 2 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+    1440×900  compare     스텝 1 · 대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 7/8
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+    1440×900  work-order  스텝 1 · 대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 5/6
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+    1440×900  document    스텝 2 · 대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 5/7 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:배너 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) link 「① Overview」 71×19
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 0/24
+🔴 끝내 «안 잰» 대상 합계: 21 (「위반 0」이 아니다)
+AAA(목표) 미달 요소: ["link:Overview 77×29","link:Incidents 73×29","link:Compare 74×29","link:안내와 둘러보기 다시 보기 45×33","button:⟲ 세션 리셋 65×25","button:배너 닫기 45×21","button:둘러보기 시작 122×37","button:나중에 75×37","button:다시 보지 않기 97×29","button:조사 시작 101×37","button:안내 닫기 29×29","button:조사 시작 101×34","button:전체 12대 77×20","button:가공 라인 1 4대 110×20","button:가공 라인 2 4대 111×20","button:가공 라인 3 4대 111×29","link:Overview 75×29","link:Compare 75×29","button:실행 69×37","link:Overview 122×37","link:Incidents 122×37","link:Compare 122×37","button:전체 12대 77×29","button:가공 라인 2 4대 111×29","button:가공 라인 1 4대 110×29","button:가공 라인 3 4대 110×29","link:① Overview 71×19","link:Incidents 73×26","button:전체 12대 77×33","button:안내 닫기 29×45","button:배너 닫기 45×40"]
+RCB=0
+########## R-C 상태 축 재측 · :3116(develop 앱면) ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 본 측정 24/24 칸 사용 ===
+  [fine · base]
+     390×900  overview    스텝 5 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 4
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×34
+         ▫ AAA(목표) button 「전체 12대」 77×20
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×20
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×20
+         ▫ AAA(목표) button 「가공 라인 3 4대」 111×29
+     390×480  overview    스텝 8 · 대상  12(all  12·inert제외 0) · AA통과 12/12 · AAA통과 0/12 · 🔴안잼 4
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+    1440×900  overview    스텝 2 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+    1440×480  overview    스텝 3 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 2
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:가공 라인 1 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+  [fine · modal]
+     390×900  overview    스텝 5 · 대상  10(all  10·inert제외 0) · AA통과 10/10 · AAA통과 0/10 · 🔴안잼 9
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) button 「취소」 65×37
+         ▫ AAA(목표) button 「되돌리기」 93×37
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×34
+         ▫ AAA(목표) button 「가공 라인 3 4대」 111×22
+     390×480  overview    스텝 8 · 대상   9(all   9·inert제외 0) · AA통과 9/9 · AAA통과 0/9 · 🔴안잼 9
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) button 「취소」 65×37
+         ▫ AAA(목표) button 「되돌리기」 93×37
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+    1440×900  overview    스텝 2 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 2
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) button 「취소」 65×37
+         ▫ AAA(목표) button 「되돌리기」 93×37
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+    1440×480  overview    스텝 3 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 4
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:가공 라인 1 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) button 「취소」 65×37
+         ▫ AAA(목표) button 「되돌리기」 93×37
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×28
+  [fine · tour]
+     390×900  overview    스텝 4 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 0/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+         ▫ AAA(목표) button 「다음」 57×37
+     390×480  overview    스텝 8 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 0/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+         ▫ AAA(목표) button 「다음」 57×37
+    1440×900  overview    스텝 2 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 0/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+         ▫ AAA(목표) button 「다음」 57×37
+    1440×480  overview    스텝 3 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 0/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+         ▫ AAA(목표) button 「다음」 57×37
+  [coarse · base]
+     390×900  overview    스텝 5 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 11/16 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) button 「전체 12대」 77×33
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+     390×480  overview    스텝 8 · 대상  12(all  12·inert제외 0) · AA통과 12/12 · AAA통과 8/12 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+    1440×900  overview    스텝 2 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+    1440×480  overview    스텝 3 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+  [coarse · modal]
+     390×900  overview    스텝 5 · 대상  10(all  10·inert제외 0) · AA통과 10/10 · AAA통과 7/10 · 🔴안잼 10
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×35
+         ▫ AAA(목표) button 「가공 라인 3 4대」 111×42
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+     390×480  overview    스텝 8 · 대상   9(all   9·inert제외 0) · AA통과 9/9 · AAA통과 7/9 · 🔴안잼 10
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×35
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+    1440×900  overview    스텝 2 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16 · 🔴안잼 2
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+    1440×480  overview    스텝 3 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 13/16 · 🔴안잼 7
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「가공 라인 3 4대」 111×40
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+  [coarse · tour]
+     390×900  overview    스텝 4 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 1/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+     390×480  overview    스텝 8 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 1/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+    1440×900  overview    스텝 2 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 1/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+    1440×480  overview    스텝 3 · 대상   2(all   2·inert제외 0) · AA통과 2/2 · AAA통과 1/2 · 🔴안잼 13
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Overview · link:Incidents · link:Compare · link:안내와 둘러보기 다시 보기 · button:⟲ 세션 리셋 · button:배너 닫기 · button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「건너뛰기」 69×29
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 8/24
+🔴 끝내 «안 잰» 대상 합계: 182 (「위반 0」이 아니다)
+AAA(목표) 미달 요소: ["link:Overview 77×29","link:Incidents 73×29","link:Compare 74×29","link:안내와 둘러보기 다시 보기 45×33","button:⟲ 세션 리셋 65×25","button:배너 닫기 45×21","button:둘러보기 시작 122×37","button:나중에 75×37","button:다시 보지 않기 97×29","button:조사 시작 101×37","button:안내 닫기 29×29","button:조사 시작 101×34","button:전체 12대 77×20","button:가공 라인 1 4대 110×20","button:가공 라인 2 4대 111×20","button:가공 라인 3 4대 111×29","button:취소 65×37","button:되돌리기 93×37","button:가공 라인 3 4대 111×22","button:건너뛰기 69×29","button:다음 57×37","link:Overview 122×37","link:Incidents 122×37","link:Compare 122×37","button:전체 12대 77×29","button:가공 라인 1 4대 110×29","button:가공 라인 2 4대 111×29","button:가공 라인 3 4대 110×29","button:가공 라인 3 4대 110×28","link:Incidents 73×26","button:전체 12대 77×33","button:안내 닫기 29×45","button:배너 닫기 45×35","button:가공 라인 3 4대 111×42","button:배너 닫기 45×40","button:가공 라인 3 4대 111×40"]
+RCC=0
+########## R-D 높이 축 재측 · :3115 ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 본 측정 16/16 칸 사용 ===
+  [fine · base]
+     390×480  overview    스텝 8 · 대상  12(all  12·inert제외 0) · AA통과 12/12 · AAA통과 0/12 · 🔴안잼 4
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+     390×480  incidents-INC-2026-014-run-STATIC-GS-01 스텝 7 · 대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18 · 🔴안잼 29
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Live 로 돌아가기 · button:최근 24시간 · button:최근 3주 · link:MR-2025-0087 · link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · button:전체 19 · button:record 9 · button:graph-path 5 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 75×29
+         ▫ AAA(목표) link 「Compare」 75×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) link 「Live 로 돌아가기」 71×43
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×25
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 30×19
+     390×640  overview    스텝 6 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 2
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:가공 라인 1 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×29
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×24
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 111×29
+     390×640  incidents-INC-2026-014-run-STATIC-GS-01 스텝 6 · 대상  23(all  23·inert제외 0) · AA통과 23/23 · AAA통과 2/23 · 🔴안잼 26
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Live 로 돌아가기 · button:최근 24시간 · button:최근 3주 · link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · button:graph-path 5 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 75×29
+         ▫ AAA(목표) link 「Compare」 75×29
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) link 「MR-2025-0087」 109×25
+         ▫ AAA(목표) button 「전체 19」 65×29
+         ▫ AAA(목표) button 「record 9」 73×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×14
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×14
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「근거 보기」 53×13
+         ▫ AAA(목표) link 「근거 보기」 30×13
+    1440×480  overview    스텝 3 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16 · 🔴안잼 2
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:가공 라인 1 4대 · button:가공 라인 3 4대
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「안내 닫기」 29×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+    1440×480  incidents-INC-2026-014-run-STATIC-GS-01 스텝 4 · 대상  26(all  26·inert제외 0) · AA통과 26/26 · AAA통과 0/26 · 🔴안잼 24
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:최근 24시간 · button:최근 3주 · link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) link 「Live 로 돌아가기」 121×37
+         ▫ AAA(목표) link 「MR-2025-0087」 109×25
+         ▫ AAA(목표) button 「전체 19」 65×29
+         ▫ AAA(목표) button 「record 9」 73×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) button 「최근 24시간」 93×29
+         ▫ AAA(목표) button 「최근 3주」 72×29
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×25
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+    1440×640  overview    스텝 3 · 대상  15(all  15·inert제외 0) · AA통과 15/15 · AAA통과 0/15 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:안내 닫기
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「둘러보기 시작」 122×37
+         ▫ AAA(목표) button 「나중에」 75×37
+         ▫ AAA(목표) button 「다시 보지 않기」 97×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+         ▫ AAA(목표) button 「전체 12대」 77×29
+         ▫ AAA(목표) button 「가공 라인 1 4대」 110×29
+         ▫ AAA(목표) button 「가공 라인 2 4대」 111×29
+         ▫ AAA(목표) button 「가공 라인 3 4대」 110×29
+         ▫ AAA(목표) button 「조사 시작」 101×37
+    1440×640  incidents-INC-2026-014-run-STATIC-GS-01 스텝 3 · 대상  26(all  26·inert제외 0) · AA통과 26/26 · AAA통과 0/26 · 🔴안잼 22
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) link 「Overview」 122×37
+         ▫ AAA(목표) link 「Incidents」 122×37
+         ▫ AAA(목표) link 「Compare」 122×37
+         ▫ AAA(목표) link 「안내와 둘러보기 다시 보기」 45×33
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「⟲ 세션 리셋」 65×25
+         ▫ AAA(목표) button 「배너 닫기」 45×21
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) link 「Live 로 돌아가기」 121×37
+         ▫ AAA(목표) button 「최근 24시간」 93×29
+         ▫ AAA(목표) button 「최근 3주」 72×29
+         ▫ AAA(목표) link 「MR-2025-0087」 109×25
+         ▫ AAA(목표) button 「전체 19」 65×29
+         ▫ AAA(목표) button 「record 9」 73×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×25
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+  [coarse · base]
+     390×480  overview    스텝 8 · 대상  12(all  12·inert제외 0) · AA통과 12/12 · AAA통과 8/12 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+     390×480  incidents-INC-2026-014-run-STATIC-GS-01 스텝 8 · 대상  19(all  19·inert제외 0) · AA통과 19/19 · AAA통과 4/19 · 🔴안잼 29
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Live 로 돌아가기 · button:최근 24시간 · button:최근 3주 · link:MR-2025-0087 · link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · button:전체 19 · button:record 9 · button:graph-path 5 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 75×29
+         ▫ AAA(목표) link 「Compare」 75×29
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) link 「MR-2025-0087」 109×16
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×25
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 30×19
+     390×640  overview    스텝 6 · 대상  15(all  15·inert제외 0) · AA통과 15/15 · AAA통과 10/15 · 🔴안잼 6
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:조사 시작 · button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) link 「Overview」 77×29
+         ▫ AAA(목표) link 「Incidents」 73×26
+         ▫ AAA(목표) link 「Compare」 74×29
+         ▫ AAA(목표) button 「전체 12대」 77×34
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+     390×640  incidents-INC-2026-014-run-STATIC-GS-01 스텝 6 · 대상  21(all  21·inert제외 0) · AA통과 21/21 · AAA통과 5/21 · 🔴안잼 26
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:Live 로 돌아가기 · button:최근 24시간 · button:최근 3주 · link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · button:graph-path 5 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) link 「Overview」 75×29
+         ▫ AAA(목표) link 「Incidents」 75×29
+         ▫ AAA(목표) link 「Compare」 75×29
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) link 「MR-2025-0087」 109×25
+         ▫ AAA(목표) button 「전체 19」 65×29
+         ▫ AAA(목표) button 「record 9」 73×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 30×19
+    1440×480  overview    스텝 3 · 대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16 · 🔴안잼 5
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:전체 12대 · button:가공 라인 1 4대 · button:가공 라인 2 4대 · button:가공 라인 3 4대 · button:안내 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「안내 닫기」 29×45
+    1440×480  incidents-INC-2026-014-run-STATIC-GS-01 스텝 4 · 대상  26(all  26·inert제외 0) · AA통과 26/26 · AAA통과 8/26 · 🔴안잼 24
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:최근 24시간 · button:최근 3주 · link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) link 「MR-2025-0087」 109×25
+         ▫ AAA(목표) button 「전체 19」 65×29
+         ▫ AAA(목표) button 「record 9」 73×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×25
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+    1440×640  overview    스텝 3 · 대상  15(all  15·inert제외 0) · AA통과 15/15 · AAA통과 14/15 · 🔴안잼 1
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): button:안내 닫기
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+    1440×640  incidents-INC-2026-014-run-STATIC-GS-01 스텝 3 · 대상  26(all  26·inert제외 0) · AA통과 26/26 · AAA통과 8/26 · 🔴안잼 22
+         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): link:DOC-MAN-0021@r1#006 · link:FM-BRG-WEAR · link:DOC-MAN-0021@r1#006 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기 · link:근거 보기
+         ▫ AAA(목표) button 「⟲정적 재생본 기억 리셋」 35×25
+         ▫ AAA(목표) button 「배너 닫기」 45×40
+         ▫ AAA(목표) button 「처음으로」 29×29
+         ▫ AAA(목표) button 「한 이벤트 뒤로」 29×29
+         ▫ AAA(목표) button 「재생」 67×29
+         ▫ AAA(목표) button 「한 이벤트 앞으로」 29×29
+         ▫ AAA(목표) link 「MR-2025-0087」 109×25
+         ▫ AAA(목표) button 「전체 19」 65×29
+         ▫ AAA(목표) button 「record 9」 73×29
+         ▫ AAA(목표) button 「doc-chunk 5」 97×29
+         ▫ AAA(목표) button 「graph-path 5」 101×29
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「FM-BRG-WEAR」 102×25
+         ▫ AAA(목표) link 「DOC-MAN-0021@r1#006」 122×25
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+         ▫ AAA(목표) link 「근거 보기」 53×19
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 0/16
+🔴 끝내 «안 잰» 대상 합계: 228 (「위반 0」이 아니다)
+AAA(목표) 미달 요소: ["link:Overview 77×29","link:Incidents 73×29","link:Compare 74×29","link:안내와 둘러보기 다시 보기 45×33","button:⟲ 세션 리셋 65×25","button:배너 닫기 45×21","button:둘러보기 시작 122×37","button:나중에 75×37","button:다시 보지 않기 97×29","button:조사 시작 101×37","button:안내 닫기 29×29","link:Overview 75×29","link:Incidents 75×29","link:Compare 75×29","button:⟲정적 재생본 기억 리셋 35×25","button:처음으로 29×29","button:한 이벤트 뒤로 29×29","button:재생 67×29","button:한 이벤트 앞으로 29×29","button:doc-chunk 5 97×29","link:Live 로 돌아가기 71×43","link:DOC-MAN-0021@r1#006 122×25","link:FM-BRG-WEAR 102×25","button:graph-path 5 101×29","link:근거 보기 53×19","link:근거 보기 30×19","button:조사 시작 101×24","button:전체 12대 77×29","button:가공 라인 2 4대 111×29","button:가공 라인 1 4대 110×29","button:가공 라인 3 4대 111×29","link:MR-2025-0087 109×25","button:전체 19 65×29","button:record 9 73×29","link:DOC-MAN-0021@r1#006 122×14","link:FM-BRG-WEAR 102×14","link:근거 보기 53×13","link:근거 보기 30×13","link:Overview 122×37","link:Incidents 122×37","link:Compare 122×37","button:가공 라인 3 4대 110×29","link:Live 로 돌아가기 121×37","button:최근 24시간 93×29","button:최근 3주 72×29","link:Incidents 73×26","button:안내 닫기 29×45","link:MR-2025-0087 109×16","button:전체 12대 77×34","button:배너 닫기 45×40"]
+RCD=0

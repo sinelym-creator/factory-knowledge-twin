@@ -1,0 +1,17 @@
+
+=== modal(세션 리셋 확인)
+  상태 열림 true · dialog 1 · aria-modal 1 · inert 루트 0
+  ① 닿는가 — 중심 소유 true (덮은 것: BUTTON.fkt-btn fkt-btn-primary rounde) · inert 조상 false
+  ② 눌리는가 — 클릭 성공
+  URL http://127.0.0.1:3116/overview → http://127.0.0.1:3116/incidents/INC-2026-014?run=RUN-0f71a0225294
+  ⇒ 배경이 «눌렸다»
+
+=== tour(대조군 — 배경 inert)
+  상태 열림 true · dialog 0 · aria-modal 0 · inert 루트 9
+  ① 닿는가 — 중심 소유 false (덮은 것: DIV.flex min-w-0 flex-1 flex-col) · inert 조상 true
+  ② 눌리는가 — 클릭 실패: TimeoutError: locator.click: Timeout 3000ms exceeded.
+  URL http://127.0.0.1:3116/overview → http://127.0.0.1:3116/overview
+  ⇒ 배경이 «안 눌렸다»
+
+대조: 모달 배경 «눌림» / 투어(inert) 배경 «안 눌림»
+🔴 D-44 확증 — aria-modal 을 «선언»했는데 포인터에는 배경이 열려 있다.
