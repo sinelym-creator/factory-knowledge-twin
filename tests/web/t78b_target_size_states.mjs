@@ -48,7 +48,7 @@ const ROUTES_ARG = arg("routes", "discover");
 const OUT = arg("out", "");
 
 /* 🔴 씨앗 화면 = 링크를 «주울» 자리. 이것도 인자다. */
-const SEEDS = list(arg("seeds", "/overview,/incidents/INC-2026-014?run=STATIC-GS-01"));
+const SEEDS = list(arg("seeds", "/overview,/incidents/INC-2026-014?run=STATIC-GS-01,/evidence/MR-2025-0087?run=STATIC-GS-01"));
 /* 교정 열 = 36대가 이미 낸 칸. 「같은 산식인가」만 묻는다. */
 const CALIBRATE = list(arg("calibrate", "/overview,/incidents/INC-2026-014?run=STATIC-GS-01,/evidence/MR-2025-0087?run=STATIC-GS-01"));
 
@@ -68,10 +68,43 @@ const mkCtx = async (width, height, pointer) => {
   return { ctx, page };
 };
 
-const settle = async (page) => {
+/* 🔴 **모집단이 «자리 잡을» 때까지 기다린다 — 시간이 아니라 «수»로 기다린다.**
+   첫 스모크에서 교정 열 `/overview` 가 **12**, 같은 회차 본 측정이 **16** 을 냈다. 같은 화면·같은
+   폭·같은 상태인데 수가 갈렸다 = **내 계측기가 흔들렸다**(36대의 16 이 참값). 원인은 초대 카드가
+   live-status 응답 «뒤»에 마운트되는데 `networkidle + 700ms` 가 그 앞에서 끊긴 것.
+   ⇒ 대상 수가 **연속 2회 같아질 때까지** 기다리고, 못 자리 잡으면 그 사실을 값으로 남긴다.
+   🔴 시간(700ms)으로 기다리면 무대가 느린 날 조용히 «다른 화면»을 재게 된다. */
+const COUNT_SEL = [
+  "a[href]", "button", "input", "select", "textarea", "summary",
+  '[role="button"]', '[role="link"]', '[role="checkbox"]', '[role="radio"]',
+  '[role="switch"]', '[role="tab"]', '[role="menuitem"]', '[role="option"]', "[tabindex]",
+].join(",");
+const settle = async (page, { maxMs = 8000, step = 350 } = {}) => {
   await page.waitForLoadState("networkidle").catch(() => {});
-  await page.waitForTimeout(700);
+  let prev = -1, stable = 0, waited = 0, last = -1;
+  while (waited < maxMs) {
+    const n = await page.evaluate((sel) => document.querySelectorAll(sel).length, COUNT_SEL).catch(() => -1);
+    last = n;
+    stable = n === prev ? stable + 1 : 0;
+    if (stable >= 2) return { settled: true, waitedMs: waited, count: n };
+    prev = n;
+    await page.waitForTimeout(step);
+    waited += step;
+  }
+  return { settled: false, waitedMs: waited, count: last };
 };
+
+/* 🔴 **세션 문**(gate) — 새 컨텍스트로 `/compare` 를 바로 치면 `/overview` 로 **되돌려진다**
+   (첫 스모크에서 `landedAsRequested:false` 로 잡혔다). 36대 그물이 3화면을 잰 것은 한 컨텍스트
+   안에서 `/overview` 를 «먼저» 밟았기 때문이고, 칸마다 컨텍스트를 새로 여는 이 그물은 그 전제를
+   물려받지 못한다. ⇒ **문을 먼저 통과시키고** 목표로 간다. 통과 여부는 값으로 남긴다. */
+const PRIME = arg("prime", "/overview");
+async function primeSession(page) {
+  const r = await page.goto(`${BASE}${PRIME}`, { waitUntil: "domcontentloaded" }).catch(() => null);
+  const s = await settle(page);
+  const landed = await page.evaluate(() => location.pathname).catch(() => "");
+  return { status: r ? r.status() : null, landed, settled: s.settled };
+}
 
 /* ── 라우트 «발견» ────────────────────────────────────────────────────────
    🔴 id 를 박지 않는다. 씨앗 화면의 `a[href]` 에서 패턴에 맞는 첫 링크를 줍는다.
@@ -80,28 +113,36 @@ async function discoverRoutes() {
   const { ctx, page } = await mkCtx(1440, 900, "fine");
   const found = new Map([["overview", "/overview"]]);
   const hrefs = new Set();
+  const ids = new Set();
+  await primeSession(page);
   for (const seed of SEEDS) {
     await page.goto(`${BASE}${seed}`, { waitUntil: "domcontentloaded" }).catch(() => {});
     await settle(page);
-    const hs = await page.evaluate(() =>
-      Array.from(document.querySelectorAll("a[href]")).map((a) => a.getAttribute("href")).filter(Boolean),
-    );
-    hs.forEach((h) => hrefs.add(h));
+    const got = await page.evaluate(() => ({
+      hrefs: Array.from(document.querySelectorAll("a[href]")).map((a) => a.getAttribute("href")).filter(Boolean),
+      /* 🔴 링크가 «없는» 자리도 있다 — 정적 재생본의 작업지시 초안은 링크가 아니라 **화면에 적힌
+         식별자**로만 나온다. 그래서 hrefs 뿐 아니라 **보이는 글자**에서도 id 를 줍는다.
+         이것도 블랙박스다(코드가 아니라 화면을 읽는다). */
+      text: (document.body.innerText ?? "").slice(0, 200000),
+    }));
+    got.hrefs.forEach((h) => hrefs.add(h));
+    for (const m of got.text.matchAll(/\b(WO|DOC|MR)-[A-Z0-9]+(?:-[A-Z0-9]+)*\b/g)) ids.add(m[0]);
   }
-  const pick = (re) => [...hrefs].find((h) => re.test(h)) ?? null;
+  const pickHref = (re) => [...hrefs].find((h) => re.test(h)) ?? null;
+  const pickId = (re) => [...ids].find((i) => re.test(i)) ?? null;
   const wanted = [
-    ["compare", /^\/compare(\?|$)/],
-    ["work-order", /^\/work-orders\/[^/?#]+/],
-    ["document", /^\/documents\/[^/?#]+/],
+    ["compare", () => pickHref(/^\/compare(\?|$)/)],
+    ["work-order", () => pickHref(/^\/work-orders\/[^/?#]+/) ?? (pickId(/^WO-/) ? `/work-orders/${pickId(/^WO-/)}` : null)],
+    ["document", () => pickHref(/^\/documents\/[^/?#]+/) ?? (pickId(/^DOC-/) ? `/documents/${pickId(/^DOC-/).split("@")[0]}` : null)],
   ];
   const unreachable = [];
-  for (const [label, re] of wanted) {
-    const h = pick(re);
+  for (const [label, get] of wanted) {
+    const h = get();
     if (h) found.set(label, h);
     else unreachable.push(label);
   }
   await page.close(); await ctx.close();
-  return { routes: [...found.entries()], unreachable, hrefSample: [...hrefs].slice(0, 40) };
+  return { routes: [...found.entries()], unreachable, hrefSample: [...hrefs].slice(0, 30), idSample: [...ids].slice(0, 20) };
 }
 
 /* ── 상태 열기 ─────────────────────────────────────────────────────────────
@@ -145,8 +186,10 @@ async function measureCell({ route, path, state, width, height, pointer }) {
   const { ctx, page } = await mkCtx(width, height, pointer);
   const cell = { route, path, state, width, height, pointer };
   try {
+    cell.prime = await primeSession(page);
     const resp = await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" }).catch(() => null);
-    await settle(page);
+    const s = await settle(page);
+    cell.settled = s.settled; cell.settleMs = s.waitedMs; cell.settleCount = s.count;
     const landed = await page.evaluate(() => location.pathname + location.search);
     cell.httpStatus = resp ? resp.status() : null;
     cell.landed = landed;
@@ -252,7 +295,8 @@ for (const pointer of POINTERS) {
 }
 
 /* ── 집계 ────────────────────────────────────────────────────────────────── */
-const usable = cells.filter((c) => !c.error && c.landedAsRequested && !c.notFound && c.stateOpened);
+/* 🔴 «자리 잡지 못한» 칸은 쓰지 않는다 — 수가 아직 흔들리는 화면을 재면 그 값은 화면의 값이 아니다. */
+const usable = cells.filter((c) => !c.error && c.landedAsRequested && !c.notFound && c.stateOpened && c.settled);
 const skipped = cells.filter((c) => !usable.includes(c));
 const ctlBroken = usable.filter((c) => !c.control || c.control.missing.length ||
   c.control.isolated.bad?.aaPass !== false || c.control.isolated.good?.aaPass !== true);
@@ -268,7 +312,7 @@ const out = {
     populationNote: "inert 조상 아래 요소는 pointer 로 활성화 불가 ⇒ SC 의 target 이 아니다. all / nonInert 두 수를 다 낸다.",
   },
   calibration, discovery,
-  cells, skipped: skipped.map((c) => ({ route: c.route, path: c.path, state: c.state, width: c.width, height: c.height, pointer: c.pointer, why: c.error ? "error" : !c.landedAsRequested ? `다른 곳에 내림(${c.landed})` : c.notFound ? "404" : "상태가 안 열림", stateHow: c.stateHow, error: c.error })),
+  cells, skipped: skipped.map((c) => ({ route: c.route, path: c.path, state: c.state, width: c.width, height: c.height, pointer: c.pointer, why: c.error ? "error" : !c.landedAsRequested ? `다른 곳에 내림(${c.landed})` : c.notFound ? "404" : !c.stateOpened ? "상태가 안 열림" : "모집단이 안 자리 잡음(settle 실패)", stateHow: c.stateHow, error: c.error })),
   controlBroken: ctlBroken.map((c) => ({ route: c.route, state: c.state, width: c.width, height: c.height, pointer: c.pointer, control: c.control })),
   total: {
     cellsAttempted: cells.length,
