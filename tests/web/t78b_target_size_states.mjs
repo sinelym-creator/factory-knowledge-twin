@@ -182,9 +182,9 @@ async function openState(page, state) {
 }
 
 /* ── 한 칸 재기 ───────────────────────────────────────────────────────────── */
-async function measureCell({ route, path, state, width, height, pointer }) {
+async function measureCell({ route, path, state, width, height, pointer, legacy = false }) {
   const { ctx, page } = await mkCtx(width, height, pointer);
-  const cell = { route, path, state, width, height, pointer };
+  const cell = { route, path, state, width, height, pointer, legacy };
   try {
     cell.prime = await primeSession(page);
     const resp = await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" }).catch(() => null);
@@ -221,40 +221,99 @@ async function measureCell({ route, path, state, width, height, pointer }) {
       inPageGoodPartners: ctl.inPage.good ? ctl.inPage.good.partnerCount : null,
     };
 
-    const scan = await page.evaluate(SCAN);
-    const all = judge(scan.targets.filter((t) => !t.planted));
-    const live = all.filter((t) => !t.inert); // 🔴 pointer 로 활성화 가능한 것만 = SC 의 「target」
+    /* ── 🔴 **스크롤 스텝 스윕** ───────────────────────────────────────────
+       한 번의 스캔은 «창 안»만 제대로 잰다. 창 밖 좌표에서 `elementFromPoint` 가 아무것도
+       안 돌려주므로 아래쪽 대상은 경계 상자로 폴백하고, 그 상자에는 히트 확장이 없다.
+       37대가 480 높이에서 「4개가 44 밑으로 내려갔다」는 없는 사실을 만든 자리다 —
+       실제로는 **창 밖으로 나간 것**이었다. 그리고 그 폴백은 AA 도 «과소» 신고한다:
+       Spacing 은 이웃의 «상자»와 교차를 보는데, 이웃이 실제보다 작게 적히면 있어야 할
+       교차가 안 생긴다.
+       ⇒ 뷰포트 높이만큼 내려가며 스텝마다 스캔하고, **판정은 스텝 «안»에서만** 한다
+          (좌표계가 한 상태로 일관해야 교차 산식이 성립한다).
+       ⇒ 끝내 한 번도 창 안에서 못 잰 대상은 **「위반 0」이 아니라 「안 잼」**으로 센다. */
+    const first = await page.evaluate(SCAN);
+    const stepH = first.innerH;
+    /* 🔴 **`legacy` = 36대 그물과 «같은» 방식**(스크롤 0 · 한 번 스캔 · 창 밖 폴백 행 포함).
+       교정 열은 이 모드로 돈다 — 그래야 「떼어낸 산식이 전대와 같은가」를 여전히 물을 수 있다.
+       스윕 모드는 **모집단을 정당하게 바꾸므로** 전대 수와 달라지는 것이 «정상»이고, 그 둘을
+       섞으면 「산식이 갈렸다」와 「모집단이 옳아졌다」를 못 가른다. */
+    const maxSteps = legacy ? 1 : Math.max(1, Math.min(8, Math.ceil(first.scrollHeight / Math.max(1, stepH))));
+    const seen = new Map();   // key -> { measured, row }
+    const steps = [];
+    for (let k = 0; k < maxSteps; k++) {
+      const y = k * stepH;
+      await page.evaluate((yy) => window.scrollTo(0, yy), y);
+      await page.waitForTimeout(220);
+      const snap = await page.evaluate(SCAN);
+      const rows = snap.targets.filter((t) => !t.planted);
+      const inView = legacy ? rows : rows.filter((t) => t.inViewport && t.hitScanned);
+      /* 🔴 판정 열은 «inert 아닌 것끼리» 판정한다 — Spacing 문면의 "another **target**" 이
+         inert 를 포함하지 않기 때문이다(판정 «뒤»에 거르면 없는 이웃이 원을 막는다). */
+      const liveRows = legacy ? judge(inView).filter((t) => !t.inert) : judge(inView.filter((t) => !t.inert));
+      const allRows = judge(inView);
+      steps.push({
+        y, scrolledTo: snap.scrollY, seenInStep: rows.length,
+        judgedInView: inView.length,
+        offscreenOrUnscanned: rows.length - inView.length,
+        allTotal: allRows.length, liveTotal: liveRows.length,
+        aaFail: liveRows.filter((r) => !r.aaPass).length,
+        aaaFail: liveRows.filter((r) => !r.aaaPass).length,
+      });
+      const keyOf = (t) => `${t.role}|${t.name}|${Math.round(t.docLeft)}|${Math.round(t.docTop)}`;
+      for (const t of rows) {
+        const k2 = keyOf(t);
+        if (!seen.has(k2)) seen.set(k2, { measured: false, inert: t.inert, row: null, role: t.role, name: t.name });
+      }
+      for (const r of liveRows) {
+        const k2 = keyOf(r);
+        const e = seen.get(k2) ?? { measured: false, inert: r.inert, role: r.role, name: r.name };
+        /* 여러 스텝에 걸쳐 보이면 «나쁜 쪽»을 남긴다(스티키 요소는 매 스텝에 나온다). */
+        if (!e.measured || (e.row && r.aaPass === false && e.row.aaPass !== false)) { e.measured = true; e.row = r; }
+        seen.set(k2, e);
+      }
+      for (const r of allRows) {
+        const k2 = keyOf(r);
+        const e = seen.get(k2);
+        if (e && !e.allRow) { e.allRow = r; seen.set(k2, e); }
+      }
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
+
+    const entries = [...seen.values()];
+    const liveMeasured = entries.filter((e) => e.measured && !e.inert).map((e) => e.row);
+    const allMeasured = entries.filter((e) => e.measured).map((e) => e.allRow ?? e.row);
+    const unmeasured = entries.filter((e) => !e.measured);
     const sum = (rows) => ({
       total: rows.length,
       undersized24: rows.filter((r) => r.undersized).length,
       aaFailCount: rows.filter((r) => !r.aaPass).length,
       aaaFailCount: rows.filter((r) => !r.aaaPass).length,
     });
-    cell.dialogOpen = scan.dialogOpen;
-    cell.inertRoots = scan.inertRoots;
-    cell.mediaCoarse = scan.pointerCoarse;
-    cell.innerW = scan.innerW; cell.innerH = scan.innerH;
-    cell.all = sum(all);
-    cell.nonInert = sum(live);
-    cell.inertExcluded = all.length - live.length;
-    cell.aaFailures = live.filter((r) => !r.aaPass).map((r) => ({
+    cell.dialogOpen = first.dialogOpen;
+    cell.inertRoots = first.inertRoots;
+    cell.mediaCoarse = first.pointerCoarse;
+    cell.innerW = first.innerW; cell.innerH = first.innerH;
+    cell.scrollHeight = first.scrollHeight;
+    cell.steps = steps;
+    cell.all = sum(allMeasured);
+    cell.nonInert = sum(liveMeasured);
+    cell.inertExcluded = allMeasured.length - liveMeasured.length;
+    /* 🔴 **「안 잼」을 «0» 과 갈라서 센다.** 스윕 뒤에도 창 안에서 히트 스캔이 안 된 대상 —
+       내부 스크롤 컨테이너 안이거나 다른 요소에 덮여 중심이 안 잡히는 것들이다. */
+    cell.unmeasured = unmeasured.length;
+    cell.unmeasuredNames = unmeasured.slice(0, 12).map((e) => `${e.role}:${e.name}`);
+    cell.aaFailures = liveMeasured.filter((r) => !r.aaPass).map((r) => ({
       role: r.role, name: r.name, size: `${r.w}×${r.h}`, box: `${r.boxW}×${r.boxH}`,
       hitScanned: r.hitScanned, inlineCandidate: r.inlineCandidate,
       partnerCount: r.partnerCount, partners: r.partners,
     }));
-    /* 🔴 「후보」의 뜻 — Spacing 만 기계 판정이다. Inline 후보는 사람 몫으로 따로 센다. */
     cell.aaFailInlineCandidates = cell.aaFailures.filter((f) => f.inlineCandidate).length;
-    /* 🔴 **AAA 미달도 «이름»으로 낸다.** 첫 회차는 AA 미달만 이름을 남겼는데, 그 결과
-       「투어 말풍선 2개 중 1개가 coarse 에서 44 미달」을 **수로만** 보고했다 = **누가 미달인지
-       못 말했다.** 목표 열이라도 이름 없는 수는 처방으로 못 옮긴다. */
-    cell.aaaFailures = live.filter((r) => !r.aaaPass).map((r) => ({
+    cell.aaaFailures = liveMeasured.filter((r) => !r.aaaPass).map((r) => ({
       role: r.role, name: r.name, size: `${r.w}×${r.h}`, box: `${r.boxW}×${r.boxH}`, hitScanned: r.hitScanned,
     }));
-    /* 모집단이 작은 칸(상태 축)은 명단을 통째로 남긴다 — 「무엇이 새 대상인가」가 이 티켓의 질문이다. */
-    cell.roster = live.length <= 24
-      ? live.map((r) => ({ role: r.role, name: r.name, size: `${r.w}×${r.h}`, aaPass: r.aaPass, aaaPass: r.aaaPass }))
+    cell.roster = liveMeasured.length <= 24
+      ? liveMeasured.map((r) => ({ role: r.role, name: r.name, size: `${r.w}×${r.h}`, aaPass: r.aaPass, aaaPass: r.aaaPass }))
       : null;
-    cell.inertRoster = all.filter((t) => t.inert).slice(0, 24).map((r) => ({ role: r.role, name: r.name, size: `${r.w}×${r.h}` }));
   } catch (e) {
     cell.error = String(e).slice(0, 300);
   } finally {
@@ -267,7 +326,7 @@ async function measureCell({ route, path, state, width, height, pointer }) {
 /* ── ① 교정 열 — 떼어낸 산식이 36대와 같은 수를 내는가 ─────────────────── */
 const calibration = [];
 for (const path of CALIBRATE) {
-  const c = await measureCell({ route: "calib", path, state: "base", width: 1440, height: 900, pointer: "fine" });
+  const c = await measureCell({ route: "calib", path, state: "base", width: 1440, height: 900, pointer: "fine", legacy: true });
   calibration.push({ path, total: c.all?.total ?? null, undersized24: c.all?.undersized24 ?? null, aaFailCount: c.all?.aaFailCount ?? null, landedAsRequested: c.landedAsRequested, control: c.control });
 }
 /* 대조군이 교정 열에서 한 번이라도 죽으면 그 아래 전부가 근거가 아니다. */
@@ -341,6 +400,8 @@ const out = {
     aaFailCellsNonInert: usable.filter((c) => c.nonInert.aaFailCount > 0).length,
     aaFailUnique: [...new Set(usable.flatMap((c) => c.aaFailures.map((f) => `${f.role}:${f.name}`)))],
     inertActiveCells: usable.filter((c) => c.inertRoots > 0).length,
+    unmeasuredTargets: usable.reduce((a, c) => a + (c.unmeasured ?? 0), 0),
+    aaaFailUnique: [...new Set(usable.flatMap((c) => (c.aaaFailures ?? []).map((f) => `${f.role}:${f.name} ${f.size}`)))],
   },
 };
 if (OUT) fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
@@ -361,7 +422,8 @@ for (const pointer of POINTERS) for (const state of STATES) {
   if (!cs.length) { console.log(`  [${pointer} · ${state}] 사용 가능한 칸 0 — 안 잼`); continue; }
   console.log(`  [${pointer} · ${state}]`);
   for (const c of cs) {
-    console.log(`    ${String(c.width).padStart(4)}×${String(c.height).padEnd(4)} ${c.route.padEnd(11)} 대상 ${String(c.nonInert.total).padStart(3)}(all ${String(c.all.total).padStart(3)}·inert제외 ${c.inertExcluded}) · AA통과 ${c.nonInert.total - c.nonInert.aaFailCount}/${c.nonInert.total}${c.nonInert.aaFailCount ? ` 🔴${c.nonInert.aaFailCount}` : ""} · AAA통과 ${c.nonInert.total - c.nonInert.aaaFailCount}/${c.nonInert.total}`);
+    console.log(`    ${String(c.width).padStart(4)}×${String(c.height).padEnd(4)} ${c.route.padEnd(11)} 스텝 ${String(c.steps.length).padStart(1)} · 대상 ${String(c.nonInert.total).padStart(3)}(all ${String(c.all.total).padStart(3)}·inert제외 ${c.inertExcluded}) · AA통과 ${c.nonInert.total - c.nonInert.aaFailCount}/${c.nonInert.total}${c.nonInert.aaFailCount ? ` 🔴${c.nonInert.aaFailCount}` : ""} · AAA통과 ${c.nonInert.total - c.nonInert.aaaFailCount}/${c.nonInert.total}${c.unmeasured ? ` · 🔴안잼 ${c.unmeasured}` : ""}`);
+    if (c.unmeasured) console.log(`         ⌀ 안 잰 대상(창 안에서 히트 스캔 실패): ${c.unmeasuredNames.join(" · ")}`);
     for (const f of c.aaFailures) console.log(`         🔴 AA ${f.role} 「${f.name}」 ${f.size} — 교차 ${f.partnerCount}: ${f.partners.map((x) => `${x.kind}:${x.name}`).join(" | ")}${f.inlineCandidate ? " ⟨Inline 예외 후보 — 사람 판단⟩" : ""}`);
     for (const f of (c.aaaFailures ?? [])) console.log(`         ▫ AAA(목표) ${f.role} 「${f.name}」 ${f.size}`);
   }
@@ -378,6 +440,8 @@ if (ctlBroken.length) console.log(`
 console.log(`
 AA 위반 후보 요소(non-inert): ${JSON.stringify(out.total.aaFailUnique)}`);
 console.log(`inert 가 실제로 걸린 칸: ${out.total.inertActiveCells}/${usable.length}`);
+console.log(`🔴 끝내 «안 잰» 대상 합계: ${out.total.unmeasuredTargets} (「위반 0」이 아니다)`);
+console.log(`AAA(목표) 미달 요소: ${JSON.stringify(out.total.aaaFailUnique)}`);
 await browser.close();
 /* 🔴 대조군이 한 칸이라도 깨졌으면 초록으로 넘기지 않는다. */
 if (ctlBroken.length) process.exit(2);

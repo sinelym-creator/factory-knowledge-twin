@@ -120,8 +120,20 @@ export const SCAN = () => {
       planted: el.id.startsWith("__ctl_"),
     });
   }
+  /* 🔴 **폴백 행을 «값이 아니라 미측»으로 표시한다.** `elementFromPoint` 는 뷰포트 «밖» 좌표에서
+     아무것도 안 돌려주므로, 창 아래의 대상은 히트 스캔이 실패하고 경계 상자로 조용히 폴백한다 —
+     그 상자에는 `.fkt-hit::before` 세로 확장이 없다. 37대가 480 높이에서 「4개가 44 밑으로
+     내려갔다」는 «없는 사실»을 만든 자리다. 실제로는 **창 밖으로 나간 것**이었다.
+     ⇒ 중심이 창 안인지를 플래그로 남기고, 호출부는 창 «안»의 행만 판정에 쓴다. */
+  for (const t of targets) {
+    t.inViewport = t.cx >= 0 && t.cx <= window.innerWidth && t.cy >= 0 && t.cy <= window.innerHeight;
+    t.docTop = Number((t.top + window.scrollY).toFixed(1));
+    t.docLeft = Number((t.left + window.scrollX).toFixed(1));
+  }
   return {
     targets,
+    scrollX: window.scrollX, scrollY: window.scrollY,
+    scrollHeight: document.documentElement.scrollHeight,
     url: location.pathname + location.search,
     pointerCoarse: window.matchMedia("(pointer: coarse)").matches,
     pointerFine: window.matchMedia("(pointer: fine)").matches,
