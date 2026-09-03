@@ -1,0 +1,659 @@
+{
+  "base": "http://127.0.0.1:3115",
+  "at": "2026-09-03T15:18:07.916Z",
+  "sc": {
+    "2.5.8": "at least 24 by 24 CSS pixels, except: Spacing / Equivalent / Inline / User agent control / Essential. (AA)",
+    "spacing": "if a 24 CSS pixel diameter circle is centered on the bounding box of each undersized target, the circles do not intersect another target or the circle for another undersized target.",
+    "2.5.5": "44 by 44 CSS pixels, no exception. (AAA)",
+    "machineJudged": "Spacing 만 기계 판정 — 빨강은 «AA 위반 후보»다."
+  },
+  "controls": [
+    {
+      "pointer": "fine",
+      "width": 390,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "fine",
+      "width": 768,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "fine",
+      "width": 1024,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "fine",
+      "width": 1280,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "fine",
+      "width": 1440,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "fine",
+      "width": 1920,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "coarse",
+      "width": 390,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "coarse",
+      "width": 768,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "coarse",
+      "width": 1024,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "coarse",
+      "width": 1280,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "coarse",
+      "width": 1440,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    },
+    {
+      "pointer": "coarse",
+      "width": 1920,
+      "bad": {
+        "size": "13x13",
+        "aaPass": false,
+        "partners": 1
+      },
+      "good": {
+        "size": "61x61",
+        "aaPass": true,
+        "aaaPass": true
+      }
+    }
+  ],
+  "cells": [
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "overview",
+      "total": 12,
+      "undersized24": 1,
+      "aaPass": 12,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 12,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 2,
+      "aaaFailCount": 39,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 1,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 768,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 16,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 768,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 41,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 768,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 2,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1024,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 16,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1024,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 41,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1024,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 2,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1280,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 16,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1280,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 1,
+      "aaaFailCount": 40,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1280,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 2,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1440,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 16,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1440,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 41,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1440,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 2,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1920,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 16,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1920,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 20,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 41,
+      "aaFailures": []
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1920,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 2,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 0,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 390,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 0,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 8,
+      "aaaFailCount": 8,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 390,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 19,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 6,
+      "aaaFailCount": 35,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 390,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 0,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 3,
+      "aaaFailCount": 5,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 768,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 0,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 11,
+      "aaaFailCount": 5,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 768,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 19,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 6,
+      "aaaFailCount": 35,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 768,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 1,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 5,
+      "aaaFailCount": 3,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1024,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 0,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 15,
+      "aaaFailCount": 1,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1024,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 19,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 7,
+      "aaaFailCount": 34,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1024,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 1,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 6,
+      "aaaFailCount": 2,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1280,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 0,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 14,
+      "aaaFailCount": 2,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1280,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 19,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 7,
+      "aaaFailCount": 34,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1280,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 1,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 5,
+      "aaaFailCount": 3,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1440,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 0,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 14,
+      "aaaFailCount": 2,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1440,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 19,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 8,
+      "aaaFailCount": 33,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1440,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 1,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 5,
+      "aaaFailCount": 3,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1920,
+      "route": "overview",
+      "total": 16,
+      "undersized24": 0,
+      "aaPass": 16,
+      "aaFailCount": 0,
+      "aaaPass": 14,
+      "aaaFailCount": 2,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1920,
+      "route": "incident",
+      "total": 41,
+      "undersized24": 19,
+      "aaPass": 41,
+      "aaFailCount": 0,
+      "aaaPass": 8,
+      "aaaFailCount": 33,
+      "aaFailures": []
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1920,
+      "route": "evidence",
+      "total": 8,
+      "undersized24": 1,
+      "aaPass": 8,
+      "aaFailCount": 0,
+      "aaaPass": 5,
+      "aaaFailCount": 3,
+      "aaFailures": []
+    }
+  ],
+  "total": {
+    "cells": 36,
+    "aaFailCells": 0,
+    "firstBreakWidth": {
+      "fine": null,
+      "coarse": null
+    },
+    "aaFailUnique": []
+  }
+}
