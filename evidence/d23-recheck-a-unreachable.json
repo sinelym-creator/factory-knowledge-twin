@@ -1,0 +1,69 @@
+{
+  "stage": "a",
+  "base": "http://127.0.0.1:3102",
+  "at": "2026-09-03T05:01:37.365Z",
+  "screens": [
+    {
+      "screen": "overview(+배너)",
+      "innerText": "▣ ▣ Overview ▲ Incidents ⧉ Compare Factory Knowledge Twin Overview Incidents Compare ? 안내 다시 보기 ◑ REPLAY ⬡ JycK ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ ① Factory Overview ■ 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니다 (임계 6.3 → 관측 6.3047 mm/s). 조사 시작 ▸ 가동 라인 3/3 활성 알람 1 진행 Incident 2 승인 대기 WO 1 Factory A (synthetic) · 이 화면을 받은 시각 14:01:37 KST Factory A (synthetic) 전체 (12대) 가공 라인 1 (4대)LN-A-01 가공 라인 2 (4대)LN-A-02 가공 라인 3 (4대)LN-A-03 ● EQ-CNC-101 CNC 101호기 정상 · 가공 라인 1 A · 1,440점 → 602점 표시 ● EQ-CNV-102 CONVEYOR 102호기 정상 · 가공 라인 1 A · 1,440점 → 602점 표시 ● EQ-PRS-104 PRESS 104호기 정상 · 가공 라인 1 degC · 1,440점 → 602점 표시 ● EQ-ROB-103 ROBOT 103호기 정상 · 가공 라인 1 A · 1,440점 → 602점 표시 ▲ EQ-CNC-204 알람 1 CNC 204호기 주의 · 가공 라인 2 A · 15,600점 → 602점 표시 ● EQ-CNC-207 CNC 207호기 정상 · 가공 라인 2 A · 1,440점 → 602점 표시 ● EQ-CNV-205 CONVEYOR 205호기 정상 · 가공 라인 2 A · 1,440점 → 602점 표시 ● EQ-ROB-206 ROBOT 206호기 정상 · 가공 라인 2 A · 1,440점 → 602점 표시 ● EQ-CNV-308 CONVEYOR 308호기 정상 · 가공 라인 3 A · 1,440점 → 602점 표시 ● EQ-PRS-310 PRESS 310호기 정상 · 가공 라인 3 degC · 1,440점 → 602점 표시 ● EQ-PRS-311 PRESS 311호기 정상 · 가공 라인 3 degC · 1,440점 → 602점 표시 ● EQ-ROB-309 ROBOT 309호기 정상 · 가공 라인 3 A · 1,440점 → 602점 표시 처음 오셨나요? ✕ 이 화면은 synthetic 공장 1곳의 상태입니다. ① 지금 설비에 알람이 떠 있습니다 ② 「조사 시작」을 누르면 AI가 근거를 모읍니다 ③ 원인 후보와 작업지시서 초안을 사람이 승인합니다 언제든 ⟲ 로 처음으로 돌아갑니다. 활성 알람 1건 ■ 위험 · critical AL-20260826-0041 EQ-CNC-204 · SN-204-VIB 발생 2026-08-26 10:46 KST 임계 6.3 → 관측 6.3047 조사 시작 ▸ 승인된 시나리오 ◉ GS-01 스핀들 진동 이상 조사",
+      "banner": "[ ! ]Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다.✕",
+      "modeBadge": "◑REPLAY",
+      "timeline": null,
+      "synthesisBadge": null,
+      "synthesisAxis": null,
+      "rejectedReason": null,
+      "url": "/overview",
+      "hits": []
+    },
+    {
+      "screen": "run 타임라인(+후보/사유)",
+      "innerText": "▣ ▣ Overview ▲ Incidents ⧉ Compare Factory Knowledge Twin Overview Incidents Compare ? 안내 다시 보기 ◑ REPLAY ⬡ JycK ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ ② Incident 조사 · INC-2026-014 INC-2026-014 · EQ-CNC-204 스핀들 진동 경보 임계 초과 investigating · critical RUN-46d935346689 LIVE 완료 ⏸ 중지 ⏮ ◀ ▶ 재생 ▶ 지금으로 32/32 이벤트 · seq 31 ⏱ 조사 경과 0.0초 (97ms · totalElapsedMs 확정)│ 같은 조사를 사람이 수작업으로: 45분 잠정 목표 · 미실측 Agent 타임라인 ●●●●●5/5 ✓ 구조화 조회 equipment 1건 · sensor 3건 · alarm 1건 · maintenance_record 4건 · 5ms · 근거 9건 ✓ 문서 검색 인용 후보 5건 · 57ms · 근거 5건 ✓ 그래프 추적 경로 5건 · 종단 ['CP-204-BRG-01', 'FM-BRG-WEAR', 'MR-2024-0004', 'SAF-LOTO-01', 'SOP-BRG-INSP-014'] · 7ms · 근거 5건 ✓ 종합 후보 2건 · 1순위 FM-BRG-WEAR · 합성 축 = 결정적 집계(live 응답 거부 · 소유자 게이트웨이 OFF(미도달)) · 9ms ✓ 작업지시 초안 초안 1건 · 안전 조치 2건 · 4ms 조사 질문 · GS-01 알람 AL-20260826-0041이 발생했다. 이 알람에서 출발해 관련 설비·부품·고장 모드·대응 절차·필수 안전 규정까지 이어지는 경로 전체를 제시하라. SN-204-VIB mm/s 24h 3주 이 incident 를 울린 알람의 센서 · AL-20260826-0041 · 발생 2026-08-26 10:46 KST 임계 warn 4.5 · alarm 6.3 · 알람 AL-20260826-0041 임계 6.3 → 관측 6.3047 2026-08-25T05:30 ~ 2026-08-26T05:29 원본 15,600점 → 602점 표시 (bucket-minmax) 설비: CNC 204호기 · CNC MX-500 · 설치 2021-03-27 라인 LN-A-02 · 중요도 high · 센서 3종 최근 정비: MR-2026-0006 lubricate · 2026-06-02 원인 후보 ◌ live 거부 live 응답을 근거 결속 가드가 전량 거부했습니다 — 소유자 게이트웨이 OFF(미도달). 아래 순위는 결정적 집계입니다. 1 FM-BRG-WEAR 스핀들 베어링 마모 정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop 근거 3건 · MR-2025-0087 · DOC-MAN-0021@r1#006 · FM-BRG-WEAR 2 FM-TOOL-IMB 공구 불균형 정비 이력 0건 · 문서 인용 1건 · 그래프 경로 없음 · 🔴 대응 SOP 매핑 없음 근거 1건 · DOC-MAN-0021@r1#006 근거 스트립 전체 19 record 9 doc-chunk 5 graph-path 5 EQ-CNC-204 [equipment] line_id=LN-A-02, name=CNC 204호기, equipment_class=CNC, model=MX-500, installed_on=2021-03-27, status=warning, criticality=high record 근거 보기 ▸ SN-204-CUR [sensor] equipment_id=EQ-CNC-204, measurement_type=CUR, unit=A, sampling_hz=10.000, warn_threshold=18.0000, alarm_threshold=22.0000 record 근거 보기 ▸ SN-204-TEMP [sensor] equipment_id=EQ-CNC-204, measurement_type=TEMP, unit=degC, sampling_hz=1.000, warn_threshold=55.0000, alarm_threshold=65.0000 record 근거 보기 ▸ SN-204-VIB [sensor] equipment_id=EQ-CNC-204, measurement_type=VIB, unit=mm/s, sampling_hz=51.200, warn_threshold=4.5000, alarm_threshold=6.3000 record 근거 보기 ▸ AL-20260826-0041 [alarm] sensor_id=SN-204-VIB, equipment_id=EQ-CNC-204, incident_id=INC-2026-014, severity=critical, threshold_value=6.3000, observed_value=6.3047, raised_at=2026-08-26 01:46:12+00:00, status=active record 근거 보기 ▸ MR-2026-0006 [maintenance_record] equipment_id=EQ-CNC-204, action_type=lubricate, performed_at=2026-06-02 05:30:00+00:00, duration_min=92, result=completed, note=lubricate 정기 작업. 계측값 판정 기준 이내. record 근거 보기 ▸ MR-2025-0095 [maintenance_record] equipment_id=EQ-CNC-204, action_type=inspect, performed_at=2025-11-09 05:30:00+00:00, duration_min=68, result=completed, note=inspect 정기 작업. 계측값 판정 기준 이내. record 근거 보기 ▸ MR-2025-0087 [maintenance_record] equipment_id=EQ-CNC-204, work_order_id=WO-2025-0087, action_type=replace, performed_at=2025-02-11 05:30:00+00:00, duration_min=95, result=completed, note=스핀들 베어링 마모로 베어링 교체. 교체 후 진동 RMS 2.1 mm/s로 회복. 그리스 재충전 및 시운전 완료. record 근거 보기 ▸ MR-2024-0004 [maintenance_record] equipment_id=EQ-CNC-204, action_type=calibrate, performed_at=2024-04-19 05:30:00+00:00, duration_min=68, result=completed, note=calibrate 정기 작업. 계측값 판정 기준 이내. record 근거 보기 ▸ DOC-MAN-0021@r1#005 ## 5. 경보 및 알람 경보 임계는 설비 마스터의 센서 등록값을 정본으로 하며, 본 매뉴얼에 수치를 중복 기재하지 않는다. 임계값을 문서에서 찾지 말고 해당 센서의 등록값을 조회한다. ### 5.1 등급별 대응 | 등급 | 상태 | 대응 | |---|---|---| | 주의 | 등록된 주의 임계 초과 | 계측 주기 단축, 추세 관찰, 교대 인수인계에 명시 | | 경보 | 등록된 경보 임계 초과 | 운전 중지, 해당 고장모드의… doc-chunk · 0.865 근거 보기 ▸ DOC-MAN-0021@r1#006 ## 7. 이상 현상별 대처 각 항목은 「증상 → 확인 → 조치」 순으로 읽는다. 조치가 분해를 수반하면 해당 작업의 표준 작업 절차서와 안전 규정을 먼저 적용한다. ### 7.1 가공면 조도 악화 - 확인: 공구 마모, 절삭 조건 변경 여부, 진동·온도 추세. - 조치: 공구 교체로 회복되면 공구 문제로 종결한다. 회복되지 않고 진동 추세가 상승 중이면 스핀들 베어링 마모를 의심하고 §4.3을 적용한다. ### 7.2 이상음… doc-chunk · 0.863 근거 보기 ▸ DOC-MAN-0028@r1#000 # 공통 안전 운전 매뉴얼 (r1) ## 1. 개요 본 매뉴얼은 전 설비 의 운전·점검 기준을 기술한다. ## 2. 사양 정격 운전 조건과 허용 범위는 설비 명판 및 설비 마스터 등록값을 따른다. ## 3. 일상 점검 시업 전 육안 점검, 이상음·이상 진동 확인, 윤활 상태 확인을 수행한다. ## 4. 진동 진단 정상 범위를 벗어난 진동이 관측되면 구동부 체결 상태와 정렬을 우선 확인한다. ## 5. 경보 및 알람 경보 임계는… doc-chunk · 0.862 근거 보기 ▸ DOC-MAN-0022@r1#003 ## 4. 진동 진단 구동부 진동 RMS가 정상 운전 시 1.2~1.8 mm/s 범위를 유지하는지 월 1회 이상 확인한다. 반송 설비는 부하 변동이 크므로, 무부하와 정격 부하의 계측값을 같은 추세선에 올리지 않는다. 감속기 베어링의 마모는 진동이 완만히 상승하면서 저속측 이상음이 함께 나타나는 형태로 진행되는 경우가 많다. 다만 벨트 사행이나 롤러 고착도 유사한 진동 상승을 만들므로, 구동부만 보고 판정하지 않고 벨트 정렬과… doc-chunk · 0.862 근거 보기 ▸ DOC-MAN-0021@r1#001 ## 2. 사양 정격 운전 조건과 허용 범위는 설비 명판 및 설비 마스터 등록값을 따른다. 주축 최고 회전수, 이송 속도, 절삭유 공급 압력은 설비 마스터에 등록된 값이 정본이다. ### 2.1 제원 항목과 정본 위치 | 항목 | 정본 위치 | 매뉴얼에서의 취급 | |---|---|---| | 주축 최고 회전수 | 설비 마스터 · 설비 명판 | 판단 시 조회한다 | | 이송 속도 상한 | 설비 마스터 | 가공 조건표에서 참조 … doc-chunk · 0.859 근거 보기 ▸ GP-46d935346689-00 [Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01 graph-path · 0.333 근거 보기 ▸ GP-46d935346689-01 [FailureMode · 2-hop] AL-20260826-0041 → SN-204-VIB → FM-BRG-WEAR graph-path · 0.333 근거 보기 ▸ GP-46d935346689-02 [MaintenanceRecord · 2-hop] AL-20260826-0041 → EQ-CNC-204 → MR-2024-0004 graph-path · 0.333 근거 보기 ▸ GP-46d935346689-03 [SOP · 3-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014 graph-path · 0.250 근거 보기 ▸ GP-46d935346689-04 [SafetyRule · 4-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014 → SAF-LOTO-01 graph-path · 0.200 근거 보기 ▸ 전략 비교 ▸ 작업지시서 초안 보기 ▸",
+      "banner": "[ ! ]Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다.✕",
+      "modeBadge": "◑REPLAY",
+      "timeline": "Agent 타임라인●●●●●5/5✓ 구조화 조회equipment 1건 · sensor 3건 · alarm 1건 · maintenance_record 4건 · 5ms · 근거 9건✓ 문서 검색인용 후보 5건 · 57ms · 근거 5건✓ 그래프 추적경로 5건 · 종단 ['CP-204-BRG-01', 'FM-BRG-WEAR', 'MR-2024-0004', 'SAF-LOTO-01', 'SOP-BRG-INSP-014'] · 7ms · 근거 5건✓ 종합후보 2건 · 1순위 FM-BRG-WEAR · 합성 축 = 결정적 집계(live 응답 거부 · 소유자 게이트웨이 OFF(미도달)) · 9ms✓ 작업지시 초안초안 1건 · 안전 조치 2건 · 4ms",
+      "synthesisBadge": "◌live 거부",
+      "synthesisAxis": "live-rejected",
+      "rejectedReason": "live 응답을 근거 결속 가드가 전량 거부했습니다 — 소유자 게이트웨이 OFF(미도달). 아래 순위는 결정적 집계입니다.",
+      "url": "/incidents/INC-2026-014?run=RUN-46d935346689",
+      "hits": []
+    }
+  ],
+  "stimulus": {
+    "runId": "RUN-46d935346689",
+    "incidentId": "INC-2026-014",
+    "eventTypes": {
+      "run.started": 1,
+      "plan.updated": 1,
+      "step.started": 5,
+      "step.evidence": 19,
+      "step.completed": 5,
+      "run.completed": 1
+    },
+    "eventCount": 32,
+    "completed": true,
+    "serverAxis": "live-rejected",
+    "serverRejectedReason": "소유자 게이트웨이 OFF(미도달)",
+    "rawSynthesisJson": "{\"axis\":\"live-rejected\",\"rejectedReason\":\"소유자 게이트웨이 OFF(미도달)\"}"
+  },
+  "control": {
+    "injected": "합성 축 = 결정적 집계(live 응답 거부 · 게이트웨이 미도달(ConnectionRefusedError))",
+    "hits": [
+      {
+        "kind": "exc-class",
+        "token": "ConnectionRefusedError"
+      }
+    ],
+    "detected": true
+  },
+  "screenDrewBadge": true,
+  "stimulusCounters": {
+    "sockets": 1,
+    "frames": 32,
+    "consoleErrors": 0
+  },
+  "verdict": {
+    "screenHits": [],
+    "serverGaveReason": true,
+    "controlDetected": true
+  }
+}
