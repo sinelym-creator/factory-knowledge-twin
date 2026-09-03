@@ -58,7 +58,9 @@ export function StartInvestigation({
         data-testid={testId}
         /* 🔴 1차 액션 = 채운 pill(리서치 §7-8). 앞판은 «테두리 + 12px 글자»라 이 화면에서 가장
            중요한 동작이 가장 작아 보였다. press 는 scale(0.95) 하나뿐이다(색 반전 금지). */
-        className="fkt-btn fkt-btn-primary rounded-pill px-5"
+        /* 🔴 이 화면에서 «빛나는» 것은 이 버튼 하나다 — AI 조사 실행(자료 §15). 다른 1차
+           버튼에는 붙이지 않는다: 전부 빛나면 아무것도 강조되지 않는다. */
+        className="fkt-btn fkt-btn-primary fkt-glow-ai rounded-pill px-5"
         title={usable ? undefined : "이 세션은 아직 백엔드에 등록되지 않았습니다"}
       >
         {busy ? "조사 시작 중…" : "조사 시작"}
