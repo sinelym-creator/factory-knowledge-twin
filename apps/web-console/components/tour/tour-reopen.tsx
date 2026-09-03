@@ -23,7 +23,7 @@ export function TourReopen() {
   return (
     <Link
       href="/overview?intro=1&tour=1"
-      className="fkt-hit fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill text-[18px] text-muted hover:text-ink"
+      className="fkt-hit fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill text-[1.125rem] text-muted hover:text-ink"
       title="처음 오셨나요? 안내와 둘러보기 다시 보기"
       data-testid="intro-reopen"
       onClick={() => {

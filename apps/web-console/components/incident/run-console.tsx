@@ -434,7 +434,7 @@ export function RunConsole({
             className="fkt-btn fkt-btn-secondary rounded-pill px-3.5 text-foot"
             data-testid="run-stop"
           >
-            <IconPause className="text-[13px]" />
+            <IconPause className="text-[0.8125rem]" />
             {stopping ? "중지하는 중…" : "중지"}
           </button>
 
@@ -446,25 +446,25 @@ export function RunConsole({
             data-testid="replay-controls"
           >
             <button type="button" onClick={() => { setPlaying(false); setCursor(0); }}
-                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[13px] text-muted hover:text-ink" data-testid="replay-restart" title="처음으로">
+                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[0.8125rem] text-muted hover:text-ink" data-testid="replay-restart" title="처음으로">
               <IconFirst /><span className="sr-only">처음으로</span>
             </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor((c) => Math.max(0, (c ?? events.length) - 1)); }}
-                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[13px] text-muted hover:text-ink" data-testid="replay-back" title="한 이벤트 뒤로">
+                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[0.8125rem] text-muted hover:text-ink" data-testid="replay-back" title="한 이벤트 뒤로">
               <IconPrev /><span className="sr-only">한 이벤트 뒤로</span>
             </button>
             <button type="button" onClick={() => setPlaying((p) => !p)} disabled={events.length === 0}
                     className="fkt-btn fkt-btn-primary h-7 min-h-0 rounded-pill px-3 text-foot disabled:opacity-40" data-testid="replay-play">
-              {playing ? <IconPause className="text-[12px]" /> : <IconPlay className="text-[12px]" />}
+              {playing ? <IconPause className="text-[0.75rem]" /> : <IconPlay className="text-[0.75rem]" />}
               {playing ? "일시정지" : "재생"}
             </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor((c) => Math.min(events.length, (c ?? events.length) + 1)); }}
-                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[13px] text-muted hover:text-ink" data-testid="replay-forward" title="한 이벤트 앞으로">
+                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[0.8125rem] text-muted hover:text-ink" data-testid="replay-forward" title="한 이벤트 앞으로">
               <IconNext /><span className="sr-only">한 이벤트 앞으로</span>
             </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor(null); }} disabled={cursor === null}
                     className="fkt-hoverable flex h-7 items-center gap-1 rounded-pill px-2.5 text-foot text-muted hover:text-ink disabled:opacity-40" data-testid="replay-follow">
-              <IconNow className="text-[12px]" />지금으로
+              <IconNow className="text-[0.75rem]" />지금으로
             </button>
           </span>
           <span className="text-placeholder" data-testid="replay-cursor" data-applied={applied.length} data-total={events.length}>
