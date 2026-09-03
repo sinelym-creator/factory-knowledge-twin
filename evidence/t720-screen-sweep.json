@@ -1,0 +1,84 @@
+{
+  "base": "http://127.0.0.1:8799",
+  "at": "2026-09-03T23:08:15.708Z",
+  "tally": {
+    "PASS": 7,
+    "안 잼": 1,
+    "참고": 1
+  },
+  "rows": [
+    {
+      "i": 1,
+      "screen": "/compare",
+      "action": "손잡이(질문 선택 · 전략 3 · 실행)가 실제로 있는지 센다",
+      "expected": "질문 select 1 · 전략 체크박스 3 · 실행 버튼 1 · 각주 1",
+      "observed": "질문select=1 · 전략박스=3 · 실행=1 · 각주=1",
+      "verdict": "PASS"
+    },
+    {
+      "i": 2,
+      "screen": "/compare",
+      "action": "「실행」을 눌러 세 전략 비교가 실제로 그려지는지 본다",
+      "expected": "누르면 결과가 생겨 화면 본문이 달라진다",
+      "observed": "본문 길이 835 → 4012 · 바뀜=true · 실행버튼 여전=1",
+      "verdict": "PASS"
+    },
+    {
+      "i": 3,
+      "screen": "/compare",
+      "action": "다른 질문을 골라 다시 실행하면 결과가 바뀌는지 본다",
+      "expected": "고른 질문에 맞는 다른 결과가 그려진다",
+      "observed": "선택지=10 · 본문 바뀜=true",
+      "verdict": "PASS"
+    },
+    {
+      "i": 4,
+      "screen": "/documents",
+      "action": "근거 화면에서 «문서 원문»으로 따라가 인용 강조를 본다",
+      "expected": "문서 화면이 열리고 인용 구간이 강조된다 · 색인 배지가 선다",
+      "observed": "이동=true · url=http://127.0.0.1:8799/documents/DOC-MAN-0021?highlight=DOC-MAN-0021%40r1%23006 · 인용강조=2 · 색인배지=1",
+      "verdict": "PASS"
+    },
+    {
+      "i": 5,
+      "screen": "/work-orders",
+      "action": "제목을 고치고 «새로고침 뒤에도 남는지» 본다(디바운스 저장)",
+      "expected": "고친 값이 서버까지 가서 새로고침 뒤에도 남는다",
+      "observed": "전=\"스핀들 베어링 마모 대응 — 점검·교체 초안\" · 새로고침 뒤=\"스핀들 베어링 마모 대응 — 점검·교체 초안 ·검증6201\" · 남음=true",
+      "verdict": "PASS"
+    },
+    {
+      "i": 6,
+      "screen": "/work-orders",
+      "action": "절차·안전 구역에 편집 손잡이가 있는지 센다(잠금 규율)",
+      "expected": "절차·안전은 편집 칸 0 — 사람이 지울 수 없다",
+      "observed": "절차문면=true · 안전문면=true · 그 구역 편집칸=구역 못 찾음",
+      "verdict": "안 잼"
+    },
+    {
+      "i": 7,
+      "screen": "/work-orders",
+      "action": "반려 → 사유가 비면 확인이 잠기는지, 채우면 풀리는지 본다",
+      "expected": "빈 사유 = 확인 비활성 · 사유 있음 = 활성(화면 규칙)",
+      "observed": "모달=1 · 사유 빈칸일 때 확인 비활성=true · 사유 넣은 뒤 비활성=false",
+      "verdict": "PASS"
+    },
+    {
+      "i": 8,
+      "screen": "/work-orders",
+      "action": "화면 주소",
+      "expected": "—",
+      "observed": "WO=http://127.0.0.1:8799/work-orders/WOD-f9701e8187f1",
+      "verdict": "참고"
+    },
+    {
+      "i": 9,
+      "screen": "전체",
+      "action": "이 훑기 동안 런타임 오류를 모은다",
+      "expected": "0",
+      "observed": "오류=0",
+      "verdict": "PASS"
+    }
+  ],
+  "errs": []
+}
