@@ -179,6 +179,7 @@ export function OverviewBody({
               sessionId={sessionId}
               sessionOrigin={sessionOrigin}
               testId="start-from-headline"
+              glow
             />
           </div>
         )}

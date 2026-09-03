@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { TOUR_STEPS, TOUR_TOTAL, type TourStep } from "@/components/tour/tour-steps";
 import { TourOverlay } from "@/components/tour/tour-overlay";
+import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
 
 /**
  * T6-5 가이드 투어 — 상태와 진행(정본 = `docs/design/t6-5-guided-tour-spec.md` ③).
@@ -101,6 +102,20 @@ export function TourProvider() {
     },
     [clearTourParam],
   );
+
+  /* 🔴 URL 말고 «이벤트»로도 열린다 — 앱바 `?` 는 같은 pathname 안에서 쿼리만 붙는
+     이동이라 3회 중 2회 `location` 이 안 바뀐다(리바이2 34대 귀속 6런: 클릭은 6/6 닿았고
+     직접 이동은 4/4 열렸다 = 이동만 안 일어난다). 열기를 이동에만 매달아 두면 «사람이 가장
+     자연스럽게 누르는 자리»가 아무 반응이 없다. 그래서 두 경로를 둔다: 이동이 되면 URL 이
+     열고, 안 되면 이 리스너가 연다. 둘 다 같은 자리에 착지한다(끝냈으면 처음부터·아니면 이어서). */
+  useEffect(() => {
+    const onOpen = () => {
+      const loaded = readState();
+      commit({ v: 1, status: "active", step: loaded.status === "done" ? 0 : loaded.step });
+    };
+    window.addEventListener(TOUR_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(TOUR_OPEN_EVENT, onOpen);
+  }, [commit]);
 
   const step: TourStep | null =
     state?.status === "active" ? (TOUR_STEPS[state.step] ?? null) : null;
