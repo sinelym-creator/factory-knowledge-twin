@@ -209,6 +209,65 @@ function TourStepView({
      «동시에» 고정돼 시트가 화면 높이의 66% 로 늘어나고, 그 몸통이 가리켜야 할 대상을 덮는다
      (리바이2 34대 실측 390: 스텝 2 에서 대상의 98.4% 를 덮음 · 1440 은 0%). 변수로 넘기면
      데스크톱은 그대로 좌표를 쓰고, <md 에서는 미디어쿼리가 이겨 진짜 바텀 시트가 된다. */
+  /* 🔴 **가로 자리를 «고르게» 한다.** 앞판은 가로가 대상의 left 하나로 고정이라 선택지가
+     없었고, 그 자리에 무엇이 있든 그대로 덮었다 — 실측(2026-09-03 · 공개면 9단계 전수):
+     **8/9 스텝에서 「읽는 것」을 가렸다**(KPI 값·알람 ID·원인 후보 이름 · 100% 덮인 것 다수).
+     🔴 정적 규칙(항상 반대편 등)으로는 못 닫는다. step5 는 0건인데 step6~9 는 «거의 같은
+        자리»에서 6~10건이다 — 자리가 안전했던 게 아니라 그 시점에 그 자리가 비어 있었고,
+        조사가 진행되면 같은 영역이 후보 카드로 채워진다. 화면이 시간에 따라 채워지므로
+        「어느 쪽이 안전한가」는 미리 못 정한다. 그래서 **그때 보고 고른다.**
+     🔴 후보는 **둘뿐이다**(대상에 붙이기 / 대상 옆으로 비키기). 전방위 탐색을 하지 않는다 —
+        복잡도가 값을 넘는다.
+     🔴 **겹침 0 을 약속하지 않는다.** 둘 다 가리면 «덜 가리는» 쪽을 고르고, 얼마나 가렸는지를
+        `data-tour-covered` 로 남긴다 — 못 피한 것을 피한 척하지 않는다.
+     🔴 **결정적이어야 한다.** 애니메이션 위상에 따라 자리가 흔들리면 재측의 판정선이 죽는다
+        (검증이 `fkt-stagger` 8px 흔들림으로 겪은 자리). 그래서 «유의미하게 나을 때만» 비킨다
+        — 미세한 차이로는 뒤집지 않는다. */
+  const clampLeft = (x: number) =>
+    Math.min(Math.max(12, x), Math.max(12, window.innerWidth - CALLOUT_W - 12));
+  const [placement, setPlacement] = useState<{ left: number; side: "anchor" | "beside"; covered: number } | null>(
+    null,
+  );
+  const holeKey = hole ? `${hole.top}:${hole.left}:${hole.width}:${hole.height}` : "";
+  useLayoutEffect(() => {
+    if (!hole) {
+      setPlacement(null);
+      return;
+    }
+    const top = Number.parseFloat(String((style as Record<string, string>)["--tour-top"] ?? "0"));
+    /* 후보 사각형이 «읽는 것»을 얼마나 덮는가. 빈 자리를 덮는 것은 결함이 아니므로
+       직접 텍스트를 가진 «보이는» 요소만 센다(sr-only·1px·clip-path 는 사람이 못 본다). */
+    const coverAt = (left: number) => {
+      const box = { left, top, right: left + CALLOUT_W, bottom: top + calloutH };
+      let sum = 0;
+      for (const el of Array.from(document.querySelectorAll("body *"))) {
+        if (el.closest("[data-testid=\"tour-callout\"]") || el.closest("[data-testid=\"tour-spotlight\"]")) continue;
+        if (!Array.from(el.childNodes).some((n) => n.nodeType === 3 && (n.textContent ?? "").trim())) continue;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === "hidden" || cs.display === "none" || cs.opacity === "0") continue;
+        if (cs.clipPath && cs.clipPath !== "none") continue;
+        const r = el.getBoundingClientRect();
+        if (r.width <= 1 || r.height <= 1) continue;
+        sum +=
+          Math.max(0, Math.min(box.right, r.right) - Math.max(box.left, r.left)) *
+          Math.max(0, Math.min(box.bottom, r.bottom) - Math.max(box.top, r.top));
+      }
+      return Math.round(sum);
+    };
+    const anchorLeft = clampLeft(hole.left);
+    const besideLeft = clampLeft(hole.left + hole.width + 12);
+    const a = coverAt(anchorLeft);
+    /* 같은 자리로 클램프되면 후보가 하나뿐이다 — 재계산하지 않는다. */
+    const b = besideLeft === anchorLeft ? a : coverAt(besideLeft);
+    const beside = b < a * 0.8;
+    setPlacement(
+      beside
+        ? { left: besideLeft, side: "beside", covered: b }
+        : { left: anchorLeft, side: "anchor", covered: a },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, step.id, calloutH, holeKey]);
+
   const style: React.CSSProperties = hole
     ? ({
         "--tour-top": `${
@@ -223,7 +282,7 @@ function TourStepView({
               ? below
               : Math.max(12, hole.top - calloutH - 12)
         }px`,
-        "--tour-left": `${Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12))}px`,
+        "--tour-left": `${placement?.left ?? clampLeft(hole.left)}px`,
       } as React.CSSProperties)
     : {};
 
@@ -260,6 +319,8 @@ function TourStepView({
         }`}
         ref={calloutRef}
         style={hole ? style : undefined}
+        data-tour-placement={placement?.side ?? "anchor"}
+        data-tour-covered={placement?.covered ?? ""}
         role="region"
         aria-label="가이드 투어"
         aria-live="polite"
