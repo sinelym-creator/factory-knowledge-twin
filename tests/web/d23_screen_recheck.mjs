@@ -45,6 +45,13 @@ const TOKEN_PATTERNS = [
   ["errno", /\[?Errno \d+|WinError \d+/gi],
   ["py-module", /urllib|asyncio|socket\.[a-z]|http\.client|\.py\b/gi],
   ["py-raise", /raise [A-Z]|from None\b/g],
+  // 🔴 D-24 화면 축 이관분(오케 09-03 14:19) — 401 문면이 **내부 인증 헤더 이름**을 공개
+  //    화면에 실었다(`게이트웨이 401 · X-FKT-Gateway-Token …`). 클래스명은 아니지만 같은
+  //    자리(§15.2 공개 경계)라 needle 을 이 그물에 붙인다.
+  //    🔴 `` 를 쓰지 않는다 — 한글 조사가 붙는 문면에서 경계가 어긋나 «잘린 매칭»이 되고,
+  //       그러면 「안 보인다」가 「없다」로 읽힌다(계보: 경계 없는 정규식).
+  ["auth-header", /X-FKT[A-Za-z0-9-]*/g],
+  ["token-word", /[Tt]oken/g],
 ];
 
 function scan(text) {
@@ -193,7 +200,10 @@ try {
   if (SHOT) await page.screenshot({ path: SHOT, fullPage: true });
 
   // 🔴 ⓑ 검출력 대조군 — 수리 «전» 문면(#432 §10 원문)을 같은 페이지에 심고 같은 눈으로 본다.
-  const before = "합성 축 = 결정적 집계(live 응답 거부 · 게이트웨이 미도달(ConnectionRefusedError))";
+  const before = "합성 축 = 결정적 집계(live 응답 거부 · 게이트웨이 미도달(ConnectionRefusedError))"
+    // 🔴 D-24 문면도 함께 심는다 — needle 을 늘렸으면 «늘린 needle 이 무는지»를 같은 자리에서
+    //    보여야 한다. 안 그러면 새 needle 은 「한 번도 물어본 적 없는 눈」이다.
+    + " · 게이트웨이 401 · X-FKT-Gateway-Token 가 없거나 맞지 않는다";
   await evalRetry(page, (t) => {
     const el = document.createElement("p");
     el.id = "levi2-control";
