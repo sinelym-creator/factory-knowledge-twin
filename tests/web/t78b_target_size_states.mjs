@@ -244,6 +244,17 @@ async function measureCell({ route, path, state, width, height, pointer }) {
     }));
     /* 🔴 「후보」의 뜻 — Spacing 만 기계 판정이다. Inline 후보는 사람 몫으로 따로 센다. */
     cell.aaFailInlineCandidates = cell.aaFailures.filter((f) => f.inlineCandidate).length;
+    /* 🔴 **AAA 미달도 «이름»으로 낸다.** 첫 회차는 AA 미달만 이름을 남겼는데, 그 결과
+       「투어 말풍선 2개 중 1개가 coarse 에서 44 미달」을 **수로만** 보고했다 = **누가 미달인지
+       못 말했다.** 목표 열이라도 이름 없는 수는 처방으로 못 옮긴다. */
+    cell.aaaFailures = live.filter((r) => !r.aaaPass).map((r) => ({
+      role: r.role, name: r.name, size: `${r.w}×${r.h}`, box: `${r.boxW}×${r.boxH}`, hitScanned: r.hitScanned,
+    }));
+    /* 모집단이 작은 칸(상태 축)은 명단을 통째로 남긴다 — 「무엇이 새 대상인가」가 이 티켓의 질문이다. */
+    cell.roster = live.length <= 24
+      ? live.map((r) => ({ role: r.role, name: r.name, size: `${r.w}×${r.h}`, aaPass: r.aaPass, aaaPass: r.aaaPass }))
+      : null;
+    cell.inertRoster = all.filter((t) => t.inert).slice(0, 24).map((r) => ({ role: r.role, name: r.name, size: `${r.w}×${r.h}` }));
   } catch (e) {
     cell.error = String(e).slice(0, 300);
   } finally {
@@ -351,7 +362,8 @@ for (const pointer of POINTERS) for (const state of STATES) {
   console.log(`  [${pointer} · ${state}]`);
   for (const c of cs) {
     console.log(`    ${String(c.width).padStart(4)}×${String(c.height).padEnd(4)} ${c.route.padEnd(11)} 대상 ${String(c.nonInert.total).padStart(3)}(all ${String(c.all.total).padStart(3)}·inert제외 ${c.inertExcluded}) · AA통과 ${c.nonInert.total - c.nonInert.aaFailCount}/${c.nonInert.total}${c.nonInert.aaFailCount ? ` 🔴${c.nonInert.aaFailCount}` : ""} · AAA통과 ${c.nonInert.total - c.nonInert.aaaFailCount}/${c.nonInert.total}`);
-    for (const f of c.aaFailures) console.log(`         🔴 ${f.role} 「${f.name}」 ${f.size} — 교차 ${f.partnerCount}: ${f.partners.map((x) => `${x.kind}:${x.name}`).join(" | ")}${f.inlineCandidate ? " ⟨Inline 예외 후보 — 사람 판단⟩" : ""}`);
+    for (const f of c.aaFailures) console.log(`         🔴 AA ${f.role} 「${f.name}」 ${f.size} — 교차 ${f.partnerCount}: ${f.partners.map((x) => `${x.kind}:${x.name}`).join(" | ")}${f.inlineCandidate ? " ⟨Inline 예외 후보 — 사람 판단⟩" : ""}`);
+    for (const f of (c.aaaFailures ?? [])) console.log(`         ▫ AAA(목표) ${f.role} 「${f.name}」 ${f.size}`);
   }
 }
 if (out.skipped.length) {
