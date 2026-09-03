@@ -342,16 +342,23 @@ body {
      🔴 `min-height` 가 아니라 `::before` 인 이유가 그것이다. 다만 replaced element
      (`<select>` 등)에는 의사 요소 박스가 «물리적으로» 안 생긴다 — 그 자리는 패딩으로 따로 푼다
      (실측 2026-09-03: computed 는 44×44 를 내는데 요소 밖 히트 테스트는 부모를 답한다). */
+  /* 🔴 **세로로만 넓힌다.** 앞판은 가로도 `max(100%, 2.75rem)` 로 넓혔는데, 그러면 44 보다 좁은
+     요소에서 좌우로 삐져나오고 **뷰포트 가장자리에 있는 자리에서는 문서가 그만큼 넘친다**
+     (검증 실측: coarse 60/60 칸 `scrollWidth 391 / clientWidth 390` · fine 0/60 · 기준선 0/50).
+     🔴 숨겨서 없애지 않는다 — `overflow: hidden` 은 넘침을 «안 보이게» 만들 뿐이고, 그건
+        레이아웃 결함을 정직성 결함으로 바꾸는 것이다. 넘칠 «수 없는» 형태로 바꾼다.
+     ⚠ 대가: 가로가 44 에 못 미치는 두 자리(`intro-reopen` 32 · `fallback-banner` ✕ 10.6)는
+        가로 미달이 남는다. 가로까지 넓히려면 그 자리의 부모 여백을 손봐야 하므로 별건이다. */
   @media (pointer: coarse) {
     .fkt-hit { position: relative; }
     .fkt-hit::before {
       content: "";
       position: absolute;
-      left: 50%;
+      left: 0;
       top: 50%;
-      width: max(100%, 2.75rem);
+      width: 100%;
       height: max(100%, 2.75rem);
-      transform: translate(-50%, -50%);
+      transform: translateY(-50%);
     }
   }
 
