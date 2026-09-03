@@ -155,6 +155,25 @@ function TourStepView({
     titleRef.current?.focus();
   }, [index]);
 
+  /* 🔴 콜아웃의 «실제» 높이를 재서 배치에 쓴다. 220px 로 어림잡던 값이 실물과 어긋나
+     데스크톱에서도 대상을 16.6% 덮었다(리바이2 34대 실측 1440 스텝 4). 추정으로 배치하면
+     추정만큼 겹친다. */
+  const calloutRef = useRef<HTMLElement | null>(null);
+  const [calloutH, setCalloutH] = useState(220);
+  /* 🔴 스텝이 바뀔 때 한 번만 재면 «한 프레임 늦은 높이»로 배치한다 — 리바이2 34대 실측:
+     규칙대로면 top 이 699 여야 할 칸이 632 에 앉았고, 역산하면 그때 쓰인 높이는 직전 스텝의
+     것(256)이었다. 그래서 옆 칸이 새로 겹쳤다. 높이가 «변할 때마다» 다시 재게 둔다. */
+  useLayoutEffect(() => {
+    const el = calloutRef.current;
+    if (!el) return;
+    const measure = () => setCalloutH(el.getBoundingClientRect().height);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [index, step.id]);
+
   const pad = 8;
   const hole: Rect | null = rect
     ? {
@@ -169,13 +188,43 @@ function TourStepView({
      🔴 좌표를 클램프한다: 화면 밖으로 나간 콜아웃은 「보이지만 읽을 수 없는」 상태가 된다. */
   const CALLOUT_W = 360;
   const below = hole ? hole.top + hole.height + 12 : 0;
-  const fitsBelow = hole ? below + 220 < window.innerHeight : false;
+  const fitsBelow = hole ? below + calloutH + 12 < window.innerHeight : false;
+  /* 🔴 <md 는 바텀 시트라 «항상 화면 아래»에 선다 — 그래서 대상이 아래쪽에 있으면 시트가
+     그 위에 앉는다(리바이2 34대 실측 390 스텝 2: 대상의 100% 가 덮여 링이 아예 안 보였다).
+     scrollIntoView({block:'center'}) 로는 못 피한다: 대상이 화면 가운데 와도 시트는 여전히
+     아래 200~300px 을 차지한다. 그래서 «시트를 반대편으로 보낸다» — 대상이 시트 자리와 겹칠
+     높이면 위에 붙인다. 규격 ⑤ 의 목적은 「하단에 붙는 것」이 아니라 «대상을 보여 주며
+     설명하는 것»이다. */
+  /* 🔴 단 «대상이 화면보다 클 때»는 뒤집지 않는다. 뒤집기는 대상이 시트보다 작을 때만
+     통한다 — 목록 컨테이너처럼 대상이 뷰포트를 거의 채우면 시트를 어디 두어도 겹치고, 그때
+     위로 보내면 «머리»(상단 1/3 · 사람이 먼저 읽는 곳)를 덮는다. 리바이2 34대 실측 390 스텝 4:
+     전체 덮임은 23.4→23.3 으로 그대로인데 머리 덮임은 **0% → 69.9%** 로 악화했다. 하단에
+     남으면 꼬리만 가린다. 같은 처방이 한 기준에서는 개선이고 다른 기준에서는 악화였다. */
+  const targetFillsViewport = hole ? hole.height > window.innerHeight - calloutH - 24 : false;
+  const sheetGoesTop = hole
+    ? !targetFillsViewport && hole.top + hole.height > window.innerHeight - calloutH - 24
+    : false;
+  /* 🔴 좌표를 «인라인 값»이 아니라 «변수»로 넘긴다. 인라인 `top`/`width` 는 클래스보다
+     세서 `max-md:top-auto`·`max-md:w-auto` 를 무력화한다 — 그러면 <md 에서 top 과 bottom 이
+     «동시에» 고정돼 시트가 화면 높이의 66% 로 늘어나고, 그 몸통이 가리켜야 할 대상을 덮는다
+     (리바이2 34대 실측 390: 스텝 2 에서 대상의 98.4% 를 덮음 · 1440 은 0%). 변수로 넘기면
+     데스크톱은 그대로 좌표를 쓰고, <md 에서는 미디어쿼리가 이겨 진짜 바텀 시트가 된다. */
   const style: React.CSSProperties = hole
-    ? {
-        top: fitsBelow ? below : Math.max(12, hole.top - 232),
-        left: Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12)),
-        width: CALLOUT_W,
-      }
+    ? ({
+        "--tour-top": `${
+          /* 🔴 데스크톱 좌표 경로에도 «대상이 화면을 채우면 위로 올리지 않는다»를 건다.
+             `max-md` 쪽에만 넣었더니 1440 은 그 경로를 안 타서 값이 한 자리도 안 움직였다
+             (리바이2 34대: 머리 덮임 49.9% → 49.9%). 대상이 크면 `fitsBelow` 가 거짓이 되어
+             `top` 이 12 로 떨어지는데, 그 대상은 화면 위쪽부터 시작하므로 «머리»를 덮는다.
+             아래에 두면 꼬리만 가린다 — 390 에서 이미 그 자리로 착지시킨 규칙이다. */
+          targetFillsViewport
+            ? Math.max(12, window.innerHeight - calloutH - 12)
+            : fitsBelow
+              ? below
+              : Math.max(12, hole.top - calloutH - 12)
+        }px`,
+        "--tour-left": `${Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12))}px`,
+      } as React.CSSProperties)
     : {};
 
   return (
@@ -183,14 +232,17 @@ function TourStepView({
       {/* 딤 + 구멍 — 클릭은 통과한다(pointer-events:none) */}
       {hole && (
         <div
-          className="pointer-events-none fixed z-40 rounded-card transition-all duration-(--fkt-dur-3) ease-spring"
+          /* 🔴 링 굵기는 클래스로 둔다(인라인 outline 은 미디어쿼리를 못 탄다) — 규격 ④-6
+             「모션을 줄인 사람에게는 pulse 대신 «정지 링 3px»」. 움직임을 뺀 자리를 굵기로 갚는다. */
+          className="pointer-events-none fixed z-40 rounded-card outline-2 motion-reduce:outline-[3px] transition-all duration-(--fkt-dur-3) ease-spring"
           style={{
             top: hole.top,
             left: hole.left,
             width: hole.width,
             height: hole.height,
             boxShadow: "0 0 0 9999px var(--fkt-scrim)",
-            outline: "2px solid var(--fkt-tint)",
+            outlineStyle: "solid",
+            outlineColor: "var(--fkt-tint)",
             outlineOffset: 0,
           }}
           aria-hidden
@@ -200,8 +252,13 @@ function TourStepView({
 
       <section
         className={`fkt-card fkt-sheet fixed z-50 p-5 shadow-2 ${
-          hole ? "max-md:inset-x-3 max-md:top-auto max-md:bottom-3 max-md:w-auto" : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
+          hole
+            ? `top-[var(--tour-top)] left-[var(--tour-left)] w-[360px] max-md:inset-x-3 max-md:w-auto ${
+                sheetGoesTop ? "max-md:top-3 max-md:bottom-auto" : "max-md:top-auto max-md:bottom-3"
+              }`
+            : "inset-x-3 bottom-3 md:right-5 md:left-auto md:w-[360px]"
         }`}
+        ref={calloutRef}
         style={hole ? style : undefined}
         role="region"
         aria-label="가이드 투어"

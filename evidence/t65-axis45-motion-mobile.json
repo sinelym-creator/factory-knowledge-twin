@@ -1,0 +1,513 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T07:46:22.028Z",
+  "columns": [
+    {
+      "label": "390-reduce",
+      "width": 390,
+      "height": 844,
+      "reduced": true,
+      "steps": [
+        {
+          "index": 0,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 194.5,
+              "left": 12,
+              "width": 366,
+              "height": 234.9375
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 441.4375,
+              "left": 12,
+              "width": 360,
+              "height": 390.5625,
+              "bottom": 832
+            },
+            "position": "fixed",
+            "inlineTop": "441.438px",
+            "inlineLeft": "12px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 390,
+              "h": 844
+            },
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231
+          },
+          "scrollAxis": {
+            "scrollWidth": 390,
+            "clientWidth": 390,
+            "overflowPx": 0
+          }
+        },
+        {
+          "index": 1,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 507.4375,
+              "left": 12,
+              "width": 366,
+              "height": 215
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 275.4375,
+              "left": 12,
+              "width": 360,
+              "height": 556.5625,
+              "bottom": 832
+            },
+            "position": "fixed",
+            "inlineTop": "275.438px",
+            "inlineLeft": "12px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 390,
+              "h": 844
+            },
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231
+          },
+          "scrollAxis": {
+            "scrollWidth": 390,
+            "clientWidth": 390,
+            "overflowPx": 0
+          }
+        }
+      ]
+    },
+    {
+      "label": "390-motion",
+      "width": 390,
+      "height": 844,
+      "reduced": false,
+      "steps": [
+        {
+          "index": 0,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0.4s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 194.5,
+              "left": 12,
+              "width": 366,
+              "height": 234.9375
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 441.4375,
+              "left": 12,
+              "width": 360,
+              "height": 390.5625,
+              "bottom": 832
+            },
+            "position": "fixed",
+            "inlineTop": "441.438px",
+            "inlineLeft": "12px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 390,
+              "h": 844
+            },
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231
+          },
+          "scrollAxis": {
+            "scrollWidth": 390,
+            "clientWidth": 390,
+            "overflowPx": 0
+          }
+        },
+        {
+          "index": 1,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0.4s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 507.4375,
+              "left": 12,
+              "width": 366,
+              "height": 215
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 275.4375,
+              "left": 12,
+              "width": 360,
+              "height": 556.5625,
+              "bottom": 832
+            },
+            "position": "fixed",
+            "inlineTop": "275.438px",
+            "inlineLeft": "12px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 390,
+              "h": 844
+            },
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231
+          },
+          "scrollAxis": {
+            "scrollWidth": 390,
+            "clientWidth": 390,
+            "overflowPx": 0
+          }
+        }
+      ]
+    },
+    {
+      "label": "1440-reduce",
+      "width": 1440,
+      "height": 900,
+      "reduced": true,
+      "steps": [
+        {
+          "index": 0,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 104.5,
+              "left": 276,
+              "width": 776,
+              "height": 177.65625
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 294.15625,
+              "left": 276,
+              "width": 360,
+              "height": 188.875,
+              "bottom": 483.03125
+            },
+            "position": "fixed",
+            "inlineTop": "294.156px",
+            "inlineLeft": "276px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 1440,
+              "h": 900
+            },
+            "bottomGap": 416.96875,
+            "widthRatio": 0.25
+          },
+          "scrollAxis": {
+            "scrollWidth": 1440,
+            "clientWidth": 1440,
+            "overflowPx": 0
+          }
+        },
+        {
+          "index": 1,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 570.65625,
+              "left": 1068,
+              "width": 356,
+              "height": 207
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 338.65625,
+              "left": 1068,
+              "width": 360,
+              "height": 188.875,
+              "bottom": 527.53125
+            },
+            "position": "fixed",
+            "inlineTop": "338.656px",
+            "inlineLeft": "1068px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 1440,
+              "h": 900
+            },
+            "bottomGap": 372.46875,
+            "widthRatio": 0.25
+          },
+          "scrollAxis": {
+            "scrollWidth": 1440,
+            "clientWidth": 1440,
+            "overflowPx": 0
+          }
+        }
+      ]
+    },
+    {
+      "label": "1440-motion",
+      "width": 1440,
+      "height": 900,
+      "reduced": false,
+      "steps": [
+        {
+          "index": 0,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0.4s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 104.5,
+              "left": 276,
+              "width": 776,
+              "height": 177.65625
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 294.15625,
+              "left": 276,
+              "width": 360,
+              "height": 188.875,
+              "bottom": 483.03125
+            },
+            "position": "fixed",
+            "inlineTop": "294.156px",
+            "inlineLeft": "276px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 1440,
+              "h": 900
+            },
+            "bottomGap": 416.96875,
+            "widthRatio": 0.25
+          },
+          "scrollAxis": {
+            "scrollWidth": 1440,
+            "clientWidth": 1440,
+            "overflowPx": 0
+          }
+        },
+        {
+          "index": 1,
+          "shown": true,
+          "hasSpot": true,
+          "spotStyle": {
+            "outlineWidth": "2px",
+            "outlineStyle": "solid",
+            "outlineColor": "rgb(10, 132, 255)",
+            "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+            "transitionDuration": "0.4s",
+            "animationName": "none",
+            "animationDuration": "0s",
+            "opacity": "1",
+            "rect": {
+              "top": 570.65625,
+              "left": 1068,
+              "width": 356,
+              "height": 207
+            }
+          },
+          "calloutBox": {
+            "rect": {
+              "top": 338.65625,
+              "left": 1068,
+              "width": 360,
+              "height": 188.875,
+              "bottom": 527.53125
+            },
+            "position": "fixed",
+            "inlineTop": "338.656px",
+            "inlineLeft": "1068px",
+            "inlineWidth": "360px",
+            "viewport": {
+              "w": 1440,
+              "h": 900
+            },
+            "bottomGap": 372.46875,
+            "widthRatio": 0.25
+          },
+          "scrollAxis": {
+            "scrollWidth": 1440,
+            "clientWidth": 1440,
+            "overflowPx": 0
+          }
+        }
+      ]
+    }
+  ],
+  "stage": {
+    "entered": true,
+    "invite": true,
+    "spotlight": true
+  },
+  "summary": {
+    "reduced": {
+      "390-reduce": {
+        "outlineWidth": "2px",
+        "outlineStyle": "solid",
+        "outlineColor": "rgb(10, 132, 255)",
+        "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+        "transitionDuration": "0s",
+        "animationName": "none",
+        "animationDuration": "0s",
+        "opacity": "1",
+        "rect": {
+          "top": 194.5,
+          "left": 12,
+          "width": 366,
+          "height": 234.9375
+        }
+      },
+      "390-motion": {
+        "outlineWidth": "2px",
+        "outlineStyle": "solid",
+        "outlineColor": "rgb(10, 132, 255)",
+        "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+        "transitionDuration": "0.4s",
+        "animationName": "none",
+        "animationDuration": "0s",
+        "opacity": "1",
+        "rect": {
+          "top": 194.5,
+          "left": 12,
+          "width": 366,
+          "height": 234.9375
+        }
+      },
+      "1440-reduce": {
+        "outlineWidth": "2px",
+        "outlineStyle": "solid",
+        "outlineColor": "rgb(10, 132, 255)",
+        "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+        "transitionDuration": "0s",
+        "animationName": "none",
+        "animationDuration": "0s",
+        "opacity": "1",
+        "rect": {
+          "top": 104.5,
+          "left": 276,
+          "width": 776,
+          "height": 177.65625
+        }
+      },
+      "1440-motion": {
+        "outlineWidth": "2px",
+        "outlineStyle": "solid",
+        "outlineColor": "rgb(10, 132, 255)",
+        "boxShadow": "rgba(0, 0, 0, 0.55) 0px 0px 0px 9999px",
+        "transitionDuration": "0.4s",
+        "animationName": "none",
+        "animationDuration": "0s",
+        "opacity": "1",
+        "rect": {
+          "top": 104.5,
+          "left": 276,
+          "width": 776,
+          "height": 177.65625
+        }
+      }
+    },
+    "ringSurvivesReduced": true,
+    "mobile": [
+      {
+        "label": "390-reduce",
+        "steps": [
+          {
+            "index": 0,
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231,
+            "inlineTop": "441.438px",
+            "overflowPx": 0
+          },
+          {
+            "index": 1,
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231,
+            "inlineTop": "275.438px",
+            "overflowPx": 0
+          }
+        ]
+      },
+      {
+        "label": "390-motion",
+        "steps": [
+          {
+            "index": 0,
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231,
+            "inlineTop": "441.438px",
+            "overflowPx": 0
+          },
+          {
+            "index": 1,
+            "bottomGap": 12,
+            "widthRatio": 0.9230769230769231,
+            "inlineTop": "275.438px",
+            "overflowPx": 0
+          }
+        ]
+      }
+    ],
+    "horizontalOverflowMax": 0
+  }
+}

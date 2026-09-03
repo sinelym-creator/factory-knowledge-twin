@@ -27,7 +27,14 @@
   --fkt-label-2: rgb(235 235 245 / 0.6);  /* 보조 — 회색 hex 가 아니라 흰색 알파 */
   --fkt-label-3: rgb(235 235 245 / 0.3);  /* 플레이스홀더 — 본문 텍스트 금지(⑤) */
   --fkt-label-4: #38383a;                 /* 헤어라인 = «같은 카드 안 리스트 행» 사이에만 */
-  --fkt-tint: #0a84ff;                    /* 강조는 하나 = 상호작용 */
+  --fkt-tint: #0a84ff;                    /* 강조는 하나 = 상호작용 (면·링·채움) */
+  /* 🔴 같은 파랑이라도 «칠하는 색»과 «읽는 색»은 대비가 다르다. 다크 카드(#2c2c2e) 위의
+     13px 파랑 글자는 #0a84ff 로 3.82:1, 틴트를 배경에 깐 흰 글자는 3.65:1 로 둘 다 4.5:1 에
+     못 미친다(리바이2 34대 실측 · 고유 25행). 색조를 바꾸지 않고 «역할»만 가른다 —
+     읽는 파랑은 밝게(카드 위 5.7:1), 흰 글자를 얹는 파랑은 짙게(4.7:1). 라이트에서는
+     한 값으로 셋 다 선다. 「강조는 하나」는 색이 하나라는 뜻이지 명도가 하나라는 뜻이 아니다. */
+  --fkt-tint-text: #5aa9ff;               /* 파랑 «글자» — 어두운 면 위에서 읽히는 밝기 */
+  --fkt-tint-strong: #0071e3;             /* 흰 글자를 얹는 파랑 «면» — CTA 배경 */
   --fkt-success: #30d158;
   --fkt-warning: #ff9f0a;
   --fkt-danger: #ff453a;
@@ -102,6 +109,8 @@
     --fkt-label-3: rgb(60 60 67 / 0.5);
     --fkt-label-4: rgb(60 60 67 / 0.18);
     --fkt-tint: #0071e3;
+    --fkt-tint-text: #0071e3;   /* 흰 배경 위 4.7:1 — 라이트는 한 값으로 선다 */
+    --fkt-tint-strong: #0071e3;
     --fkt-success: #248a3d;
     --fkt-warning: #c93400;
     --fkt-danger: #d70015;
@@ -130,7 +139,7 @@
   --color-ok: var(--fkt-success);
   --color-warn: var(--fkt-warning);
   --color-danger: var(--fkt-danger);
-  --color-ai: var(--fkt-tint);
+  --color-ai: var(--fkt-tint-text);   /* `text-ai` = 파랑 «글자» 전용 별칭(면이 아니다) */
   --color-info: var(--fkt-info);
   --color-scrim: var(--fkt-scrim);
   --color-glass: var(--fkt-glass);
@@ -272,9 +281,9 @@ body {
   }
   .fkt-btn:active { transform: scale(0.95); }   /* 누름 = 마이크로 인터랙션 «하나»(색 반전·테두리 점등 금지) */
   .fkt-btn:disabled { opacity: 0.4; }
-  .fkt-btn-primary { background: var(--fkt-tint); color: #fff; }
+  .fkt-btn-primary { background: var(--fkt-tint-strong); color: #fff; }   /* 흰 라벨 4.7:1 */
   .fkt-btn-secondary { background: var(--fkt-bg-3); color: var(--fkt-label-1); }
-  .fkt-btn-tertiary { background: transparent; color: var(--fkt-tint); }
+  .fkt-btn-tertiary { background: transparent; color: var(--fkt-tint-text); }
   @media (max-width: 47.99rem) {
     .fkt-btn { min-height: 2.75rem; }   /* 터치 타깃 ≥44(⑧) */
   }
@@ -309,6 +318,34 @@ body {
   }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .fkt-glass { background: var(--fkt-bg-2); }
+  }
+  /* 🔴 투명도 감소를 켠 사람에게는 Glass 를 끈다(HIG 접근성 · 폐하 자료 §7.2 「접근성
+     설정에서 투명도 감소와 대비 증가 상태를 고려한다」). 반투명은 장식이 아니라 «앞뒤 관계»를
+     말하는 재질이므로, 끌 때도 그 관계는 남긴다 — blur 만 걷고 배경은 불투명 표면으로 바꿔
+     계층은 그대로 둔다(미지원 폴백과 같은 자리로 착지한다). */
+  @media (prefers-reduced-transparency: reduce) {
+    .fkt-glass {
+      background: var(--fkt-bg-2);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  /* 🔴 발광은 «하나»에만 — AI 조사 실행 버튼(폐하 자료 §15 「AI 분석 실행 버튼에는 약한
+     Blue Glow」 · §8 「선택·활성화·실행처럼 의미 있는 상황에만」 · §15 피해야 할 것 「모든 버튼과
+     카드에 Glow」). 밝은 네온 테두리가 아니라 «낮은 불투명도로 번지는 빛»이라 테두리를 만들지
+     않고 아래로 퍼뜨린다. 투명도 감소에서는 끈다(빛도 재질이다). */
+  .fkt-glow-ai {
+    box-shadow: 0 4px 18px -6px color-mix(in srgb, var(--fkt-tint) 55%, transparent);
+  }
+  .fkt-glow-ai:hover {
+    box-shadow: 0 6px 24px -6px color-mix(in srgb, var(--fkt-tint) 70%, transparent);
+  }
+  .fkt-glow-ai:disabled {
+    box-shadow: none;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .fkt-glow-ai, .fkt-glow-ai:hover { box-shadow: none; }
   }
 
   /* 진입 ④-1 · 스태거 ④-2(40ms × n · ≤8) · pop ④-5 · 시트 ④-9 · pulse ④-10 */

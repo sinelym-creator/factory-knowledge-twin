@@ -1,0 +1,199 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T07:34:56.065Z",
+  "targetStep": 1,
+  "columns": [
+    {
+      "label": "target#1",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 1,
+        "stepId": "alarm",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":1}",
+        "text": "알람은 «울린 행»의 값이 앵커다 임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 울린 그 알람 행의 값입니다 — 둘이 다를 수 있어서 화면은 울린 값을 씁니다. 2/9 건너뛰기 다음",
+        "hasGoto": 0,
+        "hasNext": 1,
+        "hasAwaitClick": 0,
+        "spotlight": 1,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+    },
+    {
+      "label": "target#2",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": false,
+        "url": "http://127.0.0.1:3107/overview",
+        "index": null,
+        "stepId": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+        "text": null,
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-lost",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+    },
+    {
+      "label": "target#3",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 1,
+        "stepId": "alarm",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":1}",
+        "text": "알람은 «울린 행»의 값이 앵커다 임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 울린 그 알람 행의 값입니다 — 둘이 다를 수 있어서 화면은 울린 값을 씁니다. 2/9 건너뛰기 다음",
+        "hasGoto": 0,
+        "hasNext": 1,
+        "hasAwaitClick": 0,
+        "spotlight": 1,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+    },
+    {
+      "label": "target-reload",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": false,
+        "url": "http://127.0.0.1:3107/overview",
+        "index": null,
+        "stepId": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+        "text": null,
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-lost",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+    },
+    {
+      "label": "control-step0",
+      "tamperToStep": 0,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        }
+      ],
+      "resume": {
+        "reopened": false,
+        "url": "http://127.0.0.1:3107/overview",
+        "index": null,
+        "stepId": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":0}",
+        "text": null,
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-lost",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/overview",
+      "stepIdAtTarget": "alarm",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "storedAfterTamper": "{\"v\":1,\"status\":\"skipped\",\"step\":0}"
+    }
+  ],
+  "stage": {
+    "entered": true,
+    "invite": true,
+    "reachedTarget": true
+  },
+  "controlDiscriminates": true,
+  "summary": {
+    "targetRuns": [
+      {
+        "label": "target#1",
+        "reopened": true,
+        "index": 1,
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":1}"
+      },
+      {
+        "label": "target#2",
+        "reopened": false,
+        "index": null,
+        "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}"
+      },
+      {
+        "label": "target#3",
+        "reopened": true,
+        "index": 1,
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":1}"
+      }
+    ],
+    "targetVerdicts": [
+      "index-preserved",
+      "index-lost",
+      "index-preserved"
+    ],
+    "reloadColumn": {
+      "reopened": false,
+      "index": null,
+      "stored": "{\"v\":1,\"status\":\"skipped\",\"step\":1}",
+      "verdict": "index-lost"
+    },
+    "controlResumeIndex": null,
+    "controlDiscriminates": true
+  }
+}

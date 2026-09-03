@@ -1,0 +1,318 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T07:58:03.138Z",
+  "targetStep": 5,
+  "columns": [
+    {
+      "label": "target#1",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":5}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target#2",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":5}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target#3",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":5}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target-reload",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":5}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    },
+    {
+      "label": "control-step0",
+      "tamperToStep": 0,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "index": 0,
+        "stepId": "headline",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":0}",
+        "text": "지금 무슨 일이 났는지부터 서버가 활성 알람 중 가장 심각한 1건을 골라 문장으로 만듭니다. 순위를 정하는 것은 서버이고, 화면은 그 첫 줄을 크게 보여 줍니다. 이 화면의 값은 전부 synthetic 데이터입니다. 이 화면에서 가리킬 자리를 찾지 못했습니다 — 데이터가 아직 오지 않았거나 이 상태에는 없는 요소입니다. 건너뛰고 계속할 수 있습니다. 1/9 건너뛰기 다음",
+        "hasGoto": 0,
+        "hasNext": 1,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 1
+      },
+      "verdict": "index-lost",
+      "reachedTarget": true,
+      "urlAtTarget": "http://127.0.0.1:3107/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"skipped\",\"step\":5}",
+      "storedAfterTamper": "{\"v\":1,\"status\":\"skipped\",\"step\":0}",
+      "reopenTries": 1,
+      "reopenNavigated": true
+    }
+  ],
+  "stage": {
+    "entered": true,
+    "invite": true,
+    "reachedTarget": true
+  },
+  "controlDiscriminates": true,
+  "summary": {
+    "targetRuns": [
+      {
+        "label": "target#1",
+        "navigated": true,
+        "tries": 1,
+        "reopened": true,
+        "index": 5,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}"
+      },
+      {
+        "label": "target#2",
+        "navigated": true,
+        "tries": 1,
+        "reopened": true,
+        "index": 5,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}"
+      },
+      {
+        "label": "target#3",
+        "navigated": true,
+        "tries": 1,
+        "reopened": true,
+        "index": 5,
+        "url": "http://127.0.0.1:3107/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}"
+      }
+    ],
+    "targetVerdicts": [
+      "index-preserved",
+      "index-preserved",
+      "index-preserved"
+    ],
+    "reloadColumn": {
+      "reopened": true,
+      "index": 5,
+      "stored": "{\"v\":1,\"status\":\"active\",\"step\":5}",
+      "verdict": "index-preserved"
+    },
+    "controlResumeIndex": 0,
+    "controlDiscriminates": true
+  }
+}

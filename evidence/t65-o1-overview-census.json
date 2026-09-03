@@ -1,0 +1,624 @@
+{
+  "base": "http://127.0.0.1:3107",
+  "at": "2026-09-03T07:52:32.088Z",
+  "runs": [
+    {
+      "n": 1,
+      "samples": [
+        {
+          "atMs": 0,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 60,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 150,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 400,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 1200,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:3107/overview"
+    },
+    {
+      "n": 2,
+      "samples": [
+        {
+          "atMs": 0,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 60,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 150,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 400,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 1200,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:3107/overview"
+    },
+    {
+      "n": 3,
+      "samples": [
+        {
+          "atMs": 0,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 60,
+          "total": 35,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 150,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 400,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 1200,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:3107/overview"
+    },
+    {
+      "n": 4,
+      "samples": [
+        {
+          "atMs": 0,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 60,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 150,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 400,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 1200,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:3107/overview"
+    },
+    {
+      "n": 5,
+      "samples": [
+        {
+          "atMs": 0,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 60,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 150,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 400,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 1200,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:3107/overview"
+    },
+    {
+      "n": 6,
+      "samples": [
+        {
+          "atMs": 0,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 60,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 150,
+          "total": 11,
+          "unique": 11,
+          "h1": 1,
+          "equipmentCards": 0,
+          "headline": 0,
+          "dupes": []
+        },
+        {
+          "atMs": 400,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        },
+        {
+          "atMs": 1200,
+          "total": 46,
+          "unique": 24,
+          "h1": 1,
+          "equipmentCards": 12,
+          "headline": 1,
+          "dupes": [
+            {
+              "id": "equipment-card",
+              "c": 12
+            },
+            {
+              "id": "sparkline",
+              "c": 12
+            }
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:3107/overview"
+    }
+  ],
+  "control": {
+    "before": 46,
+    "after": {
+      "total": 82,
+      "h1": 2
+    },
+    "discriminates": true
+  },
+  "summary": {
+    "runs": 6,
+    "distinctTotals": [
+      11,
+      35,
+      46
+    ],
+    "perRunFinal": [
+      46,
+      46,
+      46,
+      46,
+      46,
+      46
+    ],
+    "perRunMax": [
+      46,
+      46,
+      46,
+      46,
+      46,
+      46
+    ],
+    "anyDupes": true,
+    "dupeExamples": [
+      {
+        "run": 1,
+        "atMs": 400,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 1,
+        "atMs": 1200,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 2,
+        "atMs": 400,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 2,
+        "atMs": 1200,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 3,
+        "atMs": 60,
+        "total": 35,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 3,
+        "atMs": 150,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 3,
+        "atMs": 400,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      },
+      {
+        "run": 3,
+        "atMs": 1200,
+        "total": 46,
+        "dupes": [
+          {
+            "id": "equipment-card",
+            "c": 12
+          },
+          {
+            "id": "sparkline",
+            "c": 12
+          }
+        ]
+      }
+    ],
+    "h1Values": [
+      1
+    ]
+  }
+}
