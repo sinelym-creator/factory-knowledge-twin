@@ -1,0 +1,304 @@
+{
+  "label": "after-r2",
+  "base": "http://127.0.0.1:8798",
+  "at": "2026-09-03T22:06:24.772Z",
+  "viewport": {
+    "w": 1440,
+    "h": 900
+  },
+  "stepsRequested": 6,
+  "notMeasured": "7~9걸음 = 안 잼(발주 범위 밖 · 0 아님)",
+  "stage": {
+    "landedUrl": "http://127.0.0.1:8798/overview",
+    "tourInvite": true,
+    "modeBadge": "◑REPLAY"
+  },
+  "control": {
+    "chars": {
+      "needleChars": 17,
+      "before": 45,
+      "after": 62,
+      "delta": 17
+    },
+    "geometry": {
+      "expected": 4000,
+      "got": 4000
+    }
+  },
+  "steps": [
+    {
+      "i": 1,
+      "id": "headline",
+      "target": null,
+      "reached": true,
+      "title": "둘러보기를 시작합니다",
+      "calloutRect": {
+        "x": 540,
+        "y": 356,
+        "w": 360,
+        "h": 189
+      },
+      "calloutLeft": 540,
+      "targetTestid": null,
+      "targetFound": false,
+      "targetRect": null,
+      "targetAreaPx": null,
+      "overlapTargetPx": null,
+      "coversTarget": null,
+      "targetCoverRatio": null,
+      "coveredCharsInTarget": null,
+      "visibleCharsInTarget": null,
+      "gapToTargetPx": null,
+      "spotlightRect": null,
+      "overlapSpotlightPx": null,
+      "coveredChars": 45,
+      "coveredHalf": 45,
+      "coveredAreaPx": 8421,
+      "visibleChars": 750,
+      "selfPlacement": "anchor",
+      "selfCovered": "",
+      "selfClear": "",
+      "fixMarkerPresent": true,
+      "url": "/overview",
+      "advancedBy": "next"
+    },
+    {
+      "i": 2,
+      "id": "alarm",
+      "target": "alarm-card",
+      "reached": true,
+      "title": "알람은 «울린 행»의 값이 앵커다",
+      "calloutRect": {
+        "x": 696,
+        "y": 370,
+        "w": 360,
+        "h": 189
+      },
+      "calloutLeft": 696,
+      "targetTestid": "alarm-card",
+      "targetFound": true,
+      "targetRect": {
+        "x": 1076,
+        "y": 579,
+        "w": 340,
+        "h": 191
+      },
+      "targetAreaPx": 64940,
+      "overlapTargetPx": 0,
+      "coversTarget": false,
+      "targetCoverRatio": 0,
+      "coveredCharsInTarget": 0,
+      "visibleCharsInTarget": 90,
+      "gapToTargetPx": 28.3,
+      "spotlightRect": {
+        "x": 1068,
+        "y": 571,
+        "w": 356,
+        "h": 207
+      },
+      "overlapSpotlightPx": 0,
+      "coveredChars": 57,
+      "coveredHalf": 55,
+      "coveredAreaPx": 9645,
+      "visibleChars": 838,
+      "selfPlacement": "before",
+      "selfCovered": "29428",
+      "selfClear": "yes",
+      "fixMarkerPresent": true,
+      "url": "/overview",
+      "advancedBy": "next"
+    },
+    {
+      "i": 3,
+      "id": "start",
+      "target": "start-from-alarm",
+      "reached": true,
+      "title": "조사를 시작하면 에이전트가 5단계를 돕니다",
+      "calloutRect": {
+        "x": 716,
+        "y": 498,
+        "w": 360,
+        "h": 200
+      },
+      "calloutLeft": 716,
+      "targetTestid": "start-from-alarm",
+      "targetFound": true,
+      "targetRect": {
+        "x": 1096,
+        "y": 718,
+        "w": 99,
+        "h": 36
+      },
+      "targetAreaPx": 3576,
+      "overlapTargetPx": 0,
+      "coversTarget": false,
+      "targetCoverRatio": 0,
+      "coveredCharsInTarget": 0,
+      "visibleCharsInTarget": 4,
+      "gapToTargetPx": 28.3,
+      "spotlightRect": {
+        "x": 1088,
+        "y": 710,
+        "w": 115,
+        "h": 52
+      },
+      "overlapSpotlightPx": 0,
+      "coveredChars": 53,
+      "coveredHalf": 42,
+      "coveredAreaPx": 7264,
+      "visibleChars": 838,
+      "selfPlacement": "before",
+      "selfCovered": "22485",
+      "selfClear": "yes",
+      "fixMarkerPresent": true,
+      "url": "/overview",
+      "advancedBy": "goto"
+    },
+    {
+      "i": 4,
+      "id": "timeline",
+      "target": "run-timeline",
+      "reached": true,
+      "title": "다섯 단계가 실제로 지나간 자리",
+      "calloutRect": {
+        "x": 624,
+        "y": 699,
+        "w": 360,
+        "h": 189
+      },
+      "calloutLeft": 624,
+      "targetTestid": "run-timeline",
+      "targetFound": true,
+      "targetRect": {
+        "x": 284,
+        "y": 398,
+        "w": 320,
+        "h": 770
+      },
+      "targetAreaPx": 246400,
+      "overlapTargetPx": 0,
+      "coversTarget": false,
+      "targetCoverRatio": 0,
+      "coveredCharsInTarget": 0,
+      "visibleCharsInTarget": 275,
+      "gapToTargetPx": 20,
+      "spotlightRect": {
+        "x": 276,
+        "y": 390,
+        "w": 336,
+        "h": 786
+      },
+      "overlapSpotlightPx": 0,
+      "coveredChars": 6,
+      "coveredHalf": 4,
+      "coveredAreaPx": 453,
+      "visibleChars": 1228,
+      "selfPlacement": "beside",
+      "selfCovered": "726",
+      "selfClear": "yes",
+      "fixMarkerPresent": true,
+      "url": "/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "advancedBy": "next"
+    },
+    {
+      "i": 5,
+      "id": "candidate",
+      "target": "candidates",
+      "reached": true,
+      "title": "후보마다 근거 ID 가 붙는다",
+      "calloutRect": {
+        "x": 656,
+        "y": 699,
+        "w": 360,
+        "h": 189
+      },
+      "calloutLeft": 656,
+      "targetTestid": "candidates",
+      "targetFound": true,
+      "targetRect": {
+        "x": 1036,
+        "y": 65,
+        "w": 380,
+        "h": 770
+      },
+      "targetAreaPx": 292600,
+      "overlapTargetPx": 0,
+      "coversTarget": false,
+      "targetCoverRatio": 0,
+      "coveredCharsInTarget": 0,
+      "visibleCharsInTarget": 533,
+      "gapToTargetPx": 20,
+      "spotlightRect": {
+        "x": 1028,
+        "y": 57,
+        "w": 396,
+        "h": 786
+      },
+      "overlapSpotlightPx": 0,
+      "coveredChars": 103,
+      "coveredHalf": 90,
+      "coveredAreaPx": 13183,
+      "visibleChars": 1342,
+      "selfPlacement": "before",
+      "selfCovered": "24109",
+      "selfClear": "yes",
+      "fixMarkerPresent": true,
+      "url": "/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+      "advancedBy": "next"
+    },
+    {
+      "i": 6,
+      "id": "evidence",
+      "target": "candidate",
+      "reached": true,
+      "title": "근거 칩을 직접 눌러 보세요",
+      "calloutRect": {
+        "x": 676,
+        "y": 652,
+        "w": 360,
+        "h": 179
+      },
+      "calloutLeft": 676,
+      "targetTestid": "candidate",
+      "targetFound": true,
+      "targetRect": {
+        "x": 1056,
+        "y": 268,
+        "w": 340,
+        "h": 364
+      },
+      "targetAreaPx": 123675,
+      "overlapTargetPx": 0,
+      "coversTarget": false,
+      "targetCoverRatio": 0,
+      "coveredCharsInTarget": 0,
+      "visibleCharsInTarget": 313,
+      "gapToTargetPx": 28.3,
+      "spotlightRect": {
+        "x": 1048,
+        "y": 260,
+        "w": 356,
+        "h": 380
+      },
+      "overlapSpotlightPx": 0,
+      "coveredChars": 132,
+      "coveredHalf": 131,
+      "coveredAreaPx": 16456,
+      "visibleChars": 1381,
+      "selfPlacement": "before",
+      "selfCovered": "42454",
+      "selfClear": "yes",
+      "fixMarkerPresent": true,
+      "url": "/incidents/INC-2026-014?run=STATIC-GS-01&tour=1"
+    }
+  ],
+  "total": {
+    "stepsReached": 6,
+    "stepsWithTargetOverlap": 0,
+    "stepsTargetNotFound": 0,
+    "overlapTargetPx": 0,
+    "coveredChars": 396,
+    "coveredHalf": 367,
+    "coveredAreaPx": 55422
+  }
+}
