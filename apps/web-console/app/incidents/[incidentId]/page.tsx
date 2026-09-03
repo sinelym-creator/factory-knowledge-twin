@@ -148,29 +148,34 @@ export default async function IncidentPage({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-6">
       {/* 🔴 제목은 sr-only 다 — 헤더 줄이 이미 같은 사실(id·설비·제목)을 «보여» 주므로 화면에
           두 번 쓰지 않되, 문서에는 제목이 있어야 스크린리더가 여기가 어디인지 읽는다. */}
       <h1 className="sr-only">② Incident 조사 · {incident.data.incidentId}</h1>
-      <section className="rounded border border-edge bg-panel px-4 py-3" data-testid="incident-header">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="id text-sm">{incident.data.incidentId}</span>
-          <span className="text-muted">·</span>
-          <span className="id text-sm">{incident.data.equipmentId}</span>
-          <span className="text-sm">{incident.data.title}</span>
-          <span className="ml-auto rounded border border-edge px-2 py-0.5 text-xs text-muted">
+      <section data-testid="incident-header">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <p className="fkt-section-label flex items-center gap-1.5">
+            <span className="id">{incident.data.incidentId}</span>
+            <span className="text-placeholder">·</span>
+            <span className="id">{incident.data.equipmentId}</span>
+          </p>
+          <span className="ml-auto fkt-pill bg-fill text-muted">
             {incident.data.status} · {incident.data.severity}
           </span>
         </div>
+        {/* 🔴 **제목이 이 화면의 얼굴이다**(T6-4 재수립 · 폐하 09-03 14:24 「레이아웃도 더
+            신경」). 앞판은 id·설비·제목이 «같은 크기 한 줄»로 나열돼, 무엇을 조사하는
+            화면인지가 눈에 먼저 들어오지 않았다 — 사실은 그대로 두고 무게만 바꿨다. */}
+        <p className="fkt-display mt-2 max-w-[860px]">{incident.data.title}</p>
         {/* 🔴 TTAE 표시행은 run 이 있을 때 «콘솔이» 그린다 — 실측값(elapsedMs 누적 →
             totalElapsedMs)은 이벤트 위에 서기 때문이다. 여기에 같은 줄을 또 두면 한 사실이
             두 자리에서 갈린다(같은 것을 두 번 만들지 않는다). */}
         {!run && (
-          <p className="mt-2 text-xs text-muted" data-testid="ttae-row-idle">
+          <p className="mt-2 text-foot text-muted" data-testid="ttae-row-idle">
             이 화면은 아직 조사를 돌리지 않았습니다 — Overview의 「조사 시작」이 여기로 옵니다.
             <span className="ml-2">
               │ 같은 조사를 사람이 수작업으로: 45분{" "}
-              <span className="rounded border border-warn/40 px-1.5 py-0.5 text-warn">잠정 목표 · 미실측</span>
+              <span className="fkt-pill text-warn">잠정 목표 · 미실측</span>
             </span>
           </p>
         )}
@@ -191,22 +196,22 @@ export default async function IncidentPage({
                 staticSeries={staticSeries}
               />
             ) : (
-              <p className="rounded border border-edge bg-panel p-4 text-sm text-muted">
+              <p className="fkt-card p-6 text-body-c text-muted">
                 설비 컨텍스트를 가져오지 못해 추세를 그릴 수 없습니다.
               </p>
             )}
 
             {eq && (
-              <section className="rounded border border-edge bg-panel p-3" data-testid="equipment-context">
-                <p className="text-sm">
+              <section className="fkt-card p-5" data-testid="equipment-context">
+                <p className="text-body-c">
                   설비: {eq.name} · {eq.equipmentClass} {eq.model} · 설치 {eq.installedOn}
                 </p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-foot text-muted">
                   라인 <span className="id">{eq.lineId}</span> · 중요도 {eq.criticality} · 센서{" "}
                   {eq.sensors.length}종
                 </p>
                 {eq.maintenanceSummary.length > 0 && (
-                  <p className="mt-2 text-xs text-muted">
+                  <p className="mt-2 text-foot text-muted">
                     최근 정비:{" "}
                     {/* 🔴 여기 찍는 id 는 «정비 기록»의 id 다(MR-…). 계약 정정 전에는 이 자리에
                         work order id 가 나갔고, 그것은 근거로 열리지 않는 id 였다. */}
@@ -231,23 +236,23 @@ export default async function IncidentPage({
             {context}
           </RunConsole>
         ) : (
-          <div className="flex min-w-0 gap-3">
+          <div className="flex min-w-0 flex-col gap-6 xl:flex-row">
             {/* 🔴 run 이 없을 때는 «없다»고 말한다 — 빈 패널을 조사 화면처럼 그리지 않는다 */}
             <section
-              className="w-80 shrink-0 rounded border border-dashed border-edge bg-panel p-3"
+              className="fkt-card w-full shrink-0 p-5 xl:w-80"
               data-testid="timeline-idle"
             >
-              <p className="text-xs text-muted">Agent 타임라인</p>
-              <p className="mt-2 text-sm">아직 조사를 돌리지 않았습니다.</p>
-              <p className="mt-1 text-xs text-muted">
+              <p className="fkt-section-label">Agent 타임라인</p>
+              <p className="mt-2 text-body-c">아직 조사를 돌리지 않았습니다.</p>
+              <p className="mt-1 text-foot text-muted">
                 Overview 의 「조사 시작」이 <span className="id">?run=</span> 을 달고 여기로 옵니다 —
                 그때 단계·근거·경과가 이 자리에 섭니다.
               </p>
             </section>
-            <section className="min-w-0 flex-1 space-y-3">{context}</section>
-            <aside className="w-100 shrink-0 rounded border border-dashed border-edge bg-panel p-3" data-testid="candidates-idle">
-              <p className="text-xs text-muted">원인 후보</p>
-              <p className="mt-2 text-sm text-muted">조사를 시작하면 여기에 후보가 섭니다.</p>
+            <section className="min-w-0 flex-1 space-y-6">{context}</section>
+            <aside className="fkt-card w-full shrink-0 p-5 xl:w-[380px]" data-testid="candidates-idle">
+              <p className="fkt-section-label">원인 후보</p>
+              <p className="mt-2 text-body-c text-muted">조사를 시작하면 여기에 후보가 섭니다.</p>
             </aside>
           </div>
         );

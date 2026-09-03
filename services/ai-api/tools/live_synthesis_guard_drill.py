@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import sys
@@ -165,14 +166,204 @@ def probe_gateway() -> None:
         print(f"  빈 evidenceText → {exc.code} {exc.read().decode('utf-8')}")
 
 
+# ── D-24 · 거부 «문면» 축 (리바이2 #444 회부 2) ────────────────────────────────
+#
+# 🔴 여기서 재는 것은 가드의 판정이 아니라 **방문자가 읽는 문장**이다. 게이트웨이가 401 에
+#    실어 보내는 사유는 내부 인증 헤더 이름을 담고 있고, 그 문자열은 `rejectedReason` →
+#    run 타임라인 → 공개 화면까지 그대로 흐른다(D-23 과 같은 형태의 누출).
+#
+# 🔴 **「헤더 이름이 없다」만 보지 않는다.** 그 검사는 문면이 비어도, 케이스가 한 번도 안
+#    돌아도 통과한다. 그래서 ① 기대 문면과의 «정확 일치» ② 누출 스캐너의 «참» 대조군
+#    (원문을 그대로 넣으면 반드시 잡혀야 한다) ③ 자극 도달 계수 — 셋을 함께 센다.
+
+LEAK_NEEDLES = ("X-FKT", "Token", "token", "Bearer")
+
+# 게이트웨이가 실제로 401 에 싣는 본문(`gateway.py` 의 `TOKEN_HEADER` 보간 결과).
+GATEWAY_401_BODY = {"rejectedReason": "X-FKT-Gateway-Token 가 없거나 맞지 않는다"}
+
+
+def _leaks(text: str) -> list[str]:
+    return [n for n in LEAK_NEEDLES if n in text]
+
+
+def _http_error(code: int, body: dict) -> urllib.error.HTTPError:
+    """게이트웨이가 «답한» 상태. HTTPError 는 URLError 의 하위형이라 분기 «순서»도 함께 시험된다."""
+    return urllib.error.HTTPError(
+        "http://127.0.0.1:8787/synthesize",
+        code,
+        "Unauthorized",
+        {},                                                   # type: ignore[arg-type]
+        io.BytesIO(json.dumps(body, ensure_ascii=False).encode("utf-8")),
+    )
+
+
+def run_wording_cases() -> tuple[int, int, int]:
+    """(통과 줄 수, 전체 줄 수, 자극 도달 건수) — `_post` 와 `_refusal_wording` 을 직접 친다."""
+    original = urllib.request.urlopen
+    reached = 0
+    passed = 0
+    rows: list[tuple[str, str, str]] = []
+
+    def _raise(exc):
+        def _fake(*_args, **_kwargs):
+            raise exc
+        return _fake
+
+    # ① `_post` 를 통과하는 경로 — 방문자 문면이 «실제로» 만들어지는 자리다.
+    post_cases = [
+        ("🔴 401 · 본문이 내부 헤더 이름을 싣고 있다", _http_error(401, GATEWAY_401_BODY),
+         "게이트웨이가 요청을 거부했습니다(HTTP 401)"),
+        ("502 · 본문 사유 없음", _http_error(502, {}),
+         "게이트웨이가 요청을 거부했습니다(HTTP 502)"),
+        ("대조군 · 미도달(URLError) 문면 불변", urllib.error.URLError(ConnectionRefusedError(61, "refused")),
+         "소유자 게이트웨이 OFF(미도달)"),
+    ]
+    try:
+        for name, exc, expect in post_cases:
+            urllib.request.urlopen = _raise(exc)
+            reached += 1
+            try:
+                live._post("http://127.0.0.1:8787", b"{}", 1.0)      # noqa: SLF001 — 드릴은 이 층을 직접 본다
+                actual = "(거부하지 않았다)"
+            except live._Rejected as rejected:                       # noqa: SLF001
+                actual = str(rejected)
+            rows.append((name, expect, actual))
+    finally:
+        urllib.request.urlopen = original
+
+    # ② 남은 두 분류가 그대로인가 — 새 분기가 앞 분류를 삼키지 않는지 본다.
+    for name, exc, expect in [
+        ("대조군 · 시간 초과 문면 불변", TimeoutError(), "응답 시간 초과"),
+        ("대조군 · 그 밖의 오류 문면 불변", ValueError("내부 사정"), "합성 중 오류"),
+    ]:
+        reached += 1
+        rows.append((name, expect, live._refusal_wording(exc)))      # noqa: SLF001
+
+    for name, expect, actual in rows:
+        leaked = _leaks(actual)
+        ok = actual == expect and not leaked
+        passed += ok
+        print(f"[{'PASS' if ok else 'FAIL'}] {name}")
+        print(f"       기대={expect!r}")
+        print(f"       실제={actual!r}" + (f"  🔴 누출 {leaked}" if leaked else " · 누출 0"))
+
+    # ③ 🔴 누출 스캐너 «참» 대조군 — 원문을 그대로 넣으면 반드시 잡혀야 한다. 안 잡히면
+    #    위의 「누출 0」은 스캐너가 죽어서 난 0 이고, 그때 이 표는 초록이 아니라 무효다.
+    raw = GATEWAY_401_BODY["rejectedReason"]
+    alive = bool(_leaks(raw))
+    print(f"[{'PASS' if alive else 'FAIL'}] 누출 스캐너 참-대조군 · 원문 {raw!r} → 검출 {_leaks(raw)}")
+    passed += alive
+    return passed, len(rows) + 1, reached
+
+
+# ── D-24b · 스트림 «본문 안» 거부 문면 ────────────────────────────────────────
+#
+# 🔴 NDJSON 첫 줄이 나간 뒤에는 상태코드를 바꿀 수 없어, 게이트웨이가 사유를 본문에 싣는다
+#    (`kind=error`). 앞판은 그 문자열을 그대로 `_Rejected` 로 올렸다 — 게이트웨이의 «자기 문면»이
+#    방문자 타임라인까지 가는 D-24 와 같은 형태다. 여기서는 그 자리가 분류를 타는지 본다.
+#
+# 🔴 **문장이 «먼저» 도착한 뒤에 끊겨야** 이 경로다. 그래서 콜백 호출 건수를 함께 센다 —
+#    0 이면 스트림을 타지 않은 것이고, 그때의 초록은 이 축의 것이 아니다.
+
+
+class _FakeNdjson:
+    """`_post` 가 보는 응답 흉내 — Content-Type 으로 갈라 읽는 그 분기를 실제로 태운다."""
+
+    def __init__(self, lines: list[dict]):
+        newline = bytes([10])
+        self._lines = [json.dumps(x, ensure_ascii=False).encode("utf-8") + newline for x in lines]
+
+    class _Headers:
+        @staticmethod
+        def get(_key, _default=None):
+            return "application/x-ndjson"
+
+    headers = _Headers()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_a):
+        return False
+
+    def __iter__(self):
+        return iter(self._lines)
+
+
+SENTENCE_LINE = {"kind": "sentence", "sentence": {"failureModeId": "FM-A", "text": "잠정 문장 1.", "citedEvidenceIds": ["AL-1"]}}
+
+
+def run_stream_cases() -> tuple[int, int, int]:
+    """(통과, 전체, 자극 도달) — `_post` → `_read_ndjson` 의 `kind=error` 를 실제로 태운다."""
+    original = urllib.request.urlopen
+    passed = 0
+    reached = 0
+    rows: list[tuple[str, str, str, int]] = []
+
+    CUT = "게이트웨이가 응답 도중 요청을 거부했습니다"
+    BIND = "합성 결과가 근거 검증을 통과하지 못했습니다"
+    cases = [
+        ("🔴 내부 헤더 이름을 실은 스트림 오류(코드 없음 → 구조 절단)",
+         [SENTENCE_LINE, {"kind": "error", "rejectedReason": "X-FKT-Gateway-Token 가 없거나 맞지 않는다"}],
+         CUT),
+        ("🔴 근거 결속 실패 — 코드로 분류(문면은 우리 것)",
+         [SENTENCE_LINE, {"kind": "error", "reasonCode": "evidence_binding",
+                          "rejectedReason": "인용 id 가 준 근거 밖이다(1건)"}],
+         BIND),
+        # 🔴 **문면이 아니라 코드로 가른다는 증거.** 같은 사유 문장인데 코드가 없으면 구조 절단으로
+        #    떨어져야 한다. 여기가 BIND 로 나오면 어딘가에서 문면을 읽고 있다는 뜻이다
+        #    (구 게이트웨이와 붙은 창의 거동도 이 줄이 말한다).
+        ("대조군 · 같은 사유 문면인데 코드 없음 → 구조 절단",
+         [SENTENCE_LINE, {"kind": "error", "rejectedReason": "인용 id 가 준 근거 밖이다(1건)"}],
+         CUT),
+        ("사유도 코드도 없이 끊김",
+         [SENTENCE_LINE, {"kind": "error"}],
+         CUT),
+        ("대조군 · result 줄 없이 끝남(우리 문면 · 불변)",
+         [SENTENCE_LINE],
+         "게이트웨이가 결과 줄 없이 끝냈다"),
+    ]
+    try:
+        for name, lines, expect in cases:
+            got: list[dict] = []
+            urllib.request.urlopen = lambda *_a, **_k: _FakeNdjson(lines)
+            reached += 1
+            try:
+                live._post("http://127.0.0.1:8788", b"{}", 1.0, got.append)   # noqa: SLF001
+                actual = "(거부하지 않았다)"
+            except live._Rejected as rejected:                                # noqa: SLF001
+                actual = str(rejected)
+            rows.append((name, expect, actual, len(got)))
+    finally:
+        urllib.request.urlopen = original
+
+    for name, expect, actual, delivered in rows:
+        leaked = _leaks(actual)
+        ok = actual == expect and not leaked and delivered == 1
+        passed += ok
+        print(f"[{'PASS' if ok else 'FAIL'}] {name}")
+        print(f"       기대={expect!r}")
+        print(f"       실제={actual!r}" + (f"  🔴 누출 {leaked}" if leaked else " · 누출 0")
+              + f" · 끊기기 «전» 도착한 문장 {delivered}건")
+    return passed, len(rows), reached
+
+
 def main() -> int:
     passed, total, reached = run_guard_cases()
+    print()
+    print("── D-24 · 거부 문면 ──")
+    w_passed, w_total, w_reached = run_wording_cases()
+    print()
+    print("── D-24b · 스트림 본문 거부 ──")
+    s_passed, s_total, s_reached = run_stream_cases()
     probe_gateway()
     print(f"\n가드 도달 {reached}/{total}건 · 판정 {passed}/{total} PASS")
-    if reached != total:
+    print(f"문면 자극 도달 {w_reached}건 · 판정 {w_passed}/{w_total} PASS")
+    print(f"스트림 자극 도달 {s_reached}건 · 판정 {s_passed}/{s_total} PASS")
+    if reached != total or w_reached == 0 or s_reached == 0:
         print("🔴 자극이 가드까지 안 갔다 — 이 표는 무효다")
         return 1
-    if passed != total:
+    if passed != total or w_passed != w_total or s_passed != s_total:
         return 1
     return 0
 

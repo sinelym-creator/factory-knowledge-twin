@@ -21,7 +21,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 from .synthesize import LIVE_GATE_ENV, Candidate
 
@@ -49,6 +49,9 @@ _MAX_EXCERPT = 600
 #    값이 없으면 헤더를 아예 붙이지 않는다(토큰 없는 게이트웨이와 그대로 호환).
 TOKEN_ENV = "FKT_SYNTHESIS_GATEWAY_TOKEN"
 TOKEN_HEADER = "X-FKT-Gateway-Token"
+# 스트리밍을 «요청»하는 낱말 — 게이트웨이와 «같은 문자열»이어야 한다(양쪽에 적는 값이라
+# 이름을 새로 짓지 않고 계약 문면 그대로 쓴다).
+NDJSON_MIME = "application/x-ndjson"
 
 # 도달 프로브 — `/live/status` 가 「env 가 있다」가 아니라 「닿는다」를 답하게 하는 자리.
 PROBE_TIMEOUT_SEC = 2.0
@@ -76,7 +79,28 @@ class LiveResult:
 
 
 class _Rejected(Exception):
-    """가드가 응답을 물렸다 — 사유를 그대로 이벤트에 싣는다."""
+    """가드가 응답을 물렸다 — 이 메시지가 «그대로» 이벤트에 실린다.
+
+    🔴 그래서 여기 담는 것은 **이미 방문자가 읽을 문장**이어야 한다. 남의 층(게이트웨이·CLI)이
+       준 문자열을 그대로 넣으면 그 층의 내부 문면이 공개 화면까지 간다(D-23 · D-24 · D-24b 가
+       전부 그 형태였다). 남의 말은 `_refusal_wording` 을 태우고, 원문은 로그에 남긴다.
+    """
+
+
+class _GatewayStreamError(RuntimeError):
+    """게이트웨이가 200 을 낸 «뒤» 본문 안에서 끊었다 — 상태코드로 말할 수 없는 자리.
+
+    🔴 이 형은 **분류하기 위해** 있다. NDJSON 첫 줄이 나간 뒤에는 상태코드를 바꿀 수 없어
+       게이트웨이가 사유를 본문(`kind=error`)으로 싣는데, 그 사유는 게이트웨이 내부 문면이다.
+       그대로 올리면 D-24 와 같은 누출이 되므로 사유는 로그에 두고 이 형으로 바꿔 던진다.
+
+    🔴 `code` 는 게이트웨이가 준 **분류**다(문면 아님). 문면을 정규식으로 갈라 분류하는 길도
+       있었지만, 그러면 게이트웨이의 한 낱말이 바뀔 때 화면이 조용히 다른 사실을 말한다.
+    """
+
+    def __init__(self, reason: str, code: str | None = None) -> None:
+        super().__init__(reason)
+        self.code = code
 
 
 def gateway_url() -> str:
@@ -189,23 +213,49 @@ def probe_reachable() -> bool:
     return online
 
 
-def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
+def _post(
+    url: str,
+    body: bytes,
+    timeout_sec: float,
+    on_sentence: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """게이트웨이 1회. `on_sentence` 를 주면 **스트리밍을 «요청»하고** 줄마다 부른다.
+
+    🔴 **옵트인이다.** 콜백이 없으면 `Accept` 를 붙이지 않고, 게이트웨이는 앞판과 같은 단일
+       JSON 으로 답한다 — 이 파일이 구 게이트웨이와도 계속 돈다(둘 중 하나만 배포된 창이 반드시
+       생긴다).
+
+    🔴 **스트리밍을 «요청»했다고 «받았다»가 아니다.** 구 게이트웨이는 Accept 를 무시하고 단일
+       JSON 을 준다. 그래서 응답의 Content-Type 으로 갈라 읽는다 — 요청한 형식을 전제하고 읽으면
+       그 창에서 전건 실패한다.
+    """
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    if on_sentence is not None:
+        headers["Accept"] = NDJSON_MIME
     request = urllib.request.Request(                        # noqa: S310 — 127.0.0.1 고정 URL
         f"{url}/synthesize",
         data=body,
-        headers=_headers({"Content-Type": "application/json; charset=utf-8"}),
+        headers=_headers(headers),
         method="POST",
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout_sec) as response:  # noqa: S310
-            return json.loads(response.read().decode("utf-8"))
+            ctype = (response.headers.get("Content-Type") or "").lower()
+            if on_sentence is None or NDJSON_MIME not in ctype:
+                return json.loads(response.read().decode("utf-8"))
+            return _read_ndjson(response, on_sentence)
     except urllib.error.HTTPError as exc:
+        # 🔴 **본문 사유는 «로그에만» 남긴다**(D-24 · 리바이2 #444 회부 2). 게이트웨이가 401 에
+        #    실어 보내는 사유는 **내부 인증 헤더 이름**을 그대로 담고 있고, 앞판은 그것을 그대로
+        #    올려 `rejectedReason` → run 타임라인 → **공개 화면**까지 흘려보냈다(baseline §15.2 공개 경계).
+        #    D-23 과 같은 형태의 누출이다 — 다른 점은 새어 나간 것이 예외 이름이 아니라 우리 헤더 이름이라는 것뿐이다.
         detail = ""
         try:
             detail = json.loads(exc.read().decode("utf-8")).get("rejectedReason", "")
         except Exception:                                    # noqa: BLE001 — 사유를 못 읽어도 상태는 남긴다
             detail = ""
-        raise _Rejected(f"게이트웨이 {exc.code}{(' · ' + detail) if detail else ''}") from None
+        log.warning("게이트웨이가 거부 — HTTP %s: %s", exc.code, detail or "(본문 사유 없음)")
+        raise _Rejected(_refusal_wording(exc)) from None
     except TimeoutError:
         raise _Rejected(f"게이트웨이 타임아웃({int(timeout_sec * 1000)}ms)") from None
     except urllib.error.URLError as exc:
@@ -217,6 +267,53 @@ def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
         raise _Rejected(_refusal_wording(exc)) from None
     except json.JSONDecodeError:
         raise _Rejected("게이트웨이 응답을 JSON 으로 읽지 못했다") from None
+
+
+def _read_ndjson(response: Any, on_sentence: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
+    """chunked NDJSON 을 줄 단위로 읽는다. 문장 줄은 흘리고, 마지막 result 줄을 돌려준다.
+
+    🔴 **오류는 «본문 안»으로도 온다.** 첫 줄이 나간 뒤에는 상태코드를 바꿀 수 없으므로
+       게이트웨이가 `{"kind":"error"}` 로 사유를 싣는다 — 그 줄을 그대로 거부로 올린다.
+       읽고 버리면 「문장 몇 개 받고 조용히 끝난 run」이 된다.
+
+    🔴 **result 줄이 없으면 실패다.** 문장이 아무리 많이 왔어도 판정은 마지막 줄이고, 그 줄이
+       없으면 가드가 볼 것이 없다(부분 채택 0).
+    """
+    result: dict[str, Any] | None = None
+    for raw in response:
+        line = raw.decode("utf-8").strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(obj, dict):
+            continue
+        kind = obj.get("kind")
+        if kind == "sentence":
+            sentence = obj.get("sentence")
+            if isinstance(sentence, dict):
+                on_sentence(sentence)
+        elif kind == "error":
+            # 🔴 **게이트웨이의 «자기 문면»을 그대로 올리지 않는다**(D-24b · D-24 와 같은 경계).
+            #    여기 오는 문자열은 게이트웨이가 자기 검사에 쓴 말이라, 우리 화면의 낱말이 아니다.
+            #    원문은 로그에만 두고 분류를 태운다.
+            reason = str(obj.get("rejectedReason") or "")
+            code = obj.get("reasonCode")
+            log.warning(
+                "게이트웨이가 스트림 도중 거부 — code=%s · %s",
+                code or "(없음)",
+                reason or "(사유 없음)",
+            )
+            raise _Rejected(
+                _refusal_wording(_GatewayStreamError(reason, code if isinstance(code, str) else None))
+            )
+        elif kind == "result" and isinstance(obj.get("result"), dict):
+            result = obj["result"]
+    if result is None:
+        raise _Rejected("게이트웨이가 결과 줄 없이 끝냈다")
+    return result
 
 
 def apply_guard(
@@ -279,10 +376,28 @@ def _refusal_wording(exc: BaseException) -> str:
        방문자가 `ConnectionRefusedError` 를 읽었다(baseline §15.2 공개 경계 · 계약 OFF 문면).
        원문은 아래 호출부에서 **로그에만** 남긴다.
 
-    🔴 **분류는 세 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
+    🔴 **분류는 다섯 종뿐이다.** 한 문장이 모든 원인을 덮으면 아무 원인도 말하지 않고, 반대로
        원인을 더 잘게 나누면 그 목록이 곧 내부 구현의 지도가 된다. 방문자에게 필요한 것은
        「지금 어떤 상태인가」와 「무엇을 할 수 있는가」이지 예외 이름이 아니다.
     """
+    if isinstance(exc, _GatewayStreamError):
+        # 🔴 **상태코드가 없는 자리다**(D-24b). 게이트웨이가 200 을 낸 뒤 본문 안에서 끊었으므로
+        #    아래 「…(HTTP {code})」를 쓸 수 없다 — 없는 코드를 지어내는 대신 코드를 말하지 않는다.
+        #    방문자에게 필요한 것은 코드가 아니라 «지금 무엇인가»다: 잠정 문장은 걷히고 순위는
+        #    결정적 집계로 남는다(그 뒷문장은 화면이 이미 말한다).
+        if exc.code == "evidence_binding":
+            # 🔴 **정보를 경계 때문에 버리지 않는다**(오케 판정 14:59). 「모델 답이 우리가 준
+            #    근거에 묶이지 않았다」는 운영자의 행동을 바꾸는 사실이다 — 게이트웨이의 «말»은
+            #    올리지 않되, 같은 사실을 «우리 어휘»로 다시 쓴다(원문 id·헤더명은 로그에만).
+            return "합성 결과가 근거 검증을 통과하지 못했습니다"
+        return "게이트웨이가 응답 도중 요청을 거부했습니다"
+    if isinstance(exc, urllib.error.HTTPError):
+        # 🔴 **URLError 보다 «먼저» 본다.** HTTPError 는 URLError 의 하위형이라 순서를 바꾸면
+        #    「게이트웨이가 답했다(401)」가 「게이트웨이가 답하지 않는다」로 뒤집힌다 — 방문자가
+        #    할 일이 같지 않은 두 상태다(설정을 본다 vs 게이트웨이를 켜야 한다).
+        # 🔴 **상태코드까지가 공개 한계다.** 본문 사유는 게이트웨이 «내부» 문면이라 싣지 않는다
+        #    — 그 자리가 헤더 이름을 내보낸 구멍이다.
+        return f"게이트웨이가 요청을 거부했습니다(HTTP {exc.code})"
     if isinstance(exc, (TimeoutError, asyncio.TimeoutError)):
         return "응답 시간 초과"
     if isinstance(exc, (urllib.error.URLError, ConnectionError, OSError)):
@@ -295,6 +410,7 @@ def _refusal_wording(exc: BaseException) -> str:
 async def synthesize(
     candidates: list[Candidate],
     *,
+    on_sentence: Callable[[dict[str, Any]], None] | None = None,
     anchor: Any,
     state: dict[str, Any],
     evidence_ids: list[str],
@@ -313,7 +429,7 @@ async def synthesize(
 
     model: str | None = None
     try:
-        response = await asyncio.to_thread(_post, url, body, budget_sec)
+        response = await asyncio.to_thread(_post, url, body, budget_sec, on_sentence)
         model = response.get("model") if isinstance(response.get("model"), str) else UNKNOWN_MODEL
         reordered, rationale = apply_guard(response, candidates, set(evidence_ids))
     except _Rejected as exc:

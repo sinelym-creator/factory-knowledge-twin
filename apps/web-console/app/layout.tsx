@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { AppShell } from "@/components/app-shell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+/* 폰트 = 시스템 스택(globals.css `--fkt-font-sans` · T6-4 규격서 ②). Geist 웹폰트를 내렸다 —
+   fetch 0 이 LCP 를 가장 싸게 줄이는 길이고(⑤ E3), 애플 감성의 절반은 플랫폼 폰트 자체다. */
 
 export const metadata: Metadata = {
   title: "Factory Knowledge Twin — AI Operations Console",
@@ -21,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="ko">
       <body>
         <AppShell>{children}</AppShell>
       </body>

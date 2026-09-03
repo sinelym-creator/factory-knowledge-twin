@@ -114,8 +114,25 @@ test.describe("셸·라우트 골격", () => {
     await enter(page);
     const bar = page.getByTestId("app-bar");
     const rail = page.locator('nav[aria-label="주요 화면"]');
-    expect(await bar.evaluate((e) => getComputedStyle(e).height)).toBe("56px");
-    expect(await rail.evaluate((e) => getComputedStyle(e).width)).toBe("56px");
+    // 🔴 **리터럴이 아니라 토큰 계산값과 맞댄다**(T6-4 ⓕ · #446·#454 와 같은 처방).
+    //    앞판은 `56px` 을 박아 두었다 — 이 행의 주어는 「치수가 토큰을 탄다」인데, 리터럴은
+    //    «이 팔레트의 이 값»을 재고 있었다. 재설계가 앱바를 52px·레일을 260px 로 바꾸자
+    //    설계대로 바뀐 화면이 빨강이 됐다(그때 죽은 것은 화면이 아니라 이 그물이다).
+    const tok = await page.evaluate(() => {
+      const cs = getComputedStyle(document.documentElement);
+      return {
+        appbar: cs.getPropertyValue("--spacing-appbar").trim(),
+        rail: cs.getPropertyValue("--spacing-rail").trim(),
+      };
+    });
+    // 🔴 토큰이 비면 초록도 빨강도 아니다 — 「잴 것이 없었다」를 통과로 만들지 않는다.
+    expect(tok.appbar, "--spacing-appbar 가 비었다 — 측정 불가").toMatch(/^\d+(\.\d+)?px$/);
+    expect(tok.rail, "--spacing-rail 이 비었다 — 측정 불가").toMatch(/^\d+(\.\d+)?px$/);
+    expect(await bar.evaluate((e) => getComputedStyle(e).height), `앱바 높이 ↔ --spacing-appbar(${tok.appbar})`).toBe(tok.appbar);
+    expect(await rail.evaluate((e) => getComputedStyle(e).width), `레일 폭 ↔ --spacing-rail(${tok.rail})`).toBe(tok.rail);
+    // 🔴 대조군 — 이 비교가 «아무 값이나» 통과시키지 않는다(같은 실행에서 보인다).
+    expect(tok.appbar).not.toBe("0px");
+    expect(await bar.evaluate((e) => getComputedStyle(e).height)).not.toBe(`${parseFloat(tok.appbar) + 4}px`);
   });
 
   test("V-2 대조군 — 토큰 «자체»는 브라우저에 살아 있다(원인이 표기임을 분리)", async ({ page }) => {
@@ -125,11 +142,42 @@ test.describe("셸·라우트 골격", () => {
       return { appbar: cs.getPropertyValue("--spacing-appbar").trim(), rail: cs.getPropertyValue("--spacing-rail").trim() };
     });
     // 🔴 토큰이 없어서가 아니다. 이 두 줄이 초록인 채로 위 행이 빨강이라는 것이 진단이다.
-    expect(t.appbar).toBe("56px");
-    expect(t.rail).toBe("56px");
+    // 🔴 값이 아니라 «선언이 살아 있는가»를 잰다 — 토큰 값 자체는 디자인이 정한다(52·260 등).
+    expect(t.appbar, "--spacing-appbar 선언이 사라졌다").toMatch(/^\d+(\.\d+)?px$/);
+    expect(t.rail, "--spacing-rail 선언이 사라졌다").toMatch(/^\d+(\.\d+)?px$/);
     // 같은 토큰 계층의 «색»은 실제로 적용된다 — 계층 전체가 죽은 게 아니라 두 표기만 죽었다.
+    //
+    // 🔴 **리터럴이 아니라 토큰 계산값으로 잰다**(T6-4 ⑥-0). 앞판은 `rgb(17, 24, 35)` 를
+    //    박아 두었다 — 그 행은 「토큰이 적용된다」를 재는 게 아니라 «이 팔레트의 이 값»을
+    //    재고 있었고, 팔레트를 갈아 끼우면 설계대로 바뀐 화면이 빨강이 된다(T6-4 PR 1).
+    //    그래서 판정선을 「앱바 배경 == 앱바 표면 토큰의 계산값 중 하나」로 옮긴다.
+    //    허용 집합이 둘 이상인 이유: PR 2 에서 앱바가 패널면(`--fkt-bg-2` / 별칭
+    //    `--color-panel`)에서 유리면(`--fkt-glass`)으로 바뀐다. 두 면 다 «토큰에서 온 값»이다.
+    const surfaces = await page.evaluate(() => {
+      const names = ["--fkt-bg-2", "--fkt-glass", "--color-panel"];
+      const root = getComputedStyle(document.documentElement);
+      const probe = document.createElement("div");
+      probe.style.position = "fixed";
+      probe.style.opacity = "0";
+      probe.style.pointerEvents = "none";
+      document.body.appendChild(probe);
+      const out: Record<string, string> = {};
+      for (const n of names) {
+        // 선언 자체가 없으면 «허용 집합에 넣지 않는다» — 없는 토큰을 통과 사유로 쓰지 않기 위해서다.
+        if (!root.getPropertyValue(n).trim()) continue;
+        probe.style.setProperty("background-color", `var(${n})`);
+        out[n] = getComputedStyle(probe).backgroundColor;
+      }
+      probe.remove();
+      return out;
+    });
     const barBg = await page.getByTestId("app-bar").evaluate((e) => getComputedStyle(e).backgroundColor);
-    expect(barBg).toBe("rgb(17, 24, 35)"); // --color-panel #111823
+    const allowed = Object.values(surfaces);
+    // 🔴 토큰이 하나도 안 풀리면 이 행은 초록도 빨강도 아니다 — 잴 것이 없었다는 뜻이다.
+    expect(allowed.length, "앱바 표면 토큰이 하나도 안 풀렸다 — 측정 불가").toBeGreaterThan(0);
+    expect(allowed, `앱바 배경 ${barBg} · 토큰 ${JSON.stringify(surfaces)}`).toContain(barBg);
+    // 대조군 — 이 멤버십 검사가 «아무거나 통과시키는 눈»이 아님을 같은 자리에서 보인다.
+    expect(allowed, `허용 집합 ${JSON.stringify(allowed)}`).not.toContain("rgb(255, 0, 0)");
   });
 
   test("다크가 기본이다(§10) — 배경이 밝게 뜨지 않는다", async ({ page }) => {

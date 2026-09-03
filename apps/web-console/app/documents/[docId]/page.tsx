@@ -46,12 +46,12 @@ export default async function DocumentPage({
     : await apiGetServer<DocumentPreview>(CONTRACT.document(docId, highlight), cookieHeader);
 
   const heading = (
-    <header className="rounded border border-edge bg-panel px-4 py-3">
+    <header className="fkt-card p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-sm font-semibold">문서 열람</h1>
-        <span className="id text-sm text-ai">{docId}</span>
+        <h1 className="text-body-c font-semibold">문서 열람</h1>
+        <span className="id text-body-c text-ai">{docId}</span>
       </div>
-      <p className="mt-1 text-xs text-muted" data-testid="registry-disambiguation">
+      <p className="mt-1 text-foot text-muted" data-testid="registry-disambiguation">
         🔴 P1 <span className="id">/documents</span> SSOT Registry(revision·hash·drift 목록)와
         별개 — <span className="text-ink">단건 열람 전용</span> 화면이다.
       </p>
@@ -74,20 +74,20 @@ export default async function DocumentPage({
             data-testid="highlight-rejected"
             data-code={reply.detail?.code}
           >
-            <p className="text-sm text-warn">인용 강조 요청이 거절됐다 — 문서가 없는 것은 아니다.</p>
-            <p className="id mt-2 text-xs">
+            <p className="text-body-c text-warn">인용 강조 요청이 거절됐다 — 문서가 없는 것은 아니다.</p>
+            <p className="id mt-2 text-foot">
               {reply.detail?.code ?? "400"} · {reply.detail?.message ?? reply.why}
             </p>
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-foot text-muted">
               {reply.detail?.code === "highlight_mismatch"
                 ? "요청한 chunk 가 이 문서의 것이 아니다(형식 위반이거나 다른 문서)."
                 : "이 문서의 chunk id 형식이지만 그 좌표가 실재하지 않는다 — 색인되지 않은 revision 이거나 범위 밖 index 다."}{" "}
               강조를 조용히 버리고 문서만 보여 주면, 강조를 요청한 쪽은 왜 없는지 알 수 없다.
             </p>
-            <p className="mt-3 text-xs">
+            <p className="mt-3 text-foot">
               <a
                 href={`/documents/${encodeURIComponent(docId)}`}
-                className="rounded border border-edge px-2 py-1 text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+                className="fkt-pill bg-fill text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
               >
                 강조 없이 현행 revision 열기 →
               </a>
@@ -113,10 +113,10 @@ export default async function DocumentPage({
       {/* 🔴 열람 이력 — 정적 경로에서만 남긴다(ⓒ). 그리는 것이 없는 부수효과 컴포넌트다. */}
       <MarkVisited id={d.documentId} run={run} />
 
-      <section className="rounded border border-edge bg-panel p-3" data-testid="document-view">
+      <section className="fkt-card p-5" data-testid="document-view">
         <div className="flex flex-wrap items-baseline gap-2">
-          <span className="text-sm">{d.title}</span>
-          <span className="text-xs text-muted">
+          <span className="text-body-c">{d.title}</span>
+          <span className="text-foot text-muted">
             {d.highlight ? "인용 구간이 지정된 revision" : "현행 revision"}
           </span>
         </div>

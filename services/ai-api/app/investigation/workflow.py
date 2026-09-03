@@ -19,6 +19,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import time
 from dataclasses import dataclass, field
 from typing import Any, TypedDict
@@ -205,8 +207,43 @@ def build_graph(ctx: Context):
             # 🔴 게이트 뒤에서만 불러온다 — 공개 배포 프로세스에 이 코드가 «없게» 한다.
             from . import live_synthesis             # noqa: PLC0415
 
+            # ── ① 선표시 — 계약 v0.1.13 ─────────────────────────────────────────
+            # 🔴 **이미 계산된 값만 낸다.** 결정적 순위는 위 `build_candidates` 가 방금 세운
+            #    것이고, 여기서 다시 계산하지 않는다 — 지연 0 이어야 「선표시」다.
+            # 🔴 **live 축에서만 낸다.** 결정적 축은 이 자리에서 곧바로 끝나므로 기다림이
+            #    없고, 기다림이 없는데 「잠정입니다」라고 말하면 화면이 없는 대기를 그린다.
+            progress_seq = 0
+            ctx.emitter.step_progress(
+                "synthesize",
+                "preliminary",
+                progress_seq,
+                preliminary={
+                    "ranking": [c.failureModeId for c in candidates],
+                    "axis": "deterministic",
+                },
+            )
+            progress_seq += 1
+
+            # ── ② 스트리밍 — 문장 줄마다 progress ───────────────────────────────
+            # 🔴 **이벤트는 «루프 스레드»에서 낸다.** 게이트웨이 호출은 `asyncio.to_thread`
+            #    안이라 콜백도 워커 스레드에서 온다. 거기서 emitter 를 직접 부르면 run 기록과
+            #    구독자 통지가 두 스레드에서 동시에 일어난다 — `call_soon_threadsafe` 로
+            #    돌려보내면 다른 모든 이벤트와 «같은 스레드»에 줄을 서고 순서도 보존된다.
+            loop = asyncio.get_running_loop()
+
+            def _on_sentence(sentence: dict[str, Any]) -> None:
+                nonlocal progress_seq
+                seq = progress_seq
+                progress_seq += 1
+                loop.call_soon_threadsafe(
+                    lambda: ctx.emitter.step_progress(
+                        "synthesize", "sentence", seq, sentence=sentence
+                    )
+                )
+
             outcome = await live_synthesis.synthesize(
                 candidates,
+                on_sentence=_on_sentence,
                 anchor=ctx.anchor,
                 state=state,
                 evidence_ids=list(dict.fromkeys(ctx.evidence_ids)),

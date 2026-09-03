@@ -96,7 +96,7 @@ class Emitter:
         self._sink(event)
         return event
 
-    # --- 스키마 type 9종 -------------------------------------------------------
+    # --- 스키마 type 10종(v0.1.13 step.progress 추가) -------------------------------------------------------
 
     def run_queued(self, position: int, estimated_wait_sec: int | None) -> dict[str, Any]:
         """대기열 진입·순위 변동 — 계약 v0.1.9 신설 type(8종 → 9종).
@@ -129,6 +129,33 @@ class Emitter:
 
     def step_evidence(self, step: str, evidence: dict[str, Any]) -> dict[str, Any]:
         return self._emit("step.evidence", {"step": step, "evidence": evidence})
+
+    def step_progress(
+        self,
+        step: str,
+        kind: Literal["preliminary", "sentence"],
+        seq: int,
+        *,
+        preliminary: dict[str, Any] | None = None,
+        sentence: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """단계가 «아직 끝나지 않았는데» 지금 아는 것을 말한다 — 계약 v0.1.13(type 10종).
+
+        🔴 **판정이 아니다.** 여기 실리는 것은 전부 «잠정»이고, 그 단계의 판정은 여전히
+           `step.completed` 하나다. 거부되면 화면은 잠정 문장을 **전부 걷는다** — 부분 채택
+           0(v0.1.11)은 그대로다. 그래서 이 이벤트에는 «축»(live/deterministic)을 싣지 않는다:
+           축을 실으면 소비자가 이것을 결과로 읽는다.
+
+        🔴 **payload 의 `seq` 는 봉투의 `seq` 와 다른 축이다.** 봉투는 run 전체의 순서이고,
+           이것은 「이 단계의 몇 번째 진행 보고인가」다. 둘을 같은 값으로 두면 폴링으로 이벤트를
+           나눠 받을 때 소비자가 무엇을 기준으로 정렬해야 하는지 잃는다(계약 「0부터 단조」).
+        """
+        payload: dict[str, Any] = {"step": step, "kind": kind, "seq": seq}
+        if preliminary is not None:
+            payload["preliminary"] = preliminary
+        if sentence is not None:
+            payload["sentence"] = sentence
+        return self._emit("step.progress", payload)
 
     def step_completed(
         self,

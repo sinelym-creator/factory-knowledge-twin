@@ -79,7 +79,7 @@ export function ModeBadge() {
   const seen = checkedAt ? new Date(checkedAt).toLocaleTimeString("ko-KR") : "확인 전";
   return (
     <span
-      className={`flex items-center gap-1.5 rounded border border-edge px-2 py-1 text-xs ${face.cls}`}
+      className={`flex items-center gap-1.5 fkt-pill bg-fill text-foot ${face.cls}`}
       title={`마지막 확인 ${seen}${why ? ` · ${why}` : ""}`}
       data-testid="mode-badge"
       data-mode={mode}
@@ -135,10 +135,10 @@ function StaticReplayOffer() {
         type="button"
         onClick={() => void enter()}
         disabled={busy}
-        className="rounded border border-ai/60 px-2 py-0.5 text-xs text-ai hover:bg-ai/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+        className="rounded border border-ai/60 px-2 py-0.5 text-foot text-ai hover:bg-ai/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
         data-testid="static-replay-offer"
       >
-        {busy ? "재생본 준비 중…" : "정적 재생본으로 GS-01 보기 ▸"}
+        {busy ? "재생본 준비 중…" : "정적 재생본으로 GS-01 보기"}
       </button>
       {why && (
         <span className="text-warn" role="status" data-testid="static-replay-offer-why">
@@ -194,7 +194,7 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
   if (!notice || closed) return null;
   return (
     <div
-      className="flex items-center gap-3 border-b border-edge bg-panel px-4 py-2 text-xs text-ink"
+      className="flex items-center gap-3 border-b border-edge bg-panel px-4 py-2 text-foot text-ink"
       role="status"
       data-testid="fallback-banner"
     >

@@ -80,16 +80,23 @@ test.describe("T3-2 ① Factory Overview", () => {
     const { overview } = await overviewFromApi(page);
     const strip = page.getByTestId("kpi-strip");
     await expect(strip).toBeVisible();
+    // 🔴 **값과 단위는 «다른 요소»다**(T6-4 재설계: 값 40/700 + 단위 15/400 보조색). 그래서
+    //    텍스트 노드 사이에 공백이 생기고 화면은 「3 / 3」으로 읽힌다 — 그것이 의도다.
+    //    앞판은 `"3/3"` 완전일치라 그 공백 하나에 죽었다. 이 행의 주어는 「화면이 응답의 kpi 를
+    //    그대로 말하는가」이지 「낱자 사이에 공백이 없는가」가 아니므로, **공백을 지우고** 본다.
     const text = (await strip.textContent())!.replace(/\s+/g, " ");
+    const tight = text.replace(/\s+/g, "");
 
     // 계약 v0.1.7 kpi 4필드 — 화면 낱말은 wireframes §1 의 것.
-    expect(text, "가동 라인이 응답과 다르다").toContain(`${overview.kpi.lineActive}/${overview.lines.length}`);
+    expect(tight, `가동 라인이 응답과 다르다 · 문면: ${text}`).toContain(`${overview.kpi.lineActive}/${overview.lines.length}`);
+    // 🔴 대조군 — 공백을 지운 비교가 «아무 수나» 통과시키지 않는다(같은 실행에서 보인다).
+    expect(tight).not.toContain(`${overview.kpi.lineActive + 7}/${overview.lines.length + 7}`);
     for (const [label, value] of [
       ["활성 알람", overview.kpi.alarmCount],
       ["진행 Incident", overview.kpi.openIncidents],
       ["승인 대기 WO", overview.kpi.pendingWorkOrders],
     ] as const) {
-      expect(text, `${label} 이 응답과 다르다`).toContain(`${label} ${value}`);
+      expect(tight, `${label} 이 응답과 다르다 · 문면: ${text}`).toContain(`${label.replace(/\s+/g, "")}${value}`);
     }
   });
 
@@ -337,8 +344,16 @@ test.describe("T3-2 ② Incident 조사", () => {
     // 🔴 §0.2 측정-주장 경계 — 「줄였다」를 응답만 말하고 화면이 지우면 보는 쪽은 전량을
     //    봤다고 믿는다. 두 수가 «둘 다» 있어야 축약이 보이는 것이므로 둘을 함께 본다.
     const caption = (await page.locator("[data-testid=sensor-trend] figcaption").textContent())!;
+    // 🔴 **낱말이 아니라 «줄였다는 사실»을 잰다.** 앞판은 「…점 표시」 완전일치였고, 캡션이
+    //    「원본 15,600점 → 602점 수신(bucket-minmax) → 86구간」으로 개정되자 죽었다 — 그때
+    //    죽은 것은 화면이 아니라 이 그물이다(#454 와 같은 자리). 축은 「두 수가 «둘 다» 있고
+    //    뒤의 수가 더 작다」이고, 그것이 곧 「줄였다」의 뜻이다.
     expect(caption, "캡션이 원본 점수를 말하지 않는다").toMatch(/원본\s*[\d,]+점/);
-    expect(caption, "캡션이 표시 점수를 말하지 않는다").toMatch(/[\d,]+점\s*표시/);
+    const counts = [...caption.matchAll(/([\d,]+)\s*점/g)].map((m) => Number(m[1].replace(/,/g, "")));
+    expect(counts.length, `캡션에 점수가 하나뿐이다 — 축약이 안 보인다 · 문면: ${caption}`).toBeGreaterThanOrEqual(2);
+    expect(counts[1], `줄인 뒤 점수가 원본보다 작지 않다 · 문면: ${caption}`).toBeLessThan(counts[0]);
+    // 🔴 대조군 — 이 눈이 «한 수만 말하는 캡션»을 걸러낸다는 것을 같은 실행에서 보인다.
+    expect([...("원본 15,600점만 말한다".matchAll(/([\d,]+)\s*점/g))].length).toBe(1);
   });
 
   test("없는 incident 는 «없다»고 말한다 — «못 물어봤다»와 다른 문장이다", async ({ page }) => {

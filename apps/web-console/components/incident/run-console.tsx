@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  IconFirst,
+  IconNext,
+  IconNow,
+  IconPause,
+  IconPlay,
+  IconPrev,
+} from "@/components/icons";
 import { CandidateList, EvidenceStrip, RunTimeline } from "@/components/incident/run-panels";
 import { useLiveStatus } from "@/components/live-status";
 import { CONTRACT, type RunSnapshot, apiGetBrowser, runEventsBrowser, stopRunBrowser } from "@/lib/contract";
@@ -371,13 +379,13 @@ export function RunConsole({
   }, [runId]);
 
   return (
-    <div className="flex min-w-0 flex-col gap-3" data-testid="run-console" data-status={state.status}>
+    <div className="flex min-w-0 flex-col gap-6" data-testid="run-console" data-status={state.status}>
       {/* ── 컨트롤 + TTAE 행 ───────────────────────────────────────────────── */}
-      <section className="rounded border border-edge bg-panel px-4 py-3" data-testid="run-controls">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="id">{runId}</span>
+      <section className="fkt-card p-5" data-testid="run-controls">
+        <div className="flex flex-wrap items-center gap-2 text-foot">
+          <span className="id text-muted">{runId}</span>
           {state.mode && (
-            <span className="rounded border border-edge px-2 py-0.5 text-muted" data-testid="run-mode-badge" data-mode={state.mode}>
+            <span className="fkt-pill bg-fill text-muted" data-testid="run-mode-badge" data-mode={state.mode}>
               {state.mode.toUpperCase()}
               {/* 🔴 **출처를 배지 «안»에 적는다**(T4-2a). `REPLAY` 만으로는 서버가 재생한 것과
                   셸이 자기 자산으로 재생한 것이 구별되지 않는데, 둘은 다른 사실이다 —
@@ -389,7 +397,7 @@ export function RunConsole({
               )}
             </span>
           )}
-          <span className="text-muted" data-testid="run-status">
+          <span className="font-semibold" data-testid="run-status">
             {state.status === "running"
               ? "조사중"
               : state.status === "queued"
@@ -409,7 +417,7 @@ export function RunConsole({
                  화면이 「곧」이나 「약 30초」를 지어내면 그 숫자는 아무 근거가 없다. */}
           {state.queue && (
             <span
-              className="rounded border border-edge px-2 py-0.5 text-muted"
+              className="fkt-pill bg-fill text-muted"
               data-testid="run-queue"
               data-position={state.queue.position}
               data-estimated={state.queue.estimatedWaitSec ?? ""}
@@ -423,36 +431,52 @@ export function RunConsole({
             type="button"
             onClick={() => void stop()}
             disabled={state.status !== "running" || stopping}
-            className="rounded border border-edge px-2 py-1 text-muted hover:text-ink disabled:opacity-40"
+            className="fkt-btn fkt-btn-secondary rounded-pill px-3.5 text-foot"
             data-testid="run-stop"
           >
-            {stopping ? "중지하는 중…" : "⏸ 중지"}
+            <IconPause className="text-[13px]" />
+            {stopping ? "중지하는 중…" : "중지"}
           </button>
 
-          {/* 🔴 재생 컨트롤은 «두 모드 모두»에 있다 — 끝난 조사를 되감는 일에 mode 는 상관없다 */}
-          <span className="ml-2 flex items-center gap-1" data-testid="replay-controls">
+          {/* 🔴 재생 컨트롤은 «두 모드 모두»에 있다 — 끝난 조사를 되감는 일에 mode 는 상관없다.
+              형태 = 하나의 «세그먼트»(채움 트랙 안에 아이콘 버튼) — 다섯 개의 테두리 상자가
+              나열돼 있던 앞판은 어느 것이 주 동작인지 말하지 않았다(재생만 틴트로 세운다). */}
+          <span
+            className="ml-1 flex items-center gap-0.5 rounded-pill bg-fill p-1"
+            data-testid="replay-controls"
+          >
             <button type="button" onClick={() => { setPlaying(false); setCursor(0); }}
-                    className="rounded border border-edge px-2 py-1 text-muted hover:text-ink" data-testid="replay-restart" title="처음으로">⏮</button>
+                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[13px] text-muted hover:text-ink" data-testid="replay-restart" title="처음으로">
+              <IconFirst /><span className="sr-only">처음으로</span>
+            </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor((c) => Math.max(0, (c ?? events.length) - 1)); }}
-                    className="rounded border border-edge px-2 py-1 text-muted hover:text-ink" data-testid="replay-back" title="한 이벤트 뒤로">◀</button>
+                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[13px] text-muted hover:text-ink" data-testid="replay-back" title="한 이벤트 뒤로">
+              <IconPrev /><span className="sr-only">한 이벤트 뒤로</span>
+            </button>
             <button type="button" onClick={() => setPlaying((p) => !p)} disabled={events.length === 0}
-                    className="rounded border border-edge px-2 py-1 text-ai hover:bg-ai/10 disabled:opacity-40" data-testid="replay-play">
-              {playing ? "⏸ 일시정지" : "▶ 재생"}
+                    className="fkt-btn fkt-btn-primary h-7 min-h-0 rounded-pill px-3 text-foot disabled:opacity-40" data-testid="replay-play">
+              {playing ? <IconPause className="text-[12px]" /> : <IconPlay className="text-[12px]" />}
+              {playing ? "일시정지" : "재생"}
             </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor((c) => Math.min(events.length, (c ?? events.length) + 1)); }}
-                    className="rounded border border-edge px-2 py-1 text-muted hover:text-ink" data-testid="replay-forward" title="한 이벤트 앞으로">▶</button>
+                    className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[13px] text-muted hover:text-ink" data-testid="replay-forward" title="한 이벤트 앞으로">
+              <IconNext /><span className="sr-only">한 이벤트 앞으로</span>
+            </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor(null); }} disabled={cursor === null}
-                    className="rounded border border-edge px-2 py-1 text-muted hover:text-ink disabled:opacity-40" data-testid="replay-follow">지금으로</button>
-            <span className="text-muted" data-testid="replay-cursor" data-applied={applied.length} data-total={events.length}>
-              {applied.length}/{events.length} 이벤트
-              {state.lastSeq !== null && <> · seq {state.lastSeq}</>}
-            </span>
+                    className="fkt-hoverable flex h-7 items-center gap-1 rounded-pill px-2.5 text-foot text-muted hover:text-ink disabled:opacity-40" data-testid="replay-follow">
+              <IconNow className="text-[12px]" />지금으로
+            </button>
+          </span>
+          <span className="text-placeholder" data-testid="replay-cursor" data-applied={applied.length} data-total={events.length}>
+            {applied.length}/{events.length} 이벤트
+            {state.lastSeq !== null && <> · seq {state.lastSeq}</>}
           </span>
         </div>
 
         {/* ⏱ TTAE 표시행 — 🔴 §2.2 측정-주장 경계 */}
-        <p className="mt-2 text-xs text-muted" data-testid="ttae-row" data-elapsed-ms={total} data-confirmed={confirmed}>
-          ⏱ 조사 경과 <span className="text-ink">{formatElapsed(total)}</span>{" "}
+        <p className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-foot text-muted" data-testid="ttae-row" data-elapsed-ms={total} data-confirmed={confirmed}>
+          <span className="fkt-section-label">조사 경과</span>
+          <span className="fkt-num mr-1 text-metric leading-none text-ink">{formatElapsed(total)}</span>{" "}
           {/* 🔴 값의 «성격»을 함께 적는다: 확정(totalElapsedMs) · 진행 중 누적 · 중단 시점까지의 누적.
               셋은 다른 사실이고, 라벨이 없으면 중단된 조사의 값이 완주 값처럼 읽힌다(D-1). */}
           <span className="id">
@@ -467,13 +491,13 @@ export function RunConsole({
           {/* 🔴 replay 의 값은 «재생 시간»이 아니라 재생본이 담은 «원 실행의 관측치»다.
               값은 그대로 쓰되(실측이다) 그 성격을 배지 문구로 밝힌다 — 렌더 분기가 아니다. */}
           {state.mode === "replay" && (
-            <span className="ml-1 rounded border border-edge px-1.5 py-0.5" data-testid="ttae-replay-note">
+            <span className="ml-1 fkt-pill bg-fill" data-testid="ttae-replay-note">
               재생본 · 원 실행 관측치
             </span>
           )}
           <span className="ml-2">
             │ 같은 조사를 사람이 수작업으로: 45분{" "}
-            <span className="rounded border border-warn/40 px-1.5 py-0.5 text-warn">잠정 목표 · 미실측</span>
+            <span className="fkt-pill text-warn">잠정 목표 · 미실측</span>
           </span>
           {/* 🔴 단축률(%)은 실측 전에 쓰지 않는다(§2.2). 이 자리에 계산식을 넣지 마라. */}
         </p>
@@ -483,7 +507,7 @@ export function RunConsole({
             사유를 요약·번역하지 않는다 — code 는 운영이 검색할 문자열이고, message 는
             서버가 사람에게 하는 말이다. 둘 다 그대로 둔다. */}
         {state.failure && (
-          <p className="mt-2 rounded border border-warn/40 px-2 py-1.5 text-xs text-warn" role="status" data-testid="run-failed" data-code={state.failure.code}>
+          <p className="mt-2 fkt-pill text-warn mt-3 px-3 py-2 &#124;&#124; " role="status" data-testid="run-failed" data-code={state.failure.code}>
             🔴 조사가 중단됐습니다 — {state.failure.message} (<span className="id">{state.failure.code}</span>)
             {/* 🔴 **제안은 «동작»이어야 한다**(T4-2b ⓖ · §6.2 빈 화면 0). 앞판은 「서버가
                 replay 로의 전환을 제안했습니다」라는 «문장»이었다 — 방문자는 그 말을 읽고도
@@ -500,14 +524,14 @@ export function RunConsole({
                   className="underline underline-offset-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
                   data-testid="run-fallback-offer"
                 >
-                  정적 재생본으로 같은 조사 보기 ▸
+                  정적 재생본으로 같은 조사 보기
                 </Link>
               </>
             )}
           </p>
         )}
         {state.stopNote && (
-          <p className="mt-2 text-xs text-muted" role="status" data-testid="run-stopped-note">
+          <p className="mt-2 text-foot text-muted" role="status" data-testid="run-stopped-note">
             중지됨 — {state.stopNote}
           </p>
         )}
@@ -518,7 +542,7 @@ export function RunConsole({
             🔴 조건은 「서버가 답했다」다(`live`·`replay` 둘 다) — `online:false` 여도 서버
             replay 는 돌므로 Live 축은 돌아온 것이다. `checking`·`unavailable` 에는 안 뜬다. */}
         {isStatic && (liveStatus.mode === "live" || liveStatus.mode === "replay") && (
-          <p className="mt-2 flex items-center gap-2 text-xs" role="status" data-testid="live-return-offer">
+          <p className="mt-2 flex items-center gap-2 text-foot" role="status" data-testid="live-return-offer">
             <span className="text-ok" aria-hidden>
               ◉
             </span>
@@ -527,10 +551,10 @@ export function RunConsole({
             </span>
             <Link
               href="/"
-              className="rounded border border-ok/50 px-2 py-0.5 text-ok hover:bg-ok/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+              className="fkt-btn fkt-btn-secondary rounded-pill px-3.5 text-foot"
               data-testid="live-return-link"
             >
-              Live 로 돌아가기 ▸
+              Live 로 돌아가기
             </Link>
           </p>
         )}
@@ -539,29 +563,29 @@ export function RunConsole({
             자기가 하는 일을 말하지 않는 것이 된다 — 무엇으로 대신하고 있는지까지 적는다.
             🔴 종단에 닿으면 이 줄은 사라진다 — 끝난 조사에 「진행 중」이 남으면 거짓이다. */}
         {streamUnavailable && !settledNow && !pollHalted && (
-          <p className="mt-2 text-xs text-muted" role="status" data-testid="run-polling" data-interval-ms={POLL_INTERVAL_MS}>
+          <p className="mt-2 text-foot text-muted" role="status" data-testid="run-polling" data-interval-ms={POLL_INTERVAL_MS}>
             실시간 스트림 대신 주기 조회로 진행 중입니다 — {POLL_INTERVAL_MS / 1000}초마다 서버에
             다시 묻습니다. 순번이 붙어 오므로 중복되거나 빠지지 않습니다.
           </p>
         )}
         {pollNote && (
-          <p className="mt-2 text-xs text-warn" role="status" data-testid="run-poll-note">
+          <p className="mt-2 text-foot text-warn" role="status" data-testid="run-poll-note">
             {pollNote}
           </p>
         )}
         {note && (
-          <p className="mt-2 text-xs text-warn" role="status" data-testid="run-note">
+          <p className="mt-2 text-foot text-warn" role="status" data-testid="run-note">
             {note}
           </p>
         )}
       </section>
 
       {/* ── 3열 ────────────────────────────────────────────────────────────── */}
-      <div className="flex min-w-0 gap-3">
+      <div className="flex min-w-0 flex-col gap-6 xl:flex-row">
         <RunTimeline state={state} waiting={note === null} />
-        <section className="min-w-0 flex-1 space-y-3">
-          <div className="rounded border border-edge bg-panel p-3" data-testid="run-question">
-            <p className="text-xs text-muted">조사 질문{state.scenarioId && <> · <span className="id">{state.scenarioId}</span></>}</p>
+        <section className="min-w-0 flex-1 space-y-6">
+          <div className="fkt-card p-5" data-testid="run-question">
+            <p className="text-foot text-muted">조사 질문{state.scenarioId && <> · <span className="id">{state.scenarioId}</span></>}</p>
             <p className="mt-1 text-sm">{state.question ?? "질문이 아직 오지 않았습니다."}</p>
           </div>
           {children}
@@ -572,7 +596,7 @@ export function RunConsole({
       {/* 하단 가로 스트립 — §11.2 배치 그대로(좌 timeline · 중앙 센서 · 우 후보 · 하단 evidence) */}
       <EvidenceStrip state={state} runId={runId} kind={kind} onKind={setKind} />
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2.5">
         {/* 「전략 비교」 → ⑤ (wireframes §2 인터랙션 ⑥ · 현 질문 이월).
             🔴 이월하는 질문은 «서버가 준 run 의 질문»이라 승인 목록 안이다 — 화면이 지어낸
                문자열이 아니다. 받는 쪽도 목록에 있을 때만 쓴다(§16.2 이중 잠금). */}
@@ -582,19 +606,19 @@ export function RunConsole({
             🔴 여기서 정적이 Live 보다 «엄격»한 것은 허용된다 — 느슨한 쪽이 금지다. */}
         {isStatic ? (
           <span
-            className="rounded border border-edge px-3 py-1 text-xs text-muted opacity-60"
+            className="fkt-pill bg-fill px-3.5 py-1.5 text-muted opacity-60"
             title="정적 재생본은 검색 전략 비교를 담지 않습니다 — 서버 계산이 필요합니다"
             data-testid="to-compare-live-only"
           >
-            전략 비교 ▸ (Live 전용)
+            전략 비교 (Live 전용)
           </span>
         ) : (
           <Link
             href={`/compare?run=${encodeURIComponent(runId)}${state.question ? `&q=${encodeURIComponent(state.question)}` : ""}`}
-            className="rounded border border-edge px-3 py-1 text-xs text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+            className="fkt-btn fkt-btn-secondary rounded-pill px-4 text-foot focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
             data-testid="to-compare"
           >
-            전략 비교 ▸
+            전략 비교
           </Link>
         )}
         {/* 「작업지시서 초안 보기」 — run 완료 시 활성(wireframes §2) */}
@@ -604,24 +628,24 @@ export function RunConsole({
              녹화되지 않았다. 그래서 정적도 열지 않고, 서버가 한 말을 그대로 옮긴다.
              id 는 «보여 준다»: 이벤트가 실제로 낸 값이고, 감추면 화면이 아는 것을 숨기는 것이다. */
           <span
-            className="rounded border border-edge px-3 py-1 text-xs text-muted opacity-60"
+            className="fkt-pill bg-fill px-3.5 py-1.5 text-muted opacity-60"
             title="replay fixture 는 이벤트만 담으므로 초안 본문 원본이 없습니다 (서버도 501로 막습니다)"
             data-testid="work-order-draft-live-only"
             data-wod={state.workOrderDraftId}
           >
-            작업지시서 초안 ▸ 재생본에는 본문이 없습니다 (Live 전용)
+            작업지시서 초안 재생본에는 본문이 없습니다 (Live 전용)
           </span>
         ) : state.workOrderDraftId ? (
           <Link
             href={`/work-orders/${encodeURIComponent(state.workOrderDraftId)}`}
-            className="rounded border border-ai/60 px-3 py-1 text-xs text-ai hover:bg-ai/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
+            className="fkt-btn fkt-btn-primary rounded-pill px-4 text-foot focus-visible:outline focus-visible:outline-2 focus-visible:outline-ai"
             data-testid="work-order-draft"
           >
-            작업지시서 초안 보기 ▸
+            작업지시서 초안 보기
           </Link>
         ) : (
-          <span className="rounded border border-edge px-3 py-1 text-xs text-muted opacity-50" data-testid="work-order-draft-pending">
-            작업지시서 초안 보기 ▸ (조사 완료 후)
+          <span className="fkt-pill bg-fill px-3.5 py-1.5 text-muted opacity-50" data-testid="work-order-draft-pending">
+            작업지시서 초안 보기 (조사 완료 후)
           </span>
         )}
       </div>

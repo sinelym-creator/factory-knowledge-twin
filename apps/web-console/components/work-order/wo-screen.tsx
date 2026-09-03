@@ -128,10 +128,10 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
     <div className="flex min-w-0 flex-col gap-3" data-testid="wo-screen" data-state={wo.approvalState}>
       <h1 className="sr-only">④ 작업지시서 편집·승인 · {wo.workOrderDraftId}</h1>
 
-      <section className="rounded border border-edge bg-panel px-4 py-3" data-testid="wo-header">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="id text-sm">{wo.workOrderDraftId}</span>
-          <span className="rounded border border-edge px-2 py-0.5 text-muted" data-testid="wo-badge">
+      <section className="fkt-card p-5" data-testid="wo-header">
+        <div className="flex flex-wrap items-center gap-2 text-foot">
+          <span className="id text-body-c">{wo.workOrderDraftId}</span>
+          <span className="fkt-pill bg-fill text-muted" data-testid="wo-badge">
             {badge}
           </span>
           <span className="text-muted">출처</span>
@@ -141,55 +141,55 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
           <span className="text-muted">· 고장 모드</span>
           <span className="id">{wo.failureModeId}</span>
         </div>
-        <p className="mt-2 text-xs text-muted">{wo.note}</p>
+        <p className="mt-2 text-foot text-muted">{wo.note}</p>
       </section>
 
       <div className="flex min-w-0 gap-3">
         {/* ── 편집 영역 ─────────────────────────────────────────────────────── */}
         <section className="min-w-0 flex-1 space-y-3">
-          <div className="rounded border border-edge bg-panel p-3">
-            <label className="block text-xs text-muted" htmlFor="wo-title">
+          <div className="fkt-card p-5">
+            <label className="block text-foot text-muted" htmlFor="wo-title">
               제목
             </label>
             <input
               id="wo-title"
-              className="mt-1 w-full rounded border border-edge bg-bg px-2 py-1.5 text-sm disabled:opacity-60"
+              className="mt-1 w-full rounded-chip bg-inset px-2 py-1.5 text-body-c disabled:opacity-60"
               value={title}
               disabled={readOnly}
               onChange={(e) => setTitle(e.target.value)}
               data-testid="wo-title"
             />
 
-            <p className="mt-3 text-xs text-muted">
+            <p className="mt-3 text-foot text-muted">
               대상 설비 <span className="id text-ink">{wo.equipmentId}</span>{" "}
               {/* 🔴 조사 결과에 귀속된 값이라 사람이 바꾸지 않는다(wireframes §4 ⑧). 서버도 열지 않는다. */}
-              <span className="rounded border border-edge px-1.5 py-0.5">고정</span>
+              <span className="fkt-pill bg-fill">고정</span>
             </p>
           </div>
 
           {/* 절차 — 🔴 읽기 전용. 서버가 «안전 조치의 근거»라 잠근다(403 safety_basis_immutable) */}
-          <div className="rounded border border-edge bg-panel p-3" data-testid="wo-procedures">
-            <p className="text-xs text-muted">
-              절차(SOP) <span className="rounded border border-edge px-1.5 py-0.5">읽기 전용</span>
+          <div className="fkt-card p-5" data-testid="wo-procedures">
+            <p className="text-foot text-muted">
+              절차(SOP) <span className="fkt-pill bg-fill">읽기 전용</span>
             </p>
-            <ul className="mt-2 space-y-1 text-sm">
+            <ul className="mt-2 space-y-1 text-body-c">
               {wo.procedures.map((p) => (
                 <li key={p.sopId}>
-                  <span className="id text-xs text-ai">{p.sopId}</span> {p.title}{" "}
-                  <span className="text-xs text-muted">· {p.status}</span>
+                  <span className="id text-foot text-ai">{p.sopId}</span> {p.title}{" "}
+                  <span className="text-foot text-muted">· {p.status}</span>
                 </li>
               ))}
-              {wo.procedures.length === 0 && <li className="text-xs text-muted">인용된 절차가 없습니다.</li>}
+              {wo.procedures.length === 0 && <li className="text-foot text-muted">인용된 절차가 없습니다.</li>}
             </ul>
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-foot text-muted">
               절차는 안전 조치의 «근거»라 편집할 수 없습니다.
             </p>
           </div>
 
           {/* 부품 — 편집 가능(서버가 여는 두 필드 중 하나) */}
-          <div className="rounded border border-edge bg-panel p-3" data-testid="wo-parts">
+          <div className="fkt-card p-5" data-testid="wo-parts">
             <div className="flex items-center">
-              <p className="text-xs text-muted">필요 부품</p>
+              <p className="text-foot text-muted">필요 부품</p>
               <button
                 type="button"
                 disabled={readOnly}
@@ -198,7 +198,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                   setEditing(null);
                   void save({ parts: [...wo.parts, { name: "" }] });
                 }}
-                className="ml-auto rounded border border-edge px-2 py-0.5 text-xs text-muted hover:text-ink disabled:opacity-40"
+                className="ml-auto fkt-pill bg-fill text-foot text-muted hover:text-ink disabled:opacity-40"
                 data-testid="wo-part-add"
               >
                 + 추가
@@ -210,12 +210,12 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                   {/* 🔴 componentId 는 «있으면» 보여 주고 없으면 만들지 않는다 — 사람이 더한 부품에
                       온톨로지 id 를 지어 붙이면 그 id 는 아무 데도 안 열린다(「없는 근거」가 된다). */}
                   {p.componentId ? (
-                    <span className="id text-xs text-muted">{p.componentId}</span>
+                    <span className="id text-foot text-muted">{p.componentId}</span>
                   ) : (
-                    <span className="text-xs text-muted">(신규)</span>
+                    <span className="text-foot text-muted">(신규)</span>
                   )}
                   <input
-                    className="min-w-0 flex-1 rounded border border-edge bg-bg px-2 py-1 text-sm disabled:opacity-60"
+                    className="min-w-0 flex-1 rounded-chip bg-inset px-2 py-1 text-body-c disabled:opacity-60"
                     // 🔴 값의 출처는 «서버가 준 배열» 하나다. 편집 중인 칸만 초안을 덧댄다 —
                     //    두 곳에서 값을 만들면 어느 쪽이 참인지 화면이 스스로 답하지 못한다.
                     value={editing?.index === i ? editing.value : (p.name ?? "")}
@@ -237,25 +237,25 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                       setEditing(null);   // 같은 이유 — 지우면 뒤 행이 이 자리로 올라온다
                       void save({ parts: wo.parts.filter((_, k) => k !== i) });
                     }}
-                    className="rounded border border-edge px-2 py-1 text-xs text-muted hover:text-ink disabled:opacity-40"
+                    className="fkt-pill bg-fill text-foot text-muted hover:text-ink disabled:opacity-40"
                     data-testid="wo-part-delete"
                   >
                     삭제
                   </button>
                 </li>
               ))}
-              {wo.parts.length === 0 && <li className="text-xs text-muted">부품이 없습니다.</li>}
+              {wo.parts.length === 0 && <li className="text-foot text-muted">부품이 없습니다.</li>}
             </ul>
           </div>
 
           {/* 🛡 안전 조치 — 🔴 편집·삭제 «불가». 서버가 무조건 잠근다(403 safety_measure_immutable) */}
           <div className="rounded border border-warn/40 bg-panel p-3" data-testid="wo-safety">
-            <p className="text-xs text-warn">🛡 안전 조치 · 편집·삭제 불가</p>
-            <ul className="mt-2 space-y-1 text-sm">
+            <p className="text-foot text-warn">🛡 안전 조치 · 편집·삭제 불가</p>
+            <ul className="mt-2 space-y-1 text-body-c">
               {wo.safetyMeasures.map((m) => (
                 <li key={m.safetyRuleId} data-testid="wo-safety-item" data-mandatory={String(m.mandatory)}>
-                  <span className="id text-xs">{m.safetyRuleId}</span> {m.title}{" "}
-                  <span className="text-xs text-muted">· {m.class}</span>
+                  <span className="id text-foot">{m.safetyRuleId}</span> {m.title}{" "}
+                  <span className="text-foot text-muted">· {m.class}</span>
                   <button
                     type="button"
                     onClick={() =>
@@ -265,7 +265,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                         "안전 조치는 SOP 가 요구하는 항목이라 편집·삭제할 수 없습니다 (safety_measure_immutable).",
                       )
                     }
-                    className="ml-2 rounded border border-edge px-1.5 py-0.5 text-xs text-muted hover:text-ink"
+                    className="ml-2 fkt-pill bg-fill text-foot text-muted hover:text-ink"
                     data-testid="wo-safety-delete"
                     title="이 항목은 삭제할 수 없습니다"
                   >
@@ -273,26 +273,26 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                   </button>
                 </li>
               ))}
-              {wo.safetyMeasures.length === 0 && <li className="text-xs text-muted">안전 조치가 없습니다.</li>}
+              {wo.safetyMeasures.length === 0 && <li className="text-foot text-muted">안전 조치가 없습니다.</li>}
             </ul>
             {/* 🔴 Q-31: wireframes 는 「mandatory 인 경우」라 적었지만 서버는 mandatory 여부와 «무관»하게
                 잠근다. 조건절을 그대로 쓰면 화면이 서버보다 느슨하게 말하는 것이 된다 — 지웠다.
                 🔴 Q-32: 「어느 SOP 가 이것을 요구하는가」는 응답에 `sourceSopId` 가 없어 «말할 수 없다».
                 목업의 인용 문구를 여기 지어 넣지 않는다(계약 v0.2 재론까지 이연). */}
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-foot text-muted">
               안전 조치는 SOP 가 요구하는 항목이라 편집·삭제할 수 없습니다.
             </p>
             {locked && (
-              <p className="mt-1 text-xs text-warn" role="status" data-testid="wo-locked-note">
+              <p className="mt-1 text-foot text-warn" role="status" data-testid="wo-locked-note">
                 {locked}
               </p>
             )}
           </div>
 
           {wo.gaps.length > 0 && (
-            <div className="rounded border border-edge bg-panel p-3" data-testid="wo-gaps">
-              <p className="text-xs text-muted">초안이 스스로 말하는 «빈 곳»</p>
-              <ul className="mt-1 list-disc pl-5 text-sm">
+            <div className="fkt-card p-5" data-testid="wo-gaps">
+              <p className="text-foot text-muted">초안이 스스로 말하는 «빈 곳»</p>
+              <ul className="mt-1 list-disc pl-5 text-body-c">
                 {wo.gaps.map((g) => (
                   <li key={g}>{g}</li>
                 ))}
@@ -302,8 +302,8 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
         </section>
 
         {/* ── 근거 패널 380px ───────────────────────────────────────────────── */}
-        <aside className="w-95 shrink-0 rounded border border-edge bg-panel p-3" data-testid="wo-evidence" data-count={wo.evidenceIds.length}>
-          <p className="text-xs text-muted">이 초안이 인용한 근거 {wo.evidenceIds.length}건</p>
+        <aside className="w-95 shrink-0 fkt-card p-5" data-testid="wo-evidence" data-count={wo.evidenceIds.length}>
+          <p className="text-foot text-muted">이 초안이 인용한 근거 {wo.evidenceIds.length}건</p>
           <ul className="mt-2 max-h-160 space-y-1 overflow-y-auto">
             {wo.evidenceIds.map((id) => (
               <li key={id}>
@@ -311,21 +311,21 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                     id 를 그대로 보이고, 무엇인지는 ③ 이 열려서 말한다(T3-3 착지분). */}
                 <Link
                   href={`/evidence/${encodeURIComponent(id)}`}
-                  className="id text-xs text-ai underline-offset-2 hover:underline focus:outline-2 focus:outline-ai"
+                  className="id text-foot text-ai underline-offset-2 hover:underline focus:outline-2 focus:outline-ai"
                   data-testid="wo-evidence-link"
                 >
                   {id}
                 </Link>
               </li>
             ))}
-            {wo.evidenceIds.length === 0 && <li className="text-xs text-muted">인용된 근거가 없습니다.</li>}
+            {wo.evidenceIds.length === 0 && <li className="text-foot text-muted">인용된 근거가 없습니다.</li>}
           </ul>
         </aside>
       </div>
 
       {/* ── 하단 액션 ─────────────────────────────────────────────────────── */}
-      <section className="flex flex-wrap items-center gap-2 rounded border border-edge bg-panel px-4 py-3" data-testid="wo-actions">
-        <span className="text-xs text-muted" data-testid="wo-save-state" data-changes={changes}>
+      <section className="flex flex-wrap items-center gap-2 fkt-card p-5" data-testid="wo-actions">
+        <span className="text-foot text-muted" data-testid="wo-save-state" data-changes={changes}>
           {readOnly
             ? "종단 상태 — 편집할 수 없습니다."
             : saved === "saving"
@@ -337,7 +337,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                   : "변경 없음"}
         </span>
         {why && (
-          <span className="text-xs text-warn" role="status" data-testid="wo-error">
+          <span className="text-foot text-warn" role="status" data-testid="wo-error">
             {why}
           </span>
         )}
@@ -346,7 +346,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
             type="button"
             disabled={readOnly}
             onClick={() => setAsking("reject")}
-            className="rounded border border-edge px-3 py-1 text-xs text-muted hover:text-ink disabled:opacity-40"
+            className="fkt-btn fkt-btn-secondary rounded-pill px-4 text-foot text-muted hover:text-ink disabled:opacity-40"
             data-testid="wo-reject"
           >
             반려 (사유 입력)
@@ -355,7 +355,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
             type="button"
             disabled={readOnly}
             onClick={() => setAsking("approve")}
-            className="rounded border border-ai/60 px-3 py-1 text-xs text-ai hover:bg-ai/10 disabled:opacity-40"
+            className="fkt-btn fkt-btn-primary rounded-pill px-5 text-foot"
             data-testid="wo-approve"
           >
             승인
@@ -364,9 +364,9 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
       </section>
 
       {history.length > 0 && (
-        <section className="rounded border border-edge bg-panel p-3" data-testid="wo-history">
-          <p className="text-xs text-muted">이 세션의 이력</p>
-          <ul className="mt-1 space-y-0.5 text-xs">
+        <section className="fkt-card p-5" data-testid="wo-history">
+          <p className="text-foot text-muted">이 세션의 이력</p>
+          <ul className="mt-1 space-y-0.5 text-foot">
             {history.map((h, i) => (
               <li key={i}>
                 <span className="text-muted">{h.at}</span> · <span className="id">{h.text}</span>
@@ -375,7 +375,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
           </ul>
           {/* 🔴 이력 «조회» 라우트가 없다(실측) — approve/reject 가 주는 auditId 뿐이다.
               남아 있는 척하지 않고 한계를 화면이 말한다. */}
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-foot text-muted">
             이 목록은 이 화면이 열려 있는 동안만 남습니다 — 새로고침하면 사라집니다(서버에 이력 조회
             경로가 없습니다).
           </p>
@@ -384,23 +384,23 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
 
       {asking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
-          <div className="w-full max-w-md rounded border border-edge bg-panel p-4" role="dialog" aria-modal>
-            <p className="text-sm">
+          <div className="w-full max-w-md fkt-card p-6" role="dialog" aria-modal>
+            <p className="text-body-c">
               {asking === "approve" ? "이 작업지시서를 승인할까요?" : "이 작업지시서를 반려할까요?"}
             </p>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-foot text-muted">
               {asking === "approve"
                 ? "승인 후에는 편집할 수 없고 되돌릴 수 없습니다(서버가 종단으로 강제합니다)."
                 : "반려 후에는 편집할 수 없고 되돌릴 수 없습니다."}
             </p>
             {asking === "reject" && (
               <>
-                <label className="mt-3 block text-xs text-muted" htmlFor="wo-reason">
+                <label className="mt-3 block text-foot text-muted" htmlFor="wo-reason">
                   사유 <span className="text-warn">(필수)</span>
                 </label>
                 <textarea
                   id="wo-reason"
-                  className="mt-1 w-full rounded border border-edge bg-bg px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-chip bg-inset px-2 py-1.5 text-body-c"
                   rows={3}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -408,16 +408,16 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
                 />
               </>
             )}
-            <div className="mt-4 flex justify-end gap-2 text-xs">
+            <div className="mt-4 flex justify-end gap-2 text-foot">
               <button
-                className="rounded border border-edge px-3 py-1.5 text-muted hover:text-ink"
+                className="fkt-btn fkt-btn-secondary rounded-pill px-4.5 text-muted hover:text-ink"
                 onClick={() => setAsking(null)}
                 data-testid="wo-cancel"
               >
                 취소
               </button>
               <button
-                className="rounded border border-edge px-3 py-1.5 text-ai hover:text-ink disabled:opacity-40"
+                className="fkt-btn fkt-btn-secondary rounded-pill px-4.5 text-ai hover:text-ink disabled:opacity-40"
                 disabled={asking === "reject" && reason.trim().length === 0}
                 onClick={() => void decide(asking)}
                 data-testid="wo-confirm"

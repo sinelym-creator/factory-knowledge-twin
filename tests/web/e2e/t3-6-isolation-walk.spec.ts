@@ -108,9 +108,36 @@ async function awaitRun(page: Page, runId: string) {
 }
 
 /** 화면이 실제로 뱉은 글. 「없다」를 말하는지, 존재를 누설하는지 여기서 센다. */
-async function bodyText(page: Page) {
-  return ((await page.locator("body").innerText().catch(() => "")) ?? "").replace(/\s+/g, " ");
-}
+/**
+ * 🔴 **셸 크롬이 아니라 «자원 화면»을 센다.** 앞판은 `body` 를 떴고, 그래서 앱 공용
+ *    fallback 배너의 「소유자 게이트웨이 미도달」이 소유권 «단언» 1건으로 계수됐다
+ *    (09-03 실측: 배너가 뜬 열은 빨강 · 배너가 없는 열은 같은 코드·같은 DB 로 12/12 초록).
+ *    이 축의 주어는 「**요청한 자원에 대해** 화면이 소유를 단언하는가」다 — 앱 전체에 걸리는
+ *    상태 배너는 그 자원에 대해 아무 말도 하지 않는다.
+ *    🔴 낱말 예외(「소유자」를 빼기)로 고치지 않는다 — 그러면 「이 문서의 소유자는 …」 같은
+ *       **진짜 누설**까지 통과한다. 좁힐 것은 낱말이 아니라 **보는 범위**다.
+ */
+async function bodyText(page: Page) {
+  return ((await page.locator("main").innerText().catch(() => "")) ?? "").replace(/\s+/g, " ");
+}
+
+/**
+ * 🔴 범위를 좁혔으면 «좁힌 눈이 아직 무는지»를 같은 실행에서 보여야 한다. `main` 안에 소유권
+ *    단언 문장을 심고 같은 검사기가 잡는지 확인한 뒤 지운다 — 여기서 0 이 나오면 위의 초록은
+ *    「본 것이 없어서 난 초록」이다.
+ */
+async function ownershipEyeIsAlive(page: Page) {
+  const planted = "이 초안은 남의 세션 자원입니다.";
+  await page.evaluate((t) => {
+    const el = document.createElement("p");
+    el.id = "levi2-ownership-control";
+    el.textContent = t;
+    document.querySelector("main")?.appendChild(el);
+  }, planted);
+  const hits = assertsOwnership(await bodyText(page));
+  await page.evaluate(() => document.getElementById("levi2-ownership-control")?.remove());
+  return hits;
+}
 
 async function freshVisitor(browser: import("@playwright/test").Browser) {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -188,6 +215,8 @@ test.describe("T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함�
         assertsOwnership(text),
         "🔴 화면이 «남의 것이다»를 단언한다 — 설명(선언지)은 되지만 단정은 존재를 누설한다",
       ).toEqual([]);
+      // 🔴 대조군 — 좁힌 눈이 아직 문다(같은 실행 · 심고 지운다)
+      expect(await ownershipEyeIsAlive(b.page), "심은 소유권 단언을 못 잡는다 — 눈이 멀었다").not.toEqual([]);
       // 🔴 「누설 낱말 0」만으로는 부족하다 — 빈 화면도 0을 낸다. 같은 화면이 «없음»을 말해야 한다.
       expect(text, "화면이 «없다»는 사실 자체를 말하지 않는다").toMatch(/없|찾을 수 없|unavailable/i);
     } finally {
@@ -221,6 +250,7 @@ test.describe("T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함�
       const bText = await bodyText(b.page);
       expect(REFUSAL_WORDS.filter((w) => bText.includes(w)), "화면이 «못 준다»고 말한다").toEqual([]);
       expect(assertsOwnership(bText), "화면이 «남의 것이다»를 단언한다").toEqual([]);
+      expect(await ownershipEyeIsAlive(b.page), "심은 소유권 단언을 못 잡는다 — 눈이 멀었다").not.toEqual([]);
     } finally {
       await a.ctx.close();
       await b.ctx.close();

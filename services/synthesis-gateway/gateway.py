@@ -20,6 +20,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -70,6 +71,8 @@ TOKEN_HEADER = "X-FKT-Gateway-Token"
 MAX_BODY_BYTES = 1 * 1024 * 1024
 UNKNOWN_MODEL = "claude-code-cli:unknown"
 FENCE = "```"
+# 스트리밍을 «요청»하는 낱말. 이 이름 하나로 옵트인이 결정된다.
+NDJSON_MIME = "application/x-ndjson"
 
 
 def is_loopback(host: str) -> bool:
@@ -89,10 +92,13 @@ def is_loopback(host: str) -> bool:
 class SynthesisError(Exception):
     """게이트웨이가 결과를 못 냈다 — 사유를 달고 올라간다(조용한 폴백 0)."""
 
-    def __init__(self, reason: str, status: int = 502) -> None:
+    def __init__(self, reason: str, status: int = 502, code: str | None = None) -> None:
         super().__init__(reason)
         self.reason = reason
         self.status = status
+        # 🔴 사유 «문면»은 사람이 읽는 것이고, `code` 는 기계가 읽는 것이다(D-24b). ai-api 가
+        #    문면을 정규식으로 갈라 분류하면 이 파일의 한 낱말이 바뀌는 순간 조용히 오분류된다.
+        self.code = code
 
 
 def _pick_model(envelope: dict) -> str:
@@ -146,6 +152,72 @@ def _validate_request(req: object) -> tuple[dict, dict]:
     return req, evidence_text
 
 
+def _sentence_line(obj: object) -> dict | None:
+    """NDJSON 한 줄이 «문장 줄»이면 정규화해 돌려주고, 아니면 None.
+
+    🔴 여기서 보는 것은 **형상뿐**이다. 「이 근거 id 가 실재하는가 · 이 후보를 준 적이 있는가」는
+       마지막 가드가 «한 번» 판정한다(계약 v0.1.13). 도중에 판정하면 부분 채택이 되고, 그것은
+       v0.1.11 이 금지한 것이다. 형상이 깨진 줄만 여기서 떨어뜨린다 — 그런 줄은 화면에 붙일
+       자리 자체가 없다.
+    """
+    if not isinstance(obj, dict):
+        return None
+    fm, text, ids = obj.get("fm"), obj.get("s"), obj.get("ids")
+    if not isinstance(fm, str) or not fm:
+        return None
+    if not isinstance(text, str) or not text.strip():
+        return None
+    if not isinstance(ids, list) or not ids or not all(isinstance(i, str) and i for i in ids):
+        return None
+    return {"failureModeId": fm, "text": text.strip(), "citedEvidenceIds": list(dict.fromkeys(ids))}
+
+
+def _assemble(sentences: list[dict], final: dict | None) -> dict:
+    """문장 줄들 + 마지막 줄 → v0.1.11 응답 형상.
+
+    🔴 **응답 형상을 바꾸지 않는다.** 바뀐 것은 모델이 «어떻게 뱉는가»(줄 단위)이지 게이트웨이가
+       «무엇을 답하는가»가 아니다 — ai-api 의 가드도, 화면의 rationale 도 그대로다. 스트리밍을
+       위해 계약 표면을 손대면 이 조각의 비용이 갑자기 계약 개정이 된다.
+
+    문장 순서는 도착 순서 그대로 둔다(모델이 고른 순서 = 화면에 채워질 순서).
+    """
+    if final is None:
+        raise SynthesisError("마지막 줄(ranking)이 오지 않았다")
+    rationale: dict[str, dict] = {}
+    for s in sentences:
+        entry = rationale.setdefault(s["failureModeId"], {"sentences": [], "citedEvidenceIds": []})
+        entry["sentences"].append(s["text"])
+        for cited in s["citedEvidenceIds"]:
+            if cited not in entry["citedEvidenceIds"]:
+                entry["citedEvidenceIds"].append(cited)
+    return {
+        "ranking": final.get("ranking"),
+        "rationale": rationale,
+        "insufficient": final.get("insufficient"),
+    }
+
+
+def _text_delta(event: object) -> str:
+    """CLI `stream-json` 한 줄에서 «출력 텍스트» 증분만 꺼낸다.
+
+    실측 형상(E1 · 09-03 33대 · `--output-format stream-json --include-partial-messages`):
+      `{"type":"stream_event","event":{"type":"content_block_delta",
+        "delta":{"type":"text_delta","text":"…"}}}`
+    🔴 `thinking_delta`·`signature_delta` 는 **출력이 아니다** — 섞으면 사고 과정이 화면으로
+       흘러가고, NDJSON 파서도 깨진다. `type` 을 보고 text_delta 만 취한다.
+    """
+    if not isinstance(event, dict) or event.get("type") != "stream_event":
+        return ""
+    inner = event.get("event")
+    if not isinstance(inner, dict) or inner.get("type") != "content_block_delta":
+        return ""
+    delta = inner.get("delta")
+    if not isinstance(delta, dict) or delta.get("type") != "text_delta":
+        return ""
+    text = delta.get("text")
+    return text if isinstance(text, str) else ""
+
+
 def _validate_response(parsed: object, wanted_ids: set[str], evidence_ids: set[str]) -> dict:
     """게이트웨이 층의 형상 검사. 근거 결속 «판정»은 ai-api 가 다시 한다(이중 검사)."""
     if not isinstance(parsed, dict):
@@ -163,6 +235,14 @@ def _validate_response(parsed: object, wanted_ids: set[str], evidence_ids: set[s
         raise SynthesisError("ranking 이 준 후보 집합과 다르다(추가·누락)")
     if len(ranking) != len(set(ranking)):
         raise SynthesisError("ranking 에 중복이 있다")
+    # 🔴 **줄 단위 출력이 되면서 «비어도 통과»가 가능해진 자리다.** 앞판은 모델이 rationale 을
+    #    통째로 한 객체에 담았으므로 비면 JSON 파싱 단계에서 티가 났다. 지금은 문장 줄이 한
+    #    건도 안 남아도 마지막 줄만 오면 `rationale={}` 로 «성공»한다 — 실제로 대조군에서
+    #    그 상태를 만들어 냈다(가짜 CLI 가 cp949 로 뱉어 문장 줄이 전건 버려졌다).
+    #    순위를 매긴 후보에는 근거 문장이 있어야 한다.
+    if set(rationale) != set(ranking):
+        missing = sorted(set(ranking) - set(rationale))
+        raise SynthesisError(f"근거 문장이 없는 후보가 있다({len(missing)}건)")
     for fm_id, entry in rationale.items():
         if fm_id not in wanted_ids:
             raise SynthesisError("rationale 에 준 적 없는 failureModeId 가 있다")
@@ -182,7 +262,15 @@ def _validate_response(parsed: object, wanted_ids: set[str], evidence_ids: set[s
     return {"ranking": ranking, "rationale": rationale, "insufficient": insufficient}
 
 
-def synthesize(req: dict) -> dict:
+def synthesize(req: dict, on_sentence=None) -> dict:
+    """합성 1회. `on_sentence` 를 주면 **완성된 문장 줄이 나올 때마다** 먼저 부른다.
+
+    🔴 **줄이 완성되기 전에는 아무것도 내보내지 않는다.** 부분 JSON 을 파싱해 「거의 다 된 문장」을
+       보여 주는 길도 있지만, 그러면 화면이 잘린 문장을 그렸다 고쳤다 한다. 출력 «형식»을 줄
+       단위로 바꾼 이유가 그것이다 — 자르는 자리를 모델이 정하게 한다(계약 v0.1.13 ②).
+
+    🔴 **콜백이 없으면 거동은 앞판과 같다.** 스트리밍은 «부가»이고, 반환 형상은 v0.1.11 그대로다.
+    """
     request, evidence_text = _validate_request(req)
     wanted_ids = {c["failureModeId"] for c in request["candidates"]}
     evidence_ids = set(evidence_text.keys())
@@ -190,8 +278,12 @@ def synthesize(req: dict) -> dict:
     argv = [
         CLI_BIN,
         "-p",
+        # 🔴 `json` → `stream-json`. 봉투는 마지막 `result` 줄에 그대로 온다(실측) — 즉
+        #    모델 id·소요시간은 잃지 않으면서 도중 텍스트를 얻는다.
         "--output-format",
-        "json",
+        "stream-json",
+        "--include-partial-messages",
+        "--verbose",             # stream-json 은 verbose 를 요구한다
         "--restricted",          # 실행계 도구·WebFetch 제거 + 사용자/프로젝트 settings 무시
         "--strict-mcp-config",   # MCP 서버 0
         "--system-prompt-file",
@@ -212,56 +304,140 @@ def synthesize(req: dict) -> dict:
     )
 
     started = time.perf_counter()
-    # 빈 작업 디렉터리에서 돌린다 — 리포의 CLAUDE.md·설정이 프롬프트에 섞이지 않게.
-    with tempfile.TemporaryDirectory(prefix="fkt-synth-") as cwd:
+    sentences: list[dict] = []
+    final: dict | None = None
+    envelope: dict = {}
+    buffer = ""
+    dropped = [0]
+    killed = threading.Event()
+
+    def _consume(line: str) -> None:
+        """모델이 낸 NDJSON 한 줄. 마지막 줄이면 붙잡아 두고, 문장 줄이면 흘려보낸다."""
+        nonlocal final
+        line = line.strip()
+        if not line or line.startswith(FENCE):
+            # 펜스를 치지 말라고 했지만 쳤다면 그 줄만 버린다 — 한 줄 때문에 회차를 버리지 않는다.
+            return
         try:
-            proc = subprocess.run(
-                argv,
-                input=prompt.encode("utf-8"),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=cwd,
-                timeout=TIMEOUT_MS / 1000.0,
-            )
-        except subprocess.TimeoutExpired:
-            raise SynthesisError(f"CLI 타임아웃({TIMEOUT_MS}ms)", status=504) from None
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            return
+        if isinstance(obj, dict) and "ranking" in obj:
+            final = obj
+            return
+        parsed = _sentence_line(obj)
+        if parsed is None:
+            return
+        sentences.append(parsed)
+        if on_sentence is not None:
+            on_sentence(dict(parsed))
+
+    # 🔴 `ignore_cleanup_errors` — 상한에 걸려 프로세스를 죽였는데 자식이 아직 이 디렉터리를
+    #    쥐고 있으면 rmtree 가 PermissionError 를 낸다. 그러면 방문자가 받는 사유가 504
+    #    「타임아웃」이 아니라 500 「내부 오류」로 바뀐다 — 실측으로 그 전환을 봤다.
+    #    남은 임시 디렉터리 하나가, 어느 쪽이 왜 끊었는지 잃는 것보다 싸다.
+    with tempfile.TemporaryDirectory(prefix="fkt-synth-", ignore_cleanup_errors=True) as cwd:
+        err_path = Path(cwd) / "stderr.log"
+        try:
+            with err_path.open("wb") as err:
+                proc = subprocess.Popen(
+                    argv,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    # 🔴 stderr 를 파이프로 두고 stdout 만 읽으면 stderr 가 차는 순간 서로 막힌다.
+                    #    파일로 뺀다 — 진단은 남기고 교착은 없앤다.
+                    stderr=err,
+                    cwd=cwd,
+                )
+
+                def _kill() -> None:
+                    killed.set()
+                    proc.kill()
+
+                watchdog = threading.Timer(TIMEOUT_MS / 1000.0, _kill)
+                watchdog.start()
+                try:
+                    proc.stdin.write(prompt.encode("utf-8"))
+                    proc.stdin.close()
+                    for raw in proc.stdout:
+                        # 🔴 **상한을 넘긴 뒤에도 계속 읽지 않는다.** `proc.kill()` 은
+                        #    프로세스 «하나»를 죽인다 — 래퍼를 거쳐 뜬 자식은 살아서 계속
+                        #    쓰고, 그 사이 게이트웨이는 자기 상한을 넘긴다(실측: 상한 2500ms
+                        #    인데 마지막 줄이 +3254ms · 종료 +4311ms). 상한이 클라이언트
+                        #    예산보다 «반드시 작아야» 한다는 불변식이 그 초과분만큼 깎인다.
+                        if killed.is_set():
+                            break
+                        try:
+                            event = json.loads(raw.decode("utf-8"))
+                        except (UnicodeDecodeError, json.JSONDecodeError):
+                            # 🔴 버리되 «센다». 이 값이 0 이 아닌데 문장이 비면 원인은 파서가
+                            #    아니라 인코딩이다 — 세지 않으면 그 구분이 사라진다.
+                            dropped[0] += 1
+                            continue
+                        if isinstance(event, dict) and event.get("type") == "result":
+                            envelope = event
+                        chunk = _text_delta(event)
+                        if not chunk:
+                            continue
+                        buffer += chunk
+                        while '\n' in buffer:
+                            line, buffer = buffer.split('\n', 1)
+                            _consume(line)
+                    proc.wait()
+                finally:
+                    watchdog.cancel()
         except FileNotFoundError:
             raise SynthesisError(f"CLI 를 찾지 못했다({CLI_BIN})", status=503) from None
     elapsed_ms = int((time.perf_counter() - started) * 1000)
 
+    if killed.is_set():
+        raise SynthesisError(f"CLI 타임아웃({TIMEOUT_MS}ms)", status=504)
     if proc.returncode != 0:
         raise SynthesisError(f"CLI 종료코드 {proc.returncode}", status=502)
 
-    try:
-        envelope = json.loads(proc.stdout.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        raise SynthesisError("CLI 봉투를 JSON 으로 읽지 못했다") from None
+    # 🔴 마지막 줄은 개행으로 끝나지 않을 수 있다 — 남은 버퍼를 한 번 더 흘린다.
+    #    이걸 빼면 «가장 중요한 줄»(ranking)만 조용히 사라진다.
+    if buffer.strip():
+        _consume(buffer)
+
     if envelope.get("is_error"):
         raise SynthesisError(f"CLI 가 오류를 보고했다(subtype={envelope.get('subtype')})")
 
-    raw = envelope.get("result")
-    if not isinstance(raw, str) or not raw.strip():
-        raise SynthesisError("CLI 응답에 result 문자열이 없다")
+    # 🔴 대조 경로: 델타를 한 건도 못 읽었으면 봉투의 완성본으로 다시 읽는다. 스트리밍이
+    #    깨졌을 때 «회차 전체»를 버리지 않기 위한 자리이고, 여기로 왔다는 것은 체감 속도만
+    #    잃었다는 뜻이다(결과는 같다).
+    if not sentences and final is None:
+        raw_result = envelope.get("result")
+        if not isinstance(raw_result, str) or not raw_result.strip():
+            raise SynthesisError("CLI 응답에 result 문자열이 없다")
+        for line in _strip_one_fence(raw_result).splitlines():
+            _consume(line)
 
+    # 🔴 `_assemble` 은 «구조» 축(마지막 줄이 왔는가)이라 try 밖이다. 안에 넣으면 구조 실패가
+    #    「근거 결속 실패」로 분류돼 방문자가 다른 사실을 읽는다.
+    assembled = _assemble(sentences, final)
     try:
-        parsed = json.loads(_strip_one_fence(raw))
-    except json.JSONDecodeError:
-        raise SynthesisError("모델 응답을 JSON 으로 읽지 못했다") from None
-
-    out = _validate_response(parsed, wanted_ids, evidence_ids)
+        out = _validate_response(assembled, wanted_ids, evidence_ids)
+    except SynthesisError as exc:
+        # 이 함수의 실패는 전부 한 축이다 — 모델 답이 «우리가 준» 후보·근거에 묶이지 않았다.
+        exc.code = exc.code or "evidence_binding"
+        raise
     out["model"] = _pick_model(envelope)
     out["elapsedMs"] = elapsed_ms
-    # 응답 형상은 안 늘린다. 대신 「벽시계 − CLI 내부」로 기동 오버헤드를 읽을 수 있게
-    # 로그로만 남긴다(운영자 실측용 · 프롬프트 원문은 여전히 0).
     out["_log"] = {
         "cliDurationMs": envelope.get("duration_ms"),
         "cliApiDurationMs": envelope.get("duration_api_ms"),
+        "sentenceLines": len(sentences),
+        "droppedStdoutLines": dropped[0],
     }
     return out
 
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "fkt-synthesis-gateway/0.1"
+    # 🔴 chunked 응답을 쓰려면 HTTP/1.1 이어야 한다(1.0 에는 그 프레이밍이 없다). 기존 `_send`
+    #    는 이미 Content-Length 를 붙이므로 나머지 라우트의 거동은 바뀌지 않는다.
+    protocol_version = "HTTP/1.1"
 
     def _send(self, status: int, body: dict) -> None:
         raw = json.dumps(body, ensure_ascii=False).encode("utf-8")
@@ -327,6 +503,14 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, {"rejectedReason": "본문을 JSON 으로 읽지 못했다"})
             return
 
+        # 🔴 **스트리밍은 «요청한 클라이언트»에게만 준다.** 응답 형식을 일방적으로 바꾸면
+        #    배포돼 있는 ai-api(단일 JSON 을 기대한다)가 그 순간 전건 실패한다 — 게이트웨이
+        #    PR 이 혼자 병합돼도 안전해야 한다. 그래서 `Accept` 로 «옵트인»을 받는다.
+        wants_stream = NDJSON_MIME in (self.headers.get("Accept") or "")
+        if wants_stream:
+            self._synthesize_streaming(req)
+            return
+
         try:
             out = synthesize(req)
         except SynthesisError as exc:
@@ -342,12 +526,19 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         detail = out.pop("_log", {})
+        self._log_accepted(req, out, detail)
+        self._send(200, out)
+
+
+    def _log_accepted(self, req: dict, out: dict, detail: dict) -> None:
         # 🔴 `insufficient` 와 인용 수를 «로그에» 남긴다(32대 09-03). 응답 원문은 어디에도
         #    저장하지 않는 규율이라, 이 줄이 남지 않으면 나중에 「그 회차가 무엇을 답했나」를
         #    다시 물을 방법이 구독을 또 쓰는 것뿐이다 — 실제로 그 값을 치렀다(드릴 1 재사용 0).
+        # 🔴 `문장줄` 은 스트리밍이 «실제로 돌았는가»를 사후에 가르는 유일한 축이다. 0 이면
+        #    봉투 대조 경로로 떨어진 것이고, 그 회차의 체감 속도 주장은 성립하지 않는다.
         self.log_message(
             "synthesize 채택 · 후보 %d · 근거 %d · 벽시계 %dms · CLI 내부 %s/%s ms · %s · "
-            "model=%s effort=%s · insufficient=%s · 순위=%s · 인용수=%s",
+            "model=%s effort=%s · insufficient=%s · 순위=%s · 인용수=%s · 문장줄=%s",
             len(req.get("candidates", [])),
             len(req.get("evidenceText", {})),
             out["elapsedMs"],
@@ -362,8 +553,70 @@ class Handler(BaseHTTPRequestHandler):
                 f"{k}:{len(v.get('citedEvidenceIds', []))}"
                 for k, v in (out.get("rationale") or {}).items()
             ),
+            detail.get("sentenceLines"),
         )
-        self._send(200, out)
+
+    def _chunk(self, payload: dict) -> None:
+        """NDJSON 한 줄을 chunked 로 흘린다. 🔴 **첫 줄이 나올 때 비로소 헤더를 보낸다.**
+
+        한 줄도 못 내고 실패하면 아직 200 을 쓰지 않았으므로 «제대로 된 상태코드»로 답할 수
+        있다(504·503·502…). 먼저 200 을 박아 두면 그 뒤의 모든 실패가 「성공한 응답 안의
+        오류」가 되어, 어느 쪽이 왜 끊었는지 클라이언트가 상태코드로 못 가른다.
+        """
+        if not self._stream_open:
+            self.send_response(200)
+            self.send_header("Content-Type", f"{NDJSON_MIME}; charset=utf-8")
+            self.send_header("Transfer-Encoding", "chunked")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self._stream_open = True
+        raw = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+        self.wfile.write(b"%X\r\n" % len(raw) + raw + b"\r\n")
+        self.wfile.flush()
+
+    def _end_chunks(self) -> None:
+        if self._stream_open:
+            self.wfile.write(b"0\r\n\r\n")
+            self.wfile.flush()
+
+    def _synthesize_streaming(self, req: dict) -> None:
+        self._stream_open = False
+        seq = 0
+
+        def on_sentence(sentence: dict) -> None:
+            nonlocal seq
+            # 형상은 계약 v0.1.13 `step.progress.sentence` 그대로 — ai-api 가 이름을 다시
+            # 짓지 않고 그대로 이벤트에 실을 수 있게 한다(한 사건에 이름 하나).
+            self._chunk({"kind": "sentence", "seq": seq, "sentence": sentence})
+            seq += 1
+
+        try:
+            out = synthesize(req, on_sentence=on_sentence)
+        except SynthesisError as exc:
+            self.log_message("synthesize 거부(stream) · %s", exc.reason)
+            if self._stream_open:
+                # 🔴 `reasonCode` 는 «분류»만 넘긴다 — 문면은 각 층이 자기 독자에게 맞게 쓴다.
+                error_line = {"kind": "error", "status": exc.status, "rejectedReason": exc.reason}
+                if exc.code:
+                    error_line["reasonCode"] = exc.code
+                self._chunk(error_line)
+                self._end_chunks()
+            else:
+                self._send(exc.status, {"rejectedReason": exc.reason})
+            return
+        except Exception as exc:  # noqa: BLE001 — 게이트웨이가 조용히 죽지 않게
+            self.log_message("synthesize 예외(stream) · %s: %s", type(exc).__name__, exc)
+            if self._stream_open:
+                self._chunk({"kind": "error", "status": 500, "rejectedReason": "게이트웨이 내부 오류"})
+                self._end_chunks()
+            else:
+                self._send(500, {"rejectedReason": "게이트웨이 내부 오류"})
+            return
+
+        detail = out.pop("_log", {})
+        self._chunk({"kind": "result", "result": out})
+        self._end_chunks()
+        self._log_accepted(req, out, detail)
 
 
 def main() -> int:

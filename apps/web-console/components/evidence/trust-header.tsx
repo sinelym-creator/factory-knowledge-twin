@@ -35,7 +35,7 @@ export function TrustHeader({
 }) {
   return (
     <div
-      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-foot text-muted"
       data-testid="trust-header"
       data-stale={stale}
       data-indexed={indexed}
@@ -90,7 +90,7 @@ function IndexBadge({ stale, indexed }: { stale: boolean; indexed: boolean }) {
   if (!indexed) {
     return (
       <span
-        className="rounded border border-edge px-2 py-0.5"
+        className="fkt-pill bg-fill"
         data-testid="index-badge"
         data-state="not-indexed"
         title="계약 v0.1.1 — record 는 SSOT 를 직독하는 근거라 색인 신선도라는 축 자체가 없다. stale=false 는 상수이지 «신선 실증»이 아니다."
