@@ -202,7 +202,18 @@ function TourStepView({
      데스크톱은 그대로 좌표를 쓰고, <md 에서는 미디어쿼리가 이겨 진짜 바텀 시트가 된다. */
   const style: React.CSSProperties = hole
     ? ({
-        "--tour-top": `${fitsBelow ? below : Math.max(12, hole.top - calloutH - 12)}px`,
+        "--tour-top": `${
+          /* 🔴 데스크톱 좌표 경로에도 «대상이 화면을 채우면 위로 올리지 않는다»를 건다.
+             `max-md` 쪽에만 넣었더니 1440 은 그 경로를 안 타서 값이 한 자리도 안 움직였다
+             (리바이2 34대: 머리 덮임 49.9% → 49.9%). 대상이 크면 `fitsBelow` 가 거짓이 되어
+             `top` 이 12 로 떨어지는데, 그 대상은 화면 위쪽부터 시작하므로 «머리»를 덮는다.
+             아래에 두면 꼬리만 가린다 — 390 에서 이미 그 자리로 착지시킨 규칙이다. */
+          targetFillsViewport
+            ? Math.max(12, window.innerHeight - calloutH - 12)
+            : fitsBelow
+              ? below
+              : Math.max(12, hole.top - calloutH - 12)
+        }px`,
         "--tour-left": `${Math.min(Math.max(12, hole.left), Math.max(12, window.innerWidth - CALLOUT_W - 12))}px`,
       } as React.CSSProperties)
     : {};
