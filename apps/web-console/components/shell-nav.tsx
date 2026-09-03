@@ -51,7 +51,7 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
               }`}
               title={n.label}
             >
-              <n.Icon className={`text-[19px] ${active ? "text-ai" : ""}`} />
+              <n.Icon className={`text-[1.1875rem] ${active ? "text-ai" : ""}`} />
               {n.label}
             </Link>
           );

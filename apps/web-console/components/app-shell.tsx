@@ -38,7 +38,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           aria-label="주요 화면"
         >
           <div className="mb-5 flex items-center gap-2.5 px-3">
-            <IconMark className="text-[22px] text-ai" />
+            <IconMark className="text-[1.375rem] text-ai" />
             <span className="text-body-c font-semibold">Factory Twin</span>
           </div>
 

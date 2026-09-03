@@ -110,7 +110,7 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
               <li key={s.step} className="relative" data-testid="run-step" data-step={s.step} data-state={s.state}>
                 {/* 노드 20px — 진행 중은 맥동(그림자·리프트 없음) */}
                 <span
-                  className={`absolute -left-8 top-1.5 flex h-5 w-5 items-center justify-center rounded-pill bg-bg text-[11px] ${tone} ${
+                  className={`absolute -left-8 top-1.5 flex h-5 w-5 items-center justify-center rounded-pill bg-bg text-[0.6875rem] ${tone} ${
                     s.state === "running" ? "fkt-pulse" : ""
                   }`}
                   style={{ boxShadow: "inset 0 0 0 2px currentColor" }}
