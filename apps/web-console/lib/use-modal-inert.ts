@@ -2,6 +2,8 @@
 
 import { useEffect, type RefObject } from "react";
 
+import { markBackgroundInert, restoreBackgroundInert } from "./background-inert";
+
 /**
  * 모달이 열려 있는 동안 «배경»을 실제로 막는다 — D-44.
  *
@@ -30,26 +32,8 @@ export function useModalInert(open: boolean, ref: RefObject<HTMLElement | null>)
     const root = ref.current;
     if (!root) return;
 
-    const keep = new Set<Element>();
-    for (let n: Element | null = root; n; n = n.parentElement) keep.add(n);
-
-    const changed: HTMLElement[] = [];
-    if (typeof HTMLElement !== "undefined" && "inert" in HTMLElement.prototype) {
-      const walk = (parent: Element) => {
-        for (const child of Array.from(parent.children)) {
-          if (!(child instanceof HTMLElement)) continue;
-          if (child === root) continue;
-          if (keep.has(child)) {
-            walk(child);
-            continue;
-          }
-          if (child.inert) continue; // 남이 건 것은 그대로 두고, 되돌릴 때도 안 건드린다
-          child.inert = true;
-          changed.push(child);
-        }
-      };
-      walk(document.body);
-    }
+    /* 🔴 덮는 규칙 자체는 `lib/background-inert.ts` 로 옮겼다 — 화면 없이 재기 위해서다(U-05). */
+    const changed = markBackgroundInert(root, document.body);
 
     const outside = (t: EventTarget | null) => t instanceof Node && !root.contains(t);
     /* 포인터만 막는다 — 키보드는 `inert` 와 아래 포커스 감시가 든다. `keydown` 까지 삼키면
@@ -70,7 +54,7 @@ export function useModalInert(open: boolean, ref: RefObject<HTMLElement | null>)
     return () => {
       for (const t of types) document.removeEventListener(t, swallow, true);
       document.removeEventListener("focusin", onFocusIn, true);
-      for (const el of changed) el.inert = false;
+      restoreBackgroundInert(changed);
     };
   }, [open, ref]);
 }

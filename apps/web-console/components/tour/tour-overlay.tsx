@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { pickPlacement, type TourPlacement } from "./pick-placement";
 
 import { readAdvance, type TourStep } from "@/components/tour/tour-steps";
 
@@ -353,14 +354,9 @@ function TourStepView({
         — 미세한 차이로는 뒤집지 않는다. */
   const clampLeft = (x: number) =>
     Math.min(Math.max(12, x), Math.max(12, window.innerWidth - CALLOUT_W - 12));
-  type Placement = {
-    left: number;
-    side: "anchor" | "beside" | "before" | "edge-start" | "edge-end";
-    covered: number;
-    /* 이 자리가 «대상을 안 덮는» 자리인가. 거짓이면 안 덮는 후보가 하나도 없었다는 뜻이다. */
-    clear: boolean;
-  };
-  const [placement, setPlacement] = useState<Placement | null>(null);
+  /* 🔴 자리 고르기 «규칙»은 `pick-placement.ts` 로 옮겼다 — 화면 없이 재기 위해서다(U-01~U-03).
+     여기 남는 것은 «DOM 이 있어야 아는 값»(덮은 넓이)을 구해 넘기는 일뿐이다. */
+  const [placement, setPlacement] = useState<TourPlacement | null>(null);
   const holeKey = hole ? `${hole.top}:${hole.left}:${hole.width}:${hole.height}` : "";
   /* 🔴 **자리를 고를 때 주변이 아직 안 와 있었다.** 진입 애니메이션(스태거)이 끝나기 전에는
      주변 카드가 제자리에 없어 두 후보 다 «덮는 게 적다»로 나오고, 그러면 anchor 가 이긴다.
@@ -409,30 +405,9 @@ function TourStepView({
        후보가 중복으로 빠진 걸음에서 화면 끝이 세 번째로 올라와 «곁»으로 둔갑한다 — 실측
        (센쿠2 38대 · 1440 · 2·3번째 걸음): `beside` 가 `anchor` 와 같은 값으로 클램프돼 빠지자
        `edge-start`(x=12) 가 뽑혀, 대상이 x=1068 인데 말풍선이 화면 왼쪽 끝에 섰다. */
-    const candidates: { side: Placement["side"]; left: number; near: boolean }[] = [
-      { side: "anchor", left: clampLeft(hole.left), near: true },
-      { side: "beside", left: clampLeft(hole.left + hole.width + 12), near: true },
-      { side: "before", left: clampLeft(hole.left - CALLOUT_W - 12), near: true },
-      { side: "edge-start", left: clampLeft(12), near: false },
-      { side: "edge-end", left: clampLeft(window.innerWidth), near: false },
-    ];
-    /* 대상을 덮는가 — 가로·세로가 «둘 다» 겹쳐야 덮은 것이다. 콜아웃이 이미 대상 위/아래로
-       비켜 선 걸음에서는 가로가 겹쳐도 덮지 않는다. */
-    const coversTarget = (left: number) =>
-      left < hole.left + hole.width &&
-      hole.left < left + CALLOUT_W &&
-      top < hole.top + hole.height &&
-      hole.top < top + calloutH;
-    /* 같은 자리로 클램프된 후보는 하나로 친다 — 앞선 것(우선순위가 높은 것)이 이름을 갖는다. */
-    const seen = new Set<number>();
-    const scored = candidates
-      .filter((c) => !seen.has(c.left) && (seen.add(c.left), true))
-      .map((c) => ({ ...c, covered: coverAt(c.left), clear: !coversTarget(c.left) }));
-    const near = scored.filter((c) => c.near && c.clear);
-    const pool = near.length ? near : scored.filter((c) => c.clear);
-    /* 동점은 앞선 후보가 이긴다(`<` 이므로) — 그래서 같은 화면에서 늘 같은 답이 나온다. */
-    const best = (pool.length ? pool : scored).reduce((x, y) => (y.covered < x.covered ? y : x));
-    setPlacement({ left: best.left, side: best.side, covered: best.covered, clear: best.clear });
+    setPlacement(
+      pickPlacement({ hole, top, calloutW: CALLOUT_W, calloutH, viewportW: window.innerWidth, coverAt }),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, step.id, calloutH, holeKey, settled]);
 
