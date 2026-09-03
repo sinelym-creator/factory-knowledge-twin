@@ -30,6 +30,32 @@ export default async function preflight() {
   if (!live.ok) lines.push(`🔴 ai-api 무응답 ${API} — ${live.why}\n     cd services/ai-api && uvicorn app.main:app --port 8000`);
   if (lines.length) throw new Error("preflight 실패 — 측정 대상이 서 있지 않다(초록도 빨강도 아니다)\n  " + lines.join("\n  "));
 
+  /**
+   * 🔴 **깊은 검사**(38대 · 2026-09-04 · 성문 §⑧-7 ㉑). 위의 두 홉은 **얕다** —
+   * `/api/live/status` 와 `POST /api/sessions` 만 답하는 «스텁»도 그대로 통과한다.
+   * 실제로 그런 스텁(`:8101`)을 물고 전량을 돌렸더니 **깊은 API 를 부르는 63본이 무더기로 빨강**이었고,
+   * 얕은 화면 스펙은 전건 초록이었다 — **대상 결함처럼 보이는 무대 결함**이다.
+   *
+   * ⇒ **대조군의 깊이를 측정 대상의 깊이에 맞춘다.** 계약 표면이 실제로 서 있는지를
+   *    `/openapi.json` 의 경로 수로 묻는다(계약 v0.1 표면 = 20 남짓 · 스텁은 0).
+   *    🔴 여기 «지금의 수»(21)를 박지 않는다 — 계약이 늘면 그 수가 먼저 늙는다. 하한만 둔다.
+   */
+  const MIN_PATHS = 10;
+  const surface = await probe(`${API}/openapi.json`);
+  let pathCount = -1;
+  if (surface.ok && surface.status === 200) {
+    const full = await fetch(`${API}/openapi.json`, { signal: AbortSignal.timeout(6000) }).then((r) => r.json());
+    pathCount = Object.keys((full as { paths?: Record<string, unknown> }).paths ?? {}).length;
+  }
+  console.log(`   ai-api 계약 표면      GET /openapi.json → ${surface.ok ? surface.status : surface.why} · paths=${pathCount}`);
+  if (pathCount < MIN_PATHS) {
+    throw new Error(
+      `🔴 preflight 실패(깊은 검사) — ${API} 의 계약 표면이 ${pathCount} 개다(하한 ${MIN_PATHS}).\n` +
+        "     얕은 스텁을 물었을 가능성이 높다. 이 상태의 빨강은 «대상 결함»이 아니라 «무대 결함»이다.\n" +
+        "     cd services/ai-api && .venv/Scripts/python.exe -m uvicorn app.main:app --port <포트> --no-proxy-headers",
+    );
+  }
+
   console.log("== preflight — 이 실행이 상대한 것");
   console.log(`   web-console       ${WEB}   GET /overview → ${web.status} (쿠키 없음 = 가드 홉)`);
   console.log(`   ai-api            ${API}`);
