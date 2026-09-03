@@ -171,11 +171,24 @@ for (let i = 0; i < TOTAL_STEPS; i++) {
     await page.evaluate(() => document.getElementById("__ctl_in__")?.remove());
     await plant(8, 8, "__ctl_out__");
     await page.waitForTimeout(100);
+    /* 🔴 **대조군②의 전제가 죽을 수 있다.** 규격 §⑧-4 포커스 경계가 서면 말풍선 밖 요소에
+       포커스를 «둘 수가 없다» — 처방이 되당긴다. 그때 「밖 요소를 가림이라 했다」는 판정은
+       내 심은 버튼이 아니라 «말풍선 안 버튼»을 보고 내려진다(첫 실행이 그렇게 죽었다).
+       ⇒ **포커스가 실제로 내 버튼에 갔는지 먼저 확인**하고, 못 갔으면 그 사실을 값으로 남긴 뒤
+          «다른 음성 방향»으로 대신한다: 이 실행의 정거장 중 «가림 아님»이 하나라도 나오는가.
+          둘 다 없으면 그때는 exit 2 다 — 음성 방향이 아예 없는 회차는 근거가 아니다. */
+    const landed = await page.evaluate(() => document.activeElement?.id === "__ctl_out__");
     const outside = await page.evaluate(PROBE);
     await page.evaluate(() => document.getElementById("__ctl_out__")?.remove());
-    out.control = { inside, outside };
+    out.control = { inside, outside, outsideFocusLanded: landed };
     if (!inside.entirelyHidden) die("대조군① 불발 — 말풍선 한가운데 요소를 «가림»으로 못 봤다", inside);
-    if (outside.entirelyHidden || outside.anyPartHidden) die("대조군② 불발 — 말풍선 밖 요소를 «가림»이라 했다", outside);
+    if (landed) {
+      if (outside.entirelyHidden || outside.anyPartHidden) die("대조군② 불발 — 말풍선 밖 요소를 «가림»이라 했다", outside);
+      out.control.negativeVia = "planted-outside";
+    } else {
+      out.control.negativeVia = "ring-substitute";
+      out.control.note = "포커스 경계가 서서 «말풍선 밖 포커스»를 만들 수 없다 — 처방이 되당긴다(그 자체가 값).";
+    }
   }
 
   // Tab 전 순회 — 각 지점마다 잰다. 🔴 순회가 페이지를 스크롤시키므로 원위치를 먼저 적어 둔다.
@@ -228,6 +241,14 @@ for (let i = 0; i < TOTAL_STEPS; i++) {
     await chip.waitFor({ state: "visible", timeout: 15000 });
     await chip.click();
   }
+}
+
+/* 🔴 음성 방향 대체 검사(§대조군) — 이 실행에서 «가림 아님»이 한 번도 안 나왔다면
+   이 그물은 「전부 가림이라 답하는 눈」과 구별되지 않는다. */
+if (out.control && out.control.negativeVia === "ring-substitute") {
+  const anyNotHidden = out.steps.some((s) => (s.outsideStops ?? 0) > (s.aaaCount ?? 0));
+  out.control.ringNegativeSeen = anyNotHidden;
+  if (!anyNotHidden) die("대조군② 대체도 불발 — 이 실행에 «가림 아님» 정거장이 하나도 없다", out.control);
 }
 
 out.total = {
