@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useModalInert } from "@/lib/use-modal-inert";
 
 import { resetSession } from "@/lib/contract";
 import { useEscapeToClose } from "@/lib/use-escape-to-close";
@@ -15,6 +16,9 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
   const [asking, setAsking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /* 모달이 열려 있는 동안 배경을 실제로 막는다 — `aria-modal` 선언에 실제를 맞춘다(D-44). */
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  useModalInert(asking, modalRef);
 
   // 🔴 「닫아도 되는가」 = 열려 있고 «요청이 나가지 않았을 때». 취소 버튼이 `busy` 동안
   //    잠기므로 Esc 도 같이 잠근다 — 버튼으로는 못 닫는데 키로는 닫히면 같은 화면이 두 규칙을
@@ -48,7 +52,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
       </button>
 
       {asking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
+        <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
           <div className="w-full max-w-sm fkt-card p-6" role="dialog" aria-modal>
             <p className="text-body-c">이 세션을 처음 상태로 되돌릴까요?</p>
             <p className="mt-1 text-foot text-muted">
