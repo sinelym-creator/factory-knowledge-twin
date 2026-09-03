@@ -259,3 +259,52 @@ Playwright `emulateMedia` 에 `prefers-reduced-transparency` 가 **없다**. CDP
 - **대상 결함 6건 검출 → 전건 수리·재측 완료**: 중간 재개 미개방 · Esc 후 포커스 미복귀 ·
   390 콜아웃이 대상을 덮음 · 대비 미달 25행 · 발광 노드 2개 · 데스크톱 겹침 회귀.
 - **내 그물이 만든 위양성 8건 자수** — 전부 판정 전에 귀속을 세워 걸렀다.
+
+---
+
+# 인계 (리바이2 34대 → 다음 대)
+
+## 그물 — `--base` 만 주면 그대로 돈다
+
+| 파일 | 무엇을 재는가 | 대조군 |
+|---|---|---|
+| `tests/web/t65_resume_drill.mjs` | 투어 중간 재개(`--step N`) | 저장 진행을 0 으로 되돌린 열 |
+| `tests/web/t65_keyboard_wording_drill.mjs` | 키보드 완주·포커스 복귀·투어 문면 경계 | 살아 있는 콜아웃에 위반 문면 주입 |
+| `tests/web/t65_motion_mobile_drill.mjs` | reduced-motion 링 · 바텀시트 · 겹침(전체+머리) | 390/1440 × reduce/motion 4열 |
+| `tests/web/t65_axis6_layout_defects.mjs` | 50칸 넘침·잘림·겹침·대비 | 네 지표 각각에 위반 주입 |
+| `tests/web/t65_o1_overview_census.mjs` | testid 계수 시점별 census | 본문 복제로 계수 상승 확인 |
+| `tests/web/t65_reopen_click_attrib.mjs` | `?` 클릭의 귀속(발화·전이·직접 이동) | 세 값의 조합이 귀속을 정한다 |
+| `tests/web/t65_glow_transparency_drill.mjs` | 발광 1개 · 투명도 감소 | 평상 열(끌 것이 있는가) |
+| `tests/web/t65_candidates_zero_frontend.mjs` | 계약 위반 이벤트의 화면(**미실행**) | `candidates:[1건]` 열 |
+| `tests/api/candidates_guard_drill.py` | 계약을 «누가» 집행하는가 | 가드를 걷어낸 소스 사본 |
+
+## 판정선 — 바꾼 것과 그 이유
+
+- **겹침**: 「대상 덮임 0%」 → **「대상의 머리(상단 1/3)가 보이는가」**. 대상이 뷰포트보다 크면
+  어떤 배치도 0 에 도달하지 못한다(스텝 4: 800px / 844px).
+- 🔴 **잔값의 이름**: 그래서 남는 전체 덮임(1440 스텝3 24% · 스텝4 16.6% · 390 스텝4 23.4%)은
+  **도달 불가능한 기준의 잔값**이지 **결함이 아니다**. 미해결로 되살리지 마라.
+- **재개**: 「URL 이 바뀌었나」 → **「투어가 열렸나」**. 수리가 열기를 이동에서 떼어냈다.
+  대신 **클릭이 링크에 닿았는지**를 capture 계수로 따로 센다(안 닿은 회차는 판정에서 뺀다).
+
+## 무대 — 재기동 함정
+
+- 셸은 **`next build` + `next start`** 로만. `next dev` 는 WS 프레임 0 이라 run 화면이 안 그려진다.
+- 그물은 **`pwsh -WorkingDirectory <wt>/tests/web`**. cwd 없이 돌리면 앱 소스를 못 읽는다.
+- `tests/web/node_modules` 를 **남의 워크트리에 junction 으로 걸지 마라** — 그 워크트리가 정리되면
+  도구가 죽는다(오늘 실측). 자기 워크트리에서 직접 설치한다.
+- 수리 재측 전에는 **병합본 코드 심볼 + 재빌드 산출물**에서 처방이 실렸는지부터 본다.
+
+## 외부 판정 근거 규율
+
+**공개 URL 을 쳤다는 사실은 「밖」의 증거가 아니다.** `curl` 의 `remote_ip` 가 `100.x`(tailnet self)면
+그 창은 밖이 아니고, 그 축은 **미측**이며 화면 값은 「로컬 셸에서만 확인」으로 분리해 적는다.
+오늘 공개면 판정의 근거는 `remote_ip = 64.29.17.195`(공인 IP)다.
+r.jina.ai 경유는 **텍스트 리더**라 CSS/DOM 축(다크·대비·렌더)에는 못 쓴다.
+
+## 남은 것
+
+- **앞판 단위 케이스 미실행** — `t65_candidates_zero_frontend.mjs` 는 작성만 됐다.
+  서버·빌드 무접촉(WS 만 가로챈다)이라 `--base` 하나로 돈다.
+- O-1(overview testid 46/69)은 **이 무대에서 재현 불가**로 닫았다. 되살리려면 **재현 조건**
+  (sha 또는 실행 형태)부터 특정해야 한다.
