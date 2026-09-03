@@ -1,0 +1,8 @@
+  1) e2e\reset-modal.spec.ts:44:7 › 세션 리셋 › R-3 회귀 — 모달 스크림이 토큰 계층을 «지난다»(하드코딩 색값 아님) ──────────────
+  2) e2e\t3-3-evidence.spec.ts:197:5 › 🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울음 판정선) ────────────────
+    Error: Command failed: docker exec fkt-levi2-postgres-1 psql -U fkt -d fkt -t -A -c SELECT build_id FROM index_build WHERE revision_id='DOC-SOP-0014@r2' ORDER BY built_at DESC LIMIT 1
+  3) e2e\t42b-shell-axes.spec.ts:208:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓖ-2 용량 거절은 «code 로» 분기한다 — 503 이면 정적 재생본이 실제로 완주한다 
+  4) e2e\t6-6-synthesis-pending.spec.ts:226:7 › T6-6 ③ — 합성 대기 표시 › ① live·꼬리: synthesize 가 도는 창에서 보인다 · ② 완주 뒤 0 
+  4 failed
+  4 skipped
+  134 passed (1.8m)
