@@ -8,6 +8,7 @@ import { ResetButton } from "@/components/reset-button";
 import { ShellNav } from "@/components/shell-nav";
 import { StaticVisitorChip } from "@/components/static-visitor";
 import { TourProvider } from "@/components/tour/tour-provider";
+import { TourReopen } from "@/components/tour/tour-reopen";
 import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
 
 /**
@@ -68,15 +69,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   연다」. 이 자리가 없어서 한 번 닫은 사람은 영영 못 열었다(결함 D-1의 절반).
                   링크로 둔다: 어느 화면에 있든 `/overview` 로 데려가면서 열리고, 클라이언트
                   JS 없이 키보드로 잡힌다. */}
-              <Link
-                href="/overview?intro=1&tour=1"
-                className="fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill text-[18px] text-muted hover:text-ink"
-                title="처음 오셨나요? 안내와 둘러보기 다시 보기"
-                data-testid="intro-reopen"
-              >
-                <IconQuestion />
-                <span className="sr-only">안내와 둘러보기 다시 보기</span>
-              </Link>
+              <TourReopen />
               <ModeBadge />
               {/* 🔴 정적 재생본 방문자 — 서버 세션 칩과 «같은 자리, 다른 사실»이다.
                   서버 세션이 없을 때만 서므로 두 칩이 동시에 뜨지 않는다(T4-2a ⓒ). */}
