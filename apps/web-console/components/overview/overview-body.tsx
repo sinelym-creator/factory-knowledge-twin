@@ -244,13 +244,27 @@ export function OverviewBody({
         </section>
 
         <aside
-          className="w-full shrink-0 space-y-4 xl:w-(--spacing-dock)"
+          className="w-full shrink-0 xl:w-(--spacing-dock)"
           aria-label="알람과 시나리오"
           data-testid="overview-dock"
         >
-          {showIntro && <IntroCard onClose={closeIntro} />}
+          {/* 🔴 두 열이 «같은 머리»를 갖게 한다 — 고정 픽셀로 내리지 않는다. 좌측은 라벨+필터
+              행 뒤에 카드가 오는데 우측은 열 top 에서 바로 시작해 39.5px 어긋나 있었다(실측
+              2026-09-03 · ≥1280 에서만 · 좁은 폭은 세로 스택이라 비교 자체가 성립 안 한다).
+              같은 클래스의 머리 행을 우측에도 두면 높이가 «구조로» 맞는다 — 안내 카드가 떠
+              있든 닫혔든 같다. 동시에 이 열이 «무엇인지» 이름이 생긴다(좌 = 설비 목록 /
+              우 = 지금 조치할 것). */}
+          <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+            {/* 🔴 `py-1` = 좌측 라인 칩과 «같은 세로 패딩 토큰»이다(둘 다 text-foot + py-1).
+                고정 8px 을 박아 맞추면 탭이 커지는 날 조용히 어긋난다 — 같은 토큰을 쓰면
+                한쪽이 바뀔 때 다른 쪽도 따라간다. */}
+            <p className="fkt-section-label py-1">지금 조치할 것</p>
+          </div>
 
-          <section className="fkt-card overflow-hidden" data-testid="alarm-dock">
+          <div className="space-y-4">
+            {showIntro && <IntroCard onClose={closeIntro} />}
+
+            <section className="fkt-card overflow-hidden" data-testid="alarm-dock">
             <p className="fkt-section-label px-5 pt-4 pb-1">
               활성 알람 {overview.activeAlarms.length}건
             </p>
@@ -336,7 +350,8 @@ export function OverviewBody({
                 ))}
               </ul>
             )}
-          </section>
+            </section>
+          </div>
         </aside>
       </div>
     </div>
