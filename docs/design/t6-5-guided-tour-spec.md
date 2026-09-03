@@ -132,8 +132,11 @@ type Step =
   | { kind: 'info';        target?: Selector; advance: 'next' }
   | { kind: 'interactive'; target: Selector;
       advance: { on: 'click' | 'change' | 'custom'; of: Selector; timeoutMs?: number };
-      allowSkip: boolean };
+      allowSkip: boolean }
+  | { kind: 'link';        target: Selector; advance: { on: 'navigate'; to: Route } };
 ```
+
+🔴 **`link` 는 09-03 22:12 추가된 세 번째 kind 다**(구현 좁수 → 오케 채택). 초안이 `info`·`interactive` 둘만 둔 것은 **오케의 누락**이다 — 9단계 중 **2단계(`start`·`done`)가 화면을 옮기는 링크**고, 문면대로 쓰면 **있는 동작이 사라진다.** 🔴 **규격이 실물보다 좁으면 구현이 규격을 어기거나 기능을 버리는 둘 중 하나를 한다** — 구현이 세 번째 길(「늘리고 사유를 남긴다」)로 왔고, 그게 옳다.
 
 - `target` 없는 `info` = **환영·마무리 카드**(중앙 · 스포트라이트 없음 · 착지 `bde30cb`).
 - 🔴 **검증 가능한 형태로 쓴다** — 「`advance` 를 읽는 코드가 리포에 **정확히 한 함수**인가」를 grep 으로 잰다.
