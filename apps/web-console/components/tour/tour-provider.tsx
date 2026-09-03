@@ -6,6 +6,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { TOUR_STEPS, TOUR_TOTAL, readAdvance, type TourStep } from "@/components/tour/tour-steps";
 import { TourOverlay } from "@/components/tour/tour-overlay";
 import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
+import {
+  INITIAL_TOUR_STATE,
+  openedFrom,
+  parseTourState,
+  type TourState,
+  type TourStatus,
+} from "@/components/tour/tour-state";
 
 /**
  * T6-5 가이드 투어 — 상태와 진행(정본 = `docs/design/t6-5-guided-tour-spec.md` ③).
@@ -25,58 +32,18 @@ import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
  *    남기 때문이다. 그래서 클릭 감지는 capture 단계에서 듣고 즉시 저장한다.
  */
 
-/* 🔴 5상태(규격 ⑧-2 · D-38). 앞판의 4상태는 **「잠깐 끊기」와 「다시 보지 않기」가
-   같은 `skipped` 로 접혔다** — 둘 다 초대 카드가 «영구히» 사라졌다.
-   규칙 ① **사용자가 명시적으로 고르지 않은 것은 영구가 아니다** — Esc 는 의사 표시가 아니라
-   탈출 키다. ② `dismissed` 는 단계를 기억한다(1단계부터면 다시 끊는다). */
-type TourStatus = "never" | "running" | "dismissed" | "suppressed" | "completed";
-type TourState = { v: 1; status: TourStatus; step: number };
-
-/** 재개 지점 — 「이어서」는 `running`·`dismissed` 뿐이고 나머지는 1단계다(⑧-2 표). */
-function resumeStepOf(loaded: TourState): number {
-  return loaded.status === "running" || loaded.status === "dismissed" ? loaded.step : 0;
-}
+/* 🔴 5상태·이관·재개 «규칙»은 `tour-state.ts` 로 옮겼다 — 저장소 없이 재기 위해서다(U-04).
+   여기 남는 것은 «브라우저가 있어야 하는 일»(localStorage 읽기/쓰기·주소·이벤트)뿐이다. */
 
 const KEY = "fkt.tour.v1";
-const INITIAL: TourState = { v: 1, status: "never", step: 0 };
-
 function readState(): TourState {
   try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return INITIAL;
-    const parsed = JSON.parse(raw) as Partial<TourState>;
-    // 🔴 «모르는 형태»를 고쳐 쓰지 않는다 — 버전이 다르면 처음으로 돌린다(잘못 읽은 값으로
-    //    투어가 엉뚱한 스텝에서 열리는 것보다, 처음부터 여는 쪽이 덜 틀린다).
-    if (parsed.v !== 1) return INITIAL;
-    const step = typeof parsed.step === "number" ? Math.min(Math.max(parsed.step, 0), TOUR_TOTAL - 1) : 0;
-    return { v: 1, status: migrate(parsed.status), step };
+    return parseTourState(window.localStorage.getItem(KEY), TOUR_TOTAL);
   } catch {
-    return INITIAL;
+    return INITIAL_TOUR_STATE;
   }
 }
 
-/* 🔴 **저장된 `skipped` 는 어느 쪽인지 알 수 없다** — 그래서 «보수적으로» `dismissed` 다.
-   틀렸을 때 최악이 「초대 카드가 한 번 더 뜸」이고 반대는 「영구히 못 봄」이라 **비대칭**이다
-   (⑧-2 이관 규칙). 저장 키를 올리지 «않는» 이유도 같다 — 올리면 저장분이 통째로 `never` 가
-   되어 끝까지 본 사람에게도 초대가 다시 뜬다. */
-function migrate(raw: unknown): TourStatus {
-  switch (raw) {
-    case "never":
-    case "running":
-    case "dismissed":
-    case "suppressed":
-    case "completed":
-      return raw;
-    case "active":
-      return "running";
-    case "done":
-      return "completed";
-    case "skipped":
-      return "dismissed";
-    default:
-      return "never";
-  }
-}
 
 function writeState(next: TourState): void {
   try {
@@ -101,7 +68,7 @@ export function TourProvider() {
     const loaded = readState();
     // `?tour=1` 로 들어오면 «다시 보기»다 — 끝냈거나 건너뛴 사람도 열 수 있어야 한다(규격 ①-3).
     if (wants && loaded.status !== "running") {
-      const resumed: TourState = { v: 1, status: "running", step: resumeStepOf(loaded) };
+      const resumed: TourState = openedFrom(loaded);
       writeState(resumed);
       setState(resumed);
       return;
@@ -141,7 +108,7 @@ export function TourProvider() {
   useEffect(() => {
     const onOpen = () => {
       const loaded = readState();
-      commit({ v: 1, status: "running", step: resumeStepOf(loaded) });
+      commit(openedFrom(loaded));
     };
     window.addEventListener(TOUR_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(TOUR_OPEN_EVENT, onOpen);
