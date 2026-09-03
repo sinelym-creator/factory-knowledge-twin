@@ -1,0 +1,3537 @@
+{
+  "base": "http://127.0.0.1:3115",
+  "at": "2026-09-03T21:09:44.944Z",
+  "axes": {
+    "widths": [
+      390,
+      1440
+    ],
+    "heights": [
+      900
+    ],
+    "pointers": [
+      "fine",
+      "coarse"
+    ],
+    "states": [
+      "base"
+    ],
+    "routes": [
+      "overview=/overview",
+      "incidents-INC-2026-014-run-STATIC-GS-01=/incidents/INC-2026-014?run=STATIC-GS-01",
+      "evidence-MR-2025-0087-run-STATIC-GS-01=/evidence/MR-2025-0087?run=STATIC-GS-01"
+    ]
+  },
+  "sc": {
+    "2.5.8": "at least 24 by 24 CSS pixels, except: Spacing / Equivalent / Inline / User agent control / Essential. (AA)",
+    "spacing": "if a 24 CSS pixel diameter circle is centered on the bounding box of each undersized target, the circles do not intersect another target or the circle for another undersized target.",
+    "2.5.5": "44 by 44 CSS pixels, no exception. (AAA)",
+    "machineJudged": "Spacing 만 기계 판정 — 빨강은 «AA 위반 후보»다.",
+    "populationNote": "inert 조상 아래 요소는 pointer 로 활성화 불가 ⇒ SC 의 target 이 아니다. all / nonInert 두 수를 다 낸다."
+  },
+  "calibration": [
+    {
+      "path": "/overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    },
+    {
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "total": 41,
+      "undersized24": 20,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    },
+    {
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "total": 8,
+      "undersized24": 2,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    }
+  ],
+  "discovery": null,
+  "cells": [
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "scrollHeight": 3749,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 16,
+          "judgedInView": 10,
+          "offscreenOrUnscanned": 6,
+          "allTotal": 10,
+          "liveTotal": 10,
+          "aaFail": 0,
+          "aaaFail": 10
+        },
+        {
+          "y": 900,
+          "scrolledTo": 900,
+          "seenInStep": 11,
+          "judgedInView": 9,
+          "offscreenOrUnscanned": 2,
+          "allTotal": 9,
+          "liveTotal": 9,
+          "aaFail": 0,
+          "aaaFail": 9
+        },
+        {
+          "y": 1800,
+          "scrolledTo": 1800,
+          "seenInStep": 7,
+          "judgedInView": 5,
+          "offscreenOrUnscanned": 2,
+          "allTotal": 5,
+          "liveTotal": 5,
+          "aaFail": 0,
+          "aaaFail": 5
+        },
+        {
+          "y": 2700,
+          "scrolledTo": 2700,
+          "seenInStep": 7,
+          "judgedInView": 7,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 7,
+          "liveTotal": 7,
+          "aaFail": 0,
+          "aaaFail": 7
+        },
+        {
+          "y": 3600,
+          "scrolledTo": 2849,
+          "seenInStep": 7,
+          "judgedInView": 7,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 7,
+          "liveTotal": 7,
+          "aaFail": 0,
+          "aaaFail": 7
+        }
+      ],
+      "all": {
+        "total": 16,
+        "undersized24": 4,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 4,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "distinct": 16,
+      "unmeasured": 0,
+      "unmeasuredNames": [],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "77×29",
+          "box": "75.3×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "box": "72.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "box": "44×32",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "box": "62.92×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×37",
+          "box": "126.94×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×37",
+          "box": "73.41×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×29",
+          "box": "94.89×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37",
+          "box": "99.33×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×20",
+          "box": "75.91×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "110×20",
+          "box": "108.5×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×20",
+          "box": "108.5×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "111×29",
+          "box": "108.5×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×34",
+          "box": "99.33×36",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "77×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×20",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "110×20",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×20",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "111×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×34",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    },
+    {
+      "route": "incidents-INC-2026-014-run-STATIC-GS-01",
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 46,
+      "httpStatus": 200,
+      "landed": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "scrollHeight": 3353,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 41,
+          "judgedInView": 12,
+          "offscreenOrUnscanned": 29,
+          "allTotal": 12,
+          "liveTotal": 12,
+          "aaFail": 0,
+          "aaaFail": 12
+        },
+        {
+          "y": 900,
+          "scrolledTo": 900,
+          "seenInStep": 35,
+          "judgedInView": 8,
+          "offscreenOrUnscanned": 27,
+          "allTotal": 8,
+          "liveTotal": 8,
+          "aaFail": 0,
+          "aaaFail": 6
+        },
+        {
+          "y": 1800,
+          "scrolledTo": 1800,
+          "seenInStep": 33,
+          "judgedInView": 9,
+          "offscreenOrUnscanned": 24,
+          "allTotal": 9,
+          "liveTotal": 9,
+          "aaFail": 0,
+          "aaaFail": 9
+        },
+        {
+          "y": 2700,
+          "scrolledTo": 2453,
+          "seenInStep": 33,
+          "judgedInView": 13,
+          "offscreenOrUnscanned": 20,
+          "allTotal": 13,
+          "liveTotal": 13,
+          "aaFail": 0,
+          "aaaFail": 13
+        }
+      ],
+      "all": {
+        "total": 24,
+        "undersized24": 3,
+        "aaFailCount": 0,
+        "aaaFailCount": 22
+      },
+      "nonInert": {
+        "total": 24,
+        "undersized24": 3,
+        "aaFailCount": 0,
+        "aaaFailCount": 22
+      },
+      "inertExcluded": 0,
+      "distinct": 41,
+      "unmeasured": 17,
+      "unmeasuredNames": [
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기"
+      ],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×29",
+          "box": "72.92×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "75×29",
+          "box": "73.52×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "75×29",
+          "box": "72.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "box": "44×32",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "box": "62.92×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29",
+          "box": "65.92×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Live 로 돌아가기",
+          "size": "71×43",
+          "box": "69.11×39",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25",
+          "box": "107.34×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25",
+          "box": "100.06×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "65×29",
+          "box": "64×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "97×29",
+          "box": "95.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "101×29",
+          "box": "99.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "30×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Live 로 돌아가기",
+          "size": "71×43",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "최근 24시간",
+          "size": "87×49",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "최근 3주",
+          "size": "69×49",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "65×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "73×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "97×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "101×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "30×19",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    },
+    {
+      "route": "evidence-MR-2025-0087-run-STATIC-GS-01",
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 11,
+      "httpStatus": 200,
+      "landed": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "scrollHeight": 985,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 8,
+          "judgedInView": 7,
+          "offscreenOrUnscanned": 1,
+          "allTotal": 7,
+          "liveTotal": 7,
+          "aaFail": 0,
+          "aaaFail": 7
+        },
+        {
+          "y": 900,
+          "scrolledTo": 85,
+          "seenInStep": 8,
+          "judgedInView": 6,
+          "offscreenOrUnscanned": 2,
+          "allTotal": 6,
+          "liveTotal": 6,
+          "aaFail": 0,
+          "aaaFail": 6
+        }
+      ],
+      "all": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 7
+      },
+      "inertExcluded": 0,
+      "distinct": 8,
+      "unmeasured": 1,
+      "unmeasuredNames": [
+        "link:① Overview"
+      ],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×29",
+          "box": "72.92×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "box": "72.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "box": "44×32",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "box": "62.92×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "box": "44×19.5",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "scrollHeight": 1330,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 16,
+          "judgedInView": 15,
+          "offscreenOrUnscanned": 1,
+          "allTotal": 15,
+          "liveTotal": 15,
+          "aaFail": 0,
+          "aaaFail": 15
+        },
+        {
+          "y": 900,
+          "scrolledTo": 430,
+          "seenInStep": 8,
+          "judgedInView": 8,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 8,
+          "liveTotal": 8,
+          "aaFail": 0,
+          "aaaFail": 8
+        }
+      ],
+      "all": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "distinct": 16,
+      "unmeasured": 0,
+      "unmeasuredNames": [],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "box": "44×32",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "box": "62.92×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×37",
+          "box": "126.94×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×37",
+          "box": "73.41×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×29",
+          "box": "94.89×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37",
+          "box": "99.33×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×29",
+          "box": "75.91×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "110×29",
+          "box": "108.5×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×29",
+          "box": "108.5×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "110×29",
+          "box": "108.5×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37",
+          "box": "99.33×36",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "110×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "110×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×37",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    },
+    {
+      "route": "incidents-INC-2026-014-run-STATIC-GS-01",
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 46,
+      "httpStatus": 200,
+      "landed": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "scrollHeight": 1523,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 41,
+          "judgedInView": 17,
+          "offscreenOrUnscanned": 24,
+          "allTotal": 17,
+          "liveTotal": 17,
+          "aaFail": 0,
+          "aaaFail": 17
+        },
+        {
+          "y": 900,
+          "scrolledTo": 623,
+          "seenInStep": 30,
+          "judgedInView": 15,
+          "offscreenOrUnscanned": 15,
+          "allTotal": 15,
+          "liveTotal": 15,
+          "aaFail": 0,
+          "aaaFail": 15
+        }
+      ],
+      "all": {
+        "total": 26,
+        "undersized24": 5,
+        "aaFailCount": 0,
+        "aaaFailCount": 26
+      },
+      "nonInert": {
+        "total": 26,
+        "undersized24": 5,
+        "aaFailCount": 0,
+        "aaaFailCount": 26
+      },
+      "inertExcluded": 0,
+      "distinct": 41,
+      "unmeasured": 15,
+      "unmeasuredNames": [
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기"
+      ],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "box": "44×32",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "box": "62.92×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29",
+          "box": "65.92×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Live 로 돌아가기",
+          "size": "121×37",
+          "box": "118.11×36",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "최근 24시간",
+          "size": "93×29",
+          "box": "90.13×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "최근 3주",
+          "size": "72×29",
+          "box": "70.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25",
+          "box": "107.34×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25",
+          "box": "100.06×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "65×29",
+          "box": "64×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "97×29",
+          "box": "95.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "101×29",
+          "box": "99.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        }
+      ],
+      "roster": null
+    },
+    {
+      "route": "evidence-MR-2025-0087-run-STATIC-GS-01",
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 11,
+      "httpStatus": 200,
+      "landed": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "scrollHeight": 900,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 8,
+          "judgedInView": 8,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 8,
+          "liveTotal": 8,
+          "aaFail": 0,
+          "aaaFail": 8
+        }
+      ],
+      "all": {
+        "total": 8,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 8
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 8
+      },
+      "inertExcluded": 0,
+      "distinct": 8,
+      "unmeasured": 0,
+      "unmeasuredNames": [],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37",
+          "box": "236×36",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "box": "44×32",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "box": "62.92×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "① Overview",
+          "size": "70×19",
+          "box": "69.48×17",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×37",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×33",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×21",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "① Overview",
+          "size": "70×19",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "scrollHeight": 3773,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 16,
+          "judgedInView": 10,
+          "offscreenOrUnscanned": 6,
+          "allTotal": 10,
+          "liveTotal": 10,
+          "aaFail": 0,
+          "aaaFail": 3
+        },
+        {
+          "y": 900,
+          "scrolledTo": 900,
+          "seenInStep": 11,
+          "judgedInView": 9,
+          "offscreenOrUnscanned": 2,
+          "allTotal": 9,
+          "liveTotal": 9,
+          "aaFail": 0,
+          "aaaFail": 4
+        },
+        {
+          "y": 1800,
+          "scrolledTo": 1800,
+          "seenInStep": 7,
+          "judgedInView": 5,
+          "offscreenOrUnscanned": 2,
+          "allTotal": 5,
+          "liveTotal": 5,
+          "aaFail": 0,
+          "aaaFail": 3
+        },
+        {
+          "y": 2700,
+          "scrolledTo": 2700,
+          "seenInStep": 7,
+          "judgedInView": 6,
+          "offscreenOrUnscanned": 1,
+          "allTotal": 6,
+          "liveTotal": 6,
+          "aaFail": 0,
+          "aaaFail": 4
+        },
+        {
+          "y": 3600,
+          "scrolledTo": 2873,
+          "seenInStep": 7,
+          "judgedInView": 7,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 7,
+          "liveTotal": 7,
+          "aaFail": 0,
+          "aaaFail": 4
+        }
+      ],
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 5
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 5
+      },
+      "inertExcluded": 0,
+      "distinct": 16,
+      "unmeasured": 0,
+      "unmeasuredNames": [],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "77×29",
+          "box": "75.3×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×26",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "box": "72.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×33",
+          "box": "75.91×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×45",
+          "box": "28×28",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "77×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×26",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×44",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×33",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "111×44",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×44",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "111×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×45",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×45",
+          "aaPass": true,
+          "aaaPass": true
+        }
+      ]
+    },
+    {
+      "route": "incidents-INC-2026-014-run-STATIC-GS-01",
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 46,
+      "httpStatus": 200,
+      "landed": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "scrollHeight": 3361,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 41,
+          "judgedInView": 12,
+          "offscreenOrUnscanned": 29,
+          "allTotal": 12,
+          "liveTotal": 12,
+          "aaFail": 0,
+          "aaaFail": 8
+        },
+        {
+          "y": 900,
+          "scrolledTo": 900,
+          "seenInStep": 35,
+          "judgedInView": 8,
+          "offscreenOrUnscanned": 27,
+          "allTotal": 8,
+          "liveTotal": 8,
+          "aaFail": 0,
+          "aaaFail": 4
+        },
+        {
+          "y": 1800,
+          "scrolledTo": 1800,
+          "seenInStep": 33,
+          "judgedInView": 9,
+          "offscreenOrUnscanned": 24,
+          "allTotal": 9,
+          "liveTotal": 9,
+          "aaFail": 0,
+          "aaaFail": 7
+        },
+        {
+          "y": 2700,
+          "scrolledTo": 2461,
+          "seenInStep": 33,
+          "judgedInView": 13,
+          "offscreenOrUnscanned": 20,
+          "allTotal": 13,
+          "liveTotal": 13,
+          "aaFail": 0,
+          "aaaFail": 11
+        }
+      ],
+      "all": {
+        "total": 24,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "nonInert": {
+        "total": 24,
+        "undersized24": 2,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "inertExcluded": 0,
+      "distinct": 41,
+      "unmeasured": 17,
+      "unmeasuredNames": [
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기"
+      ],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×29",
+          "box": "72.92×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "75×29",
+          "box": "73.52×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "75×29",
+          "box": "72.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29",
+          "box": "65.92×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25",
+          "box": "107.34×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25",
+          "box": "100.06×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "65×29",
+          "box": "64×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "97×29",
+          "box": "95.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "101×29",
+          "box": "99.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "30×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "75×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Live 로 돌아가기",
+          "size": "71×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "최근 24시간",
+          "size": "87×49",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "최근 3주",
+          "size": "69×49",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "65×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "73×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "97×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "101×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "30×19",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    },
+    {
+      "route": "evidence-MR-2025-0087-run-STATIC-GS-01",
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 11,
+      "httpStatus": 200,
+      "landed": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "scrollHeight": 985,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 8,
+          "judgedInView": 7,
+          "offscreenOrUnscanned": 1,
+          "allTotal": 7,
+          "liveTotal": 7,
+          "aaFail": 0,
+          "aaaFail": 4
+        },
+        {
+          "y": 900,
+          "scrolledTo": 85,
+          "seenInStep": 8,
+          "judgedInView": 6,
+          "offscreenOrUnscanned": 2,
+          "allTotal": 6,
+          "liveTotal": 6,
+          "aaFail": 0,
+          "aaaFail": 4
+        }
+      ],
+      "all": {
+        "total": 7,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 4
+      },
+      "nonInert": {
+        "total": 7,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 4
+      },
+      "inertExcluded": 0,
+      "distinct": 8,
+      "unmeasured": 1,
+      "unmeasuredNames": [
+        "link:① Overview"
+      ],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×26",
+          "box": "72.92×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "box": "72.45×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "75×26",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "73×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "74×29",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        }
+      ]
+    },
+    {
+      "route": "overview",
+      "path": "/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": 200,
+      "landed": "/overview",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "scrollHeight": 1346,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 16,
+          "judgedInView": 15,
+          "offscreenOrUnscanned": 1,
+          "allTotal": 15,
+          "liveTotal": 15,
+          "aaFail": 0,
+          "aaaFail": 2
+        },
+        {
+          "y": 900,
+          "scrolledTo": 446,
+          "seenInStep": 8,
+          "judgedInView": 8,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 8,
+          "liveTotal": 8,
+          "aaFail": 0,
+          "aaaFail": 1
+        }
+      ],
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "inertExcluded": 0,
+      "distinct": 16,
+      "unmeasured": 0,
+      "unmeasuredNames": [],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×40",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×45",
+          "box": "28×28",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×40",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "둘러보기 시작",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "나중에",
+          "size": "75×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "다시 보지 않기",
+          "size": "97×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "전체 12대",
+          "size": "77×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 1 4대",
+          "size": "111×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 2 4대",
+          "size": "111×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "가공 라인 3 4대",
+          "size": "111×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "안내 닫기",
+          "size": "29×45",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "조사 시작",
+          "size": "101×45",
+          "aaPass": true,
+          "aaaPass": true
+        }
+      ]
+    },
+    {
+      "route": "incidents-INC-2026-014-run-STATIC-GS-01",
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 46,
+      "httpStatus": 200,
+      "landed": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "scrollHeight": 1539,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 41,
+          "judgedInView": 17,
+          "offscreenOrUnscanned": 24,
+          "allTotal": 17,
+          "liveTotal": 17,
+          "aaFail": 0,
+          "aaaFail": 9
+        },
+        {
+          "y": 900,
+          "scrolledTo": 639,
+          "seenInStep": 30,
+          "judgedInView": 15,
+          "offscreenOrUnscanned": 15,
+          "allTotal": 15,
+          "liveTotal": 15,
+          "aaFail": 0,
+          "aaaFail": 13
+        }
+      ],
+      "all": {
+        "total": 26,
+        "undersized24": 4,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "nonInert": {
+        "total": 26,
+        "undersized24": 4,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "inertExcluded": 0,
+      "distinct": 41,
+      "unmeasured": 15,
+      "unmeasuredNames": [
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기",
+        "link:근거 보기"
+      ],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×40",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "처음으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 뒤로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "재생",
+          "size": "67×29",
+          "box": "65.92×28",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "한 이벤트 앞으로",
+          "size": "29×29",
+          "box": "28×28",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "MR-2025-0087",
+          "size": "109×25",
+          "box": "107.34×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "FM-BRG-WEAR",
+          "size": "102×25",
+          "box": "100.06×24",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "DOC-MAN-0021@r1#006",
+          "size": "122×25",
+          "box": "158.28×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "전체 19",
+          "size": "65×29",
+          "box": "64×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "record 9",
+          "size": "73×29",
+          "box": "71.7×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "doc-chunk 5",
+          "size": "97×29",
+          "box": "95.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "graph-path 5",
+          "size": "101×29",
+          "box": "99.59×27.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "근거 보기",
+          "size": "53×19",
+          "box": "51.42×17",
+          "hitScanned": true
+        }
+      ],
+      "roster": null
+    },
+    {
+      "route": "evidence-MR-2025-0087-run-STATIC-GS-01",
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "legacy": false,
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 11,
+      "httpStatus": 200,
+      "landed": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "landedAsRequested": true,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "scrollers": [],
+      "containersSwept": false,
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "scrollHeight": 900,
+      "steps": [
+        {
+          "y": 0,
+          "scrolledTo": 0,
+          "seenInStep": 8,
+          "judgedInView": 8,
+          "offscreenOrUnscanned": 0,
+          "allTotal": 8,
+          "liveTotal": 8,
+          "aaFail": 0,
+          "aaaFail": 3
+        }
+      ],
+      "all": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 3
+      },
+      "nonInert": {
+        "total": 8,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 3
+      },
+      "inertExcluded": 0,
+      "distinct": 8,
+      "unmeasured": 0,
+      "unmeasuredNames": [],
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0,
+      "aaaFailures": [
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "box": "33×24",
+          "hitScanned": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×40",
+          "box": "44×19.5",
+          "hitScanned": true
+        },
+        {
+          "role": "link",
+          "name": "① Overview",
+          "size": "70×19",
+          "box": "69.48×17",
+          "hitScanned": true
+        }
+      ],
+      "roster": [
+        {
+          "role": "link",
+          "name": "Overview",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "Incidents",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "Compare",
+          "size": "122×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "link",
+          "name": "안내와 둘러보기 다시 보기",
+          "size": "45×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "⟲정적 재생본 기억 리셋",
+          "size": "35×25",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "button",
+          "name": "⟲ 세션 리셋",
+          "size": "65×45",
+          "aaPass": true,
+          "aaaPass": true
+        },
+        {
+          "role": "button",
+          "name": "배너 닫기",
+          "size": "45×40",
+          "aaPass": true,
+          "aaaPass": false
+        },
+        {
+          "role": "link",
+          "name": "① Overview",
+          "size": "70×19",
+          "aaPass": true,
+          "aaaPass": false
+        }
+      ]
+    }
+  ],
+  "skipped": [],
+  "controlBroken": [],
+  "total": {
+    "cellsAttempted": 12,
+    "cellsUsable": 12,
+    "aaFailCellsNonInert": 0,
+    "aaFailUnique": [],
+    "inertActiveCells": 0,
+    "unmeasuredTargets": 66,
+    "aaaFailUnique": [
+      "link:Overview 77×29",
+      "link:Incidents 73×29",
+      "link:Compare 74×29",
+      "link:안내와 둘러보기 다시 보기 45×33",
+      "button:⟲ 세션 리셋 65×25",
+      "button:배너 닫기 45×21",
+      "button:둘러보기 시작 122×37",
+      "button:나중에 75×37",
+      "button:다시 보지 않기 97×29",
+      "button:조사 시작 101×37",
+      "button:전체 12대 77×20",
+      "button:가공 라인 1 4대 110×20",
+      "button:가공 라인 2 4대 111×20",
+      "button:가공 라인 3 4대 111×29",
+      "button:안내 닫기 29×29",
+      "button:조사 시작 101×34",
+      "link:Overview 75×29",
+      "link:Incidents 75×29",
+      "link:Compare 75×29",
+      "button:⟲정적 재생본 기억 리셋 35×25",
+      "button:처음으로 29×29",
+      "button:한 이벤트 뒤로 29×29",
+      "button:재생 67×29",
+      "button:한 이벤트 앞으로 29×29",
+      "link:Live 로 돌아가기 71×43",
+      "link:MR-2025-0087 109×25",
+      "link:DOC-MAN-0021@r1#006 122×25",
+      "link:FM-BRG-WEAR 102×25",
+      "button:전체 19 65×29",
+      "button:record 9 73×29",
+      "button:doc-chunk 5 97×29",
+      "button:graph-path 5 101×29",
+      "link:근거 보기 53×19",
+      "link:근거 보기 30×19",
+      "link:Overview 122×37",
+      "link:Incidents 122×37",
+      "link:Compare 122×37",
+      "button:전체 12대 77×29",
+      "button:가공 라인 1 4대 110×29",
+      "button:가공 라인 2 4대 111×29",
+      "button:가공 라인 3 4대 110×29",
+      "link:Live 로 돌아가기 121×37",
+      "button:최근 24시간 93×29",
+      "button:최근 3주 72×29",
+      "link:① Overview 70×19",
+      "link:Incidents 73×26",
+      "button:전체 12대 77×33",
+      "button:안내 닫기 29×45",
+      "link:Overview 75×26",
+      "button:배너 닫기 45×40"
+    ]
+  }
+}

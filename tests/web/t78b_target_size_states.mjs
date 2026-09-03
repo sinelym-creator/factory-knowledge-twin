@@ -53,6 +53,13 @@ const OUT = arg("out", "");
    ⇒ **같은 칸을 `on`/`off` 두 번 돌려 `측정 + 안 잼 = distinct 총계`가 «불변»인지 본다.**
       총계가 늘면 그건 발견이 아니라 **내 중복 계수**다. */
 const CONTAINERS = arg("containers", "on") !== "off";
+/* 🔴 **스텝 상한도 «내 손잡이»다.** 390 에서 안 잼이 14로 남았을 때, 그것이 «화면의 사실»인지
+   «내 상한이 자른 것»인지부터 갈라야 한다. 그래서 상한을 인자로 빼고 올려 보는 열을 만든다. */
+/* 🔴 **실측으로 올렸다** — 기본값 y6/x4 로는 390 폭에서 「안 잼 14」가 남았는데, 상한만 올리자
+   **0** 이 됐다(측정 41/41). ⇒ 그 14는 **화면의 사실이 아니라 내 상한이 자른 것**이었다.
+   상한은 넉넉히 두고, **잘렸으면 `truncated` 로 신고**한다(침묵하는 절단이 폴백과 같은 병이다). */
+const CONT_STEPS_Y = Number(arg("cont-steps-y", 16));
+const CONT_STEPS_X = Number(arg("cont-steps-x", 32));
 
 /* 🔴 씨앗 화면 = 링크를 «주울» 자리. 이것도 인자다. */
 const SEEDS = list(arg("seeds", "/overview,/incidents/INC-2026-014?run=STATIC-GS-01,/evidence/MR-2025-0087?run=STATIC-GS-01"));
@@ -299,8 +306,9 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
       for (const sc of scrollers) {
         const spanY = Math.max(1, sc.clientHeight);
         const spanX = Math.max(1, sc.clientWidth);
-        const nY = sc.vy ? Math.min(6, Math.ceil(sc.scrollHeight / spanY)) : 1;
-        const nX = sc.vx ? Math.min(4, Math.ceil(sc.scrollWidth / spanX)) : 1;
+        const nY = sc.vy ? Math.min(CONT_STEPS_Y, Math.ceil(sc.scrollHeight / spanY)) : 1;
+        const nX = sc.vx ? Math.min(CONT_STEPS_X, Math.ceil(sc.scrollWidth / spanX)) : 1;
+        sc.stepsY = nY; sc.stepsX = nX; sc.needY = Math.ceil(sc.scrollHeight / spanY); sc.needX = Math.ceil(sc.scrollWidth / spanX);
         for (let a = 0; a < nY; a++) {
           for (let b = 0; b < nX; b++) {
             const moved = await page.evaluate(SCROLL_ONE, { i: sc.i, top: a * spanY, left: b * spanX });
@@ -332,7 +340,8 @@ async function measureCell({ route, path, state, width, height, pointer, legacy 
       }
       await page.evaluate(CLEAR_SCROLLERS);
     }
-    cell.scrollers = scrollers.map((s2) => ({ i: s2.i, tag: s2.tag, label: s2.label, vy: s2.vy, vx: s2.vx, scrollHeight: s2.scrollHeight, clientHeight: s2.clientHeight }));
+    /* 🔴 «필요한 스텝»과 «실제 밟은 스텝»을 나란히 남긴다 — 잘렸으면 그게 보인다. */
+    cell.scrollers = scrollers.map((s2) => ({ i: s2.i, tag: s2.tag, label: s2.label, vy: s2.vy, vx: s2.vx, scrollHeight: s2.scrollHeight, clientHeight: s2.clientHeight, scrollWidth: s2.scrollWidth, clientWidth: s2.clientWidth, stepsY: s2.stepsY, stepsX: s2.stepsX, needY: s2.needY, needX: s2.needX, truncated: (s2.needY > s2.stepsY) || (s2.needX > s2.stepsX) }));
     cell.containersSwept = CONTAINERS;
 
     await page.evaluate(() => window.scrollTo(0, 0));
