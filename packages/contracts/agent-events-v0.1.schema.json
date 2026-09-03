@@ -21,7 +21,8 @@
         "run.completed",
         "run.stopped",
         "run.failed",
-        "run.queued"
+        "run.queued",
+        "step.progress"
       ]
     },
     "payload": { "type": "object" }
@@ -35,7 +36,8 @@
     { "if": { "properties": { "type": { "const": "run.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runCompleted" } } } },
     { "if": { "properties": { "type": { "const": "run.stopped" } } },   "then": { "properties": { "payload": { "$ref": "#/$defs/runStopped" } } } },
     { "if": { "properties": { "type": { "const": "run.failed" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runFailed" } } } },
-    { "if": { "properties": { "type": { "const": "run.queued" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runQueued" } } } }
+    { "if": { "properties": { "type": { "const": "run.queued" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runQueued" } } } },
+    { "if": { "properties": { "type": { "const": "step.progress" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/stepProgress" } } } }
   ],
   "$defs": {
     "stepId": {
@@ -97,6 +99,40 @@
         "step": { "$ref": "#/$defs/stepId" },
         "evidence": { "$ref": "#/$defs/evidenceRef" }
       }
+    },
+    "stepProgress": {
+      "type": "object",
+      "description": "v0.1.13 · 합성 진행 부분 결과 — 선표시(결정적 순위)와 문장 스트리밍. 형상 정본 = rest-api-v0.1.md v0.1.13 append. 🔴 `seq` 의 «단조성»은 이벤트 «열»의 성질이라 봉투 1건 스키마로는 못 잰다(런타임 축 — T6-3 검증에서 잰다).",
+      "required": ["step", "kind", "seq"],
+      "additionalProperties": false,
+      "properties": {
+        "step": { "const": "synthesize", "description": "선표시·스트리밍은 합성 단계 전용(정본 문면)" },
+        "kind": { "enum": ["preliminary", "sentence"] },
+        "seq": { "type": "integer", "minimum": 0, "description": "0부터 · 단조 — 여기서 서는 것은 «0 이상의 정수»까지다" },
+        "preliminary": {
+          "type": "object",
+          "required": ["ranking", "axis"],
+          "additionalProperties": false,
+          "properties": {
+            "ranking": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "failureModeId 순위 — 이미 계산된 결정적 값(지연 0)" },
+            "axis": { "const": "deterministic", "description": "선표시는 언제나 결정적 축이다 — live 를 이 자리에서 주장하지 않는다" }
+          }
+        },
+        "sentence": {
+          "type": "object",
+          "required": ["failureModeId", "text", "citedEvidenceIds"],
+          "additionalProperties": false,
+          "properties": {
+            "failureModeId": { "type": "string" },
+            "text": { "type": "string" },
+            "citedEvidenceIds": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "🔴 잠정 문장도 근거 없이는 오지 않는다 — 최종 가드(v0.1.11)와 같은 하한" }
+          }
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "preliminary" } } }, "then": { "required": ["step", "kind", "seq", "preliminary"] } },
+        { "if": { "properties": { "kind": { "const": "sentence" } } },    "then": { "required": ["step", "kind", "seq", "sentence"] } }
+      ]
     },
     "stepCompleted": {
       "type": "object",

@@ -9,150 +9,1174 @@
     "mode": "live"
   },
   "cases": [
-    { "group": "① 정상 8종", "label": "run.started", "expect": "accept",
-      "event": { "type": "run.started", "payload": { "scenarioId": "GS-01", "question": "q" } } },
-    { "group": "① 정상 8종", "label": "plan.updated", "expect": "accept",
-      "event": { "type": "plan.updated", "payload": { "steps": ["structured"] } } },
-    { "group": "① 정상 8종", "label": "step.started(최소형)", "expect": "accept",
-      "event": { "type": "step.started", "payload": { "step": "vector" } } },
-    { "group": "① 정상 8종", "label": "step.evidence", "expect": "accept",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "DOC-SOP-0014@r2#007", "revisionId": "DOC-SOP-0014@r2", "contentHash": "abc", "stale": false } } } },
-    { "group": "① 정상 8종", "label": "step.completed", "expect": "accept",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120 } } },
-    { "group": "① 정상 8종", "label": "step.completed에 elapsedMs 누락", "expect": "reject",
+    {
+      "group": "① 정상 8종",
+      "label": "run.started",
+      "expect": "accept",
+      "event": {
+        "type": "run.started",
+        "payload": {
+          "scenarioId": "GS-01",
+          "question": "q"
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "plan.updated",
+      "expect": "accept",
+      "event": {
+        "type": "plan.updated",
+        "payload": {
+          "steps": [
+            "structured"
+          ]
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "step.started(최소형)",
+      "expect": "accept",
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "vector"
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "step.evidence",
+      "expect": "accept",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "doc-chunk",
+            "sourceId": "DOC-SOP-0014@r2#007",
+            "revisionId": "DOC-SOP-0014@r2",
+            "contentHash": "abc",
+            "stale": false
+          }
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "step.completed",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "step.completed에 elapsedMs 누락",
+      "expect": "reject",
       "why": "F-9(TTAE 합산)의 원천이라 필수화됨 — 빠지면 거부돼야 한다",
-      "event": { "type": "step.completed", "payload": { "step": "vector" } } },
-    { "group": "① 정상 8종", "label": "run.completed", "expect": "accept",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "베어링 마모", "evidenceIds": ["E1"] }] } } },
-    { "group": "① 정상 8종", "label": "run.stopped(F-3b)", "expect": "accept",
-      "event": { "type": "run.stopped", "payload": { "reason": "user" } } },
-    { "group": "① 정상 8종", "label": "run.failed", "expect": "accept",
-      "event": { "type": "run.failed", "payload": { "code": "E", "message": "m" } } },
-
-    { "group": "② 오배선(F-2 본체)", "label": "completed에 failed payload", "expect": "reject",
-      "event": { "type": "run.completed", "payload": { "code": "E", "message": "m" } } },
-    { "group": "② 오배선(F-2 본체)", "label": "failed에 completed payload", "expect": "reject",
-      "event": { "type": "run.failed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "F", "label": "x", "evidenceIds": ["E1"] }] } } },
-    { "group": "② 오배선(F-2 본체)", "label": "started에 completed 전용필드", "expect": "reject",
-      "event": { "type": "step.started", "payload": { "step": "vector", "summary": "s" } } },
-    { "group": "② 오배선(F-2 본체)", "label": "completed에 started 전용필드", "expect": "reject",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 1, "note": "n" } } },
-    { "group": "② 오배선(F-2 본체)", "label": "stopped에 failed payload", "expect": "reject",
-      "event": { "type": "run.stopped", "payload": { "code": "E", "message": "m" } } },
-    { "group": "② 오배선(F-2 본체)", "label": "evidence에 started payload", "expect": "reject",
-      "event": { "type": "step.evidence", "payload": { "step": "vector" } } },
-    { "group": "② 오배선(F-2 본체)", "label": "미정의 stepId", "expect": "reject",
-      "event": { "type": "step.started", "payload": { "step": "nope" } } },
-    { "group": "② 오배선(F-2 본체)", "label": "미정의 stop reason", "expect": "reject",
-      "event": { "type": "run.stopped", "payload": { "reason": "nope" } } },
-
-    { "group": "③ 신뢰 필드(F-4)", "label": "doc-chunk에 revisionId 누락", "expect": "reject",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "S", "contentHash": "h", "stale": false } } } },
-    { "group": "③ 신뢰 필드(F-4)", "label": "doc-chunk에 contentHash 누락", "expect": "reject",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "S", "revisionId": "R", "stale": false } } } },
-    { "group": "③ 신뢰 필드(F-4)", "label": "doc-chunk에 stale 누락", "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector"
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "run.completed",
+      "expect": "accept",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "베어링 마모",
+              "evidenceIds": [
+                "E1"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "run.stopped(F-3b)",
+      "expect": "accept",
+      "event": {
+        "type": "run.stopped",
+        "payload": {
+          "reason": "user"
+        }
+      }
+    },
+    {
+      "group": "① 정상 8종",
+      "label": "run.failed",
+      "expect": "accept",
+      "event": {
+        "type": "run.failed",
+        "payload": {
+          "code": "E",
+          "message": "m"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "completed에 failed payload",
+      "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "code": "E",
+          "message": "m"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "failed에 completed payload",
+      "expect": "reject",
+      "event": {
+        "type": "run.failed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "F",
+              "label": "x",
+              "evidenceIds": [
+                "E1"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "started에 completed 전용필드",
+      "expect": "reject",
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "vector",
+          "summary": "s"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "completed에 started 전용필드",
+      "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 1,
+          "note": "n"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "stopped에 failed payload",
+      "expect": "reject",
+      "event": {
+        "type": "run.stopped",
+        "payload": {
+          "code": "E",
+          "message": "m"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "evidence에 started payload",
+      "expect": "reject",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "미정의 stepId",
+      "expect": "reject",
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "nope"
+        }
+      }
+    },
+    {
+      "group": "② 오배선(F-2 본체)",
+      "label": "미정의 stop reason",
+      "expect": "reject",
+      "event": {
+        "type": "run.stopped",
+        "payload": {
+          "reason": "nope"
+        }
+      }
+    },
+    {
+      "group": "③ 신뢰 필드(F-4)",
+      "label": "doc-chunk에 revisionId 누락",
+      "expect": "reject",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "doc-chunk",
+            "sourceId": "S",
+            "contentHash": "h",
+            "stale": false
+          }
+        }
+      }
+    },
+    {
+      "group": "③ 신뢰 필드(F-4)",
+      "label": "doc-chunk에 contentHash 누락",
+      "expect": "reject",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "doc-chunk",
+            "sourceId": "S",
+            "revisionId": "R",
+            "stale": false
+          }
+        }
+      }
+    },
+    {
+      "group": "③ 신뢰 필드(F-4)",
+      "label": "doc-chunk에 stale 누락",
+      "expect": "reject",
       "why": "선택이면 화면이 «신선함»과 «평가 안 함»을 구분할 수 없다(baseline §8.3)",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "S", "revisionId": "R", "contentHash": "h" } } } },
-    { "group": "③ 신뢰 필드(F-4)", "label": "비 doc-chunk는 면제(alarm)", "expect": "accept",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E2", "kind": "alarm", "sourceId": "AL-20260826-0041" } } } },
-
-    { "group": "④ replay ⊂ live", "label": "동일 payload가 mode만 바꿔 통과", "expect": "accept",
-      "event": { "mode": "replay", "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "DOC-SOP-0014@r2#007", "revisionId": "DOC-SOP-0014@r2", "contentHash": "abc", "stale": false } } } },
-
-    { "group": "⑤ envelope 형식", "expect": "reject", "label": "ts가 date-time이 아님",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "doc-chunk",
+            "sourceId": "S",
+            "revisionId": "R",
+            "contentHash": "h"
+          }
+        }
+      }
+    },
+    {
+      "group": "③ 신뢰 필드(F-4)",
+      "label": "비 doc-chunk는 면제(alarm)",
+      "expect": "accept",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E2",
+            "kind": "alarm",
+            "sourceId": "AL-20260826-0041"
+          }
+        }
+      }
+    },
+    {
+      "group": "④ replay ⊂ live",
+      "label": "동일 payload가 mode만 바꿔 통과",
+      "expect": "accept",
+      "event": {
+        "mode": "replay",
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "doc-chunk",
+            "sourceId": "DOC-SOP-0014@r2#007",
+            "revisionId": "DOC-SOP-0014@r2",
+            "contentHash": "abc",
+            "stale": false
+          }
+        }
+      }
+    },
+    {
+      "group": "⑤ envelope 형식",
+      "expect": "reject",
+      "label": "ts가 date-time이 아님",
       "why": "계약이 format:date-time을 선언한다 — 선언해 두고 아무 문자열이나 통과시키면 계약이 아니다",
-      "event": { "ts": "어제쯤", "type": "run.stopped", "payload": { "reason": "user" } } },
-    { "group": "⑤ envelope 형식", "expect": "reject", "label": "seq 음수(minimum 위반)",
-      "event": { "seq": -1, "type": "run.stopped", "payload": { "reason": "user" } } },
-    { "group": "⑤ envelope 형식", "expect": "reject", "label": "미정의 mode",
-      "event": { "mode": "sandbox", "type": "run.stopped", "payload": { "reason": "user" } } },
-
-    { "group": "⑥ 선택 필드(커버리지)", "label": "run.completed 선택 필드 전부", "expect": "accept",
+      "event": {
+        "ts": "어제쯤",
+        "type": "run.stopped",
+        "payload": {
+          "reason": "user"
+        }
+      }
+    },
+    {
+      "group": "⑤ envelope 형식",
+      "expect": "reject",
+      "label": "seq 음수(minimum 위반)",
+      "event": {
+        "seq": -1,
+        "type": "run.stopped",
+        "payload": {
+          "reason": "user"
+        }
+      }
+    },
+    {
+      "group": "⑤ envelope 형식",
+      "expect": "reject",
+      "label": "미정의 mode",
+      "event": {
+        "mode": "sandbox",
+        "type": "run.stopped",
+        "payload": {
+          "reason": "user"
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "run.completed 선택 필드 전부",
+      "expect": "accept",
       "why": "totalElapsedMs·workOrderDraftId·confidenceNote가 케이스에 한 번도 안 나오면 타입이 바뀌어도 harness가 모른다",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "베어링 마모", "confidenceNote": "1순위", "evidenceIds": ["E1"] }], "workOrderDraftId": "WO-2026-0113", "totalElapsedMs": 72000 } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "totalElapsedMs 음수", "expect": "reject",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "F", "label": "x", "evidenceIds": ["E1"] }], "totalElapsedMs": -1 } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "evidence 선택 필드(excerpt·score)", "expect": "accept",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "doc-chunk", "sourceId": "DOC-MAN-0021@r1#014", "revisionId": "DOC-MAN-0021@r1", "contentHash": "abc", "stale": false, "excerpt": "베어링 마모 시 진동 RMS가 상승한다", "score": 0.82 } } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "score가 숫자가 아님", "expect": "reject",
-      "event": { "type": "step.evidence", "payload": { "step": "vector", "evidence": { "evidenceId": "E1", "kind": "alarm", "sourceId": "AL-20260826-0041", "score": "높음" } } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "run.failed fallback=replay", "expect": "accept",
-      "event": { "type": "run.failed", "payload": { "code": "LIVE_OFFLINE", "message": "live 불가", "fallback": "replay" } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "미정의 fallback 값", "expect": "reject",
-      "event": { "type": "run.failed", "payload": { "code": "E", "message": "m", "fallback": "sandbox" } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "step.started의 note", "expect": "accept",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "베어링 마모",
+              "confidenceNote": "1순위",
+              "evidenceIds": [
+                "E1"
+              ]
+            }
+          ],
+          "workOrderDraftId": "WO-2026-0113",
+          "totalElapsedMs": 72000
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "totalElapsedMs 음수",
+      "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "F",
+              "label": "x",
+              "evidenceIds": [
+                "E1"
+              ]
+            }
+          ],
+          "totalElapsedMs": -1
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "evidence 선택 필드(excerpt·score)",
+      "expect": "accept",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "doc-chunk",
+            "sourceId": "DOC-MAN-0021@r1#014",
+            "revisionId": "DOC-MAN-0021@r1",
+            "contentHash": "abc",
+            "stale": false,
+            "excerpt": "베어링 마모 시 진동 RMS가 상승한다",
+            "score": 0.82
+          }
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "score가 숫자가 아님",
+      "expect": "reject",
+      "event": {
+        "type": "step.evidence",
+        "payload": {
+          "step": "vector",
+          "evidence": {
+            "evidenceId": "E1",
+            "kind": "alarm",
+            "sourceId": "AL-20260826-0041",
+            "score": "높음"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "run.failed fallback=replay",
+      "expect": "accept",
+      "event": {
+        "type": "run.failed",
+        "payload": {
+          "code": "LIVE_OFFLINE",
+          "message": "live 불가",
+          "fallback": "replay"
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "미정의 fallback 값",
+      "expect": "reject",
+      "event": {
+        "type": "run.failed",
+        "payload": {
+          "code": "E",
+          "message": "m",
+          "fallback": "sandbox"
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "step.started의 note",
+      "expect": "accept",
       "why": "노드 기준 커버리지가 잡아낸 미실행 3건 — 문자열 매칭으로는 «덮였다»고 잘못 세던 자리",
-      "event": { "type": "step.started", "payload": { "step": "graph", "note": "그래프 경로 추적 시작" } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "step.completed의 summary", "expect": "accept",
-      "event": { "type": "step.completed", "payload": { "step": "graph", "summary": "4-hop 경로 1건 확보", "elapsedMs": 340 } } },
-    { "group": "⑥ 선택 필드(커버리지)", "label": "run.stopped의 note", "expect": "accept",
-      "event": { "type": "run.stopped", "payload": { "reason": "timeout", "note": "live 응답 지연" } } },
-
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "최소형(position만)", "expect": "accept",
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "graph",
+          "note": "그래프 경로 추적 시작"
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "step.completed의 summary",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "graph",
+          "summary": "4-hop 경로 1건 확보",
+          "elapsedMs": 340
+        }
+      }
+    },
+    {
+      "group": "⑥ 선택 필드(커버리지)",
+      "label": "run.stopped의 note",
+      "expect": "accept",
+      "event": {
+        "type": "run.stopped",
+        "payload": {
+          "reason": "timeout",
+          "note": "live 응답 지연"
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "최소형(position만)",
+      "expect": "accept",
       "why": "position은 required — 이 한 건이 없어 두 속성이 «한 번도 실행되지 않았다»(strict-coverage 빨강의 실체)",
-      "event": { "type": "run.queued", "payload": { "position": 1 } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "예상 대기 있음(정수)", "expect": "accept",
-      "event": { "type": "run.queued", "payload": { "position": 3, "estimatedWaitSec": 45 } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "모르면 null(지어내지 않는다)", "expect": "accept",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 1
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "예상 대기 있음(정수)",
+      "expect": "accept",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 3,
+          "estimatedWaitSec": 45
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "모르면 null(지어내지 않는다)",
+      "expect": "accept",
       "why": "계약이 integer|null을 «허용»한다는 것과, 러너가 그 union을 지킨다는 것은 다른 사실이다 — 아래 거부 짝이 그 둘을 가른다",
-      "event": { "type": "run.queued", "payload": { "position": 2, "estimatedWaitSec": null } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "position 누락(required)", "expect": "reject",
-      "event": { "type": "run.queued", "payload": { "estimatedWaitSec": 10 } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "position 0(minimum 1 — 1이 다음 실행)", "expect": "reject",
-      "event": { "type": "run.queued", "payload": { "position": 0 } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "position이 문자열", "expect": "reject",
-      "event": { "type": "run.queued", "payload": { "position": "1" } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "estimatedWaitSec이 문자열", "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 2,
+          "estimatedWaitSec": null
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "position 누락(required)",
+      "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "estimatedWaitSec": 10
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "position 0(minimum 1 — 1이 다음 실행)",
+      "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 0
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "position이 문자열",
+      "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": "1"
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "estimatedWaitSec이 문자열",
+      "expect": "reject",
       "why": "🔴 앞판 러너는 이것을 통과시켰다 — union type을 문자열 동등으로만 봐서 검사가 통째로 빠졌다(validator.js 수리와 짝)",
-      "event": { "type": "run.queued", "payload": { "position": 1, "estimatedWaitSec": "곧" } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "estimatedWaitSec이 실수(integer 아님)", "expect": "reject",
-      "event": { "type": "run.queued", "payload": { "position": 1, "estimatedWaitSec": 3.7 } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "estimatedWaitSec 음수(minimum 0)", "expect": "reject",
-      "event": { "type": "run.queued", "payload": { "position": 1, "estimatedWaitSec": -5 } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "queued에 failed payload(F-2 결속)", "expect": "reject",
-      "event": { "type": "run.queued", "payload": { "code": "E", "message": "m" } } },
-    { "group": "⑦ run.queued(v0.1.9 · T4-2b)", "label": "stopped에 queued payload(F-2 결속)", "expect": "reject",
-      "event": { "type": "run.stopped", "payload": { "position": 1 } } },
-
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "synthesis: live(+model)", "expect": "accept",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120, "synthesis": { "axis": "live", "model": "claude-opus-5" } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "synthesis: deterministic(최소형 — axis 만)", "expect": "accept",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120, "synthesis": { "axis": "deterministic" } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "synthesis: live-rejected(+rejectedReason)", "expect": "accept",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120, "synthesis": { "axis": "live-rejected", "rejectedReason": "인용 id 가 run 근거집합 밖" } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "rationale: 문장 1 + 인용 1", "expect": "accept",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "베어링 마모", "evidenceIds": ["E1"], "rationale": { "sentences": ["베어링 진동이 임계를 넘겼다."], "citedEvidenceIds": ["E1"] } }] } } },
-
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "synthesis.axis 가 enum 밖(mock)", "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 1,
+          "estimatedWaitSec": "곧"
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "estimatedWaitSec이 실수(integer 아님)",
+      "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 1,
+          "estimatedWaitSec": 3.7
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "estimatedWaitSec 음수(minimum 0)",
+      "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "position": 1,
+          "estimatedWaitSec": -5
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "queued에 failed payload(F-2 결속)",
+      "expect": "reject",
+      "event": {
+        "type": "run.queued",
+        "payload": {
+          "code": "E",
+          "message": "m"
+        }
+      }
+    },
+    {
+      "group": "⑦ run.queued(v0.1.9 · T4-2b)",
+      "label": "stopped에 queued payload(F-2 결속)",
+      "expect": "reject",
+      "event": {
+        "type": "run.stopped",
+        "payload": {
+          "position": 1
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "synthesis: live(+model)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "synthesis: deterministic(최소형 — axis 만)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "deterministic"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "synthesis: live-rejected(+rejectedReason)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live-rejected",
+            "rejectedReason": "인용 id 가 run 근거집합 밖"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "rationale: 문장 1 + 인용 1",
+      "expect": "accept",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "베어링 마모",
+              "evidenceIds": [
+                "E1"
+              ],
+              "rationale": {
+                "sentences": [
+                  "베어링 진동이 임계를 넘겼다."
+                ],
+                "citedEvidenceIds": [
+                  "E1"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "synthesis.axis 가 enum 밖(mock)",
+      "expect": "reject",
       "why": "합성 축은 세 값뿐이다 — 넷째 축이 조용히 들어오면 「조용한 폴백 0」이 무너진다",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120, "synthesis": { "axis": "mock" } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "synthesis 에 axis 누락", "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "mock"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "synthesis 에 axis 누락",
+      "expect": "reject",
       "why": "axis 는 required — 축 없는 합성 기록은 «어디서 왔는지»를 말하지 않는다",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120, "synthesis": { "model": "claude-opus-5" } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "synthesis 에 계약 밖 키", "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "model": "claude-opus-5"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "synthesis 에 계약 밖 키",
+      "expect": "reject",
       "why": "additionalProperties:false — 기록본이 계약 밖 필드를 실으면 심사에서 떨어진다",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "elapsedMs": 120, "synthesis": { "axis": "live", "temperature": 0.2 } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "rationale.sentences 가 빈 배열", "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "temperature": 0.2
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "rationale.sentences 가 빈 배열",
+      "expect": "reject",
       "why": "minItems 1 — 「근거 문장이 있다」와 「빈 배열이 있다」는 다른 사실이다",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "x", "evidenceIds": ["E1"], "rationale": { "sentences": [], "citedEvidenceIds": ["E1"] } }] } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "rationale.citedEvidenceIds 가 0건", "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "x",
+              "evidenceIds": [
+                "E1"
+              ],
+              "rationale": {
+                "sentences": [],
+                "citedEvidenceIds": [
+                  "E1"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "rationale.citedEvidenceIds 가 0건",
+      "expect": "reject",
       "why": "minItems 1 — 인용 0건 rationale 은 근거 결속을 주장할 수 없다",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "x", "evidenceIds": ["E1"], "rationale": { "sentences": ["x"], "citedEvidenceIds": [] } }] } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "rationale 에 citedEvidenceIds 누락", "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "x",
+              "evidenceIds": [
+                "E1"
+              ],
+              "rationale": {
+                "sentences": [
+                  "x"
+                ],
+                "citedEvidenceIds": []
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "rationale 에 citedEvidenceIds 누락",
+      "expect": "reject",
       "why": "required — 문장만 있고 인용이 없으면 그것은 결속되지 않은 서술이다",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "x", "evidenceIds": ["E1"], "rationale": { "sentences": ["x"] } }] } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "rationale 에 계약 밖 키", "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "x",
+              "evidenceIds": [
+                "E1"
+              ],
+              "rationale": {
+                "sentences": [
+                  "x"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "rationale 에 계약 밖 키",
+      "expect": "reject",
       "why": "additionalProperties:false",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "x", "evidenceIds": ["E1"], "rationale": { "sentences": ["x"], "citedEvidenceIds": ["E1"], "confidence": 0.9 } }] } } },
-
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "(무변 확인) synthesis 가 있어도 elapsedMs 는 여전히 필수", "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "x",
+              "evidenceIds": [
+                "E1"
+              ],
+              "rationale": {
+                "sentences": [
+                  "x"
+                ],
+                "citedEvidenceIds": [
+                  "E1"
+                ],
+                "confidence": 0.9
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "(무변 확인) synthesis 가 있어도 elapsedMs 는 여전히 필수",
+      "expect": "reject",
       "why": "additive 는 «기존을 안 건드렸다»는 주장이다 — 그 주장을 여기서 잰다",
-      "event": { "type": "step.completed", "payload": { "step": "vector", "synthesis": { "axis": "live" } } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "(무변 확인) rationale 이 있어도 evidenceIds 는 여전히 minItems 1", "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "synthesis": {
+            "axis": "live"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "(무변 확인) rationale 이 있어도 evidenceIds 는 여전히 minItems 1",
+      "expect": "reject",
       "why": "새 필드가 기존 결속의 우회로가 되지 않는가",
-      "event": { "type": "run.completed", "payload": { "candidates": [{ "rank": 1, "failureModeId": "FM-BRG-WEAR", "label": "x", "evidenceIds": [], "rationale": { "sentences": ["x"], "citedEvidenceIds": ["E1"] } }] } } },
-    { "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)", "label": "(무변 확인) synthesis 는 step.completed 전용 — started 에 실으면 거부", "expect": "reject",
+      "event": {
+        "type": "run.completed",
+        "payload": {
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "x",
+              "evidenceIds": [],
+              "rationale": {
+                "sentences": [
+                  "x"
+                ],
+                "citedEvidenceIds": [
+                  "E1"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "⑧ v0.1.11 합성 축·근거 결속(T6-1)",
+      "label": "(무변 확인) synthesis 는 step.completed 전용 — started 에 실으면 거부",
+      "expect": "reject",
       "why": "type↔payload 결속(F-2)이 새 필드에도 적용되는가",
-      "event": { "type": "step.started", "payload": { "step": "vector", "synthesis": { "axis": "live" } } } }
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "vector",
+          "synthesis": {
+            "axis": "live"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "선표시 — kind=preliminary + 결정적 순위",
+      "expect": "accept",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": 0,
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR",
+              "FM-MISALIGN"
+            ],
+            "axis": "deterministic"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "문장 — kind=sentence + 인용 1건",
+      "expect": "accept",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "sentence",
+          "seq": 1,
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "진동 스펙트럼이 BPFO 대역에서 상승한다.",
+            "citedEvidenceIds": [
+              "EV-2025-001"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 kind 가 정본 두 종 밖이면 거부",
+      "expect": "reject",
+      "why": "「부분 결과」라는 이름으로 새 종류가 조용히 들어오지 않는가",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "final",
+          "seq": 2,
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "x",
+            "citedEvidenceIds": [
+              "EV-2025-001"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 seq 가 음수면 거부(0부터)",
+      "expect": "reject",
+      "why": "순서를 세는 수가 음수로 오면 «단조»의 시작점이 무너진다",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": -1,
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR"
+            ],
+            "axis": "deterministic"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 seq 가 정수가 아니면 거부",
+      "expect": "reject",
+      "why": "1.5 같은 값이 들어오면 두 이벤트 «사이»가 생긴다",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "sentence",
+          "seq": 1.5,
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "x",
+            "citedEvidenceIds": [
+              "EV-2025-001"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 sentence.citedEvidenceIds 가 0건이면 거부",
+      "expect": "reject",
+      "why": "잠정 문장이 근거 하한을 우회하는 뒷문이 되지 않는가(v0.1.11 과 같은 하한)",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "sentence",
+          "seq": 0,
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "x",
+            "citedEvidenceIds": []
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 kind=sentence 인데 sentence 가 없으면 거부",
+      "expect": "reject",
+      "why": "종류만 선언하고 알맹이를 안 싣는 이벤트를 받지 않는가",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "sentence",
+          "seq": 0
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 kind=preliminary 인데 preliminary 가 없으면 거부",
+      "expect": "reject",
+      "why": "같은 결속이 선표시 쪽에도 서는가",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": 0
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 preliminary.axis 가 deterministic 이 아니면 거부",
+      "expect": "reject",
+      "why": "선표시가 live 를 주장하면 «아직 안 온 것»을 왔다고 말하는 것이다",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": 0,
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR"
+            ],
+            "axis": "live"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 preliminary.ranking 이 0건이면 거부",
+      "expect": "reject",
+      "why": "「순위 계산됨」 배지를 띄울 근거가 없는 선표시",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": 0,
+          "preliminary": {
+            "ranking": [],
+            "axis": "deterministic"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 step 이 synthesize 가 아니면 거부",
+      "expect": "reject",
+      "why": "부분 결과 통로가 다른 단계로 번지지 않는가(정본 = 합성 전용)",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "vector",
+          "kind": "preliminary",
+          "seq": 0,
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR"
+            ],
+            "axis": "deterministic"
+          }
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 모르는 필드가 실리면 거부",
+      "expect": "reject",
+      "why": "additionalProperties 결속이 새 type 에도 서는가",
+      "event": {
+        "type": "step.progress",
+        "payload": {
+          "step": "synthesize",
+          "kind": "sentence",
+          "seq": 0,
+          "sentence": {
+            "failureModeId": "FM-BRG-WEAR",
+            "text": "x",
+            "citedEvidenceIds": [
+              "EV-2025-001"
+            ]
+          },
+          "partial": true
+        }
+      }
+    },
+    {
+      "group": "⑩ v0.1.13 step.progress(T6-3 선표시·문장 스트리밍)",
+      "label": "🔴 (무변 확인) step.progress payload 를 step.started 에 실으면 거부",
+      "expect": "reject",
+      "why": "type↔payload 결속(F-2)이 10번째 type 에도 적용되는가",
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "synthesize",
+          "kind": "preliminary",
+          "seq": 0,
+          "preliminary": {
+            "ranking": [
+              "FM-BRG-WEAR"
+            ],
+            "axis": "deterministic"
+          }
+        }
+      }
+    }
   ]
 }
