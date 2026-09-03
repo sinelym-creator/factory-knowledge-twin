@@ -19,20 +19,26 @@ import {
  * 다른 `RunState` 가 들어올 뿐이다. 그리고 `mode` 를 읽지 않는다 — live·replay 무차별 렌더.
  *
  * 🔴 **예외 한 자리 = 합성 대기 표시**(T6-2 ③). 「지금 AI 가 돌고 있고 보통 몇 초 걸린다」는
- *    이벤트 «렌더»가 아니라 지금 무엇이 일어나는지에 대한 «주장»이고, 그 주장은 replay 에서
- *    거짓이다 — 되감기 커서를 synthesize 중간에 두면 상태는 `running` 이지만 실제로 도는 것은
- *    없다. 그래서 이 한 곳만 `mode` 를 읽는다. 시간을 드는 부분은 `SynthesisPending` 안에
- *    격리했으므로 이 파일은 여전히 순수 함수다.
+ *    이벤트 «렌더»가 아니라 지금 무엇이 일어나는지에 대한 «주장»이고, 그 주장은 «지금을 보고
+ *    있지 않을 때» 거짓이다. 그래서 이 한 곳만 `mode` 와 `showingPast` 를 읽는다. 시간을 드는
+ *    부분은 `SynthesisPending` 안에 격리했으므로 이 파일은 여전히 순수 함수다.
  */
 
 /**
  * 「지금 합성이 돌고 있는가」 — 대기 표시의 유일한 조건.
  *
- * 🔴 `mode === "replay"` 는 제외한다. 녹화 재생은 즉시 끝나고, 되감기로 그 단계에 서 있는
- *    동안 「AI 합성 중」이라고 적으면 화면이 사실이 아닌 말을 한다(조용한 강등의 반대 방향
- *    거짓말이다 — 안 도는 것을 돈다고 하는 것).
+ * 🔴 **되감기(`showingPast`)를 먼저 제외한다.** live run 이라도 커서를 synthesize 중간에 두면
+ *    상태는 `running` 이지만 실제로 도는 것은 없다 — 실측(33대 브라우저 축): 끝난 live run 을
+ *    28번째 이벤트로 되감자 대기 표시가 **1개 섰다**. `mode` 만으로 막던 앞판은 이 자리를
+ *    비워 둔 것이었다. 같은 파일이 스냅샷 폴백에 이미 쓰는 이름을 그대로 빌린다.
+ *
+ * 🔴 `mode === "replay"` 도 제외한다. 녹화 재생은 즉시 끝나고, 그 동안 「AI 합성 중」이라고
+ *    적으면 화면이 사실이 아닌 말을 한다(조용한 강등의 «반대 방향» 거짓말 — 안 도는 것을
+ *    돈다고 하는 것). 두 조건은 한 형태의 거짓말이지만 서로를 덮지 못한다: replay 도 꼬리에
+ *    서면 `showingPast` 가 false 이고, live 되감기는 `mode` 가 replay 가 아니다.
  */
-function synthesizing(state: RunState): boolean {
+function synthesizing(state: RunState, showingPast: boolean): boolean {
+  if (showingPast) return false;
   if (state.mode === "replay") return false;
   return state.steps.some((s) => s.step === "synthesize" && s.state === "running");
 }
@@ -143,9 +149,12 @@ function SynthesisBadge({ synthesis }: { synthesis?: RunSynthesis }) {
 export function CandidateList({
   state,
   runId,
+  showingPast = false,
 }: {
   state: RunState;
   runId: string;
+  /** 되감기로 «과거»를 보고 있는가 — 대기 표시(지금에 대한 주장)의 게이트. */
+  showingPast?: boolean;
 }) {
   return (
     <aside className="w-100 shrink-0 rounded border border-edge bg-panel p-3" data-testid="candidates" data-count={state.candidates.length}>
@@ -162,7 +171,7 @@ export function CandidateList({
           </p>
         ) : null;
       })()}
-      {state.candidates.length === 0 && synthesizing(state) ? (
+      {state.candidates.length === 0 && synthesizing(state, showingPast) ? (
         <SynthesisPending />
       ) : state.candidates.length === 0 ? (
         <p className="mt-2 text-sm text-muted">

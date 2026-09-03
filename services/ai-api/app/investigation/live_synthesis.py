@@ -209,7 +209,12 @@ def _post(url: str, body: bytes, timeout_sec: float) -> dict[str, Any]:
     except TimeoutError:
         raise _Rejected(f"게이트웨이 타임아웃({int(timeout_sec * 1000)}ms)") from None
     except urllib.error.URLError as exc:
-        raise _Rejected(f"게이트웨이 미도달({type(exc.reason).__name__})") from None
+        # 🔴 **여기가 방문자가 실제로 읽는 자리다**(33대 브라우저 실측: 화면 문면 =
+        #    「게이트웨이 미도달(ConnectionRefusedError)」). D-23 수리를 아래 `except
+        #    Exception` 에만 걸었더니 이 `_Rejected` 경로는 세 줄 위에서 그대로 샜다 —
+        #    가드가 «전량 거부»로 승격시키는 경로라 예외 그물에 닿지 않는다.
+        log.warning("게이트웨이 미도달 — %s: %s", type(exc.reason).__name__, exc.reason)
+        raise _Rejected(_refusal_wording(exc)) from None
     except json.JSONDecodeError:
         raise _Rejected("게이트웨이 응답을 JSON 으로 읽지 못했다") from None
 
