@@ -331,18 +331,36 @@ function TourStepView({
         자리»에서 6~10건이다 — 자리가 안전했던 게 아니라 그 시점에 그 자리가 비어 있었고,
         조사가 진행되면 같은 영역이 후보 카드로 채워진다. 화면이 시간에 따라 채워지므로
         「어느 쪽이 안전한가」는 미리 못 정한다. 그래서 **그때 보고 고른다.**
-     🔴 후보는 **둘뿐이다**(대상에 붙이기 / 대상 옆으로 비키기). 전방위 탐색을 하지 않는다 —
-        복잡도가 값을 넘는다.
-     🔴 **겹침 0 을 약속하지 않는다.** 둘 다 가리면 «덜 가리는» 쪽을 고르고, 얼마나 가렸는지를
-        `data-tour-covered` 로 남긴다 — 못 피한 것을 피한 척하지 않는다.
+     🔴 **«지목한 대상»을 덮지 않는 것이 «글자를 덜 덮는 것»보다 앞선다**(규격 ⑧-8).
+        앞판은 이 순위가 없어서 «덜 덮는 쪽»만 봤고, 그 결과 대상 위에 그대로 앉는 걸음이 남았다
+        (D-45 · 센쿠2 38대 실측 1440: 5번째 걸음에서 대상과 51,823px² 겹침).
+     🔴 후보를 **둘에서 다섯으로** 넓힌다 — 앞판의 둘(대상에 붙이기 `anchor` / 대상 오른쪽
+        `beside`)로는 **화면 오른쪽 끝에 붙은 대상에서 두 자리가 같은 값으로 클램프**된다. 실측:
+        5번째 걸음의 `beside` 원자리 1436 → 상한 1068 로 눌려 `anchor`(1028)와 40px 차가 되고,
+        도크 글자 블록이 콜아웃보다 가로로 넓어 **덮은 넓이가 20,789 로 정확히 같았다**(비율 1.000).
+        🔴 그래서 **문턱(0.8) 을 아무리 낮춰도 안 뒤집힌다** — 문턱이 아니라 후보가 좁았다.
+     🔴 넓히되 **전방위 탐색은 여전히 안 한다.** 대상에 붙는 세 자리(`anchor`·`beside`·`before`)를
+        먼저 보고, 거기에 안 덮는 자리가 없을 때만 화면 양 끝을 쓴다. 사유: 안 덮는 자리 중
+        «글자를 가장 덜 덮는» 곳이 5번째 걸음에서는 `left=12`(312px²)인데 **대상은 x=1028** 이다 —
+        규격 순위만 따르면 **가리키는 것에서 1,000px 떨어진 자리**가 뽑힌다. 안내는 대상 곁에 선다.
+     🔴 **겹침 0 을 여전히 약속하지 않는다.** 안 덮는 후보가 하나도 없으면 «덜 덮는» 쪽으로
+        떨어지고, 그 사실을 `data-tour-clear="no"` 로 남긴다 — 못 피한 것을 피한 척하지 않는다.
+        덮은 넓이는 그대로 `data-tour-covered` 로 남는다.
+     🔴 **경성 조건은 «불리언»이라 미세한 차이로 흔들리지 않는다** — 아래 «결정적» 조건과
+        충돌하지 않는다. 안 덮는 후보끼리의 동점은 **후보 순서**로 깨서 결정적으로 만든다.
      🔴 **결정적이어야 한다.** 애니메이션 위상에 따라 자리가 흔들리면 재측의 판정선이 죽는다
         (검증이 `fkt-stagger` 8px 흔들림으로 겪은 자리). 그래서 «유의미하게 나을 때만» 비킨다
         — 미세한 차이로는 뒤집지 않는다. */
   const clampLeft = (x: number) =>
     Math.min(Math.max(12, x), Math.max(12, window.innerWidth - CALLOUT_W - 12));
-  const [placement, setPlacement] = useState<{ left: number; side: "anchor" | "beside"; covered: number } | null>(
-    null,
-  );
+  type Placement = {
+    left: number;
+    side: "anchor" | "beside" | "before" | "edge-start" | "edge-end";
+    covered: number;
+    /* 이 자리가 «대상을 안 덮는» 자리인가. 거짓이면 안 덮는 후보가 하나도 없었다는 뜻이다. */
+    clear: boolean;
+  };
+  const [placement, setPlacement] = useState<Placement | null>(null);
   const holeKey = hole ? `${hole.top}:${hole.left}:${hole.width}:${hole.height}` : "";
   /* 🔴 **자리를 고를 때 주변이 아직 안 와 있었다.** 진입 애니메이션(스태거)이 끝나기 전에는
      주변 카드가 제자리에 없어 두 후보 다 «덮는 게 적다»로 나오고, 그러면 anchor 가 이긴다.
@@ -386,17 +404,35 @@ function TourStepView({
       }
       return Math.round(sum);
     };
-    const anchorLeft = clampLeft(hole.left);
-    const besideLeft = clampLeft(hole.left + hole.width + 12);
-    const a = coverAt(anchorLeft);
-    /* 같은 자리로 클램프되면 후보가 하나뿐이다 — 재계산하지 않는다. */
-    const b = besideLeft === anchorLeft ? a : coverAt(besideLeft);
-    const beside = b < a * 0.8;
-    setPlacement(
-      beside
-        ? { left: besideLeft, side: "beside", covered: b }
-        : { left: anchorLeft, side: "anchor", covered: a },
-    );
+    /* 앞의 세 자리 = 대상 곁 · 뒤의 두 자리 = 화면 양 끝(마지막 수단). 순서가 곧 우선순위다.
+       🔴 «곁이냐»는 **후보 자신이 들고 있어야 한다.** 목록에서의 «순번»으로 판정하면, 앞의
+       후보가 중복으로 빠진 걸음에서 화면 끝이 세 번째로 올라와 «곁»으로 둔갑한다 — 실측
+       (센쿠2 38대 · 1440 · 2·3번째 걸음): `beside` 가 `anchor` 와 같은 값으로 클램프돼 빠지자
+       `edge-start`(x=12) 가 뽑혀, 대상이 x=1068 인데 말풍선이 화면 왼쪽 끝에 섰다. */
+    const candidates: { side: Placement["side"]; left: number; near: boolean }[] = [
+      { side: "anchor", left: clampLeft(hole.left), near: true },
+      { side: "beside", left: clampLeft(hole.left + hole.width + 12), near: true },
+      { side: "before", left: clampLeft(hole.left - CALLOUT_W - 12), near: true },
+      { side: "edge-start", left: clampLeft(12), near: false },
+      { side: "edge-end", left: clampLeft(window.innerWidth), near: false },
+    ];
+    /* 대상을 덮는가 — 가로·세로가 «둘 다» 겹쳐야 덮은 것이다. 콜아웃이 이미 대상 위/아래로
+       비켜 선 걸음에서는 가로가 겹쳐도 덮지 않는다. */
+    const coversTarget = (left: number) =>
+      left < hole.left + hole.width &&
+      hole.left < left + CALLOUT_W &&
+      top < hole.top + hole.height &&
+      hole.top < top + calloutH;
+    /* 같은 자리로 클램프된 후보는 하나로 친다 — 앞선 것(우선순위가 높은 것)이 이름을 갖는다. */
+    const seen = new Set<number>();
+    const scored = candidates
+      .filter((c) => !seen.has(c.left) && (seen.add(c.left), true))
+      .map((c) => ({ ...c, covered: coverAt(c.left), clear: !coversTarget(c.left) }));
+    const near = scored.filter((c) => c.near && c.clear);
+    const pool = near.length ? near : scored.filter((c) => c.clear);
+    /* 동점은 앞선 후보가 이긴다(`<` 이므로) — 그래서 같은 화면에서 늘 같은 답이 나온다. */
+    const best = (pool.length ? pool : scored).reduce((x, y) => (y.covered < x.covered ? y : x));
+    setPlacement({ left: best.left, side: best.side, covered: best.covered, clear: best.clear });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, step.id, calloutH, holeKey, settled]);
 
@@ -458,6 +494,8 @@ function TourStepView({
         style={hole ? style : undefined}
         data-tour-placement={placement?.side ?? "anchor"}
         data-tour-covered={placement?.covered ?? ""}
+        /* 🔴 «안 덮는 자리를 찾았는가»를 값으로 남긴다 — 못 찾은 경우를 셀 수 있어야 한다. */
+        data-tour-clear={placement ? (placement.clear ? "yes" : "no") : ""}
         role="region"
         aria-label="가이드 투어"
         aria-live="polite"
