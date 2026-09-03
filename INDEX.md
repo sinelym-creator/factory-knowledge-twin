@@ -23,6 +23,9 @@ size_limit: 4KB
 | `docs/plan/ticket-ledger.md` | 티켓 원장 = 진행률 유일 산법 | 단위 완료·분모 변경 시 |
 | `docs/plan/tickets/` | 티켓 상세(1티켓 1파일) | 발주 시 생성 |
 | `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) — 001 7일 계획 · 002 UX 방향 A · 003 Q-30 이력 잔존 · **004 §35.7 최종 관문 「Release 후보 — 축소 적용(v0.3)」 + D-21 ⓐ(폐하 「전건 권장안 승인」 09-02 16:59 · id 1544617819784609803)** | 확정 시 · **005 운영자 확정 결정 12건 09-03(#431 · 요청 = 확정 결정 기록)** |
+| `apps/web-console/components/tour/` | T6-5 가이드 투어 — `tour-steps.ts`(9스텝 표 · 대상 testid·문구) · `tour-provider.tsx`(상태 `localStorage fkt.tour.v1` · Esc·Enter·클릭 감지 · OFF 렌더 0) · `tour-overlay.tsx`(스포트라이트 딤+구멍 · 콜아웃 · 초대 카드 · 진행 점) |
+| `apps/web-console/lib/chart-band.ts` | 시계열 «구간 min~max 밴드 + 중앙선» 공용 유틸(스파크라인·센서 추세가 같은 손) + 센서 종류 라벨(모르면 id 유지) — T6-4 「차트 라인 뭉개짐」 처방 |
+| `apps/web-console/components/{icons.tsx,shell-nav.tsx}` | 선형 SVG 아이콘 12종(유니코드 글리프 대체) · 셸 내비(레일 라벨형/앱바 텍스트 · 목록 1곳) |
 | `docs/design/` | 디자인 규격서 — **`t6-4-apple-design-spec.md`**(T6-4 애플 감성 전면 · ①원칙 ②토큰 35 ③변경표 ④애니메이션 10 ⑤접근성 ⑥검증 ⑦PR 분할 ⑧반응형·호환 · #433/#434 · 09-03) | T6-4 PR 마다 대조 |
 | `docs/product/` | 제품 설계 문서(brief·시나리오·아키텍처·UX·wireframe·환경) | Phase 진행 시 |
 | `docs/deployment/runbook.md` | **운영 runbook(T5-4 · PR#335)** — 재부팅 후 절차(손잡이 = `restart` 정책 1:1 · 로그온 0단 · `health-check.ps1` 두 층 `-Containers` 필수) · 자동 시작 두 축 · Funnel OFF/ON 실측(§2-1 · off 는 8443 핸들러까지 제거 · 복원 `--bg --https=8443 8010` · reset 금지) · Gate 6 8행(실측 2행 절차 · 미실측 6행 명시) · clean env 3단(compose→migrate→seed · `VOLUME_ROOT` 리포 밖 · D-13) · D-14 배포 상한·열쇠 창 | 운영 형상 변경·T4-4 실측 추가 시 |
