@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 
-import { IconQuestion } from "@/components/icons";
-
 /**
- * 앱바 `?` — 안내·투어 다시 열기.
+ * 앱바 「튜토리얼」 — 안내·투어 다시 열기.
+ *
+ * 🔴 **아이콘이 아니라 글자다**(폐하 하명 09-04 18:33 「? 가 아니라 튜토리얼 버튼」). `?` 는
+ *    무엇을 여는지 눌러 보기 전에는 말하지 않는다 — 처음 온 사람이 가장 먼저 필요로 하는
+ *    문이 가장 읽기 어려운 표지를 달고 있었다.
  *
  * 🔴 **링크만으로는 안 열리는 회차가 있다**(리바이2 34대 귀속 실측 6런): 클릭은 매번 닿는데
  *    (capture 계수 6/6) `location` 이 바뀌는 것은 2/6 이었다. 같은 pathname 에 쿼리만 붙는
@@ -23,19 +25,20 @@ export function TourReopen() {
   return (
     <Link
       href="/overview?intro=1&tour=1"
-      /* 🔴 가로 44 를 «실제 박스»로 만든다 — `::before` 를 좌우로 넓히면 요소가 그만큼 밖으로
-         삐져나가 뷰포트 가장자리에서 문서가 넘친다(D-33 실측: coarse 60/60 `scrollWidth 391 /
-         clientWidth 390`). 레이아웃으로 넓히면 넘칠 «수가» 없고 이웃 히트와 겹칠 수도 없다.
-         🔴 아이콘의 보이는 크기는 그대로다 — 는 것은 둘레 여백뿐이다. */
-      className="fkt-hit fkt-hoverable flex h-8 w-11 items-center justify-center rounded-pill text-[1.125rem] text-muted hover:text-ink"
-      title="처음 오셨나요? 안내와 둘러보기 다시 보기"
+      /* 🔴 히트 44 는 «레이아웃 박스»로 만든다 — `::before` 를 좌우로 넓히면 요소가 그만큼
+         밖으로 삐져나가 뷰포트 가장자리에서 문서가 넘친다(D-33 실측: coarse 60/60
+         `scrollWidth 391 / clientWidth 390`). 이제 폭은 글자가 정하고(`px-3`), 고정 `w-11` 은
+         버린다 — 「튜토리얼」이 44 보다 넓어서 좁은 상자에 가두면 글자가 잘린다. */
+      className="fkt-hit fkt-hoverable flex h-8 items-center justify-center rounded-pill px-3 text-foot whitespace-nowrap text-muted hover:text-ink"
+      title="처음부터 다시 보기"
       data-testid="intro-reopen"
       onClick={() => {
         window.dispatchEvent(new CustomEvent(TOUR_OPEN_EVENT));
       }}
     >
-      <IconQuestion />
-      <span className="sr-only">안내와 둘러보기 다시 보기</span>
+      {/* 🔴 글자가 곧 이름이라 `sr-only` 를 함께 두지 않는다 — 두면 스크린리더가 같은 것을
+          두 번 읽는다(보이는 라벨 + 숨은 라벨). `title` 은 설명이지 이름의 대체가 아니다. */}
+      튜토리얼
     </Link>
   );
 }
