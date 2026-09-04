@@ -1,0 +1,394 @@
+{
+ "label": "control",
+ "base": "http://127.0.0.1:8131",
+ "at": "2026-09-04T08:31:53.270Z",
+ "screens": [
+  {
+   "screen": "overview",
+   "nodes": 206,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "fallback-banner",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-invite",
+     "tour-later",
+     "tour-never",
+     "tour-start"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "replay"
+    ],
+    "runcapUsed": [],
+    "tourPlacement": [],
+    "tourClear": []
+   }
+  },
+  {
+   "screen": "incident-run",
+   "nodes": 190,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "app-bar",
+     "candidates",
+     "equipment-context",
+     "evidence-card",
+     "evidence-filter",
+     "evidence-filter-all",
+     "evidence-strip",
+     "fallback-banner",
+     "incident-header",
+     "intro-reopen",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "replay-back",
+     "replay-controls",
+     "replay-cursor",
+     "replay-follow",
+     "replay-forward",
+     "replay-play",
+     "replay-restart",
+     "reset-button",
+     "run-console",
+     "run-controls",
+     "run-failed",
+     "run-mode-badge",
+     "run-progress",
+     "run-question",
+     "run-status",
+     "run-step",
+     "run-stop",
+     "run-timeline",
+     "sensor-provenance",
+     "sensor-trend",
+     "session-chip",
+     "threshold-legend",
+     "to-compare",
+     "ttae-row",
+     "window-24h",
+     "window-3w",
+     "work-order-draft-pending"
+    ],
+    "why": [],
+    "kind": [
+     "record"
+    ],
+    "mode": [
+     "live",
+     "replay"
+    ],
+    "runcapUsed": [],
+    "tourPlacement": [],
+    "tourClear": []
+   }
+  },
+  {
+   "screen": "evidence",
+   "nodes": 61,
+   "excludedNodes": 0,
+   "hits": [
+    {
+     "screen": "evidence",
+     "excluded": false,
+     "pat": [
+      "«",
+      "없다»",
+      "계약 v0."
+     ],
+     "text": "🔴 이 근거에는 revision·색인 축이 «없다» — 화이트리스트 테이블을 직독하므로 「색인이 낡았다」는 개념이 성립하지 않는다(계약 v0.1.1). 그래서 신뢰 배지도 신선도를 주장하지 않는다",
+     "tid": "record-view"
+    },
+    {
+     "screen": "evidence",
+     "excluded": false,
+     "pat": [
+      "한다."
+     ],
+     "text": "·유효기간이 아니라 이 레코드 자체가 SSOT 라는 사실이 답한다.",
+     "tid": "record-view"
+    }
+   ],
+   "attrs": {
+    "testid": [
+     "app-bar",
+     "deep-link-notice",
+     "evidence-kind",
+     "fallback-banner",
+     "index-badge",
+     "intro-reopen",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "record-view",
+     "reset-button",
+     "session-chip",
+     "trust-header"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "replay"
+    ],
+    "runcapUsed": [],
+    "tourPlacement": [],
+    "tourClear": []
+   }
+  },
+  {
+   "screen": "tour-step-1",
+   "nodes": 208,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "fallback-banner",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-callout",
+     "tour-next",
+     "tour-progress",
+     "tour-skip",
+     "tour-title"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "replay"
+    ],
+    "runcapUsed": [],
+    "tourPlacement": [
+     "anchor"
+    ],
+    "tourClear": []
+   },
+   "tourTitle": "둘러보기를 시작합니다알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따라갑니다. 이 화면의 값은"
+  },
+  {
+   "screen": "tour-step-2",
+   "nodes": 208,
+   "excludedNodes": 0,
+   "hits": [
+    {
+     "screen": "tour-step-2",
+     "excluded": false,
+     "pat": [
+      "«",
+      "»"
+     ],
+     "text": "알람은 «울린 행»의 값이 앵커다",
+     "tid": "tour-title"
+    }
+   ],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "fallback-banner",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-callout",
+     "tour-next",
+     "tour-progress",
+     "tour-skip",
+     "tour-spotlight",
+     "tour-title"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "replay"
+    ],
+    "runcapUsed": [],
+    "tourPlacement": [
+     "before"
+    ],
+    "tourClear": [
+     "yes"
+    ]
+   },
+   "tourTitle": "알람은 «울린 행»의 값이 앵커다임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 울린"
+  },
+  {
+   "screen": "tour-step-3",
+   "nodes": 208,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "fallback-banner",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-callout",
+     "tour-goto",
+     "tour-progress",
+     "tour-skip",
+     "tour-spotlight",
+     "tour-title"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "replay"
+    ],
+    "runcapUsed": [],
+    "tourPlacement": [
+     "before"
+    ],
+    "tourClear": [
+     "yes"
+    ]
+   },
+   "tourTitle": "조사를 시작하면 에이전트가 5단계를 돕니다구조화 조회 → 문서 검색 → 그래프 추적 → 종합 → 작업지시 초"
+  }
+ ],
+ "notMeasured": [
+  "documents: 화면에 링크 없음",
+  "tour-step-4: «다음» 손잡이 없음(사람이 눌러야 하는 걸음)"
+ ],
+ "tourHandles": [
+  "⟲ 세션 리셋",
+  "✕",
+  "둘러보기 시작",
+  "나중에",
+  "다시 보지 않기",
+  "조사 시작",
+  "전체 12대",
+  "가공 라인 1 4대",
+  "가공 라인 2 4대",
+  "가공 라인 3 4대",
+  "✕",
+  "조사 시작"
+ ],
+ "tourSteps": 3,
+ "total": {
+  "screens": 6,
+  "nodes": 1081,
+  "excludedNodes": 0,
+  "hitsJudged": 3,
+  "hitsExcluded": 0
+ },
+ "judgedHits": [
+  {
+   "screen": "evidence",
+   "excluded": false,
+   "pat": [
+    "«",
+    "없다»",
+    "계약 v0."
+   ],
+   "text": "🔴 이 근거에는 revision·색인 축이 «없다» — 화이트리스트 테이블을 직독하므로 「색인이 낡았다」는 개념이 성립하지 않는다(계약 v0.1.1). 그래서 신뢰 배지도 신선도를 주장하지 않는다",
+   "tid": "record-view"
+  },
+  {
+   "screen": "evidence",
+   "excluded": false,
+   "pat": [
+    "한다."
+   ],
+   "text": "·유효기간이 아니라 이 레코드 자체가 SSOT 라는 사실이 답한다.",
+   "tid": "record-view"
+  },
+  {
+   "screen": "tour-step-2",
+   "excluded": false,
+   "pat": [
+    "«",
+    "»"
+   ],
+   "text": "알람은 «울린 행»의 값이 앵커다",
+   "tid": "tour-title"
+  }
+ ],
+ "consoleErrors": []
+}

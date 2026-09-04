@@ -76,8 +76,15 @@ test.describe("셸·라우트 골격", () => {
     await seedApiSession(page, "WXYZ-9999-0000");
     await page.goto("/overview");
     const chip = page.getByTestId("session-chip");
-    await expect(chip).toContainText("WXYZ");
-    await expect(chip).not.toContainText("9999");
+    /* 🔴 식별자가 «어디에» 실리는지는 문구 정비(T7-40)로 움직인다 — 본문일 수도 `title` 일 수도 있다.
+       자리를 박아 두면 그물이 대상보다 먼저 늙는다. 그래서 «본문 + title 을 합친 면»에서 찾는다:
+       자리만 옮기면 통과하고, 식별자가 «아예 사라지면» 여전히 실패한다(검출력 보존).
+       🔴 이 완화가 검출력을 판 것이 아님은 같은 회차에 평범한 위반 1건을 주입해 확인했다
+          (없는 4자를 기대시키자 실패 · 리바이2 43대). */
+    const surface = async () =>
+      `${(await chip.textContent()) ?? ""} ${(await chip.getAttribute("title")) ?? ""}`;
+    await expect.poll(surface).toContain("WXYZ");
+    await expect.poll(surface).not.toContain("9999"); // 앞 4자만 — 뒤 자리는 어느 면에도 없다
     await expect(chip).not.toContainText("*"); // api 발급분에는 pending 표시가 붙지 않는다
   });
 
