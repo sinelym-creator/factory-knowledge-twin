@@ -120,25 +120,31 @@ const run = async () => {
 
   // B 갈래에 쓸 «실제» run id — 지어내지 않고 셸의 /api 로 만들게 한다.
   // 🔴 브라우저는 ai-api 를 직접 부르지 않는다. 셸의 /api 프록시가 유일한 통로다.
+  // 🔴 **화면 흐름으로 만든다**(D-58c 재검부터). `fetch('/api/sessions')` 로 내가 세션을 만들면
+  //    그 run 은 셸 세션(`fkt_session`)의 것이 아니고, D-58c 의 가운데 링크는 서버 목록
+  //    (`GET /runs?sessionId=`)에서 incidentId 를 찾으므로 **그 run 을 못 찾아 링크가 안 선다**.
+  //    그 회차의 「링크 없음」은 대상 결함이 아니라 내 세션 착오다.
   const seed = await ctx.newPage();
-  await seed.goto(`${BASE}/enter`, { waitUntil: "domcontentloaded", timeout: 30000 });
-  const made = await seed.evaluate(async () => {
-    const s = await fetch("/api/sessions", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: "{}",
-    });
-    if (!s.ok) return { step: "session", status: s.status };
-    const { sessionId } = await s.json();
-    const r = await fetch("/api/scenarios/GS-01/runs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sessionId, mode: "replay" }),
-    });
-    if (!r.ok) return { step: "run", status: r.status, sessionId };
-    const body = await r.json();
-    return { step: "ok", status: r.status, sessionId, runId: body.runId };
-  });
+  await seed.goto(`${BASE}/overview`, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await seed.waitForTimeout(700);
+  const introClose = seed.locator('[aria-label="안내 닫기"]');
+  if (await introClose.count()) {
+    await introClose.first().click();
+    await seed.waitForTimeout(300);
+  }
+  const startBtn = seed.locator('[data-testid="start-from-alarm"]');
+  const made = { startCount: await startBtn.count() };
+  if (made.startCount > 0) {
+    await startBtn.first().click();
+    await seed.waitForLoadState("domcontentloaded");
+    await seed.waitForTimeout(2500);
+    made.landed = seed.url();
+    made.runId = (made.landed.match(/run=([^&]+)/) || [])[1] ?? null;
+    if (made.runId) made.runId = decodeURIComponent(made.runId);
+    made.step = made.runId ? "ok" : "no-run-in-url";
+  } else {
+    made.step = "no-start-control";
+  }
   result.seed = made;
   await seed.close();
 
@@ -151,6 +157,8 @@ const run = async () => {
   result.branches.A_static_1280 = await branch(ctx, { name: "A_static_1280", run: STATIC_RUN, width: 1280 });
 
   result.clickThrough = await clickThrough(ctx, STATIC_RUN);
+  // D-58c — B 갈래(실제 run)의 가운데 조각도 링크가 되는가, 그리고 **눌러서 그 run 에 서는가**.
+  if (made.runId) result.clickThroughB = await clickThrough(ctx, made.runId);
   result.expectedStaticHref = `/incidents/${encodeURIComponent(INCIDENT)}?run=${encodeURIComponent(STATIC_RUN)}`;
 
   // 투어 7걸음 target 실재 — 근거 화면에 `trust-header` 가 실제로 서는가.
