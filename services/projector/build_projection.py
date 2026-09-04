@@ -38,6 +38,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import manifest as M  # noqa: E402
 
+# 🔴 «보고» 때문에 rc 가 바뀜지 않게 한다 (D-47 · 09-04 실측).
+#    이 빌더들의 출력에는 `—`·`·` 가 들어 있고, 콘솔·리다이렉트 인코딩이
+#    CP949 면 그 한 글자가 UnicodeEncodeError 로 올라와 «일을 끝낸 뒤» 프로세스를 rc 1 로 죽인다.
+#    실측(09-04 09:25): 투영이 노드 309·관계 448 을 «넣은 뒤» 요약 print 에서 죽었다 —
+#    데이터는 들어가 있는데 빌드는 실패로 끝나는, 가장 헷갈리는 형태의 빨강이다.
+#    🔴 문면은 바꾸지 않는다. 바꾸는 것은 «출력 스트림의 인코딩» 이다.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).resolve().parents[2]
 ONTOLOGY_VERSION_FILE = ROOT / "packages" / "ontology" / "ontology-version.json"
 PROJECTION_VERSION_FILE = ROOT / "packages" / "ontology" / "projection-version.json"

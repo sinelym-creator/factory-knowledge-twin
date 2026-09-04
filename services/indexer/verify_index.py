@@ -25,6 +25,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from build_index import MODEL_ID, dsn_from_env  # noqa: E402
 
+# 🔴 «보고» 때문에 rc 가 바뀜지 않게 한다 (D-47 · 09-04 실측).
+#    이 빌더들의 출력에는 `—`·`·` 가 들어 있고, 콘솔·리다이렉트 인코딩이
+#    CP949 면 그 한 글자가 UnicodeEncodeError 로 올라와 «일을 끝낸 뒤» 프로세스를 rc 1 로 죽인다.
+#    실측(09-04 09:25): 투영이 노드 309·관계 448 을 «넣은 뒤» 요약 print 에서 죽었다 —
+#    데이터는 들어가 있는데 빌드는 실패로 끝나는, 가장 헷갈리는 형태의 빨강이다.
+#    🔴 문면은 바꾸지 않는다. 바꾸는 것은 «출력 스트림의 인코딩» 이다.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 # 화면(wireframes.md v0.4)이 박은 인용 좌표 4건 — V-1 인수 조건.
 # 🔴 이 목록은 화면의 «거울»이다. wireframes가 바뀌면 여기도 바뀌어야 하고, 어긋난 채로 두면
 #    도구가 옛 화면을 검사한다(v0.3 좌표를 그대로 들고 있다가 실제로 그렇게 됐다).
