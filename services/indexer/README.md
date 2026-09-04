@@ -33,7 +33,7 @@ services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py
 services\indexer\.venv\Scripts\python.exe services\indexer\verify_index.py
 ```
 
-`verify_index.py --dump` 는 `document_chunk` 전열(384차원 벡터 포함)을 정렬된 TSV로 낸다 —
+`verify_index.py` 의 인자는 `--dsn` · `--dump` · **`--dump-ledger`** 셋이다(2026-09-04 `argparse` 확인 · `--dump-ledger` 는 이 문서 작성 «뒤»에 붙었다). `verify_index.py --dump` 는 `document_chunk` 전열(384차원 벡터 포함)을 정렬된 TSV로 낸다 —
 두 번 빌드한 뒤 이 출력을 `diff` 하는 것이 멱등 판정이다.
 
 ## 전략 3종
@@ -295,3 +295,13 @@ revision을 달고 있는데 나머지 3건은 `@rN`이 없다. 스펙 §3.1의 
 이므로 `DOC-MAN-0021#014`는 **형식상 chunk id가 아니다**. 그리고 revision을 떼면 D-2(r1≠r2가
 서로 다른 값을 말하는 문서)에서 «어느 판을 인용했는가»가 사라진다 — 인용 가능성을 revision에
 묶은 §3.3의 전제가 화면 표기에서 풀린다. 값 치환이 아니라 참조 구조의 문제다(오케 선판정과 동일).
+
+## 문서 커밋 이후 바뀐 것 (2026-09-04 대조 · 이 파일의 마지막 갱신 = 2026-08-29 `74697f9`)
+
+위 실측표는 **2026-08-29 의 기록 그대로** 둔다(그때 잰 값이다). 그 뒤 코드에서 바뀐 것만 아래에 적는다 — 확인한 것만.
+
+| 무엇 | 실물 | 문서에 준 영향 |
+|---|---|---|
+| 🔴 **rc 가 «보고» 때문에 바뀌지 않는다**(D-47 · `d03b38d` 2026-09-04) | `build_index.py`·`verify_index.py` 가 진입에서 `sys.stdout`·`sys.stderr` 를 `utf-8`/`errors="replace"` 로 고정한다 | 위 재현 블록의 `$env:PYTHONUTF8 = '1'` 은 **그대로 권장**이다(출력 가독성). 다만 이제 이 두 스크립트는 **요약 출력의 인코딩 오류로 rc 1 이 되지 않는다** — 「일은 끝났는데 빨강」 형태가 이 축에서 사라졌다 |
+| 온톨로지 버전 축이 신선도에 들어왔다(Q-3·Q-4 · `7435f0b`) | `verify_index.py` 가 `v_index_freshness` 의 `current_ontology_version` 을 읽어 `[2] 신선도 … DB 거울 ontology_version = …` 을 찍는다 | 이 파일에는 그 축의 설명이 **없다**. 판정 기준의 정본은 코드와 마이그레이션이다 |
+| 미검증 상태에 이름을 주고 manifest 순서를 못 박았다(`b1e13bb`) | `verify_index.py` | 위 게이트 ④·⑤ 절의 서술 범위 밖 |

@@ -427,7 +427,7 @@ pwsh -File services/synthesis-gateway/run.ps1 -Bind 0.0.0.0 -Token <값> -Model 
 
 **OFF 로 내리면** `/api/live/status` 가 캐시(5s) 만료 뒤 `online:false` 로 바뀌고 화면이 REPLAY 축 +
 「Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달)」 문면으로 내려간다. 🔴 `online:false` 는
-**결함이 아니라 참**이다(공개 Sandbox 의 정상 상태 · baseline §15.2).
+**결함이 아니라 참**이다(공개 배포의 정상 상태 = REPLAY 축 · baseline §15.2).
 
 ### 7-2. 배포 컨테이너에 Live 를 붙일 때 더하는 env 2개
 

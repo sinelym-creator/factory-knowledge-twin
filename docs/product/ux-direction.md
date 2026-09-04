@@ -10,6 +10,8 @@ artifacts:
   - docs/product/mocks/direction-c-blueprint.html
 ---
 
+> 🔴 **정오표 배너 (2026-09-04 부기)** — 이 문서는 **2026-08-2x 동결본**이다. 2026-09-03 **T6-4 디자인 전면 개편**과 **T6-5 가이드 투어** 이후, 화면의 정본은 `docs/design/t6-4-apple-design-spec.md` · `docs/design/t6-5-guided-tour-spec.md` 다. 아래 본문과 어긋나면 **규격서가 이긴다**. 본문은 당시 판단의 기록으로 그대로 보존한다.
+
 # UX Visual Direction — 3안
 
 > 🔴 **선택 방법**: 아래 3개 HTML을 브라우저로 열어 **Factory Overview 한 화면을 나란히 비교**하고 1안을 고른다. 3안은 색만 다른 변형이 아니라 **레이아웃 구조·정보 밀도·화면의 주인공**이 서로 다르다.

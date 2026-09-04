@@ -68,6 +68,8 @@ $env:FKT_NEO4J_PASSWORD = '***'
 | `/health` | GET | ✅ 동작 |
 | `/live/status` | GET | ✅ 동작 (`online:false` — 아래) |
 
+🔴 **위 표의 「501」 칸은 2026-08-29 T1-8 «골격»의 스냅샷이다 — 2026-09-04 현재는 사실이 아니다.** 그날 이후 T2·T3·T6 으로 대부분이 구현됐다. 오늘 다시 센 것(E1 · `app/routers/*.py`): **HTTP 라우트 데코레이터 22개 + WS 1개 = 23** — 계약 표면 수는 그대로다. 남아 있는 501 은 «일부러 남긴» 두 자리뿐이다 — `GET /graph/paths` 의 `from`·`to` 축(`knowledge.py:100` · 소비처가 `byRun` 뿐이라 열지 않는다)과 녹화본이 없는 시나리오(`investigations.py:181` · `replay_fixture_missing`). 🔴 **표의 개별 행을 «지금 상태»로 고치지 않은 이유**: 행마다 실행해 확인한 것이 아니기 때문이다. 「안 잰 것」을 초록으로 칠하지 않는다 — 각 경로의 현재 동작은 계약 문서와 아래 절들이 정본이다.
+
 WebSocket 은 OpenAPI 에 실리지 않아 도구가 라우트 표에서 직접 확인한다. 종료 코드는
 `4501` 이다 — `1011`(예기치 못한 조건)은 사실과 다르고, 이 종료는 «예정된 미구현»이라
 애플리케이션 대역에서 HTTP 501 에 대응시켰다.
@@ -269,7 +271,7 @@ GS-01 축 질문(`Q-MULTIHOP-001`)을 3전략으로 1회:
 | 정정 후 | `503` · `application/json` · `{"error":{"code":"dependency_unavailable","message":"neo4j 에 연결할 수 없다 …"}}` |
 
 전역 예외 핸들러(`internal_error`)로 구멍을 막고, 의존 단절은 **구분 코드**를 준다.
-🔴 `message` 에 예외 문자열·traceback·경로를 싣지 않는다 — 인증 없는 공개 Sandbox 라
+🔴 `message` 에 예외 문자열·traceback·경로를 싣지 않는다 — 인증 없는 공개 배포(REPLAY 축)라
 내부 구조가 그대로 밖으로 나간다(§34.6). 전문은 서버 로그에만 남는다. 같은 이유로
 기존 503 이 응답에 붙이던 프로브 사유 문자열(`res.notes`)도 걷어냈다.
 
@@ -423,3 +425,33 @@ docker compose up -d          # postgres · neo4j · ai-api (healthcheck = /api/
 - 임베딩 warm-up 은 기동 시 «백그라운드»로 돈다(`FKT_WARMUP_EMBEDDING=0` 으로 끈다).
   준비 여부는 `/api/health` 의 `models.embedding` 이 말한다 — 실측: 콜드 120.8s ·
   모델 캐시 볼륨이 살아 있으면 14.9s.
+
+## 문서 커밋 이후 붙은 축 — live 합성 · 세션 상한 · 진행 스트리밍 (2026-09-04 대조)
+
+🔴 **이 파일의 마지막 갱신은 2026-09-01 `ce314c9` 이고, 위 서술은 T4-1(컨테이너) 까지다.** 그 뒤 T6-1·T6-2·T6-3 으로 붙은 축을 아래에 적는다 — **코드에서 확인한 것만**이고, 운영 절차의 정본은 `docs/deployment/runbook.md` §7 이다.
+
+### live 합성 (T6-1·T6-2 · `app/investigation/live_synthesis.py`)
+
+- 🔴 **`FKT_LOCAL_SYNTHESIS_GATEWAY` 가 켜졌을 때만 이 모듈이 import 된다**(`synthesize.resolve_synthesizer` · 상수 = `synthesize.LIVE_GATE_ENV`). 공개 배포 프로세스 안에는 이 코드가 «불려오지» 않는다 — 그것이 공개면의 결정적 축을 지키는 방식이다.
+- 게이트웨이는 **운영자 PC 의 호스트 프로세스**이고 compose 에 없다(`services/synthesis-gateway/` · 기본 `127.0.0.1:8787`). 컨테이너에서 붙일 때 더하는 env 2개와 토큰 규율은 runbook §7-2.
+- 🔴 **조용한 폴백 0** — 게이트웨이가 못 답했거나, 답이 근거 결속을 깨거나, 형상이 어긋나면 **전량 거부**한다. 그때도 결정적 순위를 그대로 쓰되 `axis="live-rejected"` 와 사유를 드러낸다. **부분 채택은 하지 않는다**(순위와 문장이 서로 다른 쪽에서 오면 화면의 근거 표기가 거짓이 된다).
+- 의존은 표준 라이브러리(`urllib`)뿐이다 — 이 축 때문에 새로 들인 패키지가 없다.
+- 🔴 타임아웃 불변식 = **게이트웨이 상한 < 클라이언트 예산**. 두 층이 같은 이름을 읽던 시절에는 「어느 쪽이 끊었나」가 사라졌다(runbook §7-1).
+
+### 세션 단위 실행 상한 (`app/investigation/session_cap.py` · 계약 v0.1.12)
+
+| 값 | 기본 | 어디 |
+|---|---|---|
+| `run_cap_per_session` | **3** | `app/settings.py`(env 접두사 `FKT_` = `FKT_RUN_CAP_PER_SESSION`) |
+| `run_cap_window_sec` | **3600.0** | 같은 곳 |
+| `run_timeout_sec` | **300.0** | run 하나가 붙잡을 수 있는 최대 시간 · 넘기면 `run.stopped reason=timeout` + 안전 종료 |
+
+`admit()` 은 상한 안이면 `None`, 넘으면 **`Retry-After`(정수 초)**를 돌려주고 `429 session_run_cap_exceeded` 가 된다. 🔴 `Retry-After: 0` 을 내지 않는다 — 그것은 「지금 다시 두드리라」가 되어 거절의 뜻을 지운다. 🔴 **replay 는 이 상한이 막지 않는다**(runbook §7-2).
+
+### 마이그레이션 — 실물 8본 (2026-09-04 확인)
+
+`services/ai-api/db/migrations/` = `001_core_schema` · `002_id_integrity_checks` · `003_vector_index_build` · `004_ontology_freshness` · `005_ssot_manifest` · `006_graph_projection` · `007_freshness_unverified_and_integrity` · `008_graph_source_digest`. `pwsh db/migrate.ps1` 이 001~008 을 순차 적용한다(runbook §4-1 손순서 2단). 🔴 **`COMPOSE_PROJECT_NAME` 을 안 주면 postgres 가 healthy 인데도 「기동 중이 아닙니다」로 죽는다**(D-18 · runbook §4-1a).
+
+### 진행 스트리밍 (T6-3 · 계약 v0.1.13)
+
+이벤트 스키마 `type` 이 **10종**이 되었다 — `step.progress` 가 추가됐다(`app/investigation/events.py`). 방출 지점은 `app/investigation/workflow.py` 다.
