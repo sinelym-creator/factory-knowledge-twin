@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { Sparkline } from "@/components/overview/sparkline";
+import { useTourAllowed } from "@/components/tour/tour-allowed";
 import { StartInvestigation } from "@/components/overview/start-investigation";
 import type { ActiveAlarm, Overview, OverviewEquipment, Scenario } from "@/lib/contract";
 import { TZ_LABEL, clock, stamp } from "@/lib/time";
@@ -455,8 +456,27 @@ function EquipmentCard({
 }
 
 function IntroCard({ onClose }: { onClose: () => void }) {
+  /* 🔴 T7-28 — 이 카드는 «스스로» 투어의 허용 노드로 등록한다(D-1 재수리).
+     앞판은 오버레이가 효과 안에서 `querySelector('[data-testid="intro-card"]')` 를 한 번
+     읽었고, 카드가 그 뒤에 붙으면 다시 읽을 계기가 없어 카드가 `inert` 뒤로 들어갔다 —
+     그 안의 「안내 닫기」가 출구인데 눌리지 않았다(재열람 19/19 FAIL).
+     🔴 등록을 «카드 쪽»에 두면 순서 문제가 사라진다: 카드가 언제 붙든 붙는 그 순간에
+        등록되고, 사라질 때 해제된다. 투어가 안 열려 있으면 아무 일도 일어나지 않는다. */
+  const { registerAllowed } = useTourAllowed();
+  const ref = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    return registerAllowed(el);
+  }, [registerAllowed]);
+
   return (
-    <section className="fkt-card p-5" data-testid="intro-card" aria-label="처음 오셨나요">
+    <section
+      ref={ref}
+      className="fkt-card p-5"
+      data-testid="intro-card"
+      aria-label="처음 오셨나요"
+    >
       <div className="flex items-start gap-2">
         <p className="flex-1 text-title font-semibold tracking-[-0.01em]">처음 오셨나요?</p>
         <button

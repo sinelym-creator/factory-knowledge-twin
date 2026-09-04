@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { pickPlacement, type TourPlacement } from "./pick-placement";
 
+import { useTourAllowed } from "@/components/tour/tour-allowed";
 import { readAdvance, type TourStep } from "@/components/tour/tour-steps";
 
 /**
@@ -117,6 +118,9 @@ function TourStepView({
   /* 🔴 진행 조건은 `readAdvance()` 로만 읽는다(규격 ⑧-3) — 화면이 `advance` 를 직접 뜯어보면
      조건을 읽는 자리가 둘이 되고, 그게 앞판이 어긋난 이유다. */
   const plan = readAdvance(step);
+  /* 🔴 허용 노드는 «상태»로 받는다(T7-28 · D-1). 셀렉터로 한 번 읽으면 그 뒤에 붙는 것을
+     영영 못 본다 — 아래 포커스 경계 효과가 이 값을 의존 배열에 넣어 다시 계산한다. */
+  const { allowed: registered } = useTourAllowed();
   const [rect, setRect] = useState<Rect | null>(null);
   const [missing, setMissing] = useState(false);
   const titleRef = useRef<HTMLParagraphElement | null>(null);
@@ -188,11 +192,19 @@ function TourStepView({
        사라진다»(검증 실측: 재진입 시 5×5 격자 25/25 점을 셸 본문이 먹고 클릭이 8초 타임아웃 ·
        첫 진입에서는 21/25 가 카드 것이라 눌린다). 🔴 같은 버튼이 «경로에 따라» 눌리고 안
        눌리는 것은 설계일 수 없다. 그래서 함께 뜬 것은 허용 노드에 넣는다.
-       카드가 없으면(이미 닫았거나 처음이 아니면) 아무 일도 없다 — 투어 OFF 화면은 불변이다. */
-    const introEl = document.querySelector<HTMLElement>('[data-testid="intro-card"]');
+       카드가 없으면(이미 닫았거나 처음이 아니면) 아무 일도 없다 — 투어 OFF 화면은 불변이다.
+
+       🔴 **T7-28 — 그 카드를 «셀렉터»로 찾지 않는다.** 앞판은 이 자리에서
+       `querySelector('[data-testid="intro-card"]')` 를 **효과가 도는 그 순간 한 번** 읽었다.
+       카드가 그 뒤에 붙으면 다시 읽을 계기가 없어, 카드는 배경으로 분류된 채 `inert` 뒤로
+       들어간다(재열람 19/19 FAIL · 카드 첫 등장 시 `main` 이 이미 `inert`). 이제 카드가
+       스스로 등록하고, 그 «집합»이 아래 의존 배열에 들어간다 — 언제 붙든 다시 계산된다. */
     const allowed: HTMLElement[] = [callout];
     if (targetEl) allowed.push(targetEl);
-    if (introEl) allowed.push(introEl);
+    for (const el of registered) {
+      /* 사라진 노드를 허용에 넣으면 `keep` 사슬이 문서 밖을 가리켜 아무것도 안 지킨다. */
+      if (el.isConnected && !allowed.includes(el)) allowed.push(el);
+    }
 
     /* 허용 노드로 가는 «조상 경로»는 통과시키고 그 형제만 `inert` 로 덮는다.
        최상위를 통째로 덮으면 대상까지 같이 죽는다 — 그게 ② 를 깨는 자리다. */
@@ -272,8 +284,12 @@ function TourStepView({
       document.removeEventListener("focusin", onFocusIn, true);
       for (const el of changed) el.inert = false;
     };
+    /* 🔴 **`registered` 가 의존 배열에 «있어야» 이 수리가 성립한다**(T7-28). 카드가 붙는
+       시점은 이 효과가 도는 시점보다 뒤일 수 있고, 그때 배열 참조가 바뀌면서 효과가 다시
+       돈다 — React 가 «먼저» 위 cleanup 을 돌려 이전 회차의 `changed` 를 전부
+       `inert=false` 로 되돌린 다음 새 허용 집합으로 다시 계산한다. 그 순서가 이 수리의 전부다. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, step.id, plan.ui, plan.ui === "await" ? plan.of : ""]);
+  }, [index, step.id, plan.ui, plan.ui === "await" ? plan.of : "", registered]);
 
   /* 🔴 콜아웃의 «실제» 높이를 재서 배치에 쓴다. 220px 로 어림잡던 값이 실물과 어긋나
      데스크톱에서도 대상을 16.6% 덮었다(리바이2 34대 실측 1440 스텝 4). 추정으로 배치하면
