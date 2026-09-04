@@ -1133,8 +1133,14 @@ export async function createSession(base = ""): Promise<Reply<{ sessionId: strin
  *    통째로 받아 버리고(그 SSR 이 API 를 기다리는 동안 사람은 아무것도 못 본다) 그 응답을
  *    버린다. 쿠키는 항해가 아니라 응답의 일이라, 따라가지 않아도 브라우저가 심는다(same-origin).
  */
-export async function enterSession(): Promise<void> {
-  await fetch("/enter", { method: "POST", redirect: "manual", cache: "no-store" });
+/* 🔴 `renew` = 「지금 든 쿠키가 죽은 것을 확인했다」(D-55). 이 표지가 없으면 라우트는 이미
+   `api` 세션을 든 사람을 돌려보낸다 — 재기동으로 저장소가 빈 뒤에는 그 길이 유일한 출구다. */
+export async function enterSession(opts?: { renew?: boolean }): Promise<void> {
+  await fetch(opts?.renew ? "/enter?renew=1" : "/enter", {
+    method: "POST",
+    redirect: "manual",
+    cache: "no-store",
+  });
 }
 
 export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolean }>> {
