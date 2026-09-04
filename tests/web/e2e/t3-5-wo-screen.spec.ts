@@ -370,7 +370,11 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
       safety_measure_immutable: pageText.includes(
         "안전 조치는 SOP 가 요구하는 항목이라 편집·삭제할 수 없습니다",
       ),
-      safety_basis_immutable: pageText.includes("절차는 안전 조치의 «근거»라 편집할 수 없습니다"),
+      /* 🔴 **문면 리터럴을 통째로 박지 않는다**(D-73). 예전엔 「«근거»라」였고 지금은
+         「근거이므로」다 — 조사 하나가 바뀌자 이 축이 «화면에 문장이 있는데도» 빨강을 냈다.
+         재는 것은 «서버 사유 코드(`safety_basis_immutable`)에 대응하는 문면이 화면에 서 있는가»이니,
+         문장의 «뜻을 지키는 양 끝»만 물고 사이는 비워 둔다. 문장이 통째로 사라지면 여전히 무는다. */
+      safety_basis_immutable: /절차는 안전 조치의 .{0,20}편집할 수 없습니다/.test(pageText),
       field_not_editable: pageText.includes("field_not_editable"),
     };
     expect(phrases.safety_measure_immutable).toBe(true);
