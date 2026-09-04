@@ -51,6 +51,10 @@ GUARD_EXEMPT: Final[dict[tuple[str, str], str]] = {
 #    면제는 「세션과 무관한 축」이고, 이쪽은 「세션 스코프 자원이 아니어서 열어 두는 축」이다.
 #    🔴 세션 스코프 자원(run · WO 초안 · 승인 이력)은 여기 **없다** — 계약이 그렇게 적었고,
 #       그것이 이 예외가 소유권 은닉을 갉아먹지 않는 이유다.
+#    🔴 **단 하나의 예외**(D-68): `/evidence/GP-*` 는 run 상태를 읽는다 — GP 근거는
+#       조사 run 이 만들고 DB 에 실린 적이 없다. 그래서 그 kind 만 **라우트가 자기 안에서**
+#       세션을 강제한다(무세션 401 · 타 세션 404 · `routers/knowledge.py:_graph_path_evidence`).
+#       이 목록만 보면 «열려 있다»로 읽히므로 둘을 한 쌍으로 읽는다.
 READ_ONLY_EXCEPTIONS: Final[dict[tuple[str, str], str]] = {
     ("GET", "/api/evidence/{evidenceId}"): "근거 딥링크 — 세션 스코프 자원이 아니다",
     ("GET", "/api/documents/{docId}"): "문서 딥링크 — 세션 스코프 자원이 아니다",
