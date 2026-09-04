@@ -1,0 +1,24 @@
+# D-75 배포 이력 실측 (수집 시각: 2026-09-04 23:04:06 +0900)
+
+## docker inspect fkt-deploy-ai-api
+StartedAt=2026-09-04T13:30:31.113120638Z Image=fkt-deploy-ai-api:879fc35
+
+## docker images fkt-deploy-ai-api (TAG / CreatedAt / ID)
+879fc35	2026-09-04 22:29:55 +0900 KST	aae5162fc447
+b4b06dd	2026-09-04 20:26:01 +0900 KST	25b2bdfd95bc
+685f47b	2026-09-04 19:17:15 +0900 KST	dc6ad2161374
+0c2bc38	2026-09-04 17:01:53 +0900 KST	b00d3161991e
+7956e0c	2026-09-03 16:13:43 +0900 KST	20a388d14a46
+ad788d3	2026-09-03 09:18:03 +0900 KST	7dea595f378c
+4685d80	2026-09-03 07:50:11 +0900 KST	58dd3462dc58
+6e1487d	2026-09-02 09:59:53 +0900 KST	93f7230a2660
+
+## git: 각 태그 커밋 시각
+879fc35  2026-09-04 22:29:27 +0900 Merge pull request #665 from sinelym-creator/develop
+b4b06dd  2026-09-04 20:24:27 +0900 Merge pull request #647 from sinelym-creator/develop
+685f47b  2026-09-04 19:08:16 +0900 Merge pull request #630 from sinelym-creator/lane/levi2-t7-41av
+
+## D-68a(_graph_path_evidence) 탑재 여부 — routers/knowledge.py grep -c
+879fc35  count=2
+b4b06dd  count=0
+685f47b  count=0

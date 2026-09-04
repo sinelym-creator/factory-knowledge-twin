@@ -41,7 +41,7 @@ T1-9 독립 검증에서 세운 4종. 판정 근거는 `evidence/t1-9-shell-e2e-
 
 ```
 cd apps/web-console && pnpm install && pnpm build && pnpm exec next start -p 3101
-cd services/ai-api  && uvicorn app.main:app --host 127.0.0.1 --port 8000
+cd services/ai-api  && uvicorn app.main:app --host 127.0.0.1 --port <내 포트>   # FKT_API_BASE 필수(D-74)
 
 cd tests/web && npm install && npx playwright install chromium
 npm run e2e        # 34행

@@ -104,3 +104,23 @@ jobs:
             exit 1
           fi
           echo "자기 검증 OK — 참에서 초록, 변조에서 빨강"
+
+  # O-20(09-04): tests_unit 는 파일로만 있고 부르는 회로가 없었다 — 여기가 그 회로다.
+  unit-ai-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 🔴 이 목록은 `services/ai-api/tests_unit` 이 여는 import 체인의 «실측치»다
+      #    (센쿠2 45대 O-20 예비 실측 09-04 23:32 · pytest+pydantic+fastapi+pydantic-settings 4개로
+      #    18 passed · torch·sentence-transformers·psycopg·neo4j·numpy 부재). requirements.txt 는
+      #    torch 를 실으므로 일부러 안 깐다. 체인 어딘가에 top-level `import psycopg`/torch 계열이
+      #    들어오는 날 이 job 은 «테스트가 틀려서»가 아니라 «목록이 모자라서» 빨강이 된다 —
+      #    그때는 목록을 늘리기 전에 체인(왜 unit 이 그 의존을 여는가)을 먼저 본다.
+      - name: install (measured import chain only)
+        run: python -m pip install --disable-pip-version-check --quiet pytest==9.1.1 pydantic==2.13.5 fastapi==0.141.1 pydantic-settings==2.15.0
+      - name: unit tests (services/ai-api/tests_unit)
+        working-directory: services/ai-api
+        run: python -m pytest tests_unit -q

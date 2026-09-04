@@ -8,7 +8,11 @@
  * 난 초록인지를 보고서가 스스로 말하게 한다.
  */
 const WEB = process.env.FKT_WEB_BASE ?? "http://127.0.0.1:3101";
-const API = process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
+// 🔴 기본값을 두지 않는다(D-74) — `:8000` 은 **다른 좌석의 대역**이라, 미지정 실행이 남의
+//    서버를 조용히 재고 그 초록·빨강을 이 리포의 판정으로 적게 된다. 기본값이 남을 가리키면
+//    그것은 편의가 아니라 오측정 장치다(D-72 동형 · `d21c_polling_probe.mjs` 선례).
+const API = process.env.FKT_API_BASE;
+if (!API) throw new Error("🔴 측정 불가 — `FKT_API_BASE` 를 지정하라(기본값 없음 · D-74 · 무접촉 대역 `:8000`·`:8010`·`:8787` 금지).");
 
 async function probe(url: string, init?: RequestInit) {
   try {
@@ -27,7 +31,7 @@ export default async function preflight() {
 
   const lines: string[] = [];
   if (!web.ok) lines.push(`🔴 web-console 무응답 ${WEB} — ${web.why}\n     cd apps/web-console && pnpm build && pnpm exec next start -p 3101`);
-  if (!live.ok) lines.push(`🔴 ai-api 무응답 ${API} — ${live.why}\n     cd services/ai-api && uvicorn app.main:app --port 8000`);
+  if (!live.ok) lines.push(`🔴 ai-api 무응답 ${API} — ${live.why}\n     cd services/ai-api && uvicorn app.main:app --port <내 포트> · FKT_API_BASE 로 가리켜라`);
   if (lines.length) throw new Error("preflight 실패 — 측정 대상이 서 있지 않다(초록도 빨강도 아니다)\n  " + lines.join("\n  "));
 
   /**

@@ -8,7 +8,7 @@ import { defineConfig } from "@playwright/test";
  *    백엔드 상태에서 난 초록인지 보고서에 남지 않는다).
  *
  *      cd apps/web-console && pnpm build && pnpm exec next start -p 3101
- *      cd services/ai-api  && uvicorn app.main:app --port 8000
+ *      cd services/ai-api  && uvicorn app.main:app --port <내 포트>   # FKT_API_BASE 필수(D-74)
  *      cd tests/web        && npx playwright test
  */
 export default defineConfig({

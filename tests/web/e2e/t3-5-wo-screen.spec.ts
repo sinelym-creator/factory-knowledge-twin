@@ -370,9 +370,22 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
       safety_measure_immutable: pageText.includes(
         "안전 조치는 SOP 가 요구하는 항목이라 편집·삭제할 수 없습니다",
       ),
-      safety_basis_immutable: pageText.includes("절차는 안전 조치의 «근거»라 편집할 수 없습니다"),
+      /* 🔴 **문면 리터럴을 통째로 박지 않는다**(D-73). 예전엔 「«근거»라」였고 지금은
+         「근거이므로」다 — 조사 하나가 바뀌자 이 축이 «화면에 문장이 있는데도» 빨강을 냈다.
+         재는 것은 «서버 사유 코드(`safety_basis_immutable`)에 대응하는 문면이 화면에 서 있는가»이니,
+         문장의 «뜻을 지키는 양 끝»만 물고 사이는 비워 둔다. 문장이 통째로 사라지면 여전히 무는다. */
+      safety_basis_immutable: /절차는 안전 조치의 .{0,20}편집할 수 없습니다/.test(pageText),
       field_not_editable: pageText.includes("field_not_editable"),
     };
+    /* 🔴 **대조군 — 느슨해진 문면 정규식이 «부재»를 아직 물는가**(D-73 · 같은 실행).
+       양 끝만 물면 느슨해진 만큼 «전부 통과시키는 쪽»으로 기울 수 있다 — 그래서 그 문장을
+       지운 본문에 같은 정규식을 대어 **false 가 나오는지**를 여기서 실측한다. */
+    expect(
+      /절차는 안전 조치의 .{0,20}편집할 수 없습니다/.test(
+        pageText.replace(/절차는 안전 조치의 [\s\S]{0,40}?편집할 수 없습니다/g, ""),
+      ),
+      "대조군 실패 — 문장을 지워도 정규식이 문다(판정력 없는 초록)",
+    ).toBe(false);
     expect(phrases.safety_measure_immutable).toBe(true);
     expect(phrases.safety_basis_immutable).toBe(true);
     // 🔴 field_not_editable 은 화면에 «도달 경로»가 있는지 자체가 판정 대상 — 여기서는 기록만 한다
@@ -449,7 +462,16 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     await expect(page.getByTestId("wo-reject")).toBeDisabled();
     await page.reload();
     await expect(page.getByTestId("wo-history")).toHaveCount(0);
-    await expect(page.getByTestId("wo-save-state")).toHaveText(/종단 상태/);
+    /* 🔴 **「종단」은 계약이 «전이 규칙»을 서술하는 낱말이지 화면 문장을 정하는 줄이 아니다**
+       (D-73 · 오케 판정 · 계약·디자인·test-plan 어느 줄도 화면에 그 낱말을 요구하지 않는다).
+       기계 낱말은 이미 서버 응답으로 물었다(`approval_state_terminal` · 위) —
+       화면은 «사람 문장»을 쓰므로 뜻을 지키는 양 끝만 물고 낱말은 요구하지 않는다. */
+    await expect(page.getByTestId("wo-save-state")).toHaveText(/편집할 수 없습니다/);
+    // 🔴 대조군 — 이 정규식은 «잠기지 않은 상태»의 문장은 물면 안 된다(같은 실행).
+    expect(
+      /편집할 수 없습니다/.test("저장 중…"),
+      "대조군 실패 — 정규식이 잠금과 무관한 문장까지 문다",
+    ).toBe(false);
   });
 
   test("⑤ 승인 — 모달 → approved + auditId · 이후 잠금 · 서버 409 두 종", async ({ page }) => {
@@ -481,8 +503,20 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     await expect(page.getByTestId("wo-title")).toBeDisabled();
     await expect(page.getByTestId("wo-approve")).toBeDisabled();
     await expect(page.getByTestId("wo-reject")).toBeDisabled();
-    await expect(page.getByTestId("wo-part-add")).toBeDisabled();
-    await expect(page.getByTestId("wo-part-delete").first()).toBeDisabled();
+    /* 🔴 **계약이 바뀌었다(D-70)** — 잠긴 초안에는 편집 UI 를 «그리지 않는다».
+       예전 형상은 `disabled` + `opacity-40` 이었고, 그것이 「눌러도 되는데 안 눌리는 것」처럼
+       보이는 데다 좁은 폭에서 «비어 보이는 긴 카드»의 절반이었다(폐하 360 실기기 · D-70).
+       그래서 `toBeDisabled()` 는 이제 **요소를 못 찾아 실패한다** — 부재로 판정선을 옮긴다.
+
+       🔴 다만 «0건»만 세면 **화면이 통째로 비어도 초록**이다. 그래서 같은 자리에서
+          ① 읽기 목록이 남아 있고 ② 잠김 사유가 문면으로 있고 ③ 🛡 안전 조치의 삭제는
+          «여전히 있다»(설계 의도 · 서버가 403 으로 막는 축)까지 함께 못박는다. */
+    await expect(page.getByTestId("wo-part-add")).toHaveCount(0);
+    await expect(page.getByTestId("wo-part-delete")).toHaveCount(0);
+    await expect(page.getByTestId("wo-part-name")).toHaveCount(0);
+    expect(await page.getByTestId("wo-part").count()).toBeGreaterThan(0);
+    await expect(page.getByTestId("wo-parts-lock")).toHaveText("✅ 승인됨 · 편집 잠김");
+    expect(await page.getByTestId("wo-safety-delete").count()).toBeGreaterThan(0);
 
     expect((await serverDraft(page, woId)).approvalState).toBe("approved");
     const patch = await serverCall(page, `/api/work-orders/${woId}`, {
@@ -526,7 +560,11 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     //    누설까지 통과시킨다. 좁힐 것은 낱말이 아니라 보는 범위다.
     const LEAK_WORDS = ["남의", "다른 세션", "권한", "403", "소유"];
     const text = await otherPage.locator("main").innerText();
-    expect(text).toContain("그런 작업지시 초안이 없다");
+    /* 🔴 **서버의 낱말은 `data-why` 에 산다**(D-73 · `components/unavailable.tsx`
+       「사람에게는 문장을, 계측기에게는 값을」). 화면은 `describeWhy()` 로 번역해 그리므로
+       원문을 `innerText` 에서 찾으면 «구조가 바뀐 자리»를 대상 결함으로 적게 된다.
+       그래서 «부재의 뜻»은 속성에서, «누설 없음»은 본문에서 따로 묻는다. */
+    await expect(box.locator("[data-why]")).toHaveAttribute("data-why", /그런 작업지시 초안이 없다/);
     for (const leak of LEAK_WORDS) {
       expect(text, `존재를 누설하는 낱말이 있다: ${leak}`).not.toContain(leak);
     }
@@ -540,8 +578,15 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     const planted = await otherPage.locator("main").innerText();
     expect(LEAK_WORDS.filter((w) => planted.includes(w)), "심은 누설 낱말을 못 잡는다 — 눈이 멀었다").not.toEqual([]);
     await otherPage.evaluate(() => document.getElementById("levi2-leak-control")?.remove());
-    // ⓐ 세는 눈 자기 검증 — 같은 눈이 있는 낱말은 찾는다
-    expect(text).toContain("없다");
+    /* ⓐ 세는 눈 자기 검증 — 같은 눈이 «있는» 낱말은 찾는다.
+       🔴 needle 을 「없다」로 두었던 것은 서버의 낱말이었고, 화면은 그것을 `data-why` 로
+       옮길 때 본문에서 사라졌다 — 그러자 «눈이 멀었다»가 아닌데 자기검증이 빨강을 냈다.
+       자기검증의 needle 은 **그 화면이 not-found 일 때 항상 그리는 사람 문장**이어야 한다
+       (`components/unavailable.tsx` · `kind === "not-found"`). 계약은 이 문면을 요구하지 않는다(grep 0) —
+       여기서 묻는 것은 대상의 규격이 아니라 **내 계측기가 살아 있는가**다. */
+    expect(text, "세는 눈이 본문을 전혀 읽지 못한다 — 이 회차의 누설 0 은 증거가 아니다").toMatch(
+      /찾을 수 없습니다/,
+    );
     await other.close();
 
     // ── 무쿠키(세션 없는 항아리) → 입장 경로로 밀린다(Q-39 형상)

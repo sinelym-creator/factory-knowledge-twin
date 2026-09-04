@@ -1,0 +1,106 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "viewport": "1280x900",
+  "wall": "2026-09-04T14:10:09.408Z",
+  "stage": {
+    "health": {
+      "ok": true,
+      "version": "0.1.0",
+      "status": "ok",
+      "dependencies": {
+        "postgres": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 16
+        },
+        "neo4j": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 1
+        }
+      },
+      "build": "879fc35",
+      "models": {
+        "embedding": "ready",
+        "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+      }
+    },
+    "startEnabled": true,
+    "landedUrl": "https://factory-knowledge-twin.vercel.app/incidents/INC-2026-014?run=RUN-a523356dee02",
+    "runId": "RUN-a523356dee02",
+    "statusTrail": [
+      {
+        "t": "2026-09-04T14:10:17.229Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:10:19.678Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:10:22.120Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:10:24.568Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:10:26.994Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:10:29.460Z",
+        "status": 200,
+        "runStatus": "completed"
+      }
+    ],
+    "finalRunStatus": "completed",
+    "gpHrefAppeared": true,
+    "gpHrefCount": 5,
+    "gpHrefs": [
+      "/evidence/GP-a523356dee02-00?run=RUN-a523356dee02",
+      "/evidence/GP-a523356dee02-01?run=RUN-a523356dee02",
+      "/evidence/GP-a523356dee02-02?run=RUN-a523356dee02",
+      "/evidence/GP-a523356dee02-03?run=RUN-a523356dee02",
+      "/evidence/GP-a523356dee02-04?run=RUN-a523356dee02"
+    ],
+    "firstGpId": "GP-a523356dee02-00",
+    "prefixMatch": true
+  },
+  "screen": {
+    "url": "https://factory-knowledge-twin.vercel.app/evidence/GP-a523356dee02-00?run=RUN-a523356dee02",
+    "arrivedOnEvidence": true,
+    "bodyCount": 1,
+    "stepsCount": 3,
+    "walkText": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+    "anchorsInBody": 0,
+    "unreachablePhrase": 0,
+    "notFoundPhrase": 0,
+    "bodyTextHead": "그래프 경로 [Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01 Component · 2-hop · 걸음 3개 · score 0.333 AL-20260826-0041 ↓ ON_EQUIPMENT EQ-CNC-204 ↓ HAS_COMPONENT CP-204-BRG-01 종단 노드 CP-204-BRG-01",
+    "capture": "promo14-gp-body-1280.png"
+  },
+  "verdict": {
+    "stageRang": true,
+    "runId": "RUN-a523356dee02",
+    "build": "879fc35",
+    "a_bodyPresent": true,
+    "b_stepsAtLeast2": true,
+    "c_walkNonEmpty": true,
+    "d_noAnchorsInBody": true,
+    "e_noUnreachablePhrase": true,
+    "pass": true
+  },
+  "consoleErrors": [
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-a523356dee02' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-a523356dee02' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-a523356dee02' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-a523356dee02' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-a523356dee02' failed: Error during WebSocket handshake: Unexpected response cod"
+  ]
+}

@@ -479,7 +479,17 @@ export function apiBase(): string {
    * 그래서 이 함수는 빌드 상수만 읽는다. 런타임 env 가 달라지면 `instrumentation.ts` 가
    * 부팅을 죽인다 — 두 층이 갈릴 자리 자체를 없앴다.
    */
-  return process.env.FKT_API_BASE_BUILD ?? "http://127.0.0.1:8000";
+  /* 🔴 여기에도 기본값을 두지 않는다(D-76). 이 상수는 `next.config.ts` 가 굽는 값이라
+     빌드가 선 이상 반드시 있다 — 그래서 이 던지기는 «미지정»을 잡는 자리가 아니라 «굽기가
+     빠진» 형상을 잡는 자리이고, 문면도 그렇게 다르다(같은 사건을 두 문장으로 말하지 않는다).
+     기본값을 남기면 그 형상이 조용히 센쿠2 대역을 가리킨 채 돌아간다. */
+  const built = process.env.FKT_API_BASE_BUILD;
+  if (!built) {
+    throw new Error(
+      "[FKT] 빌드 상수 FKT_API_BASE_BUILD 가 없다 — next.config 가 굽지 않은 산출물이다(재빌드하라)",
+    );
+  }
+  return built;
 }
 
 /**
