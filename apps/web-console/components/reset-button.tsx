@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useModalInert } from "@/lib/use-modal-inert";
 
 import { resetSession } from "@/lib/contract";
@@ -11,6 +12,17 @@ import { useEscapeToClose } from "@/lib/use-escape-to-close";
  *
  * 🔴 「초기화됐습니다」를 «응답을 받은 뒤에만» 말한다. 백엔드가 아직 없을 때 성공처럼 보이게
  *    하면, 화면이 하지 않은 일을 했다고 말하는 것이다(P0 11항 중 «리셋»의 참·거짓이 여기서 갈린다).
+ *
+ * 🔴 **D-56 — 확인 창은 `document.body` 로 내보낸다(portal).**
+ *
+ *    이 버튼은 앱바(`.fkt-glass`) 안에 산다. 그 클래스는 `backdrop-filter` 를 쓰고
+ *    (`app/globals.css:388~391`), **`backdrop-filter` 가 걸린 요소는 `position: fixed` 자손의
+ *    컨테이닝 블록이 된다** — 그래서 「화면 전체」를 뜻하던 `fixed inset-0` 이 실제로는
+ *    «앱바 한 줄»(52px)이었고, 그 안에서 가운데 정렬된 166px 창은 위로 삐져나갔다.
+ *    실측이 그대로 산수로 맞는다: 앱바 52 → 중심 26 → `top = 26 - 83 = -57`(desktop 실측 -57) ·
+ *    앱바 103(390 폭) → 중심 51.5 → `-31.5`(실측 -32). 첫 줄이 잘려 보인 이유가 이것이다.
+ *    🔴 그래서 «앵커를 옮기는» 처방이 아니라 **컨테이닝 블록 밖으로 내보내는** 처방을 쓴다 —
+ *       좌표를 손보면 앱바 높이가 바뀌는 폭(390 = 103px)마다 다시 어긋난다.
  */
 export function ResetButton({ sessionId }: { sessionId: string }) {
   const [asking, setAsking] = useState(false);
@@ -51,7 +63,8 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
         ⟲ <span className="sr-only">세션 </span>리셋
       </button>
 
-      {asking && (
+      {asking &&
+        createPortal(
         <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
           <div className="w-full max-w-sm fkt-card p-6" role="dialog" aria-modal>
             <p className="text-body-c">이 세션을 처음 상태로 되돌릴까요?</p>
@@ -69,7 +82,8 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {result && (
