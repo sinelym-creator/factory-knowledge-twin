@@ -25,7 +25,14 @@ import { readFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 
 const WEB = process.env.FKT_WEB_BASE ?? "http://127.0.0.1:3101";
-const API = process.env.FKT_API_BASE ?? "http://127.0.0.1:8000";
+// 🔴 기본값을 두지 않는다(D-74) — `:8000` 은 **다른 좌석의 대역**이라, 미지정 실행이 남의
+//    서버를 조용히 재고 그 초록·빨강을 이 리포의 판정으로 적게 된다. 기본값이 남을 가리키면
+//    그것은 편의가 아니라 오측정 장치다(D-72 동형 · `d21c_polling_probe.mjs` 선례).
+const API = process.env.FKT_API_BASE;
+if (!API) {
+  console.error("🔴 측정 불가 — `FKT_API_BASE` 를 지정하라(기본값 없음 · D-74 · 무접촉 대역 `:8000`·`:8010`·`:8787` 금지).");
+  process.exit(2);
+}
 // 🔴 ai-api 의 access 로그. 「서는 세션이 몇 개 발급됐나」는 브라우저에서 안 보인다 —
 //    서버 쪽에서 세지 않으면 이 축은 «못 잰» 것이지 0 이 아니다.
 const API_LOG = process.env.FKT_API_LOG;
