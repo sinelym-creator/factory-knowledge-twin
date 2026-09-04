@@ -1,0 +1,56 @@
+{
+ "label": "t739target",
+ "base": "http://127.0.0.1:8141",
+ "at": "2026-09-04T09:16:57.750Z",
+ "notMeasured": [],
+ "incidents": {
+  "status": 404,
+  "url": "http://127.0.0.1:8141/incidents",
+  "testids": [
+   "nav-overview",
+   "nav-incidents",
+   "nav-compare",
+   "app-bar",
+   "intro-reopen",
+   "mode-badge",
+   "session-chip",
+   "reset-button",
+   "fallback-banner"
+  ],
+  "rows": 2,
+  "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY vtyo ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 404 This page could not "
+ },
+ "restore": {
+  "entered": true,
+  "urlAfterEnter": "http://127.0.0.1:8141/incidents/INC-2026-014?run=RUN-f066735f07ad",
+  "runInUrl": true,
+  "runId": "RUN-f066735f07ad",
+  "evidenceHref": "/evidence/EQ-CNC-204?run=RUN-f066735f07ad",
+  "urlAfterBack": "http://127.0.0.1:8141/incidents/INC-2026-014?run=RUN-f066735f07ad",
+  "runAfterBack": "RUN-f066735f07ad",
+  "overviewIncidentHref": "/incidents/INC-2025-019",
+  "urlAfterNav": "http://127.0.0.1:8141/incidents/INC-2025-019",
+  "runAfterNav": null,
+  "testidsAfterNav": 19
+ },
+ "tour": {
+  "inviteFound": true,
+  "notes": [
+   null,
+   null,
+   "replay-offline"
+  ],
+  "titles": [
+   "둘러보기를 시작합니다알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따",
+   "알람은 «울린 행»의 값이 앵커다임계와 관측값이 나란히 있습니다. 기준은 센서의 임",
+   "조사를 시작하면 에이전트가 5단계를 돕니다구조화 조회 → 문서 검색 → 그래프 추적"
+  ],
+  "stoppedAt": 3,
+  "noteValues": [
+   "replay-offline"
+  ]
+ },
+ "consoleErrors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}
