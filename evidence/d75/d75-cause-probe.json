@@ -1,0 +1,669 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "wall": "2026-09-04T14:01:06.538Z",
+  "stage": {
+    "health": {
+      "ok": true,
+      "version": "0.1.0",
+      "status": "ok",
+      "dependencies": {
+        "postgres": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 1
+        },
+        "neo4j": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 1
+        }
+      },
+      "build": "879fc35",
+      "models": {
+        "embedding": "ready",
+        "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+      }
+    },
+    "tourStillOpen": 0,
+    "waitedForEnabled": true,
+    "startCountAny": 1,
+    "startCount": 1,
+    "landedUrl": "https://factory-knowledge-twin.vercel.app/incidents/INC-2026-014?run=RUN-8d8ecdca3ad9",
+    "runId": "RUN-8d8ecdca3ad9",
+    "runRecordAtDone": {
+      "status": "completed",
+      "candidates": [
+        {
+          "rank": 1,
+          "failureModeId": "FM-BRG-WEAR",
+          "label": "스핀들 베어링 마모",
+          "confidenceNote": "정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop",
+          "evidenceIds": [
+            "MR-2025-0087",
+            "DOC-MAN-0021@r1#006",
+            "FM-BRG-WEAR"
+          ],
+          "rationale": {
+            "sentences": [
+              "경보 AL-20260826-0041은 진동 센서 SN-204-VIB에서 임계 6.3 mm/s를 초과한 6.3047 mm/s로 critical 등급 발생했다.",
+              "그래프 경로상 이 경보가 트리거한 진동 센서가 스핀들 베어링 마모 고장모드로 연결되고, 동일 설비의 베어링 부품까지 2홉으로 이어진다.",
+              "2025년 2월 동일 설비에서 스핀들 베어링 마모로 교체한 이력이 있고, 매뉴얼도 진동 추세 상승 시 베어링 마모를 의심하도록 규정한다."
+            ],
+            "citedEvidenceIds": [
+              "AL-20260826-0041",
+              "SN-204-VIB",
+              "GP-8d8ecdca3ad9-01",
+              "GP-8d8ecdca3ad9-00",
+              "MR-2025-0087",
+              "DOC-MAN-0021@r1#006"
+            ]
+          }
+        },
+        {
+          "rank": 2,
+          "failureModeId": "FM-TOOL-IMB",
+          "label": "공구 불균형",
+          "confidenceNote": "정비 이력 0건 · 문서 인용 1건 · 그래프 경로 없음 · 🔴 대응 SOP 매핑 없음",
+          "evidenceIds": [
+            "DOC-MAN-0021@r1#006"
+          ],
+          "rationale": {
+            "sentences": [
+              "매뉴얼은 특정 회전수에서만 이상 진동이 발생할 때 공구 불균형을 먼저 보라고 하나, 이번 경보에는 회전수 대역 의존성을 보여주는 계측 근거가 없다.",
+              "공구 불균형을 뒷받침하는 정비 이력이나 그래프 연결이 제시되지 않아 우선순위가 낮다."
+            ],
+            "citedEvidenceIds": [
+              "DOC-MAN-0021@r1#006",
+              "AL-20260826-0041"
+            ]
+          }
+        }
+      ],
+      "workOrderDraftId": "WOD-d63ca15609df"
+    },
+    "statusTrail": [
+      {
+        "t": "2026-09-04T14:01:12.750Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:01:15.167Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:01:17.634Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:01:20.076Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:01:22.502Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T14:01:24.933Z",
+        "status": 200,
+        "runStatus": "completed"
+      }
+    ],
+    "completed": true,
+    "mode": null,
+    "screenGpHrefs": [
+      "/evidence/GP-8d8ecdca3ad9-00?run=RUN-8d8ecdca3ad9",
+      "/evidence/GP-8d8ecdca3ad9-01?run=RUN-8d8ecdca3ad9",
+      "/evidence/GP-8d8ecdca3ad9-02?run=RUN-8d8ecdca3ad9",
+      "/evidence/GP-8d8ecdca3ad9-03?run=RUN-8d8ecdca3ad9",
+      "/evidence/GP-8d8ecdca3ad9-04?run=RUN-8d8ecdca3ad9"
+    ],
+    "evidenceLinkCount": 23,
+    "screenGpId": "GP-8d8ecdca3ad9-00",
+    "derivedGpId": "GP-8d8ecdca3ad9-00",
+    "prefixMatch": true
+  },
+  "columns": {
+    "immediate": {
+      "at": "2026-09-04T14:01:26.215Z",
+      "run": {
+        "path": "/api/runs/RUN-8d8ecdca3ad9",
+        "status": 200,
+        "ms": 441,
+        "json": {
+          "status": "completed",
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "스핀들 베어링 마모",
+              "confidenceNote": "정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop",
+              "evidenceIds": [
+                "MR-2025-0087",
+                "DOC-MAN-0021@r1#006",
+                "FM-BRG-WEAR"
+              ],
+              "rationale": {
+                "sentences": [
+                  "경보 AL-20260826-0041은 진동 센서 SN-204-VIB에서 임계 6.3 mm/s를 초과한 6.3047 mm/s로 critical 등급 발생했다.",
+                  "그래프 경로상 이 경보가 트리거한 진동 센서가 스핀들 베어링 마모 고장모드로 연결되고, 동일 설비의 베어링 부품까지 2홉으로 이어진다.",
+                  "2025년 2월 동일 설비에서 스핀들 베어링 마모로 교체한 이력이 있고, 매뉴얼도 진동 추세 상승 시 베어링 마모를 의심하도록 규정한다."
+                ],
+                "citedEvidenceIds": [
+                  "AL-20260826-0041",
+                  "SN-204-VIB",
+                  "GP-8d8ecdca3ad9-01",
+                  "GP-8d8ecdca3ad9-00",
+                  "MR-2025-0087",
+                  "DOC-MAN-0021@r1#006"
+                ]
+              }
+            },
+            {
+              "rank": 2,
+              "failureModeId": "FM-TOOL-IMB",
+              "label": "공구 불균형",
+              "confidenceNote": "정비 이력 0건 · 문서 인용 1건 · 그래프 경로 없음 · 🔴 대응 SOP 매핑 없음",
+              "evidenceIds": [
+                "DOC-MAN-0021@r1#006"
+              ],
+              "rationale": {
+                "sentences": [
+                  "매뉴얼은 특정 회전수에서만 이상 진동이 발생할 때 공구 불균형을 먼저 보라고 하나, 이번 경보에는 회전수 대역 의존성을 보여주는 계측 근거가 없다.",
+                  "공구 불균형을 뒷받침하는 정비 이력이나 그래프 연결이 제시되지 않아 우선순위가 낮다."
+                ],
+                "citedEvidenceIds": [
+                  "DOC-MAN-0021@r1#006",
+                  "AL-20260826-0041"
+                ]
+              }
+            }
+          ],
+          "workOrderDraftId": "WOD-d63ca15609df"
+        },
+        "raw": "{\"status\":\"completed\",\"candidates\":[{\"rank\":1,\"failureModeId\":\"FM-BRG-WEAR\",\"label\":\"스핀들 베어링 마모\",\"confidenceNote\":\"정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop\",\"evidenceIds\":[\"MR-2025-0087\",\"DOC-MAN-0021@r1#006\",\"FM-BRG-WEAR\"],\"rationale\":{\"sentences\":[\"경보 AL-20260826-0041은 진동 센서 SN-204-VIB에서 임계 6.3 mm/s를 초과한 6.3047 mm/s로 critical 등급 발생했다.\",\"그래프 경로상 이 경보가 트리거한 진동 센서가 스핀들 베어링 마모 고장모드로 연결되고, 동일 설비의 베어링 부품까지 "
+      },
+      "graphPaths": {
+        "path": "/api/graph/paths?byRun=RUN-8d8ecdca3ad9",
+        "status": 200,
+        "ms": 441,
+        "json": [
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-00",
+            "targetId": "CP-204-BRG-01",
+            "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+            "score": 0.333333,
+            "label": "Component",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "EQ-CNC-204",
+              "CP-204-BRG-01"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ON_EQUIPMENT",
+                "to": "EQ-CNC-204"
+              },
+              {
+                "from": "EQ-CNC-204",
+                "type": "HAS_COMPONENT",
+                "to": "CP-204-BRG-01"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-01",
+            "targetId": "FM-BRG-WEAR",
+            "excerpt": "[FailureMode · 2-hop] AL-20260826-0041 → SN-204-VIB → FM-BRG-WEAR",
+            "score": 0.333333,
+            "label": "FailureMode",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "SN-204-VIB",
+              "FM-BRG-WEAR"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "TRIGGERS",
+                "to": "SN-204-VIB"
+              },
+              {
+                "from": "SN-204-VIB",
+                "type": "INDICATED_BY",
+                "to": "FM-BRG-WEAR"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-02",
+            "targetId": "MR-2024-0004",
+            "excerpt": "[MaintenanceRecord · 2-hop] AL-20260826-0041 → EQ-CNC-204 → MR-2024-0004",
+            "score": 0.333333,
+            "label": "MaintenanceRecord",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "EQ-CNC-204",
+              "MR-2024-0004"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ON_EQUIPMENT",
+                "to": "EQ-CNC-204"
+              },
+              {
+                "from": "EQ-CNC-204",
+                "type": "ON_EQUIPMENT",
+                "to": "MR-2024-0004"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-03",
+            "targetId": "SOP-BRG-INSP-014",
+            "excerpt": "[SOP · 3-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014",
+            "score": 0.25,
+            "label": "SOP",
+            "hops": 3,
+            "nodes": [
+              "AL-20260826-0041",
+              "INC-2026-014",
+              "WO-2026-0113",
+              "SOP-BRG-INSP-014"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ESCALATES_TO",
+                "to": "INC-2026-014"
+              },
+              {
+                "from": "INC-2026-014",
+                "type": "RESOLVED_BY",
+                "to": "WO-2026-0113"
+              },
+              {
+                "from": "WO-2026-0113",
+                "type": "REFERENCES",
+                "to": "SOP-BRG-INSP-014"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-04",
+            "targetId": "SAF-LOTO-01",
+            "excerpt": "[SafetyRule · 4-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014 → SAF-LOTO-01",
+            "score": 0.2,
+            "label": "SafetyRule",
+            "hops": 4,
+            "nodes": [
+              "AL-20260826-0041",
+              "INC-2026-014",
+              "WO-2026-0113",
+              "SOP-BRG-INSP-014",
+              "SAF-LOTO-01"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ESCALATES_TO",
+                "to": "INC-2026-014"
+              },
+              {
+                "from": "INC-2026-014",
+                "type": "RESOLVED_BY",
+                "to": "WO-2026-0113"
+              },
+              {
+                "from": "WO-2026-0113",
+                "type": "REFERENCES",
+                "to": "SOP-BRG-INSP-014"
+              },
+              {
+                "from": "SOP-BRG-INSP-014",
+                "type": "REQUIRES",
+                "to": "SAF-LOTO-01"
+              }
+            ]
+          }
+        ],
+        "raw": "[{\"evidenceId\":\"GP-8d8ecdca3ad9-00\",\"targetId\":\"CP-204-BRG-01\",\"excerpt\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"score\":0.333333,\"label\":\"Component\",\"hops\":2,\"nodes\":[\"AL-20260826-0041\",\"EQ-CNC-204\",\"CP-204-BRG-01\"],\"edges\":[{\"from\":\"AL-20260826-0041\",\"type\":\"ON_EQUIPMENT\",\"to\":\"EQ-CNC-204\"},{\"from\":\"EQ-CNC-204\",\"type\":\"HAS_COMPONENT\",\"to\":\"CP-204-BRG-01\"}]},{\"evidence"
+      },
+      "evidenceDerived": {
+        "path": "/api/evidence/GP-8d8ecdca3ad9-00",
+        "status": 200,
+        "ms": 418,
+        "json": {
+          "evidenceId": "GP-8d8ecdca3ad9-00",
+          "kind": "graph-path",
+          "revisionId": null,
+          "contentHash": null,
+          "stale": false,
+          "approvalState": null,
+          "effectiveFrom": null,
+          "effectiveTo": null,
+          "text": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+          "highlight": null,
+          "record": null,
+          "sourceId": "CP-204-BRG-01",
+          "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+          "score": 0.333333,
+          "meta": {
+            "path": {
+              "label": "Component",
+              "hops": 2,
+              "nodes": [
+                "AL-20260826-0041",
+                "EQ-CNC-204",
+                "CP-204-BRG-01"
+              ],
+              "edges": [
+                {
+                  "from": "AL-20260826-0041",
+                  "type": "ON_EQUIPMENT",
+                  "to": "EQ-CNC-204"
+                },
+                {
+                  "from": "EQ-CNC-204",
+                  "type": "HAS_COMPONENT",
+                  "to": "CP-204-BRG-01"
+                }
+              ]
+            }
+          }
+        },
+        "raw": "{\"evidenceId\":\"GP-8d8ecdca3ad9-00\",\"kind\":\"graph-path\",\"revisionId\":null,\"contentHash\":null,\"stale\":false,\"approvalState\":null,\"effectiveFrom\":null,\"effectiveTo\":null,\"text\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"highlight\":null,\"record\":null,\"sourceId\":\"CP-204-BRG-01\",\"excerpt\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"score\":0.333333,\"meta"
+      }
+    },
+    "after_settle": {
+      "at": "2026-09-04T14:01:39.530Z",
+      "run": {
+        "path": "/api/runs/RUN-8d8ecdca3ad9",
+        "status": 200,
+        "ms": 874,
+        "json": {
+          "status": "completed",
+          "candidates": [
+            {
+              "rank": 1,
+              "failureModeId": "FM-BRG-WEAR",
+              "label": "스핀들 베어링 마모",
+              "confidenceNote": "정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop",
+              "evidenceIds": [
+                "MR-2025-0087",
+                "DOC-MAN-0021@r1#006",
+                "FM-BRG-WEAR"
+              ],
+              "rationale": {
+                "sentences": [
+                  "경보 AL-20260826-0041은 진동 센서 SN-204-VIB에서 임계 6.3 mm/s를 초과한 6.3047 mm/s로 critical 등급 발생했다.",
+                  "그래프 경로상 이 경보가 트리거한 진동 센서가 스핀들 베어링 마모 고장모드로 연결되고, 동일 설비의 베어링 부품까지 2홉으로 이어진다.",
+                  "2025년 2월 동일 설비에서 스핀들 베어링 마모로 교체한 이력이 있고, 매뉴얼도 진동 추세 상승 시 베어링 마모를 의심하도록 규정한다."
+                ],
+                "citedEvidenceIds": [
+                  "AL-20260826-0041",
+                  "SN-204-VIB",
+                  "GP-8d8ecdca3ad9-01",
+                  "GP-8d8ecdca3ad9-00",
+                  "MR-2025-0087",
+                  "DOC-MAN-0021@r1#006"
+                ]
+              }
+            },
+            {
+              "rank": 2,
+              "failureModeId": "FM-TOOL-IMB",
+              "label": "공구 불균형",
+              "confidenceNote": "정비 이력 0건 · 문서 인용 1건 · 그래프 경로 없음 · 🔴 대응 SOP 매핑 없음",
+              "evidenceIds": [
+                "DOC-MAN-0021@r1#006"
+              ],
+              "rationale": {
+                "sentences": [
+                  "매뉴얼은 특정 회전수에서만 이상 진동이 발생할 때 공구 불균형을 먼저 보라고 하나, 이번 경보에는 회전수 대역 의존성을 보여주는 계측 근거가 없다.",
+                  "공구 불균형을 뒷받침하는 정비 이력이나 그래프 연결이 제시되지 않아 우선순위가 낮다."
+                ],
+                "citedEvidenceIds": [
+                  "DOC-MAN-0021@r1#006",
+                  "AL-20260826-0041"
+                ]
+              }
+            }
+          ],
+          "workOrderDraftId": "WOD-d63ca15609df"
+        },
+        "raw": "{\"status\":\"completed\",\"candidates\":[{\"rank\":1,\"failureModeId\":\"FM-BRG-WEAR\",\"label\":\"스핀들 베어링 마모\",\"confidenceNote\":\"정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop\",\"evidenceIds\":[\"MR-2025-0087\",\"DOC-MAN-0021@r1#006\",\"FM-BRG-WEAR\"],\"rationale\":{\"sentences\":[\"경보 AL-20260826-0041은 진동 센서 SN-204-VIB에서 임계 6.3 mm/s를 초과한 6.3047 mm/s로 critical 등급 발생했다.\",\"그래프 경로상 이 경보가 트리거한 진동 센서가 스핀들 베어링 마모 고장모드로 연결되고, 동일 설비의 베어링 부품까지 "
+      },
+      "graphPaths": {
+        "path": "/api/graph/paths?byRun=RUN-8d8ecdca3ad9",
+        "status": 200,
+        "ms": 495,
+        "json": [
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-00",
+            "targetId": "CP-204-BRG-01",
+            "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+            "score": 0.333333,
+            "label": "Component",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "EQ-CNC-204",
+              "CP-204-BRG-01"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ON_EQUIPMENT",
+                "to": "EQ-CNC-204"
+              },
+              {
+                "from": "EQ-CNC-204",
+                "type": "HAS_COMPONENT",
+                "to": "CP-204-BRG-01"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-01",
+            "targetId": "FM-BRG-WEAR",
+            "excerpt": "[FailureMode · 2-hop] AL-20260826-0041 → SN-204-VIB → FM-BRG-WEAR",
+            "score": 0.333333,
+            "label": "FailureMode",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "SN-204-VIB",
+              "FM-BRG-WEAR"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "TRIGGERS",
+                "to": "SN-204-VIB"
+              },
+              {
+                "from": "SN-204-VIB",
+                "type": "INDICATED_BY",
+                "to": "FM-BRG-WEAR"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-02",
+            "targetId": "MR-2024-0004",
+            "excerpt": "[MaintenanceRecord · 2-hop] AL-20260826-0041 → EQ-CNC-204 → MR-2024-0004",
+            "score": 0.333333,
+            "label": "MaintenanceRecord",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "EQ-CNC-204",
+              "MR-2024-0004"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ON_EQUIPMENT",
+                "to": "EQ-CNC-204"
+              },
+              {
+                "from": "EQ-CNC-204",
+                "type": "ON_EQUIPMENT",
+                "to": "MR-2024-0004"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-03",
+            "targetId": "SOP-BRG-INSP-014",
+            "excerpt": "[SOP · 3-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014",
+            "score": 0.25,
+            "label": "SOP",
+            "hops": 3,
+            "nodes": [
+              "AL-20260826-0041",
+              "INC-2026-014",
+              "WO-2026-0113",
+              "SOP-BRG-INSP-014"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ESCALATES_TO",
+                "to": "INC-2026-014"
+              },
+              {
+                "from": "INC-2026-014",
+                "type": "RESOLVED_BY",
+                "to": "WO-2026-0113"
+              },
+              {
+                "from": "WO-2026-0113",
+                "type": "REFERENCES",
+                "to": "SOP-BRG-INSP-014"
+              }
+            ]
+          },
+          {
+            "evidenceId": "GP-8d8ecdca3ad9-04",
+            "targetId": "SAF-LOTO-01",
+            "excerpt": "[SafetyRule · 4-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014 → SAF-LOTO-01",
+            "score": 0.2,
+            "label": "SafetyRule",
+            "hops": 4,
+            "nodes": [
+              "AL-20260826-0041",
+              "INC-2026-014",
+              "WO-2026-0113",
+              "SOP-BRG-INSP-014",
+              "SAF-LOTO-01"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ESCALATES_TO",
+                "to": "INC-2026-014"
+              },
+              {
+                "from": "INC-2026-014",
+                "type": "RESOLVED_BY",
+                "to": "WO-2026-0113"
+              },
+              {
+                "from": "WO-2026-0113",
+                "type": "REFERENCES",
+                "to": "SOP-BRG-INSP-014"
+              },
+              {
+                "from": "SOP-BRG-INSP-014",
+                "type": "REQUIRES",
+                "to": "SAF-LOTO-01"
+              }
+            ]
+          }
+        ],
+        "raw": "[{\"evidenceId\":\"GP-8d8ecdca3ad9-00\",\"targetId\":\"CP-204-BRG-01\",\"excerpt\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"score\":0.333333,\"label\":\"Component\",\"hops\":2,\"nodes\":[\"AL-20260826-0041\",\"EQ-CNC-204\",\"CP-204-BRG-01\"],\"edges\":[{\"from\":\"AL-20260826-0041\",\"type\":\"ON_EQUIPMENT\",\"to\":\"EQ-CNC-204\"},{\"from\":\"EQ-CNC-204\",\"type\":\"HAS_COMPONENT\",\"to\":\"CP-204-BRG-01\"}]},{\"evidence"
+      },
+      "evidenceDerived": {
+        "path": "/api/evidence/GP-8d8ecdca3ad9-00",
+        "status": 200,
+        "ms": 795,
+        "json": {
+          "evidenceId": "GP-8d8ecdca3ad9-00",
+          "kind": "graph-path",
+          "revisionId": null,
+          "contentHash": null,
+          "stale": false,
+          "approvalState": null,
+          "effectiveFrom": null,
+          "effectiveTo": null,
+          "text": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+          "highlight": null,
+          "record": null,
+          "sourceId": "CP-204-BRG-01",
+          "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+          "score": 0.333333,
+          "meta": {
+            "path": {
+              "label": "Component",
+              "hops": 2,
+              "nodes": [
+                "AL-20260826-0041",
+                "EQ-CNC-204",
+                "CP-204-BRG-01"
+              ],
+              "edges": [
+                {
+                  "from": "AL-20260826-0041",
+                  "type": "ON_EQUIPMENT",
+                  "to": "EQ-CNC-204"
+                },
+                {
+                  "from": "EQ-CNC-204",
+                  "type": "HAS_COMPONENT",
+                  "to": "CP-204-BRG-01"
+                }
+              ]
+            }
+          }
+        },
+        "raw": "{\"evidenceId\":\"GP-8d8ecdca3ad9-00\",\"kind\":\"graph-path\",\"revisionId\":null,\"contentHash\":null,\"stale\":false,\"approvalState\":null,\"effectiveFrom\":null,\"effectiveTo\":null,\"text\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"highlight\":null,\"record\":null,\"sourceId\":\"CP-204-BRG-01\",\"excerpt\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"score\":0.333333,\"meta"
+      }
+    }
+  },
+  "verdict": {
+    "stageRang": false,
+    "modeIsLive": false,
+    "runAlive_immediate": true,
+    "runAlive_after": true,
+    "graphPathsStatus_immediate": 200,
+    "graphPathsLen_immediate": 5,
+    "graphPathsIds_immediate": [
+      "GP-8d8ecdca3ad9-00",
+      "GP-8d8ecdca3ad9-01",
+      "GP-8d8ecdca3ad9-02",
+      "GP-8d8ecdca3ad9-03",
+      "GP-8d8ecdca3ad9-04"
+    ],
+    "evidenceStatus_immediate": 200,
+    "evidenceStatus_after": 200,
+    "call": "STAGE_NOT_RANG"
+  },
+  "consoleErrors": [
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-8d8ecdca3ad9' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-8d8ecdca3ad9' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-8d8ecdca3ad9' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-8d8ecdca3ad9' failed: Error during WebSocket handshake: Unexpected response cod",
+    "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-8d8ecdca3ad9' failed: Error during WebSocket handshake: Unexpected response cod"
+  ]
+}
