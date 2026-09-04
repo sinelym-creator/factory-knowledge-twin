@@ -503,7 +503,63 @@ function retryDelayMs(reply: Reply<unknown>): number {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * 🔴 **T7-31 — 「서버가 거절했다」를 화면까지 옮기는 신호**(D-49 · 검증 X-11).
+ *
+ * 위 D-11 완화 (C)의 1회 재시도는 «설계»이고 이 티켓은 그것을 바꾸지 않는다. 결함은 재시도가
+ * **조용하다**는 것이었다 — 되물었다는 사실도, 되묻고도 503 이었다는 사실도 화면 어디에도
+ * 안 남았다(X-11 실측: 무대 `rejected 18` 인데 화면 표지는 거절 0 인 대조군과 «같음»).
+ *
+ * 🔴 **«최종» 결과만 신호한다.** 재시도로 살아난 회차는 남길 거절이 아니다 — 그 축은 오히려
+ *    걷힘(`cleared`)을 알린다. 첫 시도의 503 을 세면 화면이 「거절당했다」를 두 배로 말한다.
+ * 🔴 **브라우저 축(상대 경로)만.** SSR 축에는 이 배지를 그리는 사람이 없다.
+ * 🔴 **값을 지어내지 않는다** — `retryAfterSec` 은 서버가 «말한» 경우에만 실린다(없으면 필드 없음).
+ * 🔴 이 신호는 «사실»만 나른다. 몇 초 뒤에 무엇을 할지는 화면이 정한다 — 이 층은 재시도를
+ *    더 걸지 않는다(횟수 변경 0).
+ */
+export type CongestionSignal =
+  | { kind: "rejected"; path: string; at: number; retryAfterSec?: number }
+  | { kind: "cleared"; path: string; at: number };
+
+type CongestionListener = (signal: CongestionSignal) => void;
+const congestionListeners = new Set<CongestionListener>();
+
+export function subscribeCongestion(fn: CongestionListener): () => void {
+  congestionListeners.add(fn);
+  return () => {
+    congestionListeners.delete(fn);
+  };
+}
+
+function announceCongestion(signal: CongestionSignal): void {
+  for (const fn of congestionListeners) fn(signal);
+}
+
 async function call<T>(
+  path: string,
+  init?: RequestInit,
+  base = "",
+  timeoutMs = TIMEOUT_MS,
+  retryTimeoutMs = timeoutMs,
+): Promise<Reply<T>> {
+  const reply = await callWithRetry<T>(path, init, base, timeoutMs, retryTimeoutMs);
+  if (base === "") {
+    const at = Date.now();
+    if (reply.state === "unavailable" && reply.status === 503) {
+      announceCongestion(
+        reply.retryAfterSec === undefined
+          ? { kind: "rejected", path, at }
+          : { kind: "rejected", path, at, retryAfterSec: reply.retryAfterSec },
+      );
+    } else if (reply.state === "ok") {
+      /* 🔴 같은 축이 다시 200 을 받으면 그 자리의 거절은 «끝난 사실»이다 — 화면이 걷을 근거. */
+      announceCongestion({ kind: "cleared", path, at });
+    }
+  }
+  return reply;
+}
+
+async function callWithRetry<T>(
   path: string,
   init?: RequestInit,
   base = "",
