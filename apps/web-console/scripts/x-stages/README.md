@@ -71,7 +71,9 @@ node capacity-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --bu
 
 ```
 node synthetic-gateway.mjs --port 8814 --upstream 127.0.0.1:8101
-node synthetic-gateway.mjs --selftest                    # 내부 상류 + 대조군까지 자족
+node synthetic-gateway.mjs --port 8814 --upstream 127.0.0.1:8101 --block-upgrade
+node synthetic-gateway.mjs --selftest                    # 내부 상류 + 대조군까지 자족(WS 통과 축)
+node synthetic-gateway.mjs --selftest --block-upgrade    # 426 거절 + 폴링 경로 재작성 축
 node synthetic-gateway.mjs --selftest --passthrough      # 역방향 대조군(FAIL 이 나야 정상)
 ```
 
@@ -88,6 +90,8 @@ node synthetic-gateway.mjs --selftest --passthrough      # 역방향 대조군(F
   - `--passthrough` → `FAIL — servedOnlineTrue, everyEvidenceArrayEmpty, everyEvidenceCountZero, pairedInSameRun` · **exit 1**.
   - `--evidence-keys nosuchkey` → `FAIL — controlHadEvidence, …` · **exit 1**. 🔴 **비어 있던 것을 비운 초록**을 막는 축이다 — 상류가 근거를 «실제로 갖고 있었다»가 먼저 서야 「0 으로 만들었다」가 참이 된다.
 - 🔴 **이 무대가 «못 하는 말»**: 「화면이 «모른다»로 갔는가」는 **화면이 답한다.** 이쪽은 online:true 를 냈고 근거가 0 이었다는 두 사실만 낸다.
+- 🔴 **T7-32 — 무대는 «배열»만 비운다.** 카드 요약 문장(`confidenceNote` = 「정비 이력 1건 · 문서 인용 1건…」)은 **상류 원문**이라 그대로 남는다. 그래서 화면에 「근거 스트립 0」과 「카드 요약 1건」이 **동시에** 뜨는데, 그 어긋남은 **무대 인공물**이지 앞판의 결함이 아니다 — 문자열까지 바꾸면 무대가 「서버가 낼 문장」을 **추측**하게 되므로 바꾸지 않는다(오케 판정). **X-23 판정은 근거 스트립·카드 근거 «표기» 축으로만** 한다.
+- 🔴 **T7-32 — 자극 경로는 run 의 «상태»가 정한다.** 끝난 run 의 화면 근거는 WS 가 아니라 **`GET /api/runs/<id>` 스냅샷**으로 온다(`snapshotRewritten`). 진행 중 run 은 WS/폴링 축(`--block-upgrade` · `pollingRewritten`). 🔴 `live` run 은 벡터 색인·그래프 투영이 없는 스택에서 `status:"failed"` · 근거 0 이라 **`mode:"replay"`** 로 쳐야 「비운 것」이 증거가 된다.
 - 포트 **8814**.
 
 ## 포트
