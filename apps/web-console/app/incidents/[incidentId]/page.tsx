@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 
+import { ResumeRun } from "@/components/incident/resume-run";
 import { RunConsole } from "@/components/incident/run-console";
 import { SensorTrend } from "@/components/incident/sensor-trend";
 import { Unavailable } from "@/components/unavailable";
@@ -170,6 +171,9 @@ export default async function IncidentPage({
         {/* 🔴 TTAE 표시행은 run 이 있을 때 «콘솔이» 그린다 — 실측값(elapsedMs 누적 →
             totalElapsedMs)은 이벤트 위에 서기 때문이다. 여기에 같은 줄을 또 두면 한 사실이
             두 자리에서 갈린다(같은 것을 두 번 만들지 않는다). */}
+        {/* 🔴 D-60 — 이 세션이 이 상황을 이미 조사했다면 그 주소로 되돌린다(새 조회 0).
+            기억이 없으면 아무 일도 하지 않고 아래 「아직 시작하지 않았습니다」가 그대로 선다. */}
+        {!run && <ResumeRun incidentId={incidentId} />}
         {!run && (
           <p className="mt-2 text-foot text-muted" data-testid="ttae-row-idle">
             이 화면은 아직 조사를 돌리지 않았습니다 — Overview의 「조사 시작」이 여기로 옵니다.
