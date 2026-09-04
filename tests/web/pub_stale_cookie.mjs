@@ -61,7 +61,7 @@ out.enterCount = out.reqs.filter((r) => /\/enter(\?|$)/.test(r.u)).length;
 out.serverAddrs = [...addrs];
 out.consoleErrors = errs.slice(0, 8);
 out.status401 = out.reqs.filter((r) => r.s === 401).length;
-if (!has("replay")) { await ctx.storageState({ path: STATE }); out.saved = STATE; }
+if (!has("replay")) { await ctx.storageState({ path: STATE }); out.saved = "(리포 밖 · 파일명 " + STATE.split(/[\/]/).pop() + ")"; // 🔴 절대경로를 산출물에 찍지 않는다(공개 리포 위생) }
 if (SHOT) await page.screenshot({ path: SHOT }).catch(() => {});
 await browser.close();
 console.log(JSON.stringify(out, null, 1));
