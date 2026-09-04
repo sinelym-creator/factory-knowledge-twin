@@ -21,6 +21,23 @@ export const TOUR_REPLAY_HREF = `/incidents/${TOUR_INCIDENT_ID}?run=${encodeURIC
 export type Selector = string;
 
 /**
+ * T7-39 — 본문 «끝»에 붙는 안내 꼬리. 앞 문장은 상태와 무관하게 늘 같고, **뒷문장만** 갈린다.
+ *
+ * 🔴 **두 갈래의 앞문장을 한 자리에 둔다.** 문장 두 벌을 통째로 적어 두면 한쪽만 고쳐질 때
+ *    같은 안내가 화면 상태에 따라 다른 말을 한다 — 갈리는 것은 «뒷문장 하나»뿐임을 타입이 말한다.
+ * 🔴 **여기 있는 것은 여전히 «문면»뿐이다**(이 파일 머리말). 「지금 online 인가」를 읽어
+ *    둘 중 하나를 고르는 것은 콜아웃의 일이다 — 스텝 표는 상태를 모른다.
+ */
+export type TourNote = {
+  /** 상태와 무관한 앞문장. */
+  lead: string;
+  /** `online: true`(LIVE) 및 «아직 모르는» 회차(확인 중·미연결)에서 쓰는 뒷문장. */
+  live: string;
+  /** `online: false`(REPLAY) 로 **확인된** 회차의 뒷문장. */
+  offline: string;
+};
+
+/**
  * 🔴 **진행 조건은 «단계 정의 안에만» 산다**(규격 ⑧-3 · 폐하 재가 09-03 ⑤).
  *    앞판은 조건이 코드 세 곳(Enter 처리 · 클릭 리스너 · 링크 이동)에 흩어져 있었고,
  *    그래서 한 곳만 고치면 나머지 둘이 조용히 어긋났다.
@@ -43,6 +60,8 @@ export type TourStep =
       title: string;
       /** ≤2줄 — 「무엇을 했나 / 왜」(규격 ①-2). */
       body: string;
+      /** 본문 «끝»에 붙는 안내 꼬리(T7-39) — 없으면 아무것도 안 붙는다. */
+      note?: TourNote;
       advance: "next";
     }
   | {
@@ -52,6 +71,8 @@ export type TourStep =
       target: Selector;
       title: string;
       body: string;
+      /** 본문 «끝»에 붙는 안내 꼬리(T7-39) — 없으면 아무것도 안 붙는다. */
+      note?: TourNote;
       advance: { on: "click" | "change" | "custom"; of: Selector; timeoutMs?: number };
       /** 기본 true(E3) — 대상이 안 눌리는 상황에서 투어 전체가 막히는 비용이 더 크다. */
       allowSkip: boolean;
@@ -63,6 +84,8 @@ export type TourStep =
       target?: Selector | null;
       title: string;
       body: string;
+      /** 본문 «끝»에 붙는 안내 꼬리(T7-39) — 없으면 아무것도 안 붙는다. */
+      note?: TourNote;
       advance: { to: string; label: string };
     };
 
@@ -120,6 +143,14 @@ export const TOUR_STEPS: readonly TourStep[] = [
     target: "start-from-alarm",
     title: "조사를 시작하면 에이전트가 5단계를 돕니다",
     body: "구조화 조회 → 문서 검색 → 그래프 추적 → 종합 → 작업지시 초안. 투어에서는 녹화 재생으로 같은 조사를 보여 줍니다(실제 AI 호출 0).",
+    /* 🔴 **투어가 «무엇을 보여 주는지»를 이 걸음이 말한다**(T7-39 · 폐하 문면 ①).
+       여기서 사람은 처음으로 「조사 보기」를 누르는데, 그것이 실제 AI 조사가 아니라 녹화
+       재생이라는 사실이 화면 어디에도 없었다 — 눌러 본 사람은 자기가 조사를 «돌렸다»고 읽는다. */
+    note: {
+      lead: "둘러보기는 미리 녹화된 조사를 재생합니다.",
+      live: "실제 AI 조사는 둘러보기를 닫은 뒤 알람에서 시작하세요.",
+      offline: "지금은 재생 모드입니다.",
+    },
     advance: { to: TOUR_REPLAY_HREF, label: "녹화 재생으로 조사 보기" },
   },
   {
