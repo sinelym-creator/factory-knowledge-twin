@@ -1189,6 +1189,20 @@ export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolea
  * 이 플래그는 번들마다 따로 산다(서버·브라우저 각 1회) — 그게 맞다 · 콜드는 그 둘이 따로 겪는다.
  */
 const LIVE_FIRST_TIMEOUT_MS = 5000;
+/**
+ * 🔴 **D-64 — 「미연결」이 서버가 아니라 «시한»에서 나왔다**(폐하 실측 09-04 19:26 · 공개면).
+ *
+ * 그 회차의 서버는 멀쩡했다(`/api/live/status` = `online:true` · Vercel 5xx 0). 화면이
+ * 「응답 시간 초과」를 적은 것은 **폰 → Vercel → 이 PC** 경로가 `TIMEOUT_MS`(2s)를 넘겼기
+ * 때문이다. 🔴 그리고 그 회차는 **콜드가 아니었다** — 위 `LIVE_FIRST_TIMEOUT_MS` 는 번들당
+ * 첫 1회에만 들므로, 「뒤로 갔다가 다른 근거로 다시 들어온」 같은 번들 안 이동은 2s 를 받는다.
+ * 시한을 올리는 자리가 «첫 호출»이 아니라 **이 함수 전체**여야 하는 이유다.
+ *
+ * 🔴 재시도 시한은 **2s 그대로**다 — 둘 다 올리면 최악 체감이 `6000 + 지연 + 6000` 이 된다.
+ *    이 호출의 소비자는 `components/live-status.tsx` **한 곳뿐**이라(전수 grep) 다른 축은
+ *    무영향이고, `TIMEOUT_MS` 자체도 손대지 않았다.
+ */
+const LIVE_STATUS_TIMEOUT_MS = 6000;
 let liveStatusWarmed = false;
 
 /**
@@ -1206,7 +1220,7 @@ export function liveStatus(base = "", sessionId?: string | null): Promise<Reply<
     path,
     { cache: "no-store" },
     base,
-    cold ? LIVE_FIRST_TIMEOUT_MS : TIMEOUT_MS,
+    cold ? Math.max(LIVE_FIRST_TIMEOUT_MS, LIVE_STATUS_TIMEOUT_MS) : LIVE_STATUS_TIMEOUT_MS,
     TIMEOUT_MS,
   );
 }
