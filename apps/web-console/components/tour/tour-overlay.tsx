@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { pickPlacement, type TourPlacement } from "./pick-placement";
 
+import { useLiveStatus } from "@/components/live-status";
 import { useTourAllowed } from "@/components/tour/tour-allowed";
 import { readAdvance, type TourStep } from "@/components/tour/tour-steps";
 
@@ -121,6 +122,9 @@ function TourStepView({
   /* 🔴 허용 노드는 «상태»로 받는다(T7-28 · D-1). 셀렉터로 한 번 읽으면 그 뒤에 붙는 것을
      영영 못 본다 — 아래 포커스 경계 효과가 이 값을 의존 배열에 넣어 다시 계산한다. */
   const { allowed: registered } = useTourAllowed();
+  /* 🔴 **이미 도는 폴링의 값을 나눠 쓴다**(T7-39 · 새 호출 0). `live-status` 컨텍스트는 셸이
+     이미 30초마다 채우고 있고, 여기서 다시 물으면 같은 사실을 두 곳에서 따로 묻게 된다. */
+  const live = useLiveStatus();
   const [rect, setRect] = useState<Rect | null>(null);
   const [missing, setMissing] = useState(false);
   const titleRef = useRef<HTMLParagraphElement | null>(null);
@@ -349,6 +353,12 @@ function TourStepView({
      이쪽은 설계상 없는 것이라 「자리를 못 찾았다」 안내를 띄우지 않는다. */
   const isWelcome = index === 0 && !step.target;
 
+  /* 꼬리 문장 — 앞문장은 늘 같고 뒷문장만 갈린다(`tour-steps.ts` `TourNote`). */
+  const noteOffline = step.note ? live.mode === "replay" : false;
+  const note = step.note
+    ? `${step.note.lead} ${noteOffline ? step.note.offline : step.note.live}`
+    : null;
+
   const pad = 8;
   const hole: Rect | null = rect
     ? {
@@ -547,17 +557,28 @@ function TourStepView({
         >
           {step.title}
         </p>
-        <p className="mt-2 text-foot leading-relaxed text-muted">{step.body}</p>
+        {/* 🔴 **꼬리는 «본문과 같은 문단»에 붙는다**(T7-39 · 요소 신규 0). 새 `<p>` 를 세우면
+            그 자리가 다른 걸음에서도 자리를 차지하고, 말풍선 높이 계산(`calloutH`)이 걸음마다
+            달라진다 — 배치 규칙이 이미 그 높이 위에 서 있다.
+            🔴 `online:false` «로 확인된» 회차만 뒷문장을 바꾼다. 확인 중·미연결은 「모르는」
+            상태라, 그때 「지금은 재생 모드입니다」라고 적으면 화면이 모르는 것을 말한다. */}
+        <p
+          className="mt-2 text-foot leading-relaxed text-muted"
+          data-tour-note={note ? (noteOffline ? "replay-offline" : "replay") : undefined}
+        >
+          {step.body}
+          {note ? ` ${note}` : ""}
+        </p>
 
         {!onRoute && (
           <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn">
-            이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요.
+            이 단계는 다른 화면에서 이어집니다. 아래 버튼으로 이동해 주세요.
           </p>
         )}
         {missing && onRoute && (
           <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn" data-testid="tour-target-missing">
-            이 화면에서 가리킬 자리를 찾지 못했습니다 — 데이터가 아직 오지 않았거나 이 상태에는
-            없는 요소입니다. 건너뛰고 계속할 수 있습니다.
+            이 화면에서 가리킬 자리를 찾지 못했습니다. 데이터가 아직 오지 않았거나 지금 상태에는
+            없는 요소입니다. 건너뛰고 계속하실 수 있습니다.
           </p>
         )}
 

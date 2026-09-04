@@ -62,7 +62,7 @@ export function SynthesisPending({ skeleton = true }: { skeleton?: boolean }) {
       <p className="text-sm text-ink/90" role="status" aria-live="polite">
         AI 근거 작성 중{" "}
         {overdue ? (
-          <span className="text-warn">— 예상({expectedSec}초)보다 오래 걸리고 있습니다</span>
+          <span className="text-warn">예상({expectedSec}초)보다 오래 걸리고 있습니다</span>
         ) : (
           <span className="text-muted">· 약 {Math.max(1, remainingSec)}초</span>
         )}

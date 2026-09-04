@@ -1,0 +1,16 @@
+{
+ "base": "http://127.0.0.1:8140",
+ "runAtStart": "RUN-cda2b24d249d",
+ "listStatus": "http://127.0.0.1:8140/incidents",
+ "links": [
+  "/incidents/INC-2025-019",
+  "/incidents/INC-2025-019",
+  "/incidents/INC-2026-014?run=RUN-cda2b24d249d"
+ ],
+ "sections": [],
+ "runLink": "/incidents/INC-2026-014?run=RUN-cda2b24d249d",
+ "urlAfter": "http://127.0.0.1:8140/incidents/INC-2026-014?run=RUN-cda2b24d249d",
+ "runAfter": "RUN-cda2b24d249d",
+ "restored": true,
+ "tids": 56
+}

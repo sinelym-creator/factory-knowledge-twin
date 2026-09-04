@@ -68,7 +68,7 @@ export function SensorTrend({
   const staticAnswer = staticSeries
     ? staticSeries[window]
       ? { key, series: staticSeries[window] }
-      : { key, why: "이 창은 Live 전용입니다 — 정적 재생본은 24h 창만 담습니다" }
+      : { key, why: "이 구간은 실시간 조사에서만 볼 수 있습니다. 녹화 재생본은 24시간 구간만 담고 있습니다" }
     : null;
   const current = staticAnswer ?? (answer?.key === key ? answer : null);
   const series = current?.series ?? null;
@@ -156,10 +156,10 @@ function SensorProvenance({
   // 🔴 「알람 센서가 아니다」를 «말한다». 앞판은 같은 자리에 아무 말 없이 첫 센서를 그렸다.
   return (
     <p className="mt-2 text-foot text-warn" data-testid="sensor-provenance">
-      ⚠ 알람 센서가 아니다 — 이 설비의 첫 센서다.{" "}
+      ⚠ 알람이 울린 센서가 아니라 이 설비의 첫 센서입니다.{" "}
       {alarmIds.length === 0
-        ? "이 incident 에 연결된 알람이 없다."
-        : `연결된 알람(${alarmIds.join(", ")})이 «활성» 목록에 없어 센서를 정본에서 특정하지 못했다.`}
+        ? "이 상황에 연결된 알람이 없습니다."
+        : `연결된 알람(${alarmIds.join(", ")})이 활성 목록에 없어 어느 센서인지 특정하지 못했습니다.`}
     </p>
   );
 }

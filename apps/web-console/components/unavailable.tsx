@@ -66,8 +66,8 @@ export function Unavailable({
       <div className="mt-4 rounded border border-warn/40 bg-panel p-4">
         <p className="text-body-c text-warn">
           {kind === "not-found"
-            ? "서버가 «그런 자원이 없다»고 답했다."
-            : "이 화면의 데이터를 지금 가져오지 못했다."}
+            ? "요청한 항목을 찾을 수 없습니다."
+            : "데이터를 불러오지 못했습니다."}
         </p>
         {/* 🔴 표시는 사람 말로, 원문은 `data-why` 로 — 두 독자(방문자·계측기)가 다른 것을 읽는다. */}
         <p className="id mt-2 text-foot text-muted" data-why={why}>
@@ -75,8 +75,8 @@ export function Unavailable({
         </p>
         <p className="mt-3 text-foot text-muted">
           {kind === "not-found"
-            ? "«없다»와 «못 물어봤다»는 다른 사건이라 다른 문장으로 답한다 — 이 자리는 전자다."
-            : "화면이 «비어 있는 것»이 아니라 «묻지 못한 것»이다 — 두 상태를 같은 모습으로 그리지 않으려고 이 자리를 둔다."}
+            ? "주소를 확인하거나 목록으로 돌아가 주세요."
+            : "잠시 후 다시 시도해 주세요. 화면이 비어 있는 것이 아니라 아직 데이터를 받지 못한 상태입니다."}
         </p>
       </div>
     </section>

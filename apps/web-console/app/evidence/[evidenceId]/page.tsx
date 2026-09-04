@@ -69,11 +69,8 @@ export default async function EvidencePage({
           //    아님). 화면이 evidenceId 모양으로 kind 를 «추정»해 둘을 갈라 그리면, 그것은
           //    계약이 정하지 않은 것을 화면이 정한 것이다. 추정하지 않고 사실만 적는다.
           <p className="fkt-card p-5 text-foot text-muted">
-            이 404 는 두 가지를 함께 뜻한다 — 「그런 근거가 없다」 또는 「이 라우트가 다루지 않는
-            kind 다」. 계약 v0.1.1 이 정한 kind 는 <span className="id">doc-chunk</span> ·{" "}
-            <span className="id">record</span> 뿐이라,{" "}
-            <span className="id">graph-path</span> · <span className="id">sensor-series</span> 의
-            id 도 같은 코드로 답한다. 코드 분리는 계약 개정 사안이다(원장 Q-34).
+            요청하신 근거를 찾을 수 없습니다. 주소가 정확한지 확인해 주시고, 조사 화면의
+            근거 목록에서 다시 열어 주세요.
           </p>
         )}
         <DeepLinkNotice hasSession={hasSession} runId={run} />
@@ -194,9 +191,8 @@ function DocumentTab({
     // chunk id 조성(T0-6 §3.1)에 맞지 않는 doc-chunk — 서버·화면의 조성 인식이 갈렸다는 뜻이다.
     return (
       <p className="rounded border border-warn/40 bg-panel p-3 text-body-c text-warn">
-        🔴 <span className="id">{evidence.evidenceId}</span> 에서 documentId 를 갈라내지 못했다 —
-        chunk id 조성(<span className="id">{"{documentId}@r{N}#{NNN}"}</span>)과 어긋난다. 문서를
-        추측해서 부르지 않는다.
+        <span className="id">{evidence.evidenceId}</span> 에서 원문 문서를 찾지 못했습니다.
+        근거 번호의 형식이 예상과 달라 원문을 함께 보여 드리지 못합니다.
       </p>
     );
   }
@@ -270,9 +266,7 @@ function PreviousRevisionDeferred() {
       <span className="fkt-pill bg-fill text-muted/70">
         [ 이전 revision 보기 ]
       </span>{" "}
-      — 이연(원장 Q-36). 계약에 revision 선택 축이 없고, 옛 revision 은 색인 chunk 가 0건이라
-      좌표로도 열리지 않는다(실측 <span className="id">400 highlight_not_found</span>). 계약
-      v0.2 + 색인 정책 재론에 결속.
+      이전 판본은 아직 제공되지 않습니다.
     </p>
   );
 }
@@ -283,8 +277,7 @@ function RecordView({ evidence }: { evidence: Evidence }) {
   if (!rec) {
     return (
       <p className="rounded border border-warn/40 bg-panel p-3 text-body-c text-warn">
-        🔴 kind=record 인데 <span className="id">record</span> 가 비어 있다 — 계약 v0.1.1 형상과
-        어긋난다.
+        이 근거의 내용을 받지 못했습니다.
       </p>
     );
   }
@@ -303,10 +296,8 @@ function RecordView({ evidence }: { evidence: Evidence }) {
         ))}
       </dl>
       <p className="mt-3 border-t border-edge pt-2 text-foot text-muted">
-        🔴 이 근거에는 revision·색인 축이 «없다» — 화이트리스트 테이블을 직독하므로 「색인이
-        낡았다」는 개념이 성립하지 않는다(계약 v0.1.1). 그래서 신뢰 배지도 신선도를 주장하지
-        않는다. 인용 가능 여부는 <span className="id">approvalState</span>·유효기간이 아니라 이
-        레코드 자체가 SSOT 라는 사실이 답한다.
+        이 근거는 대장에서 바로 읽어 온 값이라 판본·색인 신선도라는 개념이 없습니다.
+        그래서 신뢰 배지도 신선도를 표시하지 않습니다.
       </p>
     </section>
   );
@@ -320,20 +311,18 @@ function GraphTab({ hasSession, runId }: { hasSession: boolean; runId?: string }
       data-testid="graph-tab-placeholder"
     >
       <p className="fkt-section-label">그래프 경로</p>
-      <p className="mt-2 text-body-c">이 자리는 T3-4다 — 조사가 실제로 지나간 경로 위에 선다.</p>
+      <p className="mt-2 text-body-c">조사가 지나간 그래프 경로를 보여 드리는 자리입니다.</p>
       <ul className="mt-2 space-y-1 text-foot text-muted">
         <li>
-          ▪ 출처는 <span className="id">GET /graph/paths?byRun={"{runId}"}</span> 하나뿐이다.
-          그 응답은 «조사가 밟은» 경로라, run 이 없으면 그릴 대상 자체가 없다.
+          ▪ 경로는 조사가 실제로 밟은 자리에서만 나옵니다. 조사 결과가 없으면 그릴 대상도
+          없습니다.
         </li>
         <li>
-          ▪ 이 라우트는 읽기 예외 2라우트에 <span className="text-ink">들지 않는다</span> — run
-          은 세션 소유 자원이라 딥링크(무세션)에서는 열리지 않는다(계약 v0.1.6).
-          {hasSession ? " 지금 세션은 있다." : " 지금 이 화면은 무세션이다."}
+          ▪ 조사 결과는 시작한 세션에서만 열리므로, 세션 없이 연 화면에서는 보이지 않습니다.
+          {hasSession ? " 지금은 세션이 있습니다." : " 지금은 세션 없이 열린 화면입니다."}
         </li>
         <li>
-          ▪ 재생(replay) run 은 경로 «원본»이 없어 <span className="id">501</span> 이다 —
-          fixture 는 이벤트만 담는다(T2-4 판정 J-G).
+          ▪ 녹화 재생본에는 경로 원본이 담겨 있지 않아 이 자리는 비어 있습니다.
         </li>
         {runId && (
           <li>

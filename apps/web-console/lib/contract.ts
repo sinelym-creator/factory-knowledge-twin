@@ -924,9 +924,11 @@ export async function proxyApiRequest(req: Request, opts: { https: boolean }): P
   /* 🔴 **여기 없는 헤더는 브라우저에 «도달하지 않는다»**(허용 목록 · 위 요청 축과 같은 규율).
      계약 v0.1.15 의 `X-FKT-Run-Cap-*` 3칸을 더한다 — 서버가 실어 보내도 이 줄에 이름이
      없으면 화면은 영영 못 본다.
-     🔴 관측(이번 범위 밖): `X-FKT-Run-Reused`(v0.1.14)는 지금도 이 목록에 **없다** — 이
-        경로를 지나는 회차에서 그 헤더는 브라우저에 도달하지 않는다. 화면이 그 값을 읽지
-        않으므로 지금 깨지는 것은 없고, 고치는 것은 그 티켓의 판단이라 손대지 않는다. */
+     🔴 **O-9 — `X-FKT-Run-Reused`(계약 v0.1.14)를 여기 넣는다.** 앞 티켓이 「목록에 없다」를
+        관측으로만 남겨 둔 자리다: 서버는 재사용 회차에 그 헤더를 싣는데(투영
+        `routers/investigations.py:262`) 이 줄에 이름이 없어 **브라우저까지 오지 않았다**.
+        「두 번 눌렀는데 하나」와 「두 번째가 조용히 무시됐다」를 가르는 값이라, 도달하지
+        않으면 서버가 말한 사실이 화면 앞에서 사라진다. */
   for (const name of [
     "content-type",
     "retry-after",
@@ -934,6 +936,7 @@ export async function proxyApiRequest(req: Request, opts: { https: boolean }): P
     "x-fkt-run-cap-limit",
     "x-fkt-run-cap-used",
     "x-fkt-run-cap-remaining",
+    "x-fkt-run-reused",
   ]) {
     const v = upstream.headers.get(name);
     if (v) out.set(name, v);

@@ -1,0 +1,27 @@
+{
+ "label": "target",
+ "base": "http://127.0.0.1:8142",
+ "at": "2026-09-04T09:13:53.148Z",
+ "shots": {
+  "sessionCreated": 200,
+  "sessionId": "etdiL8…",
+  "tries": 6,
+  "first": {
+   "status": 200,
+   "headers": {},
+   "runId": "RUN-550a0b48c652",
+   "err": null
+  },
+  "second": {
+   "status": 200,
+   "headers": {},
+   "runId": "RUN-8da2c3cbdacd",
+   "err": null
+  }
+ },
+ "sameRunId": false,
+ "reusedHeaderOnSecond": false,
+ "reusedValue": null,
+ "capHeadersFirst": [],
+ "capHeadersSecond": []
+}

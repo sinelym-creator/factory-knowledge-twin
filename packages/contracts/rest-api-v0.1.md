@@ -205,3 +205,12 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - **`POST /scenarios/{scenarioId}/runs` (`mode:"live"`) 생성 응답(🔴 실물 = **200** · 09-04 14:44 센쿠2 실측 · 오케 초안의 「201」은 오기 · 상태코드 불변) 헤더 3개** — `X-FKT-Run-Cap-Limit` · `X-FKT-Run-Cap-Used`(이번 실행 «포함») · `X-FKT-Run-Cap-Remaining`. 본문 형상 불변. `429 session_run_cap_exceeded` 의 `detail` 에 `{ limit, used, remaining: 0, retryAfterSec }` 를 «추가»(기존 `code`·`message` 유지 · `Retry-After` 헤더 유지).
 - **화면(계약 밖 · 규격)** — LIVE 배지 곁에 「조사 `used`/`limit` · 남은 `remaining`회」 · 상한 도달 시 「상한 도달 · `ceil(nextFreeInSec/60)`분 뒤 1회 회복 · 재생은 계속」 · `online:false`(REPLAY)에서는 표시하지 않는다(소비 0 인 축에 상한을 말하지 않는다) · 계측 속성 `data-runcap-limit`·`data-runcap-used`·`data-runcap-remaining` · 갱신 시점 = 30s 상태 폴링 + 조사 시작 응답 직후(헤더 값으로 즉시).
 - 잰 것/안 잰 것(구현 PR 본문 의무) — 새 세션 0/10 → live 1회 → 1/10(헤더 = 상태 값 일치) → replay 1회 → 여전히 1/10 → 상한 도달 열(`FKT_RUN_CAP_PER_SESSION=2` 무대) 429 detail + 화면 문면 + `nextFreeInSec` 감소 · `sessionId` 없는 `/live/status` = v0.1.2 형상 바이트 동일(대조군) · 안 잼 = 창 만료 실측(3600s 는 무대에서 `FKT_RUN_CAP_WINDOW_SEC` 로 줄여 잰다 · 있으면 그 값도 보고).
+
+
+## v0.1.16 append (09-04 18:1x · O-10/O-11 계약 개정 — 「이 세션의 조사」 되찾기와 알람→상황 연결을 서버 축으로 · 오케 성문 · 구현 = T7-41 · 독립 검증 리바이2)
+
+- **`GET /runs?sessionId=`** (신규 · 읽기 전용) — 그 세션이 시작한 조사 목록 `[{ runId, incidentId, scenarioId, mode, status, startedAt, finishedAt? }]` · 최신순 · 상한 20 · 🔴 `sessionId` 는 쿠키 `fkt_sid` 와 **같아야** 한다(v0.1.6 판정 append 와 같은 규칙 · 다르면 422 `invalid_request` · 쿠키 없음 401 `session_required`) · 서버 저장소는 프로세스 안이라 재기동 뒤 빈 배열 = 정상(「없다」가 아니라 「이 프로세스는 모른다」 · 화면은 그 차이를 문장으로 말하지 않아도 되지만 지어내지도 않는다). 근거 = `investigation/store.py:136` 이 이미 세션별 run 을 걸러 낼 수 있다(신규 저장소 0).
+- **`GET /plants/{plantId}/overview` 의 `activeAlarms[]` 에 선택 필드 `incidentId?: string | null`** — 그 알람에 연결된 상황(incident)이 있으면 그 id · 없으면 `null` · 기존 소비자는 필드를 모르면 무시(하위 호환) · 🔴 값의 출처는 incident↔alarm 연결표(서버) — 화면이 알람 id 로 지어내지 않는다.
+- **화면(계약 밖 · 규격 · T7-41)** — D-60/D-61 이 `sessionStorage` 로 들고 있던 「이 세션의 조사」를 위 `GET /runs?sessionId=` 응답으로 교체(스토리지는 폴백이 아니라 **제거** — 두 출처가 갈리면 화면이 거짓말한다) · Incidents 목록의 「지금 울리는 알람」 행은 `incidentId` 가 있으면 `/incidents/{incidentId}` 로, 없으면 지금처럼 「조사 시작」만 · 다른 탭·기기에서도 같은 세션 쿠키면 같은 목록.
+- 잰 것/안 잰 것(구현 PR 본문 의무) — 세션 A 조사 2건 → `GET /runs?sessionId=A` 2건 최신순 · 세션 B 0건(격리) · 쿠키≠sessionId 422 · 쿠키 없음 401 · 재기동 뒤 빈 배열 · `activeAlarms[].incidentId` 가 실재 incident 로만 채워짐(연결 없는 알람 = null) · 화면 = 다른 탭에서 목록 동일(스토리지 시절 「안 보임」의 반대) · 안 잰 것 이름으로.
+- 판정선(독립 검증) — ① 목록 응답 형상·순서·상한 ② 격리(세션 B) ③ 422/401 두 갈래 ④ 재기동 빈 배열 ⑤ 화면이 스토리지를 더 이상 읽지 않음(`sessionStorage` 접근 0 · 심볼 부재) ⑥ 대조군(v0.1.15 셸) 같은 그물 rc=1.

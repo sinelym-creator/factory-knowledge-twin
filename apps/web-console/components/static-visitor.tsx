@@ -53,7 +53,7 @@ export function StaticVisitorChip() {
     <span className="flex items-center gap-1.5" data-testid="static-visitor">
       <span
         className="rounded border border-ai/50 px-2 py-1 text-foot text-ai"
-        title={`정적 재생본 방문자 ${visitor.visitorId} — 서버 세션이 아닙니다. 이 브라우저에만 남습니다.`}
+        title={`녹화 재생본 방문자 ${visitor.visitorId} · 서버 세션이 아니라 이 브라우저에만 남습니다.`}
         data-testid="static-visitor-chip"
         data-origin="static"
       >

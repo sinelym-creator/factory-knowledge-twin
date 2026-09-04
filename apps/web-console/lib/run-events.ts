@@ -309,11 +309,11 @@ function halt(steps: Map<string, StepView>): void {
  */
 export function closeMessage(code: number, reason: string): string {
   if (code === 1000) return "이벤트 스트림이 정상 종료됐습니다.";
-  if (code === 4404) return "서버가 이 조사를 찾지 못했습니다 — 다른 세션의 조사이거나 사라진 조사입니다.";
+  if (code === 4404) return "서버가 이 조사를 찾지 못했습니다. 다른 세션의 조사이거나 사라진 조사입니다.";
   if (code >= 4000 && code <= 4999) {
     return `서버가 스트림을 닫았습니다 (코드 ${code}${reason ? ` · ${reason}` : ""}).`;
   }
-  return `실시간 스트림이 연결되어 있지 않습니다 (코드 ${code}) — 서버가 사유를 남기지 못한 종료입니다(연결 실패·중간 절단이 모두 이 코드입니다). 아래는 서버에 다시 조회한 결과입니다.`;
+  return `실시간 연결이 끊어졌습니다 (코드 ${code}). 서버가 사유를 남기지 못한 종료입니다. 아래는 서버에 다시 조회한 결과입니다.`;
 }
 
 /**
