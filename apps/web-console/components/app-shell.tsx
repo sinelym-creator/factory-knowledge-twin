@@ -8,6 +8,7 @@ import { ResetButton } from "@/components/reset-button";
 import { ShellNav } from "@/components/shell-nav";
 import { TruncationTitles } from "@/components/truncation-titles";
 import { StaticVisitorChip } from "@/components/static-visitor";
+import { TourAllowedProvider } from "@/components/tour/tour-allowed";
 import { TourProvider } from "@/components/tour/tour-provider";
 import { TourReopen } from "@/components/tour/tour-reopen";
 import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
@@ -32,6 +33,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <LiveStatusProvider>
+      {/* 🔴 T7-28 — 투어의 «허용 노드» 등록소. `<TourProvider />` 는 `<main>` 의 **형제**라
+          거기 만든 컨텍스트는 본문의 안내 카드에 닿지 않는다. 그래서 둘의 공통 조상인 이
+          자리에 둔다. 🔴 투어 OFF 면 등록은 배열 하나를 늘릴 뿐 화면은 변하지 않는다 —
+          `inert` 를 거는 것은 오버레이이고, OFF 면 오버레이가 트리에 없다. */}
+      <TourAllowedProvider>
       {/* 잘린 글자에 전체 값을 `title` 로 — 한 곳에서 훑는다(요소마다 달면 새 카드가 빠진다). */}
       <TruncationTitles />
       <div className="flex min-h-screen">
@@ -118,6 +124,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       </div>
+      </TourAllowedProvider>
     </LiveStatusProvider>
   );
 }
