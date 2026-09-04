@@ -171,16 +171,29 @@ def build_graph(ctx: Context):
             #    한 종류다(structured 단계 성문과 같은 규율). 종단은 sourceId 로 가리킨다.
             evidence_id = f"GP-{ctx.emitter.run_id.removeprefix('RUN-')}-{index:02d}"
             walk = " → ".join(str(n) for n in path["nodes"])
+            # 🔴 걸음 문장은 **여기서 한 번만** 짓는다(D-68). `GET /evidence/GP-*` 도 같은
+            #    문장을 내야 하는데, 그쪽에서 다시 조립하면 서식 규칙이 두 자리에 살고
+            #    한쪽만 고치는 날 「이벤트가 말한 근거」와 「눌러서 본 근거」가 갈린다.
+            excerpt = f"[{path['label']} · {path['hops']}-hop] {walk}"
+            score = float(path["score"])
             ref = evidence_ref(
                 evidence_id=evidence_id,
                 kind="graph-path",
                 source_id=target,
-                excerpt=f"[{path['label']} · {path['hops']}-hop] {walk}",
-                score=float(path["score"]),
+                excerpt=excerpt,
+                score=score,
             )
             ctx.emitter.step_evidence("graph", ref)
             ctx.evidence_ids.append(evidence_id)
-            stored.append({"evidenceId": evidence_id, "targetId": target, **{k: path[k] for k in ("label", "hops", "nodes", "edges")}})
+            stored.append({
+                "evidenceId": evidence_id,
+                "targetId": target,
+                # 🔴 `excerpt`·`score` 를 run 상태에 «함께» 남긴다 — 근거 딥링크가 읽는
+                #    원천이 이것이고, 없으면 라우트가 문장을 다시 지어야 한다.
+                "excerpt": excerpt,
+                "score": score,
+                **{k: path[k] for k in ("label", "hops", "nodes", "edges")},
+            })
             targets[target] = int(path["hops"])
         return (
             {"graphTargets": targets, "graphPaths": stored},
