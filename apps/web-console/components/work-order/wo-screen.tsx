@@ -148,7 +148,13 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
         <p className="mt-2 text-foot text-muted">{wo.note}</p>
       </section>
 
-      <div className="flex min-w-0 gap-3">
+      {/* 🔴 **좁은 폭에서는 세로로 선다**(D-70 실측). 이 래퍼가 360·390 에서도 두 열을
+          나란히 세우는 바람에 왼쪽 열이 **40px** 로 찌그러졌다(1440 에서는 740px) — 그
+          안의 「필요 부품」 카드가 비어 보이고 pill 글자가 한 글자 폭으로 쌓인 것이
+          그 결과다. 문서도 함께 넘쳤다(`scrollWidth 412 > clientWidth 360`).
+          pill 에 `shrink-0` 을 주는 것만으로는 못 고친다: 줄어든 것은 pill 이 아니라
+          그 열 전체였다. D-67 과 같은 처방 — 공간이 없으면 나란히 세우지 않는다. */}
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
         {/* ── 편집 영역 ─────────────────────────────────────────────────────── */}
         <section className="min-w-0 flex-1 space-y-3">
           <div className="fkt-card p-5">
@@ -190,64 +196,96 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
             </p>
           </div>
 
-          {/* 부품 — 편집 가능(서버가 여는 두 필드 중 하나) */}
+          {/* 부품 — 편집 가능(서버가 여는 두 필드 중 하나) · 잠기면 «읽기 목록»이 된다 */}
           <div className="fkt-card p-5" data-testid="wo-parts">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <p className="text-foot text-muted">필요 부품</p>
-              <button
-                type="button"
-                disabled={readOnly}
-                onClick={() => {
-                  // 🔴 목록의 «자리»가 바뀌면 자리로 색인된 초안은 남의 행을 가리킨다.
-                  setEditing(null);
-                  void save({ parts: [...wo.parts, { name: "" }] });
-                }}
-                className="ml-auto fkt-pill bg-fill text-foot text-muted hover:text-ink disabled:opacity-40"
-                data-testid="wo-part-add"
-              >
-                + 추가
-              </button>
+              {readOnly ? (
+                /* 🔴 **잠긴 초안에는 편집 UI 를 그리지 않는다**(D-70). 흐리게(`opacity-40`) 두면
+                   「눌러도 되는데 안 눌리는 것」처럼 보이고, 그 상태가 좁은 폭에서 «비어 보이는
+                   긴 카드»의 절반이었다. 대신 왜 못 고치는지를 한 줄로 말한다 — 문면은 머리의
+                   배지를 그대로 빌린다(새 낱말을 짓지 않는다). */
+                <span
+                  className="ml-auto shrink-0 whitespace-nowrap fkt-pill bg-fill text-foot text-muted"
+                  data-testid="wo-parts-lock"
+                >
+                  {badge} · 편집 잠김
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    // 🔴 목록의 «자리»가 바뀌면 자리로 색인된 초안은 남의 행을 가리킨다.
+                    setEditing(null);
+                    void save({ parts: [...wo.parts, { name: "" }] });
+                  }}
+                  className="ml-auto shrink-0 whitespace-nowrap fkt-pill bg-fill text-foot text-muted hover:text-ink"
+                  data-testid="wo-part-add"
+                >
+                  + 추가
+                </button>
+              )}
             </div>
             <ul className="mt-2 space-y-1">
-              {wo.parts.map((p, i) => (
-                <li key={`${p.componentId ?? "new"}-${i}`} className="flex items-center gap-2" data-testid="wo-part">
-                  {/* 🔴 componentId 는 «있으면» 보여 주고 없으면 만들지 않는다 — 사람이 더한 부품에
-                      온톨로지 id 를 지어 붙이면 그 id 는 아무 데도 안 열린다(「없는 근거」가 된다). */}
-                  {p.componentId ? (
-                    <span className="id text-foot text-muted">{p.componentId}</span>
-                  ) : (
-                    <span className="text-foot text-muted">(신규)</span>
-                  )}
-                  <input
-                    className="min-w-0 flex-1 rounded-chip bg-inset px-2 py-1 text-body-c disabled:opacity-60"
-                    // 🔴 값의 출처는 «서버가 준 배열» 하나다. 편집 중인 칸만 초안을 덧댄다 —
-                    //    두 곳에서 값을 만들면 어느 쪽이 참인지 화면이 스스로 답하지 못한다.
-                    value={editing?.index === i ? editing.value : (p.name ?? "")}
-                    disabled={readOnly}
-                    placeholder="부품 이름"
-                    onChange={(e) => setEditing({ index: i, value: e.target.value })}
-                    onBlur={(e) => {
-                      setEditing(null);
-                      if (e.target.value === (p.name ?? "")) return;
-                      const next = wo.parts.map((q, k) => (k === i ? { ...q, name: e.target.value } : q));
-                      void save({ parts: next });
-                    }}
-                    data-testid="wo-part-name"
-                  />
-                  <button
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => {
-                      setEditing(null);   // 같은 이유 — 지우면 뒤 행이 이 자리로 올라온다
-                      void save({ parts: wo.parts.filter((_, k) => k !== i) });
-                    }}
-                    className="fkt-pill bg-fill text-foot text-muted hover:text-ink disabled:opacity-40"
-                    data-testid="wo-part-delete"
+              {wo.parts.map((p, i) =>
+                readOnly ? (
+                  <li
+                    key={`${p.componentId ?? "new"}-${i}`}
+                    className="flex flex-wrap items-center gap-2 text-body-c"
+                    data-testid="wo-part"
                   >
-                    삭제
-                  </button>
-                </li>
-              ))}
+                    {p.componentId ? (
+                      <span className="id text-foot text-muted">{p.componentId}</span>
+                    ) : (
+                      <span className="text-foot text-muted">(신규)</span>
+                    )}
+                    <span className="min-w-0 break-words">{p.name ?? ""}</span>
+                  </li>
+                ) : (
+                  /* 🔴 **좁은 폭에서는 세로로 선다**(D-70 · D-67 과 동형). 한 줄에 id·입력칸·
+                     삭제를 모두 세우면 360 에서 입력칸이 16px 로 줄고 pill 글자가 한 글자 폭으로
+                     쌓인다. pill 은 `shrink-0`·`whitespace-nowrap` 으로 «줄어들지 않는다»를 못박는다. */
+                  <li
+                    key={`${p.componentId ?? "new"}-${i}`}
+                    className="flex flex-col gap-2 sm:flex-row sm:items-center"
+                    data-testid="wo-part"
+                  >
+                    {/* 🔴 componentId 는 «있으면» 보여 주고 없으면 만들지 않는다 — 사람이 더한 부품에
+                        온톨로지 id 를 지어 붙이면 그 id 는 아무 데도 안 열린다(「없는 근거」가 된다). */}
+                    {p.componentId ? (
+                      <span className="id shrink-0 text-foot text-muted">{p.componentId}</span>
+                    ) : (
+                      <span className="shrink-0 text-foot text-muted">(신규)</span>
+                    )}
+                    <input
+                      className="min-w-0 flex-1 rounded-chip bg-inset px-2 py-1 text-body-c"
+                      // 🔴 값의 출처는 «서버가 준 배열» 하나다. 편집 중인 칸만 초안을 덧댄다 —
+                      //    두 곳에서 값을 만들면 어느 쪽이 참인지 화면이 스스로 답하지 못한다.
+                      value={editing?.index === i ? editing.value : (p.name ?? "")}
+                      placeholder="부품 이름"
+                      onChange={(e) => setEditing({ index: i, value: e.target.value })}
+                      onBlur={(e) => {
+                        setEditing(null);
+                        if (e.target.value === (p.name ?? "")) return;
+                        const next = wo.parts.map((q, k) => (k === i ? { ...q, name: e.target.value } : q));
+                        void save({ parts: next });
+                      }}
+                      data-testid="wo-part-name"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing(null);   // 같은 이유 — 지우면 뒤 행이 이 자리로 올라온다
+                        void save({ parts: wo.parts.filter((_, k) => k !== i) });
+                      }}
+                      className="shrink-0 self-start whitespace-nowrap fkt-pill bg-fill text-foot text-muted hover:text-ink sm:self-auto"
+                      data-testid="wo-part-delete"
+                    >
+                      삭제
+                    </button>
+                  </li>
+                ),
+              )}
               {wo.parts.length === 0 && <li className="text-foot text-muted">부품이 없습니다.</li>}
             </ul>
           </div>
@@ -306,7 +344,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
         </section>
 
         {/* ── 근거 패널 380px ───────────────────────────────────────────────── */}
-        <aside className="w-95 shrink-0 fkt-card p-5" data-testid="wo-evidence" data-count={wo.evidenceIds.length}>
+        <aside className="w-full fkt-card p-5 sm:w-95 sm:shrink-0" data-testid="wo-evidence" data-count={wo.evidenceIds.length}>
           <p className="text-foot text-muted">이 초안이 인용한 근거 {wo.evidenceIds.length}건</p>
           <ul className="mt-2 max-h-160 space-y-1 overflow-y-auto">
             {wo.evidenceIds.map((id) => (
