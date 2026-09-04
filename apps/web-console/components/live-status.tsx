@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { type RunCap, liveStatus, subscribeCongestion, subscribeRunCap } from "@/lib/contract";
 import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
@@ -39,7 +39,31 @@ type State = {
    *    (입장 전·pending) 서버가 아직 답하지 않은 회차. 「0회 남았다」와 섞지 않는다.
    */
   runCap: RunCap | null;
+  /**
+   * 🔴 **D-55 — 「세션이 사라졌다」는 `online` 과 다른 축이다**(오케 보강 16:56 · 폐하 실물 16:54).
+   *
+   *    `/live/status` 의 `online` 은 «합성 게이트웨이»만 본다. 그래서 ai-api 가 재기동해
+   *    세션이 전부 사라진 뒤에도 배지는 초록(LIVE)인데 본문은 401 인 화면이 남았다 —
+   *    배지가 화면의 나머지와 다른 말을 한다.
+   * 🔴 **모드 값을 늘리지 않는다**(`data-mode` 집합 불변 · 계측 그물 보존). 대신 이 축이 서면
+   *    **노출되는** 모드를 기존 `unavailable` 로 내린다(아래 `view`) — 폴링이 그 뒤에 200 을
+   *    받아도 세션은 여전히 없으므로, 이 사실은 «끈적하게» 남고 사람이 다시 입장할 때 풀린다.
+   */
+  sessionExpired: boolean;
 };
+
+/**
+ * 🔴 **신호는 «되살리지 못했다»가 확정된 자리에서만 온다**(`session-recovery.tsx`).
+ *    자동 재입장이 도는 중에 내리면, 곧 되살아날 상태를 화면이 「끊겼다」로 적는다.
+ * 🔴 구독/통지 형태는 이 파일이 이미 쓰는 혼잡·상한 채널과 같다 — 신호를 내는 자리가
+ *    컨텍스트 «밖»(패널)이라 setState 를 직접 못 부른다.
+ */
+type SessionExpiredListener = () => void;
+const sessionExpiredListeners = new Set<SessionExpiredListener>();
+
+export function announceSessionExpired(): void {
+  for (const fn of sessionExpiredListeners) fn();
+}
 
 const LiveContext = createContext<State>({
   mode: "checking",
@@ -47,6 +71,7 @@ const LiveContext = createContext<State>({
   why: null,
   congested: {},
   runCap: null,
+  sessionExpired: false,
 });
 
 const POLL_MS = 30_000; // §0: 30s polling
@@ -77,6 +102,7 @@ export function LiveStatusProvider({
     why: null,
     congested: {},
     runCap: null,
+    sessionExpired: false,
   });
 
   /**
@@ -172,7 +198,23 @@ export function LiveStatusProvider({
     [],
   );
 
-  return <LiveContext.Provider value={state}>{children}</LiveContext.Provider>;
+  useEffect(() => {
+    const fn = () => setState((prev) => (prev.sessionExpired ? prev : { ...prev, sessionExpired: true }));
+    sessionExpiredListeners.add(fn);
+    return () => {
+      sessionExpiredListeners.delete(fn);
+    };
+  }, []);
+
+  /* 🔴 **폴링이 답한 것은 그대로 두고, «보이는» 값만 내린다.** 폴링 결과에 직접 덮어쓰면
+     다음 주기의 200 이 그 사실을 지운다 — 세션은 여전히 없는데 배지만 초록으로 돌아간다.
+     원값은 남아 있고, 사람이 다시 입장해 문서를 새로 읽으면 이 축은 처음부터 없다. */
+  const view = useMemo<State>(
+    () => (state.sessionExpired ? { ...state, mode: "unavailable", why: "재입장 필요" } : state),
+    [state],
+  );
+
+  return <LiveContext.Provider value={view}>{children}</LiveContext.Provider>;
 }
 
 const FACE: Record<Mode, { icon: string; text: string; cls: string }> = {
@@ -210,12 +252,17 @@ function latestCongestion(congested: Record<string, Congestion>): Congestion | n
 }
 
 export function ModeBadge() {
-  const { mode, checkedAt, why, congested } = useContext(LiveContext);
+  const { mode, checkedAt, why, congested, sessionExpired } = useContext(LiveContext);
   const congestion = latestCongestion(congested);
   const face = congestion ? CONGESTED_FACE : FACE[mode];
+  /* 🔴 **D-55 — 세션이 없으면 그렇게 «말한다».** 아이콘·색·`data-mode` 는 `unavailable` 의 것을
+     그대로 쓰고(값 집합 불변) 낱말만 갈린다 — 「미연결」은 서버에 못 닿았다는 뜻이라, 서버는
+     살아 있는데 내 세션만 사라진 이 상태를 그 낱말로 적으면 사람이 다음에 할 일을 못 찾는다. */
   const text = congestion
     ? `혼잡${congestion.retryAfterSec !== undefined ? ` · ${congestion.retryAfterSec}초 뒤 재시도` : ""}`
-    : FACE[mode].text;
+    : sessionExpired
+      ? "재입장 필요"
+      : FACE[mode].text;
   const seen = checkedAt ? new Date(checkedAt).toLocaleTimeString("ko-KR") : "확인 전";
   return (
     <span

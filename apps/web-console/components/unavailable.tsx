@@ -1,3 +1,5 @@
+import { SessionRecovery } from "@/components/session-recovery";
+
 /**
  * 데이터에 닿지 못한 화면 — 🔴 «빈 화면»과 «못 물어봤다»를 가른다.
  *
@@ -45,6 +47,15 @@ export function Unavailable({
    */
   heading?: boolean;
 }) {
+  /* 🔴 **D-55 — 401 은 «못 물어본 것»이 아니라 «세션이 사라진 것»이다.**
+     ai-api 가 내는 401 은 `session_required` 한 갈래뿐이고(`session_guard.py:277·289` 전수),
+     그 상태는 화면이 스스로 회복할 수 있다 — 재기동으로 세션이 사라졌을 뿐 서버는 살아 있다.
+     그래서 패널을 그리기 «전»에 재입장 경로를 한 번 지난다(회복하면 이 자리는 안 그려진다).
+     🔴 호출부는 한 곳도 바뀌지 않는다 — 401 을 «받은 화면 전부»가 같은 길을 얻어야 하고,
+        화면마다 손으로 끼우면 새 화면이 조용히 빠진다. */
+  if (kind === "unavailable" && why === "HTTP 401") {
+    return <SessionRecovery screen={screen} heading={heading} />;
+  }
   return (
     <section className="max-w-2xl" data-testid="screen-unavailable" data-kind={kind}>
       {heading ? (
