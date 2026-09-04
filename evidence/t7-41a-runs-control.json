@@ -1,0 +1,69 @@
+{
+  "base": "http://127.0.0.1:8153",
+  "startedWall": "2026-09-04 18:53:55",
+  "sessionA": "R4tzeZBj_2O1_BkW27u4C8EC",
+  "stage": {
+    "requested": 21,
+    "created": 21,
+    "codes": {
+      "200": 21
+    },
+    "settledWithinWait": 0
+  },
+  "ax1_shape_order_limit": {
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "http_404",
+        "message": "Not Found"
+      }
+    }
+  },
+  "ax2_isolation": {
+    "sessionCreate": 200,
+    "sessionB": "LMbc3ySm0tgD6ULPs4jUa3ZE",
+    "status": 404,
+    "count": null,
+    "isolated": false,
+    "afterOwnRun": {
+      "status": 404,
+      "count": null,
+      "mineOnly": false
+    },
+    "crossSessionQuery": {
+      "status": 404,
+      "code": "http_404"
+    }
+  },
+  "ax3_422_401": {
+    "mismatch": {
+      "status": 404,
+      "code": "http_404"
+    },
+    "noCookie": {
+      "status": 404,
+      "code": "http_404"
+    },
+    "missingParam": {
+      "status": 404,
+      "code": "http_404"
+    }
+  },
+  "cookieA": "fkt_sid=R4tzeZBj_2O1_BkW27u4C8EC",
+  "ax5_overview_incidentid": {
+    "status": 200,
+    "alarmCount": 1,
+    "withField": 0,
+    "pairs": [
+      {
+        "alarmId": "AL-20260826-0041",
+        "incidentId": null
+      }
+    ],
+    "incidentResolves": [],
+    "allResolve": null
+  },
+  "ax6_finished_ge_started": {
+    "status": 404
+  }
+}
