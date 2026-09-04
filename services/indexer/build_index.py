@@ -57,16 +57,33 @@ ONTOLOGY_VERSION_FILE = ROOT / "packages" / "ontology" / "ontology-version.json"
 # --- 접속 -----------------------------------------------------------------------
 
 
+#: 대상 DSN 이 없을 때의 종료 코드 — 1(파이썬 기본 예외)과 «가려서» 낸다.
+NO_DSN_RC = 2
+NO_DSN_MESSAGE = "대상 DSN 이 없다 — FKT_POSTGRES_DSN 또는 --dsn 을 주라"
+
+
 def dsn_from_env(explicit: str | None) -> str:
+    """대상 DB 는 «명시»로만 정해진다 — 기본값을 두지 않는다(D-72).
+
+    🔴 **이 스크립트는 파괴적이다**: 색인을 DELETE 후 INSERT 한다. 그런 명령의 대상을
+       기본값에 맡기면, 아무것도 안 준 실행이 «어딘가»를 조용히 지운다. 앞판이 정확히
+       그랬다 — 포트 기본값 5434 는 이 리포의 어느 스택도 쓰지 않는 값이면서도, 누군가
+       그 포트에 DB 를 띄워 두면 **오류 없이** 남의 색인을 갈아 치웠다(D-16 이 그 형태로
+       값을 치렀고, runbook 은 그래서 「PGPORT 명시 의무」를 적어 두었다 — 문서가 지키던
+       것을 이제 코드가 지킨다).
+
+    🔴 조각 조립(PGHOST·PGPORT·PGUSER…)도 함께 없앤다. 조각이 남아 있으면 「일부만 준」
+       실행이 나머지를 기본값으로 채워 다시 같은 문을 연다. 출처는 둘뿐이다: `--dsn`,
+       그리고 `FKT_POSTGRES_DSN`(ai-api·검증기가 이미 쓰는 «그» 이름 — 새 낱말을 만들지
+       않는다).
+    """
     if explicit:
         return explicit
-    # 좌석별 병렬 스택(dev-environment §4.2)은 POSTGRES_PORT만 달리 준다.
-    host = os.environ.get("PGHOST", "127.0.0.1")
-    port = os.environ.get("PGPORT") or os.environ.get("POSTGRES_PORT", "5434")
-    user = os.environ.get("PGUSER") or os.environ.get("POSTGRES_USER", "fkt")
-    pw = os.environ.get("PGPASSWORD") or os.environ.get("POSTGRES_PASSWORD", "fkt_local_dev")
-    db = os.environ.get("PGDATABASE") or os.environ.get("POSTGRES_DB", "fkt")
-    return f"host={host} port={port} user={user} password={pw} dbname={db}"
+    env = os.environ.get("FKT_POSTGRES_DSN")
+    if env:
+        return env
+    print(NO_DSN_MESSAGE, file=sys.stderr)
+    raise SystemExit(NO_DSN_RC)
 
 
 # --- 사전 점검 -------------------------------------------------------------------
@@ -137,12 +154,16 @@ def main() -> int:
     ap.add_argument("--build-id", default=None, help="빌드 식별자(기본: uuid4)")
     args = ap.parse_args()
 
+    # 🔴 DSN 확정이 «가장 먼저»다 — psycopg 를 들이기도 전에 끝낸다. 대상이 없는 실행은
+    #    DB 를 한 번도 건드리지 않고 죽어야 하고, 그 순서가 곧 그 보증이다.
+    dsn = dsn_from_env(args.dsn)
+
     import psycopg
 
     build_id = args.build_id or uuid.uuid4().hex
     onto = ontology_version()
 
-    with psycopg.connect(dsn_from_env(args.dsn)) as conn:
+    with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             col_dim = preflight(cur)
             check_ontology_registry(cur, onto)
