@@ -253,7 +253,12 @@ _LINE_EQUIPMENT_SQL = """
 
 _ACTIVE_ALARMS_SQL = """
     SELECT a.id, a.severity, a.status, a.raised_at,
-           a.threshold_value, a.observed_value, a.equipment_id, a.sensor_id
+           a.threshold_value, a.observed_value, a.equipment_id, a.sensor_id,
+           -- 🔴 알람→상황 연결(계약 v0.1.16 · R13). 조인이 아니라 alarm 의 FK 컬럼을 그대로
+           --    싣는다: 이 열은 `REFERENCES incident(id) ON DELETE SET NULL` 이라 값이 있으면
+           --    실재하는 incident 이고, 지워지면 NULL 이 된다. 화면이 알람 id 로 지어낼 값이
+           --    아니라 서버가 아는 사실이다.
+           a.incident_id
       FROM alarm a
       JOIN equipment e ON e.id = a.equipment_id
       JOIN production_line l ON l.id = e.line_id
@@ -333,6 +338,8 @@ def _sorted_alarms(rows: list[Any]) -> list[dict[str, Any]]:
             "observedValue": _num(a["observed_value"]),
             "equipmentId": a["equipment_id"],
             "sensorId": a["sensor_id"],
+            # 연결이 없으면 `None` — 「아직 상황으로 안 묶인 알람」이라는 사실 그대로다.
+            "incidentId": a["incident_id"],
         }
         for a in ordered
     ]
