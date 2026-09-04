@@ -24,7 +24,13 @@ const PORT = Number(arg("port", "8101"));
 const UP = arg("upstream", "http://127.0.0.1:8102");
 
 const cache = new Map();
-const stats = { hit: 0, miss: 0, upstreamMs: 0, hitMs: 0, keys: [] };
+const stats = { hit: 0, miss: 0, upstreamMs: 0, hitMs: 0, refused: 0, keys: [] };
+
+/* 🔴 X-05/X-20/X-21 용 «끊김» 스위치(T7-23 축②). 배포·타 좌석이 쓰는 실 ai-api 를 죽이지
+   않고 「상류 다운」을 만들기 위한 자리다 — 자극은 «내 것»에만 넣는다.
+   500/503 이 아니라 **소켓을 끊는다**: X-05 의 자극은 「응답 코드」가 아니라 「연결 자체가
+   안 된다」이고, 둘은 셸에서 다른 경로를 탄다. `refused` 수가 «자극이 실재했다»의 증인이다. */
+let down = false;
 
 /** 불투명 id(16자 이상 영숫자 / uuid)는 `:id` 로 접는다 — 세션마다 miss 나는 것을 막는다. */
 const normalize = (pathname) =>
@@ -47,6 +53,18 @@ const server = http.createServer(async (req, res) => {
   if (u.pathname === "/__stub/stats") {
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(stats));
+    return;
+  }
+  if (u.pathname === "/__stub/down" || u.pathname === "/__stub/up") {
+    down = u.pathname.endsWith("/down");
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ down, refused: stats.refused }));
+    return;
+  }
+  if (down) {
+    /* 상류가 «없는» 상태 — 응답을 주지 않고 소켓을 끊는다. */
+    stats.refused++;
+    req.socket.destroy();
     return;
   }
   if (u.pathname === "/__stub/reset") {
