@@ -46,22 +46,38 @@ async function measure(page, width) {
   // 🔴 폐하 증상은 «재개(resume)» 변형에서 났다 — 그 카드를 실제로 만들어 둔다.
   //    `status: dismissed` 일 때 초대가 「이어서 보기」로 바뀐다(tour-provider.tsx:211).
   if (WANT_RESUME) {
-    // 🔴 `dismissed` 로 가는 길은 **「나중에」**다 — 「둘러보기 시작」을 누르면 `running` 이 되고
-    //    초대 카드 자체가 사라진다(44대 1차: 그래서 무대 0 · exit 2 가 났다).
-    const later = page.locator('[data-testid="tour-later"]');
-    if (await later.count()) {
-      await later.first().click().catch(() => {});
-      await page.waitForTimeout(500);
+    // 🔴 **`dismissed` 는 «중단 경로»에서 온다**(오케 20:23 정정) — 「나중에」가 아니라
+    //    **시작 → 걸음 진행 → 새로고침**이다. 44대 1차는 「나중에」로 가려다 무대 0(exit 2)을 냈다.
+    const start = page.locator('[data-testid="tour-start"]');
+    if (await start.count()) {
+      await start.first().click().catch(() => {});
+      await page.waitForTimeout(900);
     }
-    const reopen = page.locator('[data-testid="intro-reopen"]');
-    if (await reopen.count()) {
-      await reopen.first().click().catch(() => {});
-      await page.waitForTimeout(800);
+    // 걸음 1~2 진행 — 재개점 index 가 저장돼야 「보시던 곳부터」가 선다.
+    for (let k = 0; k < 2; k++) {
+      const next = page.locator('[data-testid="tour-next"]');
+      if (await next.count()) {
+        await next.first().click().catch(() => {});
+        await page.waitForTimeout(700);
+      }
     }
+    // 🔴 `dismissed` 를 «실제로» 만드는 손잡이는 코드에 둘뿐이다:
+    //    `tour-skip` 클릭(tour-provider.tsx:234) 과 Escape(159). 새로고침만으로는 `running` 이
+    //    그대로 재개돼 초대 카드가 서지 않는다(44대 2차 실측: 무대 0 · exit 2).
+    const skip = page.locator('[data-testid="tour-skip"]');
+    if (await skip.count()) {
+      await skip.first().click().catch(() => {});
+      await page.waitForTimeout(700);
+    } else {
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(700);
+    }
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1200);
     const c2 = page.locator('[aria-label="안내 닫기"]');
     if (await c2.count()) {
       await c2.first().click().catch(() => {});
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(600);
     }
   }
   const invite = page.locator(INVITE);
