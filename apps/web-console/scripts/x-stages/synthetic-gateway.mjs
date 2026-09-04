@@ -55,10 +55,12 @@ const witness = {
   upgradesProxied: 0,         /* WS — 손대지 않고 그대로 넘긴 건수 */
   upgradesBlocked: 0,         /* 🔴 T7-32 — 426 으로 «거절»한 건수(셸을 폴링으로 내린다) */
   pollingRewritten: 0,        /* 🔴 T7-32 — 재작성이 «폴링 경로»에서 난 건수(경로로 구별) */
+  snapshotRewritten: 0,       /* 🔴 T7-32 — 재작성이 «run 스냅샷»(`/api/runs/<id>`)에서 난 건수 */
   upstreamFailed: 0,
   lastLiveStatus: null,
   lastSynthesis: null,
   lastPollingRewrite: null,
+  lastSnapshotRewrite: null,
   /* 🔴 X-23 의 증인 — 「online:true」와 「근거 0」이 «같은 실행»에서 났음을 한 자리에 든다. */
   paired: null,
 };
@@ -95,6 +97,10 @@ export function createSyntheticGateway({ upstream, evidenceKeys, passthrough = f
   /* 🔴 폴링 폴백이 두드리는 그 경로(`CONTRACT.runEvents` = `/api/runs/<id>/events`).
      WS 로 지나가던 근거가 «여기로» 내려와야 이 무대를 지난다 — 그래서 «경로로» 센다. */
   const isRunEvents = (url) => /\/api\/runs\/[^/]+\/events$/.test(String(url).split("?")[0]);
+  /* 🔴 **끝난 run 의 근거는 이 경로로 온다**(`CONTRACT.run` = `/api/runs/<id>` · SSR·브라우저 스냅샷).
+     0.3초에 완주하는 live run 은 WS 를 열 이유가 없으므로, X-23 의 자극 경로는 여기다.
+     🔴 `/events`·`/stop` 은 **다른 경로**다 — 하위 경로를 같이 세면 스냅샷 축이 그 안에 숨는다. */
+  const isRunSnapshot = (url) => /\/api\/runs\/[^/]+$/.test(String(url).split("?")[0]);
 
   const server = http.createServer((req, res) => {
     if (req.url === "/__stage") {
@@ -150,6 +156,9 @@ export function createSyntheticGateway({ upstream, evidenceKeys, passthrough = f
                 if (isRunEvents(req.url)) {
                   witness.pollingRewritten += 1;
                   witness.lastPollingRewrite = { path: req.url, arrays: changed.arrays, counts: changed.counts, at };
+                } else if (isRunSnapshot(req.url)) {
+                  witness.snapshotRewritten += 1;
+                  witness.lastSnapshotRewrite = { path: req.url, arrays: changed.arrays, counts: changed.counts, at };
                 }
               }
             }
@@ -393,6 +402,9 @@ if (has("selftest")) {
     everyEvidenceArrayEmpty: gwLens.length >= 1 && gwLens.every((n) => n === 0),
     everyEvidenceCountZero: gwCounts.length === 0 || gwCounts.every((n) => n === 0),
     pairedInSameRun: !!witness.paired,
+    /* 🔴 스냅샷 축(`/api/runs/<id>`) — 끝난 run 의 화면 근거가 오는 경로. `--probe` 기본값이
+       그 경로라 이 축은 «자극이 실제로 그 자리를 지났는가»를 계수로 확인한다. */
+    snapshotPathRewritten: witness.snapshotRewritten >= 1,
   };
   /* ⑦ WS 축은 내부 상류일 때만 건다 — 외부 상류가 업그레이드를 말하는지는 그쪽 사정이다(못 하는 말).
      🔴 T7-32 — 스위치를 «양쪽으로» 놓고 갈리는지 본다. 한쪽만 재면 그 분기가 도는지 알 수 없다. */
@@ -418,7 +430,8 @@ if (has("selftest")) {
       `게이트웨이 online:${gwStatus.json?.online} · 근거 [${gwLens.join(",")}] · 계수 [${gwCounts.join(",")}] · ` +
       `배열 ${witness.arraysEmptied}본·계수 ${witness.countsZeroed}본 비움 · ` +
       `WS ${BLOCK_UPGRADE ? `거절 ${witness.upgradesBlocked}` : `통과 ${witness.upgradesProxied}`} · ` +
-      `폴링경로 재작성 ${witness.pollingRewritten}(근거 [${ctlPollLens.join(",")}] → [${gwPollLens.join(",")}]) · ` +
+      `스냅샷경로 재작성 ${witness.snapshotRewritten} · 폴링경로 재작성 ${witness.pollingRewritten}` +
+      `(근거 [${ctlPollLens.join(",")}] → [${gwPollLens.join(",")}]) · ` +
       `paired ${witness.paired?.onlineTrueAt} / ${witness.paired?.evidenceZeroAt} · stagePort ${stagePort}`,
     );
     process.exit(0);
