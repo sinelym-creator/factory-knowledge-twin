@@ -38,7 +38,7 @@
    «생성» 단계의 규칙이므로 완주가 필요 없다. 게이트웨이 스텁을 함께 띄웠다면 그 호출 로그가
    0줄인 것으로 「구독을 안 썼다」를 자취로 남긴다(`FKT_STUB_LOG`).
 
-    FKT_API_BASE      기본 http://127.0.0.1:8000
+    FKT_API_BASE      필수 · 기본값 없음(O-22)
     FKT_SCENARIO      기본 GS-01
     FKT_RUN_CAP       기대 상한 (기본 3 — 착지 값과 다르면 발주문 값으로 덮어라)
     FKT_RUN_MODE      run 생성 body 의 mode (기본 live · 🔴 live 가 아니면 exit 2 — 축 불성립)
@@ -55,8 +55,11 @@ import os
 import sys
 import urllib.error
 import urllib.request
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
-API = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000").rstrip("/")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+API = _env.api_base()
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 CAP = int(os.environ.get("FKT_RUN_CAP", "3"))
 MODE = os.environ.get("FKT_RUN_MODE", "live")

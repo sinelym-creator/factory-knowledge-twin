@@ -45,13 +45,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
 import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 스택 무접촉)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
 REPO = Path(__file__).resolve().parents[2]
 VIEW_SQL = (
     REPO / "services" / "ai-api" / "db" / "migrations"
     / "007_freshness_unverified_and_integrity.sql"
 )
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 PG_CONTAINER = os.environ.get("FKT_PG_CONTAINER", "fkt-levi2-postgres-1")
 PG_USER = os.environ.get("FKT_PG_USER", "fkt")
 PG_DB = os.environ.get("FKT_PG_DB", "fkt")

@@ -29,8 +29,9 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 PG_CONTAINER = os.environ.get("FKT_PG_CONTAINER", "fkt-levi2-postgres-1")
 PG_USER = os.environ.get("FKT_PG_USER", "fkt")
 PG_DB = os.environ.get("FKT_PG_DB", "fkt")

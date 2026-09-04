@@ -59,7 +59,7 @@ python tests/api/session_guard_drill.py     # 🔴 T3-1 가드 착지 «후»에
 python tests/api/_session.py                # 어댑터 자기 검증(no-op 갈래 + 활성 모의 대조군)
 ```
 
-환경: `FKT_API_BASE`(기본 `http://127.0.0.1:8000`) · `FKT_PYTHON`(기본 = 대상 리포의 `.venv` — 🔴 worktree 에서 검수할 때 반드시 준다. 없으면 드릴이 없는 venv 를 찾다 WinError 2 로 죽고, 그 빨강은 «대상»의 것이 아니다) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
+환경: `FKT_API_BASE`(**필수 · 기본값 없음** — O-22) · `FKT_PYTHON`(기본 = 대상 리포의 `.venv` — 🔴 worktree 에서 검수할 때 반드시 준다. 없으면 드릴이 없는 venv 를 찾다 WinError 2 로 죽고, 그 빨강은 «대상»의 것이 아니다) · `FKT_NEO4J_CONTAINER`(기본 `fkt-levi2-neo4j-1`)
 · `FKT_PG_CONTAINER`(기본 `fkt-levi2-postgres-1`).
 
 🔴 **쓰는 자산 4종**은 전부 기본 꺼짐이고 자기 스택에만 겨눈다 —

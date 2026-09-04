@@ -23,7 +23,7 @@
     python tests/api/dependency_code_drill.py                  # 단절 없이 기준선만
     python tests/api/dependency_code_drill.py --cut-postgres   # + 의존 단절(내 스택 한정)
 
-환경: `FKT_API_BASE`(기본 http://127.0.0.1:8000) · `FKT_PG_CONTAINER`(기본 fkt-levi2-postgres-1)
+환경: `FKT_API_BASE`(필수 · 기본값 없음(O-22)) · `FKT_PG_CONTAINER`(기본 fkt-levi2-postgres-1)
 
 exit: 0 = 전건 기대대로 · 1 = 어긋남 1건 이상 · 2 = 실행 오류
 """
@@ -43,8 +43,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
 import _ownership  # noqa: E402  — 🔴 Q-62 2단 안전장치(남의 스택 무접촉)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 PG_CONTAINER = os.environ.get("FKT_PG_CONTAINER", "fkt-levi2-postgres-1")
 
 # 정본 표기 그대로의 승인 질문 1건 — 게이트를 지나 «검색까지» 가야 의존 단절이 재현된다.

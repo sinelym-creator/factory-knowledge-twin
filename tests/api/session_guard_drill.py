@@ -39,10 +39,13 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
 REPO = Path(__file__).resolve().parents[2]
 CONTRACT = REPO / "packages" / "contracts" / "rest-api-v0.1.md"
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+API_BASE = _env.api_base()
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 
 
