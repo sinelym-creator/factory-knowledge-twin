@@ -19,7 +19,7 @@
  *
  *   node delay-proxy.mjs --port 8812 --upstream 127.0.0.1:8101 --delay-ms 1200
  *   node delay-proxy.mjs --selftest --delay-ms 800            # 내부 상류 + 대조군까지 자족
- *   node delay-proxy.mjs --selftest --upstream 127.0.0.1:8010 --probe api/plants
+ *   node delay-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --probe api/plants
  */
 import http from "node:http";
 

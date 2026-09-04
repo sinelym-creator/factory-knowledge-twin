@@ -1,4 +1,4 @@
-# X 예외 축 무대 (T7-21·T7-22) — **2/4 완성 · 나머지 2는 설계만**
+# X 예외 축 무대 (T7-21·T7-22) — **3/4 완성 · 나머지 1은 설계만**
 
 검증이 X-01~X-25 를 «실행»하려면 **자극을 만드는 무대**가 먼저 있어야 한다. 여기 있는 것은 그 무대다.
 🔴 **`tests/**` 는 검증 좌석 자산이다** — 그쪽 `_blackhole_server.mjs` 는 **읽기만** 했고, 이 자리에 새로 뒀다.
@@ -32,7 +32,7 @@ node blackhole-proxy.mjs --selftest --port 8899 --upstream 127.0.0.1:8101 --prob
 ```
 node delay-proxy.mjs --port 8812 --upstream 127.0.0.1:8101 --delay-ms 1200
 node delay-proxy.mjs --selftest --delay-ms 800                       # 내부 상류 + 대조군까지 자족
-node delay-proxy.mjs --selftest --upstream 127.0.0.1:8010 --probe api/plants
+node delay-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --probe api/plants
 ```
 
 - 상류 응답을 `--delay-ms` 만큼 «개시하지 않고» 붙들었다가 상태·헤더·본문을 그대로 흘린다(끊지 않는다 — ①과 다른 점).
@@ -43,12 +43,26 @@ node delay-proxy.mjs --selftest --upstream 127.0.0.1:8010 --probe api/plants
 - 🔴 **이 무대가 «못 하는 말»**: 「잠정 상태가 그려졌다 걷혔다」는 **화면이 답한다.** 이쪽은 지연이 실제로 걸렸고 응답이 온전했다는 두 사실만 낸다.
 - 포트 **8812**.
 
-## ③ 용량 거절 — 🔴 **미구현 (설계만)**
+## ③ 용량 거절 — `capacity-proxy.mjs` ✅ **완성**
 
 **X-11**: 동시 요청 상한 초과 시 **503 + `Retry-After`** (`t42b:208` 이 기다리는 자리).
-- 진행 중 요청 수를 세어 `--max-inflight` 초과분만 503. 나머지는 상류로 통과.
-- 증인 = 버스트에서 **503 ≥ 1건 «그리고» 200 ≥ 1건** — 🔴 둘 다 나와야 「상한이 있다」이고, 전부 503 이면 그건 상한이 아니라 고장이다.
-- 권장 포트 **8813**.
+
+```
+node capacity-proxy.mjs --port 8813 --upstream 127.0.0.1:8101 --max-inflight 2 --retry-after 1
+node capacity-proxy.mjs --selftest --max-inflight 2 --burst 6          # 내부(느린) 상류로 자족
+node capacity-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --burst 40 --probe api/plants
+```
+
+- 진행 중 요청 수를 세어 `--max-inflight` **초과분만** 503(+`Retry-After`). 나머지는 상류로 통과.
+- 🔴 **무대가 울리려면 상류가 «겹칠 만큼» 느려야 한다.** 상류가 즉답하면 요청이 사실상 직렬로 끝나 동시 진행 수가 상한에 닿지 못한다 — 그러면 전량 200 이 나오고, 이건 「상한이 없다」가 아니라 **「자극이 안 섰다」**이다. selftest 의 내부 상류는 그래서 일부러 느리다(`--upstream-delay-ms` 기본 400 ms). **실 상류 앞에 세울 때는 버스트를 그만큼 키운다.**
+- 🔴 그래서 증인에 **`peakInflight`** 를 둔다 — 이게 상한 미만이면 판정 자체가 무효다(자극 미달을 「상한 없음」으로 읽지 않기 위해).
+- 🔴 **자기 생존 증인 실측(09-04 09:07)** — `SELFTEST PASS` · 버스트 **6** · **503 4건**(`Retry-After: 1` **전건 부착** 4/4) · **200 2건** · `peakInflight` **2/2** · 상류 응답 2 · 응답 수신 6/6 · stagePort 60443. **503 과 200 이 «같은 버스트»에서 나왔다.**
+- 🔴 **반대 방향 대조군 2본** — 양쪽 끝을 다 눌러 판정선이 «내려가는» 것을 확인했다.
+  - `--max-inflight 0` → `FAIL — passedAtLeastOne, passedReachedUpstream, passedIs200` (503 6 · 통과 0) · **exit 1**. 전량 503 은 상한이 아니라 고장이라는 것을 판정식이 말한다.
+  - `--max-inflight 99` → `FAIL — rejectedAtLeastOne, everyRejectHasRetryAfter, peakReachedLimit` (503 0 · 통과 6 · peak 6/99) · **exit 1**.
+- 🔴 **클라이언트가 끊어도 자리는 반드시 돌려준다**(`res.on("close")`). 안 돌려주면 무대가 스스로 막혀 그 뒤 전량이 503 이 되는데, 그건 상한이 아니라 무대 고장이다.
+- 🔴 **이 무대가 «못 하는 말»**: 「화면이 `Retry-After` 를 읽고 되묻는가」는 **화면이 답한다.** 이쪽은 상한이 실제로 걸렸고 통과분은 상류에 닿았다는 두 사실만 낸다.
+- 포트 **8813**.
 
 ## ④ 합성 게이트웨이 — 🔴 **미구현 (설계만)**
 
@@ -63,7 +77,7 @@ node delay-proxy.mjs --selftest --upstream 127.0.0.1:8010 --probe api/plants
 |---|---|---|
 | 끊는 프록시 | **8811** | ✅ 완성 · selftest PASS |
 | 늦추는 프록시 | **8812** | ✅ 완성 · selftest PASS(실측 804 ms · 대조군 +789 ms) |
-| 용량 거절 | 8813 | 미구현 |
+| 용량 거절 | **8813** | ✅ 완성 · selftest PASS(503 4 + 200 2 · peak 2/2) |
 | 합성 게이트웨이 | 8814 | 미구현 |
 
 🔴 **`:8799`·`:8102`·`:8010` 은 검증·배포 것이다 — 쓰지 않는다.**
