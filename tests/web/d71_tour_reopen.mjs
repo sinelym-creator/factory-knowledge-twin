@@ -18,6 +18,14 @@
 import { chromium, webkit } from "@playwright/test";
 
 const TGT = { shell: "http://127.0.0.1:8194", label: "대상" };
+/* 🔴 ⑫(D-69 문면)의 대상은 **D-71 lane 이 아니다.** 문면 변경은 `be38ca7`(#655 · D-68b)
+   계보이고 D-71 lane(`e904c47` 출발)에는 그 줄이 없다 — `grep -c '상단 「튜토리얼」'` 이
+   D-71 트리 0 · develop `2e923e0` 1. 그 무대로 재면 「처방이 안 들었다」 오판이 난다.
+   `--ax12-shell <url>` 로 ⑫ 만 다른 셸에 건다(기본은 TGT). */
+const AX12_IDX = process.argv.indexOf("--ax12-shell");
+const AX12 = AX12_IDX > -1
+  ? { shell: process.argv[AX12_IDX + 1], label: "대상(⑫ 전용 · develop)" }
+  : null;
 const CTL = { shell: "http://127.0.0.1:8195", label: "대조군" };
 const WANT = "?intro=1&tour=1";
 const RUNS = 6;
@@ -96,39 +104,56 @@ async function axis16and12(page, stage) {
 
   const start = page.getByTestId("tour-start");
   if ((await start.count()) > 0) await start.click().catch(() => {});
+  /* 🔴 손잡이 집합은 **코드에서** 세웠다(`tour-steps.ts` 의 `advance` 전수 grep · 9단계):
+       · `advance: "next"`            → `tour-next`      (1·2·4·5·7·8단계)
+       · `advance: { to, label }`     → `tour-goto`      (**3단계** = 「녹화 재생으로 조사 보기」 · 9단계)
+       · `advance: { on:"click", of }`→ 대상 직접 클릭   (6단계 = candidate 칩 · 규격 §⑧-7)
+     45대 초판은 앞 둘 중 `goto` 를 몰라 **3/9 에서 멈췄다** — 손잡이를 지어내지 않고
+     정본에서 세니 그 자리가 열렸다. `goto` 는 라우트를 바꾸므로 이동을 기다린다. */
   let last = "";
   let stuckAt = null;
   let why = "";
-  for (let i = 0; i < 16; i += 1) {
+  const stepOf = (t) => t.match(/(\d)\s*\/\s*9/)?.[1] || "?";
+  for (let i = 0; i < 24; i += 1) {
     last = (await page.getByTestId("tour-callout").innerText().catch(() => "")) || "";
     if (/9\s*\/\s*9/.test(last)) break;
+    const before = stepOf(last);
     const next = page.getByTestId("tour-next");
+    const goto = page.getByTestId("tour-goto");
+    const awaitClick = page.getByTestId("tour-await-click");
+    let moved = false;
     if ((await next.count()) > 0 && (await next.isEnabled().catch(() => false))) {
-      await next.click().catch(() => {});
-    } else {
-      // 🔴 `tour-await-click` 은 «대상을 직접» 눌러야 넘어간다(규격 §⑧-7).
-      const await_ = page.getByTestId("tour-await-click");
-      if ((await await_.count()) === 0) {
-        stuckAt = last.match(/\d\s*\/\s*9/)?.[0] || "?";
-        why = "다음 버튼도 await-click 도 없다";
-        break;
+      moved = await next.click({ timeout: 3000 }).then(() => true).catch(() => false);
+    } else if ((await goto.count()) > 0) {
+      moved = await goto.click({ timeout: 3000 }).then(() => true).catch(() => false);
+      // goto 는 «데려가는» 손잡이다 — 라우트가 바뀌는 것을 기다린다(고정 대기 금지).
+      await page.waitForLoadState("domcontentloaded").catch(() => {});
+      await page.getByTestId("tour-callout").first()
+        .waitFor({ state: "visible", timeout: 15000 }).catch(() => {});
+    } else if ((await awaitClick.count()) > 0) {
+      /* 🔴 6단계는 `advance: { on:"click", of:"candidate" }` 다 — 눌러야 하는 것은 말풍선도
+         스포트라이트도 아니고 **`candidate` 안의 근거 칩**이다(정본 `tour-steps.ts:179·182`
+         「근거 칩을 직접 눌러 보세요」). 스포트라이트 자식만 뒤지면 못 찾는다. */
+      const cands = [
+        page.getByTestId("candidate").locator('a[href*="/evidence/"]').first(),
+        page.getByTestId("candidate").locator("a, button, [role=button]").first(),
+        page.getByTestId("tour-spotlight").locator('a[href*="/evidence/"]').first(),
+        page.getByTestId("tour-spotlight").locator("a, button, [role=button]").first(),
+      ];
+      for (const c of cands) {
+        moved = await c.click({ timeout: 2500 }).then(() => true).catch(() => false);
+        if (moved) break;
       }
-      const spot = page.getByTestId("tour-spotlight");
-      const clicked = await spot.locator("a, button").first().click({ timeout: 2500 })
-        .then(() => true).catch(() => false);
-      if (!clicked) {
-        const inner = await await_.locator("a, button, [role=button]").first().click({ timeout: 2500 })
-          .then(() => true).catch(() => false);
-        if (!inner) {
-          stuckAt = last.match(/\d\s*\/\s*9/)?.[0] || "?";
-          const ids = await page.locator("[data-testid]").evaluateAll(
-            (ns) => [...new Set(ns.map((n) => n.getAttribute("data-testid")))].join(" "));
-          add("⑫", stage.label, "관측", `${stuckAt} 에서 막힘 — 그 화면의 testid 실물: ${ids.slice(0, 300)}`);
-          break;
-        }
+      if (moved) {
+        await page.waitForLoadState("domcontentloaded").catch(() => {});
+        await page.getByTestId("tour-callout").first()
+          .waitFor({ state: "visible", timeout: 15000 }).catch(() => {});
       }
     }
-    await page.waitForTimeout(400);
+    if (!moved) { stuckAt = before; why = "세 손잡이(next·goto·await-click) 어느 것도 안 먹었다"; break; }
+    await page.waitForTimeout(450);
+    const after = stepOf((await page.getByTestId("tour-callout").innerText().catch(() => "")) || "");
+    if (after === before && i > 2) { stuckAt = before; why = `손잡이는 먹었는데 단계가 ${before} 에 머문다`; break; }
   }
   if (/9\s*\/\s*9/.test(last)) {
     const tut = (last.match(/튜토리얼/g) || []).length;
@@ -199,6 +224,14 @@ async function run(browserType, engine, width) {
     const btn = t.keep.page.getByTestId("intro-reopen");
     await axis17(t.keep.page, btn, TGT).catch(() => {});
     await axis16and12(t.keep.page, TGT).catch((e) => add("⑫", TGT.label, "관측", `그물 예외: ${String(e).slice(0, 90)}`));
+    if (AX12) {
+      // ⑫ 전용 열 — 처방을 실은 셸에서 «같은 그물»로 한 번 더.
+      const c2 = await browser.newContext();
+      const { page: p2 } = await openOverview(c2, AX12.shell, width);
+      await p2.goto(`${AX12.shell}/overview?intro=1&tour=1`, { waitUntil: "domcontentloaded" });
+      await axis16and12(p2, AX12).catch((e) => add("⑫", AX12.label, "관측", `그물 예외: ${String(e).slice(0, 90)}`));
+      await c2.close();
+    }
     await t.keep.ctx.close();
   }
 
@@ -215,7 +248,11 @@ async function run(browserType, engine, width) {
 
 const main = async () => {
   let worst = 0;
-  const plan = [[chromium, "chromium", 1440], [chromium, "chromium", 1280], [chromium, "chromium", 390], [webkit, "webkit", 390]];
+  // `--only <px>` 로 한 폭만 돌린다(⑫ 재발주 = 1280 1폭이면 된다).
+  const onlyIdx = process.argv.indexOf("--only");
+  const only = onlyIdx > -1 ? Number(process.argv[onlyIdx + 1]) : null;
+  const plan = [[chromium, "chromium", 1440], [chromium, "chromium", 1280], [chromium, "chromium", 390], [webkit, "webkit", 390]]
+    .filter(([, , w]) => only === null || w === only);
   for (const [bt, name, width] of plan) {
     console.log(`\n===== ${name} / ${width}px =====`);
     const before = rows.length;
