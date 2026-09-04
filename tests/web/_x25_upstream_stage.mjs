@@ -15,7 +15,8 @@
  *    그 열은 빨강도 초록도 아닌 «안 잼»이다(빈 결과끼리의 일치는 일치가 아니다).
  *
  *   node _x25_upstream_stage.mjs --port=8812 --upstream=http://127.0.0.1:8103
- *   GET /__stage/normal · /__stage/refuse · /__stage/status?code=503 · /__stage/stats
+ *   GET /__stage/normal · /__stage/refuse?only=/api/plants · /__stage/status?code=503 · /__stage/stats
+ *   (`only` = 자극을 넣을 **경로 접두사**. 정규식이 아니다 — 아래 `startsWith` 참조.)
  */
 import http from "node:http";
 
@@ -32,7 +33,7 @@ const stats = { passed: 0, refused: 0, statused: 0, upstreamErr: 0, lastPath: nu
 /* 🔴 «반쪽 스텁» — 상류를 통째로 끊으면 관문 호출까지 죽어 셸이 화면을 그리기 «전에» 되돌린다
    (실측: `/overview` 가 307 로 `/` 로 튄다). 그러면 나는 안내 화면이 아니라 관문을 재게 된다.
    그래서 «어느 경로를» 죽일지 고를 수 있어야 한다 — 자극은 판정하려는 그 호출에만 넣는다. */
-let only = null; // 정규식 문자열 · null = 전부
+let only = null; // 경로 접두사 · null = 전부
 
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, `http://127.0.0.1:${PORT}`);
@@ -47,7 +48,7 @@ const server = http.createServer(async (req, res) => {
     if (want === "normal" || want === "refuse" || want === "status") {
       mode = want;
       if (want === "status") statusCode = Number(u.searchParams.get("code") ?? 503);
-      only = u.searchParams.get("only"); // 예: only=overview → 그 경로만 자극
+      only = u.searchParams.get("only"); // 예: only=/api/plants → 그 경로만 자극
     }
     if (want === "reset") { stats.paths = []; }
     res.writeHead(200, { "content-type": "application/json" });
@@ -57,8 +58,11 @@ const server = http.createServer(async (req, res) => {
 
   stats.lastPath = u.pathname;
   if (stats.paths.length < 60) stats.paths.push(u.pathname);
-  /* 🔴 자극 대상이 아니면 «정상»으로 흘린다 — 반쪽 스텁의 요점이다. */
-  const targeted = !only || new RegExp(only).test(u.pathname);
+  /* 🔴 자극 대상이 아니면 «정상»으로 흘린다 — 반쪽 스텁의 요점이다.
+     🔴 **정규식을 «만들지 않는다»**(CodeQL `js/regex-injection` · #593). `only` 는 쿼리로 들어오는
+        값이라 그대로 `new RegExp` 에 넣으면 호출자가 이 무대의 매칭 규칙을 짜게 된다 — 무대는
+        내가 쥐어야 하고, 여기 필요한 것은 «경로 접두사» 하나뿐이라 표현식이 필요 없다. */
+  const targeted = !only || u.pathname.startsWith(only);
 
   /* ① 소켓을 끊는다 — 500 을 «주는» 것과 아예 «안 주는» 것은 셸에서 다른 경로다. */
   if (mode === "refuse" && targeted) {
@@ -101,8 +105,12 @@ const server = http.createServer(async (req, res) => {
     /* 🔴 상류가 스스로 죽은 것과 내가 끊은 것을 «다른 수»로 남긴다 — 안 그러면 무대 고장이
        대상 결함으로 보고된다. */
     stats.upstreamErr += 1;
+    /* 🔴 **원문은 응답에 싣지 않는다**(CodeQL `js/stack-trace-exposure` · #593) — 내부 오류 문면은
+       무대 로그로만 낸다. 계수(`upstreamErr`)는 그대로라 「상류가 스스로 죽었다」와 「내가 끊었다」는
+       여전히 다른 수로 갈린다(이 파일이 존재하는 이유는 그 구분이지 문면이 아니다). */
+    console.error("[x25-stage] upstream error:", String(e?.message ?? e).slice(0, 200));
     res.writeHead(502, { "content-type": "application/json" });
-    res.end(JSON.stringify({ stage: "x25", upstreamError: String(e?.message ?? e).slice(0, 120) }));
+    res.end(JSON.stringify({ stage: "x25", upstreamError: true }));
   }
 });
 

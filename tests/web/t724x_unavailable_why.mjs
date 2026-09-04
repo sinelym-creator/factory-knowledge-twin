@@ -36,7 +36,7 @@ const PATHS = arg("paths", "/overview").split(",");
    (`/api/sessions`)까지 죽어 셸이 화면을 그리기 전에 `/` 로 되돌린다(42대 실측: 307).
    그러면 재는 것이 안내 화면이 아니라 관문이 된다 — 자극이 첫 검사 층에서 죽는 자리다.
    기본값은 overview 의 데이터 호출(`/api/plants…`)이고, 관문·나머지는 그대로 흐른다. */
-const ONLY = arg("only", "^/api/plants");
+const ONLY = arg("only", "/api/plants"); // 경로 «접두사» — 무대는 정규식을 만들지 않는다
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const stageStats = () => fetch(STAGE + "/__stage/stats").then((r) => r.json()).catch((e) => ({ err: String(e.message).slice(0, 60) }));
