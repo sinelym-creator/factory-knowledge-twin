@@ -1,0 +1,144 @@
+{
+  "base": "http://127.0.0.1:8160",
+  "evidence": "DOC-MAN-0021@r1#001",
+  "wall": "2026-09-04T10:15:07.654Z",
+  "branches": {
+    "C_noRun": {
+      "name": "C_noRun",
+      "url": "http://127.0.0.1:8160/evidence/DOC-MAN-0021%40r1%23001",
+      "width": 390,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [],
+      "trustHeaderCount": 0,
+      "bodyChars": 623,
+      "pieces": 2,
+      "text": "Incidents › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        206.5,
+        206
+      ],
+      "heights": [
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": true,
+      "firstHref": "/incidents",
+      "runPieceCount": 0
+    },
+    "A_static": {
+      "name": "A_static",
+      "url": "http://127.0.0.1:8160/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "width": 390,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [],
+      "trustHeaderCount": 2,
+      "bodyChars": 5949,
+      "pieces": 3,
+      "text": "Incidents › 둘러보기 재생 › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        206.5,
+        206.5,
+        206
+      ],
+      "heights": [
+        19.5,
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": false,
+      "firstHref": null,
+      "runPieceCount": 1,
+      "runPieceText": "둘러보기 재생",
+      "runPieceTag": "a",
+      "runPieceHref": "/incidents/INC-2026-014?run=STATIC-GS-01"
+    },
+    "B_realRun": {
+      "name": "B_realRun",
+      "url": "http://127.0.0.1:8160/evidence/DOC-MAN-0021%40r1%23001?run=RUN-5d60d82d0862",
+      "width": 390,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [],
+      "trustHeaderCount": 0,
+      "bodyChars": 734,
+      "pieces": 3,
+      "text": "Incidents › 조사 RUN-5d60d8… › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        206.5,
+        206.5,
+        206
+      ],
+      "heights": [
+        19.5,
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": true,
+      "firstHref": "/incidents",
+      "runPieceCount": 1,
+      "runPieceText": "조사 RUN-5d60d8…",
+      "runPieceTag": "span",
+      "runPieceHref": null
+    },
+    "A_static_1280": {
+      "name": "A_static_1280",
+      "url": "http://127.0.0.1:8160/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "width": 1280,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [],
+      "trustHeaderCount": 2,
+      "bodyChars": 6001,
+      "pieces": 3,
+      "text": "Incidents › 둘러보기 재생 › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        113,
+        113,
+        112.5
+      ],
+      "heights": [
+        19.5,
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": false,
+      "firstHref": null,
+      "runPieceCount": 1,
+      "runPieceText": "둘러보기 재생",
+      "runPieceTag": "a",
+      "runPieceHref": "/incidents/INC-2026-014?run=STATIC-GS-01"
+    }
+  },
+  "seed": {
+    "step": "ok",
+    "status": 200,
+    "sessionId": "KsW4feKPIWh5HgB5glq1t8c0",
+    "runId": "RUN-5d60d82d0862"
+  },
+  "clickThrough": {
+    "isLink": true,
+    "landed": "http://127.0.0.1:8160/incidents/INC-2026-014?run=STATIC-GS-01",
+    "landedTitleish": "Factory Knowledge Twin Overview Incidents Compare 안내와 둘러보기 다시 보기 ◑ REPLAY 정적 · f817열람 1 ⟲ 정적 재생본 기억 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 ",
+    "consoleErrors": []
+  },
+  "expectedStaticHref": "/incidents/INC-2026-014?run=STATIC-GS-01",
+  "tourTargetPresent": true
+}
