@@ -56,16 +56,26 @@ PROJECTION_VERSION_FILE = ROOT / "packages" / "ontology" / "projection-version.j
 # --- 접속 -----------------------------------------------------------------------
 
 
+#: 대상 DSN 이 없을 때의 종료 코드 — 1(파이썬 기본 예외)과 «가려서» 낸다.
+NO_DSN_RC = 2
+NO_DSN_MESSAGE = "대상 DSN 이 없다 — FKT_POSTGRES_DSN 또는 --dsn 을 주라"
+
+
 def dsn_from_env(explicit: str | None) -> str:
-    """indexer/build_index.py와 «같은» 규칙 — 좌석별 병렬 스택은 포트만 달리 준다."""
+    """indexer/build_index.py와 «같은» 규칙 — 대상은 명시로만 정해진다(D-72).
+
+    🔴 이 사본이 따로 사는 것 자체가 위험이다. 앞판은 두 자리가 같은 기본값(포트 5434)을
+       들고 있었고, 한쪽만 고치면 다른 쪽이 조용히 옛 규칙으로 남는다 — 그래서 문면·코드를
+       한 벌로 맞춰 둔다(사유 전문은 indexer 쪽 성문). 투영도 파괴적이다: Neo4j 를 갈아
+       엎기 전에 이 DB 에서 읽는다.
+    """
     if explicit:
         return explicit
-    host = os.environ.get("PGHOST", "127.0.0.1")
-    port = os.environ.get("PGPORT") or os.environ.get("POSTGRES_PORT", "5434")
-    user = os.environ.get("PGUSER") or os.environ.get("POSTGRES_USER", "fkt")
-    pw = os.environ.get("PGPASSWORD") or os.environ.get("POSTGRES_PASSWORD", "fkt_local_dev")
-    db = os.environ.get("PGDATABASE") or os.environ.get("POSTGRES_DB", "fkt")
-    return f"host={host} port={port} user={user} password={pw} dbname={db}"
+    env = os.environ.get("FKT_POSTGRES_DSN")
+    if env:
+        return env
+    print(NO_DSN_MESSAGE, file=sys.stderr)
+    raise SystemExit(NO_DSN_RC)
 
 
 def neo4j_params(uri: str | None) -> tuple[str, tuple[str, str], str]:
@@ -284,13 +294,16 @@ def main() -> int:
     ap.add_argument("--build-id", default=None, help="빌드 식별자(기본: uuid4)")
     args = ap.parse_args()
 
+    # 🔴 DSN 확정이 «가장 먼저»다 — psycopg 를 들이기도 전에 끝낸다(D-72).
+    dsn = dsn_from_env(args.dsn)
+
     import psycopg
 
     build_id = args.build_id or uuid.uuid4().hex
     uri, auth, db = neo4j_params(args.neo4j_uri)
 
     t0 = time.perf_counter()
-    with psycopg.connect(dsn_from_env(args.dsn)) as conn, conn.cursor() as cur:
+    with psycopg.connect(dsn) as conn, conn.cursor() as cur:
         preflight(cur)
         proj_ver, fp = projection_version()
         onto = ontology_version(cur)

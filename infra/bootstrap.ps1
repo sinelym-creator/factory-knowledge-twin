@@ -198,8 +198,11 @@ function New-ServiceVenv([string]$service) {
 #    (뿌리는 services/ 의 print 라 이 티켓의 scope 밖 · 별건으로 회부).
 $env:PYTHONIOENCODING = 'utf-8'
 
-# 🔴 색인·투영은 «호스트»에서 돌고 컨테이너 밖에서 DB 를 본다 — 그래서 포트를 명시해야 한다.
-#    안 주면 실패하지 않고 기본 5434, 즉 «다른 스택»을 색인한다(README 가 경고하는 자리).
+# 🔴 색인·투영은 «호스트»에서 돌고 컨테이너 밖에서 DB 를 본다 — 그래서 대상을 명시해야 한다.
+#    D-72 이후 두 스크립트는 «기본값을 갖지 않는다»: 안 주면 색인하지 않고 rc 2 로 죽는다.
+#    그전에는 조용히 기본 포트 5434(= «다른 스택»)를 갈아 치울 수 있었다.
+$env:FKT_POSTGRES_DSN = "host=127.0.0.1 port=$PostgresPort user=fkt password=fkt_local_dev dbname=fkt"
+# PG* 는 psql·마이그레이션 등 «libpq 를 직접 쓰는» 자리를 위해 남긴다 — 색인·투영은 위 DSN 만 본다.
 $env:PGHOST = '127.0.0.1'; $env:PGPORT = "$PostgresPort"
 $env:PGUSER = 'fkt'; $env:PGPASSWORD = 'fkt_local_dev'; $env:PGDATABASE = 'fkt'
 $env:NEO4J_HOST = '127.0.0.1'; $env:NEO4J_BOLT_PORT = "$Neo4jBoltPort"
