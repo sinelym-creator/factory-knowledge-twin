@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 
 from ..investigation.synthesize import live_gateway_reachable
 from ..probes import Resources
@@ -50,6 +50,7 @@ async def health(request: Request) -> HealthResponse:
 @router.get("/live/status", response_model=LiveStatus, response_model_exclude_unset=True)
 async def live_status(
     request: Request,
+    response: Response,
     sessionId: str | None = Query(
         default=None,
         description="주면 그 세션의 조사 상한(`runCap`)을 «읽어» 함께 답한다 — 계수 0(계약 v0.1.15)",
@@ -70,6 +71,17 @@ async def live_status(
        원칙1)와 충돌한다. 두 축이 한 낱말을 쓰고 있어 v0.2 재론으로 회부했다 — 구현이
        임의로 한쪽 뜻을 바꾸지 않는다.
     """
+    # 🔴 **D-53 — 이 응답은 «지금»의 사실이라 어디에도 저장되면 안 된다.**
+    #
+    #    이 라우트는 헤더를 하나도 안 보내고 있었고, 그러면 앞단(셸의 Next 라우트 핸들러)이
+    #    자기 기본값 `public, max-age=0, must-revalidate` 를 붙인다 — 공개면 실측이 그 값이었다.
+    #    `public` 은 「캐시해도 된다」는 선언이라, 원본이 죽은 창에서 엣지가 옛
+    #    `{"online":true}` 를 내줄 여지를 우리가 «열어 둔» 셈이 된다(D-53 갈래 a·a′).
+    #    🔴 값은 상류가 정한다 — 셸 프록시는 `cache-control` 을 허용 목록으로 그대로 옮기므로
+    #       (`apps/web-console/lib/contract.ts`) 이 한 줄이 브라우저까지 간다. 두 층에 각각
+    #       적으면 다음에 한쪽만 고쳐지고, 그때 「어느 쪽이 참인가」를 아무도 모른다.
+    response.headers["cache-control"] = "no-store"
+
     # 🔴 도달 프로브 1회(몇 초 캐시). blocking 이라 스레드로 던진다 — 이 라우트가 막히면
     #    배지 폴링이 서비스를 막는다.
     online = await asyncio.to_thread(live_gateway_reachable)
