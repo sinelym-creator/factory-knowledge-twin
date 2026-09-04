@@ -1,0 +1,19 @@
+{
+  "url": "https://factory-knowledge-twin.vercel.app/overview",
+  "wall": "2026-09-04T16:24:20.284Z",
+  "badgeElementCount": 0,
+  "dataMode": null,
+  "badgeText": null,
+  "shellModeBadgeCount": 1,
+  "runConsoleStatus": null,
+  "attribution": {
+    "runApi": {
+      "status": 404,
+      "raw": "{\"error\":{\"code\":\"not_found\",\"message\":\"run RUN-3fd4865b83b5 를 찾을 수 없다\"}}"
+    },
+    "sessionApi": {
+      "status": 200,
+      "raw": "{\"online\":true,\"checkedAt\":\"2026-09-04T16:24:20.960059Z\"}"
+    }
+  }
+}

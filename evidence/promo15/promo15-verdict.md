@@ -79,3 +79,79 @@ live 0 축은 **1건을 뺀 전건 PASS**, 그 1건(LIVE 배지)은 **내 계측
    갈음했다. 「조사 시작」의 **replay 강등 경로**(live 거절 시 재생으로 이어가는 길)는 **안 밟았다**.
 3. **Vercel 빌드 로그 `[FKT] 빌드 중단` 0 확인** — 오케 축(내 표면 아님).
 4. 셸 sha `56d5730` 는 **오케 실측 전언**이며 내가 확인한 값이 아니다.
+
+---
+
+## 5. v47 append (09-05 · 발주 A — `run-mode-badge` 축 + fetch 자극 대조군 열 · live 1회)
+
+**대상** develop `86f62d9`(발주문 sha `e081aa5` 는 그 사이 늙었다 — 차이 = `.gitignore`·`CLAUDE.md`·
+`docs/plan/ticket-ledger.md` 3파일뿐이고 **판정선 3파일은 `git diff` 전건 IDENTICAL** 이라 축에 무영향).
+**무대** 공개면 `https://factory-knowledge-twin.vercel.app` · `health.build` = **`879fc35`**(판정선 정답 유지).
+**run** `RUN-3fd4865b83b5` · `finalRunStatus=completed` · GP 접두 일치 `GP-3fd4865b83b5-00` → **무대 울림**.
+산출물 = `evidence/promo15-badge/run.json`.
+
+### 5.1 배지 3열 — 🔴 **§3 자수 1 · §4 「안 잰 것」 1 을 닫는다**
+
+| 열 | 주어 | 측정 시점 | Actual | 판정 |
+|---|---|---|---|---|
+| ① early | `run-mode-badge` `data-mode` | 조사 시작 클릭 직후 | **`null`**(요소 수 미분리 — §5.4 자수 1) | 판정 대상 아님(기록) |
+| ② 완주 뒤 | 같음 | `status=completed` 확인 뒤 | **`live`** | ✅ |
+| ③ API | run 응답 `mode` | 같은 `runId` | **`live`** | ✅ |
+
+**PASS = ②=③=`live`** → **PASS**.
+
+🔴 **①≠② 「배지가 서는 시점」 1줄**: 배지는 **조사 시작 시점에 서지 않고, 서버 상태가 화면에 닿은
+뒤에 선다**. `run-console.tsx:388` 이 `{state.mode && (...)}` 조건부라 `state.mode` 가 비는 동안은
+**요소 자체가 없고**, 공개면은 WS 404 라 그 값이 **폴링으로만** 온다. 즉 ① 의 `null` 은 배지의 부재가
+아니라 **관측 시점의 이름**이다(46대 자수와 같은 자리 · 이번엔 ② 가 `live` 로 서서 실증됐다).
+
+🔴 **열 ③ 의 출처를 «이름»으로 남긴다** — `GET /api/runs/{runId}` 스냅샷의 키는
+`["status","candidates","workOrderDraftId"]` 로 **`mode` 가 없다**. 이는 결함이 아니라 계약
+`rest-api-v0.1.md:36` 문면 그대로다. `mode` 의 계약 정본은 **`:34` 의 POST 응답**이고, 실측
+`POST /api/scenarios/GS-01/runs` → `{runId, incidentId, mode:"live"}` 로 답했다. 이벤트 정본
+(`GET /runs/{id}/events`, 38건)의 **첫 이벤트 `mode` 도 `live`** 로 같은 값을 낸다 — 세 자리 중
+두 자리가 답했고, 답하지 않은 한 자리는 **원래 답하지 않기로 적힌 자리**다.
+
+혼동 금지: 화면 우상단 `mode-badge`(셸)는 **다른 주어**다. 이번 회차 새 컨텍스트에서 셸 배지는
+1개로 섰으나 `run-mode-badge` 는 0개였다(§5.4 자수 2) — 두 배지를 한 문장에 섞으면 안 된다.
+
+### 5.2 fetch 자극 대조군 열 (D-75 잔여)
+
+| 열 | 시점 | 표면 | Actual |
+|---|---|---|---|
+| GP 직접 GET | 🔴 **화면 클릭 «전»** | `/api/evidence/GP-3fd4865b83b5-00` | **200**(본문 = `kind:"graph-path"` 실체) |
+| GP 직접 GET | 화면 클릭 «뒤» | 같음 | **200** |
+| `graphPaths` byRun | 클릭 «전» | `/api/graph/paths?byRun=RUN-…` | **200** |
+
+`orderEffect = false`. 🔴 **클릭 «전»에 쳐야 이 열이 뜻을 갖는다** — 클릭 뒤에만 치면 자극이 이미
+들어간 뒤라 「자극 불요」를 말할 수 없다. 그래서 두 시점을 모두 찍어 **순서 효과 자체를 값으로** 만들었다.
+
+→ 발주 정의대로 **200 = 「화면 자극 불요 · 배포 지연 판정 그대로」(E1)**. **404 아님 → D-75 재개방 없음.**
+
+### 5.3 승격 15 전축 재검 (같은 회차 · 곁가지)
+
+`a`~`n` 14축 **전건 PASS**(`allPass=true` · `d75b_pass=true` · 비-WS 콘솔 에러 0 · events 38).
+🔴 새 배지·fetch 축은 **`allPass` 에 섞지 않고 별도 군**(`verdict.badge`·`verdict.fetchCtl`)으로 두었다 —
+축을 넓히면 `allPass` 라는 이름이 가리키던 초록의 뜻이 조용히 바뀐다.
+
+### 5.4 🔴 자수 — 내 계측기 2건 (**대상 결함 0**)
+
+1. **열 ① 의 `null` 이 두 갈래를 합쳤다.** 드릴이 `count() ? getAttribute() : null` 이라
+   **«요소 0개»와 «속성이 null»이 같은 얼굴**로 나온다. 이번 값의 갈래는 **못 갈랐다**(early 시점은
+   새 run 이 있어야 재현되므로 이 회차에서 되돌아가 못 묻는다). 처방 = `runModeBadgeEarlyCount` ·
+   `runModeBadgeCount` 를 **따로** 남기도록 고쳤다 — 🔴 그러나 「고쳤다」와 「그래서 갈렸다」는
+   다른 사실이고, 이 회차의 갈래는 **미측정**이다(다음 live 회차에 닫는다).
+2. **캡처를 «다른 컨텍스트»에서 찍으려 했다.** 완주한 run 을 새 브라우저 컨텍스트로 URL 재진입하면
+   배지가 **0개**로 나온다. 이를 「배지 없음」으로 적었으면 없는 결함을 지어낼 자리였다 — 귀속을
+   물어 갈랐다: 같은 컨텍스트에서 **`GET /api/runs/{runId}` = 404 · `/api/live/status` = 200**.
+   run 은 **세션 스코프**라 새 컨텍스트는 그 run 의 소유자가 아니다. **셸은 살아 있고 화면만 안 선다.**
+   처방 = 배지 캡처를 **자극을 태운 그 세션 안**(완주 직후)에서 찍도록 드릴에 심었다(`badge_capture.mjs`
+   는 귀속 probe 로 남긴다).
+
+### 5.5 안 잰 것 (이름으로)
+
+1. **열 ① 의 갈래**(§5.4-1) — 요소 0개인지 속성 null 인지. 다음 live 회차.
+2. **배지 캡처 1280 이미지** — §5.4-2 사유로 이 회차엔 **못 남겼다**. 대신 `data-mode="live"` 는
+   JSON 실측으로 남았고(`run.json` `live1.runModeBadge`), 다음 회차엔 드릴이 자동으로 찍는다.
+   증거로 남긴 것 = `evidence/promo15-badge/badge-absent-1280.png`(귀속 자수용 · **배지 없는 화면**).
+3. **replay 강등 경로** — 이번에도 안 밟았다(§4-2 그대로 이월).
