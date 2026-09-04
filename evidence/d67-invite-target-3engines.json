@@ -1,0 +1,309 @@
+{
+  "base": "http://127.0.0.1:8182",
+  "wall": "2026-09-04T11:10:00.400Z",
+  "engines": {
+    "chromium": {
+      "rows": [
+        {
+          "width": 390,
+          "invitePresent": true,
+          "cardWidth": 350,
+          "bodyWidth": 310,
+          "bodyRatio": 0.886,
+          "lineCounts": [
+            1,
+            3
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 639,
+          "invitePresent": true,
+          "cardWidth": 599,
+          "bodyWidth": 559,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 640,
+          "invitePresent": true,
+          "cardWidth": 600,
+          "bodyWidth": 560,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 641,
+          "invitePresent": true,
+          "cardWidth": 601,
+          "bodyWidth": 561,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 1280,
+          "invitePresent": true,
+          "cardWidth": 972,
+          "bodyWidth": 600.8,
+          "bodyRatio": 0.618,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": false,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        }
+      ],
+      "consoleErrors": [],
+      "version": "151.0.7922.34"
+    },
+    "webkit": {
+      "rows": [
+        {
+          "width": 390,
+          "invitePresent": true,
+          "cardWidth": 350,
+          "bodyWidth": 310,
+          "bodyRatio": 0.886,
+          "lineCounts": [
+            1,
+            3
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 639,
+          "invitePresent": true,
+          "cardWidth": 599,
+          "bodyWidth": 559,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 640,
+          "invitePresent": true,
+          "cardWidth": 600,
+          "bodyWidth": 560,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 641,
+          "invitePresent": true,
+          "cardWidth": 601,
+          "bodyWidth": 561,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 1280,
+          "invitePresent": true,
+          "cardWidth": 972,
+          "bodyWidth": 600.8,
+          "bodyRatio": 0.618,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": false,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        }
+      ],
+      "consoleErrors": [],
+      "version": "26.5"
+    },
+    "firefox": {
+      "rows": [
+        {
+          "width": 390,
+          "invitePresent": true,
+          "cardWidth": 350,
+          "bodyWidth": 310,
+          "bodyRatio": 0.886,
+          "lineCounts": [
+            1,
+            3
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 639,
+          "invitePresent": true,
+          "cardWidth": 599,
+          "bodyWidth": 559,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 640,
+          "invitePresent": true,
+          "cardWidth": 600,
+          "bodyWidth": 560,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 641,
+          "invitePresent": true,
+          "cardWidth": 601,
+          "bodyWidth": 561,
+          "bodyRatio": 0.933,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": true,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 1280,
+          "invitePresent": true,
+          "cardWidth": 972,
+          "bodyWidth": 600.8,
+          "bodyRatio": 0.618,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "stacked": false,
+          "docOverflowPx": 0,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        }
+      ],
+      "consoleErrors": [],
+      "version": "153.0"
+    }
+  }
+}
