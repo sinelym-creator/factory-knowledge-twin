@@ -26,6 +26,11 @@ const arg = (k, d) => {
 const BASE = arg("base", "http://127.0.0.1:8799");
 const OUT = arg("out", "");
 const SHOT = arg("shot", "");
+/* 🔴 **대기 배수** — 기본 1 이라 기존 회차의 거동은 그대로다. 공개면처럼 «대상의 시계»가 느린
+   무대에서 이 그물의 창이 대상보다 짧으면, 아직 안 그려진 화면을 「없다」로 읽는다
+   (39대 실측: 공개 URL 에서 알람/설비가 4018ms 에 섰는데 1200ms 에 재서 0 으로 읽었다).
+   창을 늘리는 것은 판정선을 무르게 하는 게 아니라 **자극이 끝나기를 기다리는 것**이다. */
+const SETTLE = Number(arg("settle", 1));
 
 const steps = [];
 let blocked = false;
@@ -58,7 +63,7 @@ const cnt = (sel) => page.locator(sel).count();
 
 /* ── 1. 진입 ─────────────────────────────────────────────── */
 await page.goto(BASE + "/overview", { waitUntil: "domcontentloaded" });
-await page.waitForTimeout(1200);
+await page.waitForTimeout(1200 * SETTLE);
 const badge = await txt('[data-testid="mode-badge"]');
 await record(page, {
   screen: "진입",
@@ -86,10 +91,10 @@ const startVisible = (await startBtn.count()) > 0;
 let clickedStart = "안 눌러 봄";
 if (startVisible) {
   clickedStart = await startBtn
-    .click({ timeout: 8000 })
+    .click({ timeout: 8000 * SETTLE })
     .then(() => "클릭 성공")
     .catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(2500 * SETTLE);
 }
 const movedToRun = /\/incidents\//.test(page.url());
 await record(page, {
@@ -134,7 +139,7 @@ if (blocked) {
       done = true;
       break;
     }
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(1200 * SETTLE);
   }
   const timeline = await cnt('[data-testid="run-timeline"]');
   await record(page, {
@@ -160,8 +165,8 @@ if (blocked) {
   if (evChips >= 1) {
     const chip = page.locator('[data-testid="candidate"] a[href^="/evidence/"]').first();
     const href = await chip.getAttribute("href");
-    const c = await chip.click({ timeout: 8000 }).then(() => "클릭 성공").catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
-    await page.waitForTimeout(2000);
+    const c = await chip.click({ timeout: 8000 * SETTLE }).then(() => "클릭 성공").catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
+    await page.waitForTimeout(2000 * SETTLE);
     const onEvidence = /\/evidence\//.test(page.url());
     const trust = await cnt('[data-testid="trust-header"]');
     await record(page, {
@@ -178,12 +183,12 @@ if (blocked) {
 
 /* ── 7. 작업지시서 ────────────────────────────────────────── */
 await page.goBack().catch(() => {});
-await page.waitForTimeout(1500);
+await page.waitForTimeout(1500 * SETTLE);
 const woLink = page.locator('a[href^="/work-orders/"]').first();
 const woExists = (await woLink.count()) > 0;
 if (woExists) {
-  const c = await woLink.click({ timeout: 8000 }).then(() => "클릭 성공").catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
-  await page.waitForTimeout(2500);
+  const c = await woLink.click({ timeout: 8000 * SETTLE }).then(() => "클릭 성공").catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
+  await page.waitForTimeout(2500 * SETTLE);
   const onWo = /\/work-orders\//.test(page.url());
   const fields = await cnt("input, textarea");
   const approveBtn = await cnt('[data-testid="wo-approve"], button:has-text("승인")');
@@ -198,8 +203,8 @@ if (woExists) {
   /* ── 8. 승인 ─────────────────────────────────────────── */
   if (approveBtn >= 1) {
     const ab = page.locator('[data-testid="wo-approve"], button:has-text("승인")').first();
-    const c2 = await ab.click({ timeout: 8000 }).then(() => "클릭 성공").catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
-    await page.waitForTimeout(1200);
+    const c2 = await ab.click({ timeout: 8000 * SETTLE }).then(() => "클릭 성공").catch((e) => "클릭 실패: " + String(e.message).split("\n")[0]);
+    await page.waitForTimeout(1200 * SETTLE);
     const dialog = await cnt('[role="dialog"]');
     let confirmed = "확인 안 누름";
     if (dialog > 0) {
@@ -207,10 +212,10 @@ if (woExists) {
         .locator('[role="dialog"] button')
         .filter({ hasText: /승인|확인/ })
         .first()
-        .click({ timeout: 6000 })
+        .click({ timeout: 6000 * SETTLE })
         .then(() => "확인 클릭 성공")
         .catch((e) => "확인 클릭 실패: " + String(e.message).split("\n")[0]);
-      await page.waitForTimeout(2500);
+      await page.waitForTimeout(2500 * SETTLE);
     }
     const body = (await page.locator("body").textContent()) ?? "";
     const approved = /승인됨|approved/i.test(body);
@@ -232,7 +237,7 @@ if (woExists) {
 
 /* ── 9. 전략 비교(/compare) — 주소로만 가는 화면 ──────────── */
 await page.goto(BASE + "/compare", { waitUntil: "domcontentloaded" });
-await page.waitForTimeout(2000);
+await page.waitForTimeout(2000 * SETTLE);
 const cols = await cnt('[data-testid="compare-strategy"]');
 const foot = await cnt('[data-testid="compare-footnote"]');
 const q = await cnt('[data-testid="compare-question"]');
