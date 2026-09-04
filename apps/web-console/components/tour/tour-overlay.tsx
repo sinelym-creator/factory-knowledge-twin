@@ -60,11 +60,22 @@ export function TourOverlay(props: Props) {
          「막지 않는다」는 원칙은 «클릭을 막지 않는다»였는데, 겹침은 그와 별개로 **보이는 것을
          가린다**. 배너 형태면 둘 다 지킨다: 아무것도 가리지 않고, 배경도 그대로 조작된다. */
       <aside
-        className="fkt-card fkt-rise mx-auto mt-5 flex w-full max-w-[1440px] flex-wrap items-center gap-x-5 gap-y-3 px-5 py-4"
+        className="fkt-card fkt-rise mx-auto mt-5 flex w-full max-w-[1440px] flex-col gap-3 px-5 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-3"
         data-testid="tour-invite"
         aria-label="가이드 투어 안내"
       >
-        <div className="min-w-0 flex-1">
+        {/* 🔴 **좁은 폭에서는 flex 계산 자체를 없앤다**(D-67 · 폐하 아이폰 Safari 실물 19:57).
+            증상은 본문이 한 글자 폭으로 눌린 것이었다. 앞판은 `flex-wrap` 컨테이너 안에서
+            본문이 `flex-1`(= `flex: 1 1 0%`) — 「가진 것 없이 남는 만큼」이라 자기가 얼마나
+            필요한지를 말하지 않고, 그 판단을 **엔진에 맡긴다**. 남는 폭이 없다고 본 엔진은
+            줄을 바꾸는 대신 이 칸을 min-content 까지 누를 수 있다.
+            🔴 그래서 basis 를 키우는 대신 **좁은 폭에서 가로 배치를 그만둔다**: `sm`(640) 아래
+            에서는 세로로 쌓아 본문이 카드 폭을 통째로 받고, wrap 이 없으니 «어느 엔진의 어떤
+            계산에도» 걸리지 않는다. 640 이상은 지금까지와 같은 가로다.
+            🔴 이 처방은 **재현 위에 서 있지 않다** — playwright webkit 26.5 는 6/6 정상이었다
+            (iPhone 14 에뮬·320~390·resume 카드 포함). 그래서 엔진 가설을 고치는 대신
+            **가설이 성립할 자리를 없앴다**. 실기기 축은 검증 좌석·폐하 재확인 몫이다. */}
+        <div className="min-w-0 w-full sm:w-auto sm:flex-1 sm:basis-[18rem]">
           <p className="text-body-c font-semibold">
             {props.resume ? "보시던 곳부터 이어서 볼까요?" : "둘러보시겠습니까?"}
           </p>

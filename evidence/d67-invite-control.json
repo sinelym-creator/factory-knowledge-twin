@@ -1,0 +1,268 @@
+{
+  "base": "http://127.0.0.1:8183",
+  "wall": "2026-09-04T11:12:37.500Z",
+  "engines": {
+    "chromium": {
+      "rows": [
+        {
+          "width": 390,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 350,
+          "bodyWidth": 310,
+          "bodyRatio": 0.886,
+          "lineCounts": [
+            1,
+            3
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": true,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 390,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 639,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 599,
+          "bodyWidth": 227.8,
+          "bodyRatio": 0.38,
+          "lineCounts": [
+            1,
+            4
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 639,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 640,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 600,
+          "bodyWidth": 228.8,
+          "bodyRatio": 0.381,
+          "lineCounts": [
+            1,
+            4
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 640,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 641,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 601,
+          "bodyWidth": 229.8,
+          "bodyRatio": 0.382,
+          "lineCounts": [
+            1,
+            4
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 641,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 1280,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 972,
+          "bodyWidth": 600.8,
+          "bodyRatio": 0.618,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 1280,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        }
+      ],
+      "consoleErrors": [],
+      "version": "151.0.7922.34"
+    },
+    "webkit": {
+      "rows": [
+        {
+          "width": 390,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 350,
+          "bodyWidth": 310,
+          "bodyRatio": 0.886,
+          "lineCounts": [
+            1,
+            3
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": true,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 390,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 639,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 599,
+          "bodyWidth": 227.8,
+          "bodyRatio": 0.38,
+          "lineCounts": [
+            1,
+            4
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 639,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 640,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 600,
+          "bodyWidth": 228.8,
+          "bodyRatio": 0.381,
+          "lineCounts": [
+            1,
+            4
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 640,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 641,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 601,
+          "bodyWidth": 229.8,
+          "bodyRatio": 0.382,
+          "lineCounts": [
+            1,
+            4
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 641,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        },
+        {
+          "width": 1280,
+          "invitePresent": true,
+          "wantResume": false,
+          "cardWidth": 972,
+          "bodyWidth": 600.8,
+          "bodyRatio": 0.618,
+          "lineCounts": [
+            1,
+            2
+          ],
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "twoRows": false,
+          "docOverflowPx": 0,
+          "cssViewportWidth": 1280,
+          "startButtonText": "둘러보기 시작",
+          "isResumeVariant": false,
+          "buttonsVisible": {
+            "tour-start": true,
+            "tour-later": true,
+            "tour-never": true
+          },
+          "allThreeVisible": true
+        }
+      ],
+      "consoleErrors": [],
+      "version": "26.5"
+    }
+  }
+}

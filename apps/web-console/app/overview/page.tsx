@@ -10,6 +10,7 @@ import {
   apiGetServer,
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { fetchSessionRuns } from "@/lib/session-runs";
 
 /**
  * ① Factory Overview (wireframes §1) — 실데이터 결선 (T3-2).
@@ -76,6 +77,7 @@ export default async function OverviewPage({
       scenarios={scenarios.state === "ok" ? scenarios.data : []}
       sessionId={session?.id ?? null}
       sessionOrigin={session?.origin ?? null}
+      sessionRuns={await fetchSessionRuns()}
       headline={buildHeadline(overview.data, topEquipment?.state === "ok" ? topEquipment.data : null)}
       // 🔴 「받은 시각」은 «서버가 이 응답을 그린 순간»이다 — 렌더 안에서 시계를 읽으면 서버와
       //    브라우저가 다른 초를 그려 hydration 이 깨진다(결함 D-2 · lib/time.ts 머리말).

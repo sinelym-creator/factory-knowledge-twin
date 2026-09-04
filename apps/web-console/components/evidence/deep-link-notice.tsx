@@ -15,10 +15,16 @@ import Link from "next/link";
 export function DeepLinkNotice({
   hasSession,
   runId,
+  incidentId,
 }: {
   hasSession: boolean;
   /** `?run=` — 세션 소유 자원이라 무세션 방문자에게는 뜻이 없다(계약 v0.1.6 소유권). */
   runId?: string;
+  /**
+   * 그 run 이 속한 상황 — 🔴 **서버 목록(`GET /runs?sessionId=`)에서 찾은 값**이다
+   * (T7-41b · 계약 v0.1.16). 화면이 `?run=` 에서 지어낸 것이 아니다.
+   */
+  incidentId?: string | null;
 }) {
   if (hasSession) {
     return (
@@ -27,18 +33,32 @@ export function DeepLinkNotice({
         data-testid="deep-link-notice"
         data-session="present"
       >
-        이 조사에서 인용한 근거입니다. Overview 로 돌아갈 수 있습니다.
-        {/* 🔴 「② 조사 화면으로」 링크를 만들지 않는다 — `?run=` 은 incidentId 를 말해 주지
-            않고, 계약에도 run→incident 를 되짚는 조회가 없다. 그럴듯한 incidentId 를
-            지어 넣으면 눌렀을 때 남의 화면이나 404 로 간다. 아는 자리로만 보낸다. */}
-        {" · "}
+        이 조사에서 인용한 근거입니다.
+        {/* 🔴 D-63 — 첫자리는 «온 곳»이다. 폐하 실측: 여기서 Overview 로 나가면 조사가 아니라
+            처음 화면(「조사하기」)이 나왔다. 앞판이 그 링크만 둔 이유는 `?run=` 이 incidentId
+            를 말해 주지 않아서였는데, 이제 서버가 답한다(v0.1.16). 못 찾으면 이 링크는 서지
+            않는다 — 지어낸 주소로 보내느니 없는 편이 낫다는 규율은 그대로다. */}
+        {runId && incidentId && (
+          <>
+            {" "}
+            <Link
+              href={`/incidents/${encodeURIComponent(incidentId)}?run=${encodeURIComponent(runId)}`}
+              className="text-ai underline-offset-2 hover:underline focus:outline-2 focus:outline-ai"
+              data-testid="evidence-back-to-run"
+            >
+              이 조사로 돌아가기
+            </Link>
+            {" · "}
+          </>
+        )}
+        {(!runId || !incidentId) && " "}
         <Link
           href="/overview"
           className="text-ai underline-offset-2 hover:underline focus:outline-2 focus:outline-ai"
         >
           ① Overview
         </Link>
-        {runId && (
+        {runId && !incidentId && (
           <>
             {" · 이 근거를 인용한 조사 "}
             <span className="id">{runId}</span>

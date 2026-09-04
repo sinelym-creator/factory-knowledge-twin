@@ -5,7 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 
 import { Sparkline } from "@/components/overview/sparkline";
 import { useTourAllowed } from "@/components/tour/tour-allowed";
+import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
+import Link from "next/link";
+
 import { StartInvestigation } from "@/components/overview/start-investigation";
+import type { SessionRunSummary } from "@/lib/contract";
 import type { ActiveAlarm, Overview, OverviewEquipment, Scenario } from "@/lib/contract";
 import { TZ_LABEL, clock, stamp } from "@/lib/time";
 
@@ -94,6 +98,7 @@ export function OverviewBody({
   scenarios,
   sessionId,
   sessionOrigin,
+  sessionRuns,
   headline,
   receivedAt,
   forceIntro,
@@ -103,6 +108,8 @@ export function OverviewBody({
   scenarios: Scenario[];
   sessionId: string | null;
   sessionOrigin: string | null;
+  /** 계약 v0.1.16 — 서버가 아는 「이 세션의 조사」(최신순). 없으면 빈 배열. */
+  sessionRuns: SessionRunSummary[];
   headline: { text: string; alarmId: string | null; equipmentId: string | null };
   /** 🔴 «서버가 이 응답을 그린 순간» — 렌더 안에서 `new Date()` 를 부르지 않는 이유는
    *  lib/time.ts 머리말에 있다(D-2). 값이 prop 이라 SSR·하이드레이션이 같은 글자를 낸다. */
@@ -135,10 +142,36 @@ export function OverviewBody({
     () => introSeen(sessionId),
     () => true,
   );
-  const showIntro = forceIntro || !seen;
+  /**
+   * 🔴 **O-13 — 「튜토리얼」이 투어는 열고 안내 카드는 못 열었다.**
+   *
+   * 그 버튼은 `/overview?intro=1&tour=1` 로 «이동»해서 둘을 함께 연다. 그런데 같은
+   * pathname 에 쿼리만 붙는 이동은 나지 않는 회차가 있고(`tour-reopen.tsx` 머리말이 이미
+   * 성문 · 실측 6회 중 5회 URL 무변), 그래서 그 파일은 클릭 순간 `TOUR_OPEN_EVENT` 도 함께
+   * 쏜다. 🔴 **그 이벤트를 듣던 것은 투어뿐이었다** — 안내 카드는 `forceIntro`(URL) 외에
+   * 열릴 길이 없어, 이동이 안 난 회차마다 **투어만 열리고 안내는 잠잠했다**.
+   *
+   * 실측(그 이동의 성패와 안내 카드가 정확히 함께 갔다):
+   *   1440 ①`?intro=1&tour=1` → 138ms 열림 · ②URL 무변 → 5초 안 안 열림
+   *   1280 ①②URL 무변 → 둘 다 안 열림 · 390 ①② 이동 성공 → 60·62ms 열림
+   * 즉 폭의 문제가 아니라 **이동의 문제**였다(1440 관측은 그 회차가 실패한 것).
+   *
+   * 🔴 고치는 자리는 이동이 아니라 **듣는 쪽**이다. 이동을 신뢰할 수 있게 만드는 일은 이
+   *    화면 밖(라우터 축)이고, 여기서 필요한 것은 「열라」는 신호를 투어와 «같이» 받는 것뿐이다.
+   */
+  const [openedBySignal, setOpenedBySignal] = useState(false);
+  useEffect(() => {
+    const onOpen = () => setOpenedBySignal(true);
+    window.addEventListener(TOUR_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(TOUR_OPEN_EVENT, onOpen);
+  }, []);
+
+  const showIntro = forceIntro || openedBySignal || !seen;
 
   const closeIntro = useCallback(() => {
     markIntroSeen(sessionId);
+    // 🔴 신호로 열린 것도 «닫힘»이 이겨야 한다 — 안 내리면 이 카드는 다시 못 닫는다.
+    setOpenedBySignal(false);
     // 🔴 `?intro=1` 을 남긴 채 닫으면 새로고침이 다시 연다 — 「닫았다」가 지켜지지 않는다.
     //    🔴 `history.replaceState` 가 아니라 라우터로 지운다: 주소만 바꾸면 `forceIntro`
     //       프롭이 true 로 남아 카드가 닫히지 않는다.
@@ -171,6 +204,23 @@ export function OverviewBody({
           지금 공장 상태
         </p>
         <p className="fkt-display mt-2.5">{headline.text}</p>
+        {/* 🔴 D-63 — 조사를 돌린 사람이 Overview 로 돌아오면 «처음 화면»을 봤다. 서버가
+            이 세션의 조사를 아는 지금(v0.1.16), 돌아갈 자리를 여기에 둔다. 0건이면 이
+            줄 자체가 없다 — 없는 조사를 「0건」으로 말하지 않는다. */}
+        {sessionRuns.length > 0 && (
+          <div className="mt-5" data-testid="overview-resume">
+            <Link
+              href={`/incidents/${encodeURIComponent(sessionRuns[0].incidentId)}?run=${encodeURIComponent(sessionRuns[0].runId)}`}
+              className="fkt-hit fkt-pill inline-flex max-w-full items-center gap-2 bg-fill px-4 py-2 text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+              data-run={sessionRuns[0].runId}
+            >
+              <span className="truncate">
+                이 세션의 조사 {sessionRuns.length}건 · 이어보기
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        )}
         {headline.alarmId && (
           // 🔴 이 버튼과 알람 카드의 버튼은 «같은 동작»이다(§1 인터랙션 ⑥ — 진입 이중화).
           //    처음 온 방문자는 문장에서, 익숙한 사용자는 도크에서 출발한다.

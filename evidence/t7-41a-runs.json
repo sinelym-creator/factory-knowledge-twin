@@ -1,0 +1,99 @@
+{
+  "base": "http://127.0.0.1:8152",
+  "startedWall": "2026-09-04 18:53:36",
+  "sessionA": "Wn_MEBROWzbTB0ymkhrfG8SA",
+  "stage": {
+    "requested": 21,
+    "created": 21,
+    "codes": {
+      "200": 21
+    },
+    "settledWithinWait": 20
+  },
+  "ax1_shape_order_limit": {
+    "status": 200,
+    "count": 20,
+    "madeMoreThanLimit": true,
+    "limit20": true,
+    "shapeOk": true,
+    "extraKeys": [],
+    "descOk": true,
+    "newestFirstIsLastMade": true,
+    "oldestMadeDropped": true,
+    "sample": {
+      "runId": "RUN-705c5097bce1",
+      "incidentId": "INC-2026-014",
+      "scenarioId": "GS-01",
+      "mode": "replay",
+      "status": "completed",
+      "startedAt": "2026-09-04T09:53:37.321Z",
+      "finishedAt": "2026-09-04T09:53:37.321Z"
+    }
+  },
+  "ax2_isolation": {
+    "sessionCreate": 200,
+    "sessionB": "EHwXwGtpFzHuj5Lf92sykGMf",
+    "status": 200,
+    "count": 0,
+    "isolated": true,
+    "afterOwnRun": {
+      "status": 200,
+      "count": 1,
+      "mineOnly": true
+    },
+    "crossSessionQuery": {
+      "status": 422,
+      "code": "invalid_request"
+    }
+  },
+  "ax3_422_401": {
+    "mismatch": {
+      "status": 422,
+      "code": "invalid_request"
+    },
+    "noCookie": {
+      "status": 401,
+      "code": "session_required"
+    },
+    "missingParam": {
+      "status": 422,
+      "code": "invalid_request"
+    }
+  },
+  "cookieA": "fkt_sid=Wn_MEBROWzbTB0ymkhrfG8SA",
+  "ax5_overview_incidentid": {
+    "status": 200,
+    "alarmCount": 1,
+    "withField": 1,
+    "pairs": [
+      {
+        "alarmId": "AL-20260826-0041",
+        "incidentId": "INC-2026-014"
+      }
+    ],
+    "incidentResolves": [
+      {
+        "incidentId": "INC-2026-014",
+        "getStatus": 200
+      }
+    ],
+    "allResolve": true
+  },
+  "ax6_finished_ge_started": {
+    "status": 200,
+    "finishedCount": 20,
+    "runningCount": 0,
+    "violations": [],
+    "ok": true,
+    "sample": {
+      "runId": "RUN-705c5097bce1",
+      "incidentId": "INC-2026-014",
+      "scenarioId": "GS-01",
+      "mode": "replay",
+      "status": "completed",
+      "startedAt": "2026-09-04T09:53:37.321Z",
+      "finishedAt": "2026-09-04T09:53:37.321Z"
+    },
+    "noNullFinished": true
+  }
+}

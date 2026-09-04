@@ -35,6 +35,13 @@ export const CONTRACT = {
   scenarios: "/api/scenarios",
   startRun: (scenarioId: string) => `/api/scenarios/${encodeURIComponent(scenarioId)}/runs`,
   run: (runId: string) => `/api/runs/${encodeURIComponent(runId)}`,
+  /**
+   * 계약 v0.1.16 — 그 세션이 시작한 조사 목록(최신순 · 상한 20).
+   * 🔴 `sessionId` 는 쿠키와 «같아야» 한다(다르면 422). 서버가 아는 사실이라,
+   *    화면은 이제 이것을 브라우저 저장소에 따로 적어 두지 않는다(T7-41b · 두 출처가
+   *    갈리면 화면이 거짓말한다).
+   */
+  sessionRuns: (sessionId: string) => `/api/runs?sessionId=${encodeURIComponent(sessionId)}`,
   // --- T3-3 근거 열람(계약 §근거·그래프 · v0.1.1 형상 · v0.1.6 읽기 예외 2라우트) ------
   evidence: (evidenceId: string) => `/api/evidence/${encodeURIComponent(evidenceId)}`,
   /**
@@ -145,6 +152,11 @@ export type ActiveAlarm = {
   observedValue: number | null;
   equipmentId: string;
   sensorId: string;
+  /**
+   * 계약 v0.1.16 — 이 알람에 연결된 상황. 없으면 `null`(아직 상황으로 안 묶인 알람).
+   * 🔴 서버의 연결표에서만 온다 — 화면이 알람 id 로 지어내지 않는다.
+   */
+  incidentId?: string | null;
 };
 
 export type Overview = { kpi: Kpi; lines: OverviewLine[]; activeAlarms: ActiveAlarm[] };
@@ -243,6 +255,19 @@ export type ApprovalResult = { status: string; auditId: string };
 /** `POST /retrieval/compare` — 실측: 전략별 hits 5건 · hit 키 = evidenceId/score/excerpt. */
 export type CompareHit = { evidenceId: string; score: number; excerpt: string };
 export type CompareResult = { strategy: string; hits: CompareHit[]; elapsedMs: number };
+
+/**
+ * 계약 v0.1.16 `GET /runs?sessionId=` 한 줄. `finishedAt` 은 아직 도는 run 에는 «없다».
+ */
+export type SessionRunSummary = {
+  runId: string;
+  incidentId: string;
+  scenarioId: string;
+  mode: string;
+  status: string;
+  startedAt: string;
+  finishedAt?: string;
+};
 
 export type RunSnapshot = {
   status: string;
@@ -1164,6 +1189,20 @@ export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolea
  * 이 플래그는 번들마다 따로 산다(서버·브라우저 각 1회) — 그게 맞다 · 콜드는 그 둘이 따로 겪는다.
  */
 const LIVE_FIRST_TIMEOUT_MS = 5000;
+/**
+ * 🔴 **D-64 — 「미연결」이 서버가 아니라 «시한»에서 나왔다**(폐하 실측 09-04 19:26 · 공개면).
+ *
+ * 그 회차의 서버는 멀쩡했다(`/api/live/status` = `online:true` · Vercel 5xx 0). 화면이
+ * 「응답 시간 초과」를 적은 것은 **폰 → Vercel → 이 PC** 경로가 `TIMEOUT_MS`(2s)를 넘겼기
+ * 때문이다. 🔴 그리고 그 회차는 **콜드가 아니었다** — 위 `LIVE_FIRST_TIMEOUT_MS` 는 번들당
+ * 첫 1회에만 들므로, 「뒤로 갔다가 다른 근거로 다시 들어온」 같은 번들 안 이동은 2s 를 받는다.
+ * 시한을 올리는 자리가 «첫 호출»이 아니라 **이 함수 전체**여야 하는 이유다.
+ *
+ * 🔴 재시도 시한은 **2s 그대로**다 — 둘 다 올리면 최악 체감이 `6000 + 지연 + 6000` 이 된다.
+ *    이 호출의 소비자는 `components/live-status.tsx` **한 곳뿐**이라(전수 grep) 다른 축은
+ *    무영향이고, `TIMEOUT_MS` 자체도 손대지 않았다.
+ */
+const LIVE_STATUS_TIMEOUT_MS = 6000;
 let liveStatusWarmed = false;
 
 /**
@@ -1181,7 +1220,7 @@ export function liveStatus(base = "", sessionId?: string | null): Promise<Reply<
     path,
     { cache: "no-store" },
     base,
-    cold ? LIVE_FIRST_TIMEOUT_MS : TIMEOUT_MS,
+    cold ? Math.max(LIVE_FIRST_TIMEOUT_MS, LIVE_STATUS_TIMEOUT_MS) : LIVE_STATUS_TIMEOUT_MS,
     TIMEOUT_MS,
   );
 }

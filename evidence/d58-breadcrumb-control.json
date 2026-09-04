@@ -1,0 +1,61 @@
+{
+  "base": "http://127.0.0.1:8161",
+  "evidence": "DOC-MAN-0021@r1#001",
+  "wall": "2026-09-04T09:58:09.680Z",
+  "branches": {
+    "C_noRun": {
+      "name": "C_noRun",
+      "url": "http://127.0.0.1:8161/evidence/DOC-MAN-0021%40r1%23001",
+      "width": 390,
+      "status": 200,
+      "present": false,
+      "consoleErrors": [],
+      "trustHeaderCount": 0,
+      "bodyChars": 588
+    },
+    "A_static": {
+      "name": "A_static",
+      "url": "http://127.0.0.1:8161/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "width": 390,
+      "status": 200,
+      "present": false,
+      "consoleErrors": [],
+      "trustHeaderCount": 2,
+      "bodyChars": 5904
+    },
+    "B_realRun": {
+      "name": "B_realRun",
+      "url": "http://127.0.0.1:8161/evidence/DOC-MAN-0021%40r1%23001?run=RUN-873f6fb3d5ca",
+      "width": 390,
+      "status": 200,
+      "present": false,
+      "consoleErrors": [],
+      "trustHeaderCount": 0,
+      "bodyChars": 682
+    },
+    "A_static_1280": {
+      "name": "A_static_1280",
+      "url": "http://127.0.0.1:8161/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "width": 1280,
+      "status": 200,
+      "present": false,
+      "consoleErrors": [],
+      "trustHeaderCount": 2,
+      "bodyChars": 5956
+    }
+  },
+  "seed": {
+    "step": "ok",
+    "status": 200,
+    "sessionId": "htVV5kK1JfzmZrywPIv0hIhO",
+    "runId": "RUN-873f6fb3d5ca"
+  },
+  "clickThrough": {
+    "isLink": false,
+    "landed": null,
+    "landedTitleish": null,
+    "consoleErrors": []
+  },
+  "expectedStaticHref": "/incidents/INC-2026-014?run=STATIC-GS-01",
+  "tourTargetPresent": true
+}

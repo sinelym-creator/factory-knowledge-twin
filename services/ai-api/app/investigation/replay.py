@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from .binding import ScenarioAnchor
-from .store import RunRecord, RunStore
+from .store import TERMINAL_EVENT_STATUS, RunRecord, RunStore
 
 FIXTURE_SUFFIX = ".events.jsonl"
 
@@ -57,7 +57,8 @@ def _repo_fixture_dir() -> Path | None:
 _SCENARIO_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$")
 
 _REQUIRED_FIELDS = ("runId", "seq", "ts", "mode", "type", "payload")
-_TERMINAL_TYPES = {"run.completed": "completed", "run.stopped": "stopped", "run.failed": "failed"}
+# 🔴 정본은 `store.TERMINAL_EVENT_STATUS` 하나다(이름만 여기 남긴다).
+_TERMINAL_TYPES = TERMINAL_EVENT_STATUS
 
 
 class FixtureMissing(RuntimeError):

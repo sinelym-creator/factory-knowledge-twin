@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { startRunBrowser } from "@/lib/contract";
-import { rememberRun } from "@/lib/session-runs";
 
 /**
  * 「조사 시작」 — GS-01 S1→S2 동선(wireframes §1 인터랙션 ③·⑥).
@@ -48,9 +47,8 @@ export function StartInvestigation({
     //    그대로 보여 준다(조용한 강등 0). fixture 재생은 이 버튼이 아니라 `?run=` 으로 온다.
     const r = await startRunBrowser(scenarioId, sessionId, mode);
     if (r.state === "ok") {
-      /* 🔴 D-60 — 주소를 떠나기 «전»에 기억한다. Overview 로 돌아온 뒤 이 조사로 되돌아갈
-         길은 이 한 줄이 유일하다(계약에 run 목록 조회가 없다 · `lib/session-runs.ts` 머리말). */
-      rememberRun(r.data.incidentId, r.data.runId);
+      /* 🔴 여기서 «기억»하지 않는다(T7-41b) — 서버가 이 run 을 이미 세션에 매어 두었고
+         (`GET /runs?sessionId=`), 화면이 한 벌 더 적으면 두 출처가 갈린다. */
       router.push(`/incidents/${encodeURIComponent(r.data.incidentId)}?run=${encodeURIComponent(r.data.runId)}`);
       return;
     }

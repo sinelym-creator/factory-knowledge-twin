@@ -1,0 +1,31 @@
+{
+  "base": "http://127.0.0.1:8166",
+  "label": "api-down",
+  "wall": "2026-09-04T10:29:55.784Z",
+  "screens": {
+    "/overview": {
+      "status": 200,
+      "bodyChars": 492,
+      "appShell": 2,
+      "sessionRunsList": 0,
+      "sessionRunLinks": 0,
+      "emptyMarker": 0,
+      "overviewResume": 0,
+      "head": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◌ 미연결 내 세션 JjrO ⟲ 세션 리셋 [ ! ] 실시간 상태를 확인하지 못했습니다(미연결). 서버가 아직 연결되지 않았을 뿐 오류는 아닙니다. 정적 재생본으로 GS-01 보기 ✕ "
+    },
+    "/incidents": {
+      "status": 200,
+      "bodyChars": 349,
+      "appShell": 2,
+      "sessionRunsList": 0,
+      "sessionRunLinks": 0,
+      "emptyMarker": 0,
+      "overviewResume": 0,
+      "head": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◌ 미연결 내 세션 JjrO ⟲ 세션 리셋 [ ! ] 실시간 상태를 확인하지 못했습니다(미연결). 서버가 아직 연결되지 않았을 뿐 오류는 아닙니다. 정적 재생본으로 GS-01 보기 ✕ "
+    }
+  },
+  "consoleErrors": [
+    "/overview: Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "/incidents: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ]
+}

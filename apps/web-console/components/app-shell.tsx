@@ -90,8 +90,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   앱바 폭은 지금과 같다(계약 v0.1.15 규격 · 새 요소는 이 하나뿐). */}
               <RunCapCounter />
               {/* 🔴 정적 재생본 방문자 — 서버 세션 칩과 «같은 자리, 다른 사실»이다.
-                  서버 세션이 없을 때만 서므로 두 칩이 동시에 뜨지 않는다(T4-2a ⓒ). */}
-              <StaticVisitorChip />
+                  🔴 **조건을 여기에 둔다**(O-12). 이 주석은 「서버 세션이 없을 때만 선다」고
+                     말해 왔지만 `StaticVisitorChip` 은 `?run=` 이 정적 id 인지만 보고 세션은
+                     보지 않는다 — 세션을 가진 사람이 정적 주소를 열면 두 칩이 나란히 떴고,
+                     그러면 화면이 「이 브라우저가 기억한다」와 「서버가 이 세션을 안다」를
+                     한꺼번에 주장한다. 조건은 세션을 «아는 층»인 여기가 건다(컴포넌트는
+                     `?run=` 만 알면 된다 · T4-2a ⓒ). */}
+              {!session && <StaticVisitorChip />}
               {session && (
                 <span
                   className="fkt-pill id bg-fill text-cap text-muted"

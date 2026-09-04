@@ -1,0 +1,66 @@
+{
+  "base": "http://127.0.0.1:8162",
+  "wall": "2026-09-04T10:09:06.105Z",
+  "widths": {
+    "390": {
+      "status": 200,
+      "consoleErrors": [],
+      "present": true,
+      "visibleText": "튜토리얼",
+      "title": "처음부터 다시 보기",
+      "ariaLabel": null,
+      "srOnlyCount": 0,
+      "accName": "튜토리얼",
+      "box": {
+        "w": 71.8,
+        "h": 32
+      },
+      "overflow": {
+        "barScrollWidth": 390,
+        "barClientWidth": 390,
+        "docScrollWidth": 390,
+        "docClientWidth": 390
+      },
+      "overflowPx": 0,
+      "noOverflow": true,
+      "overlayOnArrival": 1,
+      "closeControlCount": 1,
+      "overlayBefore": 0,
+      "closedFirst": true,
+      "openLatencyMs": 86,
+      "overlayAfter": 1,
+      "opened": true,
+      "openedText": "처음 오셨나요? ✕ 이 화면은 synthetic 공장 1곳의 상태입니다. 지금 설비에 알람이 떠 있습니다 「조사 시작」을 누르면 AI가 근거를 모읍니다 원인 후보와 작업지시서 초안을 사람이 승인합니다 언제든 "
+    },
+    "1440": {
+      "status": 200,
+      "consoleErrors": [],
+      "present": true,
+      "visibleText": "튜토리얼",
+      "title": "처음부터 다시 보기",
+      "ariaLabel": null,
+      "srOnlyCount": 0,
+      "accName": "튜토리얼",
+      "box": {
+        "w": 71.8,
+        "h": 32
+      },
+      "overflow": {
+        "barScrollWidth": 1180,
+        "barClientWidth": 1180,
+        "docScrollWidth": 1440,
+        "docClientWidth": 1440
+      },
+      "overflowPx": 0,
+      "noOverflow": true,
+      "overlayOnArrival": 1,
+      "closeControlCount": 1,
+      "overlayBefore": 0,
+      "closedFirst": true,
+      "openLatencyMs": null,
+      "overlayAfter": 0,
+      "opened": false,
+      "openedText": null
+    }
+  }
+}

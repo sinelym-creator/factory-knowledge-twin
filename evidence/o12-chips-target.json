@@ -1,0 +1,34 @@
+{
+  "base": "http://127.0.0.1:8168",
+  "staticUrl": "/incidents/INC-2026-014?run=STATIC-GS-01",
+  "wall": "2026-09-04T10:35:15.685Z",
+  "columns": {
+    "withSession": {
+      "cookies": [
+        "fkt_sid",
+        "fkt_session"
+      ],
+      "staticChip": 0,
+      "staticWrap": 0,
+      "sessionChip": 1,
+      "sessionChipText": "내 세션\nAEni",
+      "modeBadge": 1,
+      "bodyChars": 6086,
+      "narrow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflowPx": 0
+      }
+    },
+    "noSession": {
+      "cookies": [],
+      "staticChip": 1,
+      "staticWrap": 1,
+      "sessionChip": 0,
+      "sessionChipText": null,
+      "modeBadge": 1,
+      "bodyChars": 6093
+    }
+  },
+  "consoleErrors": []
+}
