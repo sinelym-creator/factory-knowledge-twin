@@ -23,7 +23,7 @@ import asyncio
 import logging
 from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from .. import ownership, session_id
@@ -68,6 +68,32 @@ def _error(status: int, code: str, message: str) -> HTTPException:
 
 def _store(request: Request) -> RunStore:
     return request.app.state.run_store
+
+
+# 🔴 재사용을 «말하는» 헤더. 조용히 같은 run 을 돌려주면 호출자는 자기가 만든 줄 안다 —
+#    그러면 「두 번 눌렀는데 하나」와 「두 번째가 조용히 무시됐다」를 구별할 방법이 없다.
+RUN_REUSED_HEADER = "X-FKT-Run-Reused"
+
+
+def _reusable_run(
+    store: RunStore, session_id: str, scenario_id: str, mode: str
+) -> RunRecord | None:
+    """같은 세션 × 시나리오 × mode 의 «비종결» run — 있으면 그것이 답이다 (D-48).
+
+    🔴 **이 함수는 «동기»다.** 판정과 `store.create` 사이에 이벤트 루프로 돌아가면 두 요청이
+       둘 다 「없다」를 보고 둘 다 만든다 — 그게 D-48 의 정확한 형태였다(경합 창 =
+       `await probe_all_cached`). 그래서 여기에 `await` 를 «넣지 않는다». 호출 자리도
+       마지막 await 가 재개된 «뒤»여야 한다(호출부 주석에 줄 번호로 적어 두었다).
+
+    🔴 여럿이면 **가장 최근 것**이다. 「하나뿐일 것」이라는 가정을 두지 않는다 — 같은 세션이
+       같은 시나리오를 종결 뒤 다시 조사할 수 있고, 그때 삽입 순서가 답을 정하게 두면
+       순서 때문에 초록이 되는 자리가 생긴다(`incident` 라우트·`by_work_order_draft` 와 같은 축).
+    """
+    found: RunRecord | None = None
+    for record in store.by_session(session_id):
+        if record.scenarioId == scenario_id and record.mode == mode and not record.terminal:
+            found = record
+    return found
 
 
 def _resources(request: Request) -> Any:
@@ -132,7 +158,9 @@ async def list_scenarios() -> list[ScenarioSummary]:
 
 
 @router.post("/scenarios/{scenarioId}/runs", response_model=RunCreated, responses=NOT_IMPLEMENTED)
-async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunCreated:
+async def start_run(
+    scenarioId: str, body: RunRequest, request: Request, response: Response
+) -> RunCreated:
     """조사 실행 생성 — `{ runId, incidentId, mode }`. 실행은 배경으로 흐르고 즉시 답한다."""
     if not session_id.is_valid(body.sessionId):
         raise _error(422, "invalid_session_id", "sessionId 형식이 아니다(영숫자·-·_ 8~64자)")
@@ -161,6 +189,18 @@ async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunC
             raise _error(
                 500, "replay_fixture_broken", "replay fixture 를 읽을 수 없다"
             ) from exc
+        # 🔴 D-48 — `replay.load` 는 동기다. 여기부터 `replay.start` 안의 `store.create`
+        #    까지 `await` 가 없으므로, 이 판정과 생성 사이에 다른 요청이 끼어들 수 없다.
+        reused = _reusable_run(_store(request), body.sessionId, scenarioId, "replay")
+        if reused is not None:
+            log.info(
+                "같은 세션의 비종결 replay run 을 재사용한다 — session=%s scenario=%s run=%s",
+                body.sessionId, scenarioId, reused.runId,
+            )
+            response.headers[RUN_REUSED_HEADER] = reused.runId
+            return RunCreated(
+                runId=reused.runId, incidentId=reused.incidentId, mode=reused.mode
+            )
         record = replay.start(
             _store(request), session_id=body.sessionId, anchor=anchor, events=events
         )
@@ -176,6 +216,30 @@ async def start_run(scenarioId: str, body: RunRequest, request: Request) -> RunC
     #    판정하면 의존이 정지한 순간에도 live 가 «시작»되고, 방문자는 중간에 끊긴 조사를 본다.
     #    근거는 `/health` 가 쓰는 바로 그 프로브 결과다(같은 사실을 두 곳에서 다르게 재지 않는다).
     probes = await resources.probe_all_cached(LIVE_PROBE_MAX_AGE_SEC)
+
+    # --- D-48 「같은 조사를 «동시에» 두 번 시작해도 run 은 하나」 -------------------
+    #
+    # 🔴 **자리가 전부다.** 경합 창은 바로 위의 `await probe_all_cached` 였다 — 두 요청이
+    #    거기서 함께 재개돼 둘 다 「활성 run 없음」을 보고 둘 다 만들었다(리바이2 실측:
+    #    동시 2 POST → run 2 · 대조군 1회 → 1). 그래서 판정을 그 await 가 «재개된 직후»에
+    #    두고, 여기서 `store.create` 까지 **이벤트 루프로 돌아가지 않는다**:
+    #      · `session_run_cap.admit` 동기 · `capacity.admit` 동기
+    #      · `async with dependency_guard(...)` — `errors.py:184` 의 몸통은 `try: yield` 이고
+    #        `async def` 와 `yield` 사이에 `await` 가 **없다**(읽어서 확인 · 추정 아님)
+    #      · `runner.start` — `store.create` 가 `runner.py:50`, 첫 `await` 가 `runner.py:91`
+    #    ⇒ 판정→생성 구간에 suspend 지점 0.
+    #
+    # 🔴 **상한보다 «앞»에 둔다.** 뒤에 두면 중복 요청이 세션 상한과 Live 슬롯을 먼저 먹고
+    #    나서 재사용으로 접힌다 — 그 찰나에 정상 요청이 503 을 맞는다.
+    reused = _reusable_run(_store(request), body.sessionId, scenarioId, "live")
+    if reused is not None:
+        log.info(
+            "같은 세션의 비종결 live run 을 재사용한다 — session=%s scenario=%s run=%s",
+            body.sessionId, scenarioId, reused.runId,
+        )
+        response.headers[RUN_REUSED_HEADER] = reused.runId
+        return RunCreated(runId=reused.runId, incidentId=reused.incidentId, mode=reused.mode)
+
     down = sorted(name for name, probe in probes.items() if probe.state != "ok")
     if down:
         # 🔴 「부분 성공 0」 — graph 단계를 건너뛴 반쪽 조사를 내지 않는다. 대신 같은 조사를
