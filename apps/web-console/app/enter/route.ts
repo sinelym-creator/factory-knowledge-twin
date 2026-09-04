@@ -93,7 +93,20 @@ export async function POST(req: NextRequest) {
   //    실측(2026-09-01 공개 URL): 콜드 1회가 pending 을 심었고, 그 쿠키로 `/compare` 는
   //    「승인 질문 목록을 가져오지 못했습니다」, `/overview` 는 오류 컴포넌트였다.
   //    같은 브라우저로 `api` 세션을 받으면 두 화면 다 정상이었다 — 갈린 것은 이 한 값이다.
-  if (session?.origin === "api") return seeOther();
+  /* 🔴 **D-55 — 「이미 «선» 사람」은 «그 세션이 살아 있다»를 전제한 판정이다.**
+   *
+   *    ai-api 의 세션 저장소는 프로세스 안이라(`session_store.py` 머리말) 재기동하면 전부
+   *    사라진다. 그때 방문자의 `fkt_sid` 는 여전히 `origin==="api"` 형식이라 이 줄이 «선 사람»
+   *    으로 읽고 발급 없이 돌려보낸다 — 그 쿠키로는 `/api/*` 가 전건 401 이고, 브라우저는
+   *    HttpOnly 라 스스로 지우지도 못한다. 즉 **회복 경로가 이 한 줄에서 막혀 있었다**
+   *    (실측 2026-09-04 · 재기동 뒤 `POST /enter` 가 `POST /api/sessions` 를 0건 냈다).
+   * 🔴 **그래서 「죽은 것을 본」 회차만 이 줄을 지난다.** 화면이 401 을 실제로 받은 뒤에만
+   *    `renew=1` 을 달고 오고(`session-recovery.tsx` · 문서당 1회 표지), 평상시 입장은 한
+   *    글자도 달라지지 않는다 — 쿠키가 있는 사람이 화면을 열 때마다 세션을 새로 굽지 않는다.
+   * 🔴 표면은 넓어지지 않는다: 쿠키 «없는» 방문자는 이미 이 줄 아래로 내려가 발급받는다.
+   *    `renew` 는 그 길을 쿠키 든 사람에게 한 번 열 뿐, 새 권한이나 새 경로가 아니다. */
+  const renew = req.nextUrl.searchParams.get("renew") === "1";
+  if (!renew && session?.origin === "api") return seeOther();
 
   // 입장 1회: 계약대로 세션을 «발급받아» 본다. 닿지 않으면 pending으로 들어간다.
   const reply = await createSession(apiBase());
