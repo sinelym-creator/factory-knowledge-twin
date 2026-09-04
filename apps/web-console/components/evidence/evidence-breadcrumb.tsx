@@ -23,6 +23,7 @@ export function EvidenceBreadcrumb({
   evidenceId,
   runId,
   staticIncidentId,
+  runIncidentId,
 }: {
   evidenceId: string;
   /** `?run=` — 조사 조각의 유일한 출처. 없으면 그 조각은 서지 않는다. */
@@ -33,6 +34,12 @@ export function EvidenceBreadcrumb({
    *    가운데 조각이 링크가 될 수 있다. Live 축에는 이런 출처가 없다(위 성문).
    */
   staticIncidentId?: string;
+  /**
+   * Live 축의 run→incident — 🔴 **서버 목록(`GET /runs?sessionId=`)이 답한 값**이다
+   * (T7-41 · 계약 v0.1.16). 앞판에는 이 출처가 없어서 가운데 조각이 라벨로 서 있었다.
+   * 이제 있으니 링크가 된다 — 여전히 «지어내지» 않는다: 못 찾으면 `null` 이고 라벨 그대로다.
+   */
+  runIncidentId?: string | null;
 }) {
   const isStatic = isStaticRun(runId);
   const investigation = runId
@@ -52,6 +59,16 @@ export function EvidenceBreadcrumb({
   const staticHome = isStatic && staticIncidentId
     ? `/incidents/${encodeURIComponent(staticIncidentId)}?run=${encodeURIComponent(runId!)}`
     : null;
+
+  /**
+   * 가운데 조각의 목적지 — 두 축이 **같은 모양의 주소**로 모인다(정적은 manifest 가, Live 는
+   * 서버 목록이 incidentId 를 준다). 🔴 첫 조각을 라벨로 내리는 조건은 여전히 `staticHome`
+   * «만»이다: Live 방문자는 세션이 있어 `/incidents` 목록이 실제로 열린다.
+   */
+  const investigationHref = staticHome
+    ?? (runId && runIncidentId
+      ? `/incidents/${encodeURIComponent(runIncidentId)}?run=${encodeURIComponent(runId)}`
+      : null);
 
   return (
     <nav aria-label="경로" data-testid="evidence-breadcrumb" className="text-foot text-muted">
@@ -75,9 +92,9 @@ export function EvidenceBreadcrumb({
         {investigation && (
           <li className="flex items-center gap-x-1.5">
             <Separator />
-            {staticHome ? (
+            {investigationHref ? (
               <Link
-                href={staticHome}
+                href={investigationHref}
                 data-testid="evidence-breadcrumb-run"
                 className="fkt-hit rounded-chip px-1 text-ai underline-offset-2 hover:underline focus:outline-2 focus:outline-ai"
               >
