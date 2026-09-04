@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { liveStatus } from "@/lib/contract";
+import { liveStatus, subscribeCongestion } from "@/lib/contract";
 import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 
 /**
@@ -20,28 +20,91 @@ import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 // 🔴 「아직 안 물어봤다」와 「물어봤는데 못 받았다」는 다른 상태다. 첫 응답 전에 «미연결»이라
 //    적으면, 확인하지도 않은 것을 확인한 척하게 된다 — 004의 「거울이 비면 판정하지 않는다」와 같은 규율.
 type Mode = "checking" | "live" | "replay" | "unavailable";
-type State = { mode: Mode; checkedAt: string | null; why: string | null };
+/**
+ * 🔴 **T7-31 — 혼잡은 «모드»가 아니라 그 «위에» 얹히는 사실이다**(D-49 · X-11).
+ *
+ * 서버가 503 으로 거절한 것은 「Live 인가 Replay 인가」와 다른 축이다. `Mode` 에 값을 하나 더
+ * 넣으면 거절이 뜬 동안 화면이 「지금 Live 인가」를 **말할 수 없게** 된다 — 그래서 모드는 그대로
+ * 두고 별도 축으로 든다(배지의 `data-mode` 계약도 그대로 산다).
+ */
+type Congestion = { since: number; retryAfterSec?: number };
+type State = {
+  mode: Mode;
+  checkedAt: string | null;
+  why: string | null;
+  /** 최근 창 안에 «최종» 503 을 받은 축들 — 키는 경로다(축마다 따로 걷힌다). */
+  congested: Record<string, Congestion>;
+};
 
-const LiveContext = createContext<State>({ mode: "checking", checkedAt: null, why: null });
+const LiveContext = createContext<State>({ mode: "checking", checkedAt: null, why: null, congested: {} });
 
 const POLL_MS = 30_000; // §0: 30s polling
+/**
+ * 🔴 거절이 화면에 남는 창. 30초가 지나도록 같은 축이 200 을 못 받으면 그 거절은 «지금»의
+ *    사실이 아니라 지난 일이다 — 영구 적색은 안 보는 신호가 된다.
+ * 🔴 창이 지났는지는 «시각»으로 판단하되, 화면이 스스로 걷히려면 다시 그려야 한다. 그래서
+ *    청소를 주기로 돌린다(간격 ≪ 창이라 걷히는 순간이 최대 1초만 늦는다).
+ */
+const CONGESTION_WINDOW_MS = 30_000;
+const CONGESTION_SWEEP_MS = 1_000;
 
 export function LiveStatusProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<State>({ mode: "checking", checkedAt: null, why: null });
+  const [state, setState] = useState<State>({ mode: "checking", checkedAt: null, why: null, congested: {} });
+
+  /**
+   * 🔴 **거절을 조용히 삼키지 않는다**(D-49 판정선). `contract.ts` 의 되묻기 경로가 «최종»
+   *    결과만 신호하므로, 여기 쌓이는 것은 「1회 되묻고도 503 이었다」뿐이다.
+   */
+  useEffect(() => {
+    const stop = subscribeCongestion((signal) => {
+      setState((prev) => {
+        if (signal.kind === "cleared") {
+          if (!(signal.path in prev.congested)) return prev; // 🔴 바뀐 게 없으면 다시 그리지 않는다
+          const next = { ...prev.congested };
+          delete next[signal.path];
+          return { ...prev, congested: next };
+        }
+        return {
+          ...prev,
+          congested: {
+            ...prev.congested,
+            [signal.path]:
+              signal.retryAfterSec === undefined
+                ? { since: signal.at }
+                : { since: signal.at, retryAfterSec: signal.retryAfterSec },
+          },
+        };
+      });
+    });
+    const sweep = setInterval(() => {
+      setState((prev) => {
+        const cutoff = Date.now() - CONGESTION_WINDOW_MS;
+        const live = Object.entries(prev.congested).filter(([, c]) => c.since > cutoff);
+        if (live.length === Object.keys(prev.congested).length) return prev;
+        return { ...prev, congested: Object.fromEntries(live) };
+      });
+    }, CONGESTION_SWEEP_MS);
+    return () => {
+      stop();
+      clearInterval(sweep);
+    };
+  }, []);
 
   useEffect(() => {
     let alive = true;
     const tick = async () => {
       const reply = await liveStatus();
       if (!alive) return;
-      setState(
+      /* 🔴 혼잡 축은 이 폴링이 «건드리지 않는다» — 다른 사실이고, 걷히는 조건도 다르다. */
+      setState((prev) =>
         reply.state === "ok"
           ? {
+              ...prev,
               mode: reply.data.online ? "live" : "replay",
               checkedAt: reply.data.checkedAt,
               why: null,
             }
-          : { mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why },
+          : { ...prev, mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why },
       );
     };
     void tick();
@@ -73,19 +136,43 @@ export function useLiveStatus() {
   return useContext(LiveContext);
 }
 
+/**
+ * 🔴 **T7-31 — 「거절당했다」를 배지가 «말한다»**(D-49 · X-11 판정선 = 조용한 폴백 금지).
+ *
+ * 아이콘·색·배치는 신규 0 — `◌`(미연결과 같은 글리프)와 기존 `text-warn` 토큰을 그대로 쓴다.
+ * 🔴 `N` 은 **서버가 `Retry-After` 로 말한 값**일 때만 적는다. 없으면 문장에서 뺀다 — 화면이
+ *    「잠시 후」를 지어내면 그 숫자는 서버가 하지 않은 말이 된다(`retryAfterSec` 규율과 같다).
+ */
+const CONGESTED_FACE = { icon: "◌", cls: "text-warn" };
+
+/** 여러 축이 동시에 거절당하면 **가장 최근** 것을 말한다 — 창이 지나면 스스로 빠진다. */
+function latestCongestion(congested: Record<string, Congestion>): Congestion | null {
+  let latest: Congestion | null = null;
+  for (const c of Object.values(congested)) if (!latest || c.since > latest.since) latest = c;
+  return latest;
+}
+
 export function ModeBadge() {
-  const { mode, checkedAt, why } = useContext(LiveContext);
-  const face = FACE[mode];
+  const { mode, checkedAt, why, congested } = useContext(LiveContext);
+  const congestion = latestCongestion(congested);
+  const face = congestion ? CONGESTED_FACE : FACE[mode];
+  const text = congestion
+    ? `혼잡${congestion.retryAfterSec !== undefined ? ` · ${congestion.retryAfterSec}초 뒤 재시도` : ""}`
+    : FACE[mode].text;
   const seen = checkedAt ? new Date(checkedAt).toLocaleTimeString("ko-KR") : "확인 전";
   return (
     <span
       className={`flex items-center gap-1.5 fkt-pill bg-fill text-foot ${face.cls}`}
-      title={`마지막 확인 ${seen}${why ? ` · ${why}` : ""}`}
+      title={`마지막 확인 ${seen}${why ? ` · ${why}` : ""}${congestion ? " · 서버가 요청을 거절했습니다(503)" : ""}`}
       data-testid="mode-badge"
+      /* 🔴 `data-mode` 는 «Live 축»의 값 그대로 둔다 — 혼잡은 다른 축이고, 이 속성을 읽는
+         기존 스펙이 혼잡 때문에 다른 답을 받으면 안 된다. 혼잡은 자기 속성으로 말한다. */
       data-mode={mode}
+      data-congested={congestion ? "true" : undefined}
+      data-retry-after-sec={congestion?.retryAfterSec}
     >
       <span aria-hidden>{face.icon}</span>
-      <span>{face.text}</span>
+      <span>{text}</span>
     </span>
   );
 }
