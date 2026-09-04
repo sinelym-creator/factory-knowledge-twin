@@ -1,0 +1,156 @@
+{
+  "base": "http://127.0.0.1:8179",
+  "evidence": "DOC-MAN-0021@r1#001",
+  "wall": "2026-09-04T10:55:00.789Z",
+  "branches": {
+    "C_noRun": {
+      "name": "C_noRun",
+      "url": "http://127.0.0.1:8179/evidence/DOC-MAN-0021%40r1%23001",
+      "width": 390,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "trustHeaderCount": 0,
+      "bodyChars": 473,
+      "pieces": 2,
+      "text": "Incidents › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        206.5,
+        206
+      ],
+      "heights": [
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": true,
+      "firstHref": "/incidents",
+      "runPieceCount": 0
+    },
+    "A_static": {
+      "name": "A_static",
+      "url": "http://127.0.0.1:8179/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "width": 390,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [],
+      "trustHeaderCount": 2,
+      "bodyChars": 5737,
+      "pieces": 3,
+      "text": "Incidents › 둘러보기 재생 › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        236.5,
+        236.5,
+        236
+      ],
+      "heights": [
+        19.5,
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": false,
+      "firstHref": null,
+      "runPieceCount": 1,
+      "runPieceText": "둘러보기 재생",
+      "runPieceTag": "a",
+      "runPieceHref": "/incidents/INC-2026-014?run=STATIC-GS-01"
+    },
+    "B_realRun": {
+      "name": "B_realRun",
+      "url": "http://127.0.0.1:8179/evidence/DOC-MAN-0021%40r1%23001?run=RUN-07c70a9b2014",
+      "width": 390,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "trustHeaderCount": 0,
+      "bodyChars": 522,
+      "pieces": 3,
+      "text": "Incidents › 조사 RUN-07c70a… › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        206.5,
+        206.5,
+        206
+      ],
+      "heights": [
+        19.5,
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": true,
+      "firstHref": "/incidents",
+      "runPieceCount": 1,
+      "runPieceText": "조사 RUN-07c70a…",
+      "runPieceTag": "span",
+      "runPieceHref": null
+    },
+    "A_static_1280": {
+      "name": "A_static_1280",
+      "url": "http://127.0.0.1:8179/evidence/DOC-MAN-0021%40r1%23001?run=STATIC-GS-01",
+      "width": 1280,
+      "status": 200,
+      "present": true,
+      "consoleErrors": [],
+      "trustHeaderCount": 2,
+      "bodyChars": 5789,
+      "pieces": 3,
+      "text": "Incidents › 둘러보기 재생 › 근거 DOC-MAN-0021@r1#001",
+      "tops": [
+        113,
+        113,
+        112.5
+      ],
+      "heights": [
+        19.5,
+        19.5,
+        20.5
+      ],
+      "topSpread": 0.5,
+      "oneLine": true,
+      "lastPieceTitle": "근거 DOC-MAN-0021@r1#001",
+      "lastPieceText": "› 근거 DOC-MAN-0021@r1#001",
+      "firstIsLink": false,
+      "firstHref": null,
+      "runPieceCount": 1,
+      "runPieceText": "둘러보기 재생",
+      "runPieceTag": "a",
+      "runPieceHref": "/incidents/INC-2026-014?run=STATIC-GS-01"
+    }
+  },
+  "seed": {
+    "startCount": 1,
+    "landed": "http://127.0.0.1:8179/incidents/INC-2026-014?run=RUN-07c70a9b2014",
+    "runId": "RUN-07c70a9b2014",
+    "step": "ok"
+  },
+  "clickThrough": {
+    "isLink": true,
+    "landed": "http://127.0.0.1:8179/incidents/INC-2026-014?run=STATIC-GS-01",
+    "landedTitleish": "Factory Knowledge Twin Overview Incidents Compare 안내와 둘러보기 다시 보기 ◑ REPLAY 정적 · 5110열람 1 ⟲ 정적 재생본 기억 리셋 AzCK ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조",
+    "consoleErrors": []
+  },
+  "clickThroughB": {
+    "isLink": false,
+    "landed": null,
+    "landedTitleish": null,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  "expectedStaticHref": "/incidents/INC-2026-014?run=STATIC-GS-01",
+  "tourTargetPresent": true
+}
