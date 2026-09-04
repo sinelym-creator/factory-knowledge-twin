@@ -1,0 +1,426 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "viewport": "1280x900",
+  "wall": "2026-09-04T16:21:36.356Z",
+  "live0": {
+    "headers": {
+      "csp": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; s",
+      "xcto": "nosniff",
+      "referrer": "no-referrer",
+      "permissions": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+      "hsts": "max-age=31536000; includeSubDomains"
+    },
+    "health": {
+      "ok": true,
+      "version": "0.1.0",
+      "status": "ok",
+      "dependencies": {
+        "postgres": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 19
+        },
+        "neo4j": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 16
+        }
+      },
+      "build": "879fc35",
+      "models": {
+        "embedding": "ready",
+        "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+      }
+    },
+    "introBefore": 0,
+    "tourInviteBefore": 0,
+    "staticReplay": {
+      "staticChip": 0,
+      "sessionChip": 1,
+      "runModeBadge": "replay"
+    },
+    "d67card390": {
+      "present": true,
+      "cardWidth": 350,
+      "bodyWidth": 310,
+      "dir": "column"
+    }
+  },
+  "live1": {
+    "startEnabled": true,
+    "runId": "RUN-3fd4865b83b5",
+    "runModeBadgeEarly": null,
+    "statusTrail": [
+      {
+        "t": "2026-09-04T16:21:54.149Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T16:21:56.575Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T16:21:58.998Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T16:22:01.586Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T16:22:04.058Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T16:22:06.489Z",
+        "status": 200,
+        "runStatus": "completed"
+      }
+    ],
+    "finalRunStatus": "completed",
+    "runModeBadge": "live",
+    "runApi": {
+      "status": 200,
+      "mode": null,
+      "keys": [
+        "status",
+        "candidates",
+        "workOrderDraftId"
+      ]
+    },
+    "postRuns": [
+      {
+        "path": "/api/scenarios/GS-01/runs",
+        "status": 200,
+        "json": {
+          "runId": "RUN-3fd4865b83b5",
+          "incidentId": "INC-2026-014",
+          "mode": "live"
+        }
+      }
+    ],
+    "events": {
+      "status": 200,
+      "count": 38,
+      "types": [
+        "run.started",
+        "plan.updated",
+        "step.started",
+        "step.evidence",
+        "step.completed",
+        "step.progress",
+        "run.completed"
+      ],
+      "envelopeMode": null,
+      "firstEventMode": "live"
+    },
+    "gpAppeared": true,
+    "gpHrefCount": 5,
+    "firstGpId": "GP-3fd4865b83b5-00",
+    "prefixMatch": true,
+    "gpDirectBeforeClick": {
+      "status": 200,
+      "json": {
+        "evidenceId": "GP-3fd4865b83b5-00",
+        "kind": "graph-path",
+        "revisionId": null,
+        "contentHash": null,
+        "stale": false,
+        "approvalState": null,
+        "effectiveFrom": null,
+        "effectiveTo": null,
+        "text": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+        "highlight": null,
+        "record": null,
+        "sourceId": "CP-204-BRG-01",
+        "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+        "score": 0.333333,
+        "meta": {
+          "path": {
+            "label": "Component",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "EQ-CNC-204",
+              "CP-204-BRG-01"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ON_EQUIPMENT",
+                "to": "EQ-CNC-204"
+              },
+              {
+                "from": "EQ-CNC-204",
+                "type": "HAS_COMPONENT",
+                "to": "CP-204-BRG-01"
+              }
+            ]
+          }
+        }
+      },
+      "raw": "{\"evidenceId\":\"GP-3fd4865b83b5-00\",\"kind\":\"graph-path\",\"revisionId\":null,\"contentHash\":null,\"stale\":false,\"approvalState\":null,\"effectiveFrom\":null,\"effectiveTo\":null,\"text\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"highlight\":null,\"record\":null,\"sourceId\":\"CP-204-BRG-01\","
+    },
+    "graphPathsBeforeClick": {
+      "status": 200,
+      "json": [
+        {
+          "evidenceId": "GP-3fd4865b83b5-00",
+          "targetId": "CP-204-BRG-01",
+          "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+          "score": 0.333333,
+          "label": "Component",
+          "hops": 2,
+          "nodes": [
+            "AL-20260826-0041",
+            "EQ-CNC-204",
+            "CP-204-BRG-01"
+          ],
+          "edges": [
+            {
+              "from": "AL-20260826-0041",
+              "type": "ON_EQUIPMENT",
+              "to": "EQ-CNC-204"
+            },
+            {
+              "from": "EQ-CNC-204",
+              "type": "HAS_COMPONENT",
+              "to": "CP-204-BRG-01"
+            }
+          ]
+        },
+        {
+          "evidenceId": "GP-3fd4865b83b5-01",
+          "targetId": "FM-BRG-WEAR",
+          "excerpt": "[FailureMode · 2-hop] AL-20260826-0041 → SN-204-VIB → FM-BRG-WEAR",
+          "score": 0.333333,
+          "label": "FailureMode",
+          "hops": 2,
+          "nodes": [
+            "AL-20260826-0041",
+            "SN-204-VIB",
+            "FM-BRG-WEAR"
+          ],
+          "edges": [
+            {
+              "from": "AL-20260826-0041",
+              "type": "TRIGGERS",
+              "to": "SN-204-VIB"
+            },
+            {
+              "from": "SN-204-VIB",
+              "type": "INDICATED_BY",
+              "to": "FM-BRG-WEAR"
+            }
+          ]
+        },
+        {
+          "evidenceId": "GP-3fd4865b83b5-02",
+          "targetId": "MR-2024-0004",
+          "excerpt": "[MaintenanceRecord · 2-hop] AL-20260826-0041 → EQ-CNC-204 → MR-2024-0004",
+          "score": 0.333333,
+          "label": "MaintenanceRecord",
+          "hops": 2,
+          "nodes": [
+            "AL-20260826-0041",
+            "EQ-CNC-204",
+            "MR-2024-0004"
+          ],
+          "edges": [
+            {
+              "from": "AL-20260826-0041",
+              "type": "ON_EQUIPMENT",
+              "to": "EQ-CNC-204"
+            },
+            {
+              "from": "EQ-CNC-204",
+              "type": "ON_EQUIPMENT",
+              "to": "MR-2024-0004"
+            }
+          ]
+        },
+        {
+          "evidenceId": "GP-3fd4865b83b5-03",
+          "targetId": "SOP-BRG-INSP-014",
+          "excerpt": "[SOP · 3-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014",
+          "score": 0.25,
+          "label": "SOP",
+          "hops": 3,
+          "nodes": [
+            "AL-20260826-0041",
+            "INC-2026-014",
+            "WO-2026-0113",
+            "SOP-BRG-INSP-014"
+          ],
+          "edges": [
+            {
+              "from": "AL-20260826-0041",
+              "type": "ESCALATES_TO",
+              "to": "INC-2026-014"
+            },
+            {
+              "from": "INC-2026-014",
+              "type": "RESOLVED_BY",
+              "to": "WO-2026-0113"
+            },
+            {
+              "from": "WO-2026-0113",
+              "type": "REFERENCES",
+              "to": "SOP-BRG-INSP-014"
+            }
+          ]
+        },
+        {
+          "evidenceId": "GP-3fd4865b83b5-04",
+          "targetId": "SAF-LOTO-01",
+          "excerpt": "[SafetyRule · 4-hop] AL-20260826-0041 → INC-2026-014 → WO-2026-0113 → SOP-BRG-INSP-014 → SAF-LOTO-01",
+          "score": 0.2,
+          "label": "SafetyRule",
+          "hops": 4,
+          "nodes": [
+            "AL-20260826-0041",
+            "INC-2026-014",
+            "WO-2026-0113",
+            "SOP-BRG-INSP-014",
+            "SAF-LOTO-01"
+          ],
+          "edges": [
+            {
+              "from": "AL-20260826-0041",
+              "type": "ESCALATES_TO",
+              "to": "INC-2026-014"
+            },
+            {
+              "from": "INC-2026-014",
+              "type": "RESOLVED_BY",
+              "to": "WO-2026-0113"
+            },
+            {
+              "from": "WO-2026-0113",
+              "type": "REFERENCES",
+              "to": "SOP-BRG-INSP-014"
+            },
+            {
+              "from": "SOP-BRG-INSP-014",
+              "type": "REQUIRES",
+              "to": "SAF-LOTO-01"
+            }
+          ]
+        }
+      ],
+      "raw": "[{\"evidenceId\":\"GP-3fd4865b83b5-00\",\"targetId\":\"CP-204-BRG-01\",\"excerpt\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"score\":0.333333,\"label\":\"Component\",\"hops\":2,\"nodes\":[\"AL-20260826-0041\",\"EQ-CNC-204\",\"CP-204-BRG-01\"],\"edges\":[{\"from\":\"AL-20260826-0041\",\"type\":\"ON_EQUIPMEN"
+    },
+    "gpBody": {
+      "url": "https://factory-knowledge-twin.vercel.app/evidence/GP-3fd4865b83b5-00?run=RUN-3fd4865b83b5",
+      "bodyCount": 1,
+      "steps": 3,
+      "walk": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+      "anchorsInBody": 0,
+      "unreachable": 0
+    },
+    "gpDirectAfterClick": {
+      "status": 200,
+      "json": {
+        "evidenceId": "GP-3fd4865b83b5-00",
+        "kind": "graph-path",
+        "revisionId": null,
+        "contentHash": null,
+        "stale": false,
+        "approvalState": null,
+        "effectiveFrom": null,
+        "effectiveTo": null,
+        "text": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+        "highlight": null,
+        "record": null,
+        "sourceId": "CP-204-BRG-01",
+        "excerpt": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+        "score": 0.333333,
+        "meta": {
+          "path": {
+            "label": "Component",
+            "hops": 2,
+            "nodes": [
+              "AL-20260826-0041",
+              "EQ-CNC-204",
+              "CP-204-BRG-01"
+            ],
+            "edges": [
+              {
+                "from": "AL-20260826-0041",
+                "type": "ON_EQUIPMENT",
+                "to": "EQ-CNC-204"
+              },
+              {
+                "from": "EQ-CNC-204",
+                "type": "HAS_COMPONENT",
+                "to": "CP-204-BRG-01"
+              }
+            ]
+          }
+        }
+      },
+      "raw": "{\"evidenceId\":\"GP-3fd4865b83b5-00\",\"kind\":\"graph-path\",\"revisionId\":null,\"contentHash\":null,\"stale\":false,\"approvalState\":null,\"effectiveFrom\":null,\"effectiveTo\":null,\"text\":\"[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01\",\"highlight\":null,\"record\":null,\"sourceId\":\"CP-204-BRG-01\","
+    }
+  },
+  "verdict": {
+    "stageRang": true,
+    "runId": "RUN-3fd4865b83b5",
+    "a_buildHeld": true,
+    "b_depsOk": true,
+    "c_embeddingReady": true,
+    "d_staticReplayBadge": true,
+    "e_headers": true,
+    "f_d67card390": true,
+    "g_liveBadge": true,
+    "h_gpBodyPresent": true,
+    "i_stepsAtLeast2": true,
+    "j_walkNonEmpty": true,
+    "k_noAnchorsInBody": true,
+    "l_noUnreachable": true,
+    "m_eventsCounted": true,
+    "n_consoleErrorsNonWs": true,
+    "d75b_pass": true,
+    "badge": {
+      "col1_early": null,
+      "col2_afterFinish": "live",
+      "col3_api": "live",
+      "col3_source": "POST /scenarios/{id}/runs",
+      "earlyDiffers": true,
+      "pass": true
+    },
+    "fetchCtl": {
+      "gpBeforeClick": 200,
+      "gpAfterClick": 200,
+      "graphPathsBeforeClick": 200,
+      "orderEffect": false
+    },
+    "allPass": true
+  },
+  "consoleErrors": [
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3fd4865b83b5' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3fd4865b83b5' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3fd4865b83b5' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3fd4865b83b5' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-3fd4865b83b5' failed: Error during WebSocket handshake: Unexpected response cod"
+    }
+  ]
+}

@@ -154,6 +154,22 @@ const run = async () => {
     console.error("STAGE NOT RANG: " + out.verdict.why);
     process.exit(2);
   }
+  /* 🔴 열 ③의 계약 정본은 **POST 응답**이다(rest-api-v0.1.md:34 = `{ runId, incidentId, mode }`).
+     화면이 시작하므로 내가 POST 를 칠 수 없다 — 네트워크에서 가로챈다(cap 소모 0). */
+  const postRuns = [];
+  page.on("response", async (r) => {
+    try {
+      if (r.request().method() !== "POST") return;
+      if (!/\/scenarios\/[^/]+\/runs$/.test(new URL(r.url()).pathname)) return;
+      postRuns.push({
+        path: new URL(r.url()).pathname,
+        status: r.status(),
+        json: await r.json().catch(() => null),
+      });
+    } catch {
+      /* 본문을 못 읽으면 흘린다 */
+    }
+  });
   await startBtn.first().click();
   await page.waitForLoadState("domcontentloaded");
   await page.waitForTimeout(2000);
@@ -170,7 +186,11 @@ const run = async () => {
   const SUFFIX = RID.replace(/^RUN-/, "");
 
   // 🔴 LIVE 배지는 «문면»이 아니라 `data-mode` 속성으로 묻는다(문면은 늙는다).
-  out.live1.runModeBadgeEarly = (await page.locator('[data-testid="run-mode-badge"]').count())
+  /* 🔴 «요소 0개» 와 «속성이 null» 을 **한 값으로 합치지 않는다** — 합치면 둘이 같은 얼굴이 되고,
+     `null` 을 보고 「배지가 없다」인지 「값이 비었다」인지 못 가른다(47대 자수 자리). */
+  const earlyCount = await page.locator('[data-testid="run-mode-badge"]').count();
+  out.live1.runModeBadgeEarlyCount = earlyCount;
+  out.live1.runModeBadgeEarly = earlyCount
     ? await page.locator('[data-testid="run-mode-badge"]').first().getAttribute("data-mode")
     : null;
 
@@ -188,9 +208,30 @@ const run = async () => {
   /* 🔴 **배지는 완주 «뒤»에 읽는다**(46대 자수). `{state.mode && ...}` 로 조건부이고
      `state.mode` 는 서버 상태가 닿은 뒤에야 채워진다. 공개면은 WS 가 404 라 폴링으로만 오므로,
      클릭 직후에 읽으면 `null` 이 나온다 — 그것은 «배지가 없다»가 아니라 «내가 일렀다»이다. */
-  out.live1.runModeBadge = (await page.locator('[data-testid="run-mode-badge"]').count())
+  const badgeCount = await page.locator('[data-testid="run-mode-badge"]').count();
+  out.live1.runModeBadgeCount = badgeCount;
+  out.live1.runModeBadge = badgeCount
     ? await page.locator('[data-testid="run-mode-badge"]').first().getAttribute("data-mode")
     : null;
+  /* 🔴 **배지 캡처는 여기서 찍는다** — run 은 세션 스코프라 다른 컨텍스트로 같은 URL 을 다시 열면
+     `GET /runs/{id}` 가 404 이고 run-console 자체가 안 선다(47대 실측: runApi=404 · live=200).
+     즉 «캡처를 나중에 따로» 는 못 하는 자리다. 자극을 태운 이 세션 안에서 남긴다(cap 소모 0). */
+  if (SHOTS && badgeCount) {
+    await page.locator('[data-testid="run-mode-badge"]').first().scrollIntoViewIfNeeded().catch(() => {});
+    await page.screenshot({ path: `${SHOTS}/promo15-run-mode-badge-1280.png` }).catch(() => {});
+  }
+
+  /* 열 ③ — **API 가 말하는 mode**. 🔴 계약은 `GET /runs/{id}` 스냅샷을
+     `{ status, candidates[], workOrderDraftId? }` 로 적는다 — 거기엔 mode 가 **없다**.
+     그러니 세 자리(GET 스냅샷·POST 응답·이벤트 정본)를 다 찍고, 어느 자리가 답했는지를
+     «이름»으로 남긴다. 못 잰 것은 안 잰 것과 다르다. */
+  const runApi = await probe(page, `/api/runs/${encodeURIComponent(RID)}`);
+  out.live1.runApi = {
+    status: runApi.status,
+    mode: runApi.json?.mode ?? null,
+    keys: runApi.json && typeof runApi.json === "object" ? Object.keys(runApi.json).slice(0, 14) : null,
+  };
+  out.live1.postRuns = postRuns;
 
   // 완주 이벤트 — 스냅샷이 아니라 이벤트 정본에서 센다.
   const ev = await probe(page, `/api/runs/${encodeURIComponent(RID)}/events`);
@@ -199,6 +240,8 @@ const run = async () => {
     status: ev.status,
     count: Array.isArray(evList) ? evList.length : null,
     types: Array.isArray(evList) ? [...new Set(evList.map((e) => e?.type ?? e?.event ?? null))].slice(0, 12) : null,
+    envelopeMode: ev.json && !Array.isArray(ev.json) ? (ev.json.mode ?? null) : null,
+    firstEventMode: Array.isArray(evList) && evList.length ? (evList[0]?.mode ?? null) : null,
   };
 
   await page.waitForTimeout(1200);
@@ -229,6 +272,12 @@ const run = async () => {
   }
 
   // 🔴 근거는 «목록에서 클릭»해 연다 — fetch 로 연 본문은 그 셸이 그린 것이 아니다.
+  /* 🔴 **fetch 자극 대조군 열(D-75 잔여)** — 「화면 클릭이 있어야 GP 가 서는가」를 묻는다.
+     그러므로 **클릭 «전»에** 친다. 클릭 뒤에만 치면 자극이 이미 들어간 뒤라 «자극 불요»를
+     말할 수 없다. 클릭 «뒤» 열도 함께 남겨 «순서 효과» 자체를 값으로 만든다(같은 run · cap 0). */
+  out.live1.gpDirectBeforeClick = await probe(page, `/api/evidence/${encodeURIComponent(firstId)}`);
+  out.live1.graphPathsBeforeClick = await probe(page, `/api/graph/paths?byRun=${encodeURIComponent(RID)}`);
+
   await page.locator(`a[href*="/evidence/${firstId}"]`).first().click();
   await page.waitForLoadState("domcontentloaded");
   await page.waitForTimeout(2500);
@@ -244,6 +293,7 @@ const run = async () => {
     anchorsInBody: (await body.count()) ? await body.locator("a").count() : null,
     unreachable: (pageText.match(/닿지 못했습니다/g) || []).length,
   };
+  out.live1.gpDirectAfterClick = await probe(page, `/api/evidence/${encodeURIComponent(firstId)}`);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/promo15-gp-body-1280.png` }).catch(() => {});
 
   // ═══ 판정 ═══════════════════════════════════════════════════════════
@@ -275,6 +325,35 @@ const run = async () => {
     n_consoleErrorsNonWs: errs.filter((e) => !e.excluded).length === 0,
   };
   v.d75b_pass = v.h_gpBodyPresent && v.i_stepsAtLeast2 && v.j_walkNonEmpty && v.k_noAnchorsInBody && v.l_noUnreachable;
+
+  /* ── 발주 A 축 ─────────────────────────────────────────────────────────
+     🔴 새 축을 a~n 에 섞지 않는다 — `allPass` 는 «승격 15 재검»의 이름이고, 축을 넓히면
+     그 초록의 뜻이 조용히 바뀐다. 별도 군으로 두고 exit 만 둘을 함께 본다. */
+  const apiModeVal = out.live1.runApi.mode ?? out.live1.postRuns?.[0]?.json?.mode ?? out.live1.events.envelopeMode ?? null;
+  const apiModeSrc =
+    out.live1.runApi.mode != null
+      ? "GET /runs/{id}"
+      : out.live1.postRuns?.[0]?.json?.mode != null
+        ? "POST /scenarios/{id}/runs"
+        : out.live1.events.envelopeMode != null
+          ? "GET /runs/{id}/events (envelope)"
+          : "없음 — 세 자리 모두 mode 를 내지 않았다";
+  v.badge = {
+    col1_early: out.live1.runModeBadgeEarly,
+    col1_earlyElementCount: out.live1.runModeBadgeEarlyCount,
+    col2_elementCount: out.live1.runModeBadgeCount,
+    col2_afterFinish: out.live1.runModeBadge,
+    col3_api: apiModeVal,
+    col3_source: apiModeSrc,
+    earlyDiffers: out.live1.runModeBadgeEarly !== out.live1.runModeBadge,
+    pass: out.live1.runModeBadge === "live" && apiModeVal === "live",
+  };
+  v.fetchCtl = {
+    gpBeforeClick: out.live1.gpDirectBeforeClick?.status ?? null,
+    gpAfterClick: out.live1.gpDirectAfterClick?.status ?? null,
+    graphPathsBeforeClick: out.live1.graphPathsBeforeClick?.status ?? null,
+    orderEffect: (out.live1.gpDirectBeforeClick?.status ?? null) !== (out.live1.gpDirectAfterClick?.status ?? null),
+  };
   v.allPass = Object.entries(v)
     .filter(([k]) => /^[a-n]_/.test(k))
     .every(([, val]) => val === true);
@@ -286,9 +365,11 @@ const run = async () => {
   console.log(
     `build=${out.live0.health?.build} badge=${out.live1.runModeBadge} gp=${g.bodyCount}/${g.steps} ` +
       `events=${out.live1.events.count} errs=${errs.filter((e) => !e.excluded).length} ` +
-      `=> D75b=${v.d75b_pass ? "PASS" : "FAIL"} all=${v.allPass ? "PASS" : "FAIL"}`,
+      `| badge early=${v.badge.col1_early} after=${v.badge.col2_afterFinish} api=${v.badge.col3_api} (${v.badge.col3_source}) ` +
+      `| gpDirect before=${v.fetchCtl.gpBeforeClick} after=${v.fetchCtl.gpAfterClick} paths=${v.fetchCtl.graphPathsBeforeClick} ` +
+      `=> D75b=${v.d75b_pass ? "PASS" : "FAIL"} badge=${v.badge.pass ? "PASS" : "FAIL"} all=${v.allPass ? "PASS" : "FAIL"}`,
   );
-  process.exit(v.allPass ? 0 : 1);
+  process.exit(v.allPass && v.badge.pass ? 0 : 1);
 };
 
 run().catch((e) => {
