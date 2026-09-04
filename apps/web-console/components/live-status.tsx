@@ -224,9 +224,18 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
            띠 높이·본문 위치는 그대로이고 누르는 상자만 아래로 자란다.
            🔴 `relative z-10` 이 그 아랫부분을 본문 «위»에 둔다. 이게 없으면 넓힌 만큼이
            본문에 덮여, CSS 로는 44 인데 화면에서는 안 눌리는 앞판의 형태로 돌아간다.
-           🔴 `self-stretch` 는 뺀다 — 늘어난 높이가 줄의 cross size 로 «흡수»되어
-           padding 이 상자를 못 키운다(그러면 이 처방 자체가 무효가 된다). */
-        className="relative z-10 inline-flex min-w-11 items-center justify-center pb-[23.5px] -mb-[23.5px] text-muted hover:text-ink"
+           🔴 **T7-29b — 44 를 보장하는 것은 `min-h-11` 이지 `pb` 값이 아니다.**
+           앞 처방은 «내용 20.5 + pb 23.5 = 44» 를 전제했는데 실측 내용은 **19.5** 였다 →
+           두 폭 모두 **43**(1px 미달 · 리바이2 #570 · 내 무대에서도 43/43 재현).
+           그래서 계산값을 코드에 두지 않고 최소 높이를 직접 세운다 — 내용이 몇이든 CSS 가
+           스스로 44 이상을 보장한다.
+           `pb`/`-mb` 쌍은 이제 «44 를 만드는 값» 이 아니라 **글리프를 줄 가운데에 붙잡는 장치**다:
+           두 값이 같으면 margin box 와 content box 가 같은 중심을 가져, 상자가 44 로 커져도
+           ✕ 는 제자리에 선다(실측: 글리프 중심 y 1440 69.5 · 390 122.3 — 전/후 동일).
+           🔴 `self-stretch` 는 쓰지 않는다 — 실측(T7-29b A안 `min-h-11 self-stretch -mb-11`):
+           stretch 가 cross size 에서 음수 margin 을 **빼서** 상자가 1440 에서 79.5 로 부풀고,
+           상자가 줄 «상단»에 붙어 ✕ 글리프가 **22px 아래로 이동**했다(두 폭 모두). */
+        className="relative z-10 inline-flex min-h-11 min-w-11 items-center justify-center pb-[23.5px] -mb-[23.5px] text-muted hover:text-ink"
         onClick={() => setClosed(true)}
         aria-label="배너 닫기"
       >
