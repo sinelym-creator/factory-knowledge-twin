@@ -35,6 +35,13 @@ export const CONTRACT = {
   scenarios: "/api/scenarios",
   startRun: (scenarioId: string) => `/api/scenarios/${encodeURIComponent(scenarioId)}/runs`,
   run: (runId: string) => `/api/runs/${encodeURIComponent(runId)}`,
+  /**
+   * 계약 v0.1.16 — 그 세션이 시작한 조사 목록(최신순 · 상한 20).
+   * 🔴 `sessionId` 는 쿠키와 «같아야» 한다(다르면 422). 서버가 아는 사실이라,
+   *    화면은 이제 이것을 브라우저 저장소에 따로 적어 두지 않는다(T7-41b · 두 출처가
+   *    갈리면 화면이 거짓말한다).
+   */
+  sessionRuns: (sessionId: string) => `/api/runs?sessionId=${encodeURIComponent(sessionId)}`,
   // --- T3-3 근거 열람(계약 §근거·그래프 · v0.1.1 형상 · v0.1.6 읽기 예외 2라우트) ------
   evidence: (evidenceId: string) => `/api/evidence/${encodeURIComponent(evidenceId)}`,
   /**
@@ -145,6 +152,11 @@ export type ActiveAlarm = {
   observedValue: number | null;
   equipmentId: string;
   sensorId: string;
+  /**
+   * 계약 v0.1.16 — 이 알람에 연결된 상황. 없으면 `null`(아직 상황으로 안 묶인 알람).
+   * 🔴 서버의 연결표에서만 온다 — 화면이 알람 id 로 지어내지 않는다.
+   */
+  incidentId?: string | null;
 };
 
 export type Overview = { kpi: Kpi; lines: OverviewLine[]; activeAlarms: ActiveAlarm[] };
@@ -243,6 +255,19 @@ export type ApprovalResult = { status: string; auditId: string };
 /** `POST /retrieval/compare` — 실측: 전략별 hits 5건 · hit 키 = evidenceId/score/excerpt. */
 export type CompareHit = { evidenceId: string; score: number; excerpt: string };
 export type CompareResult = { strategy: string; hits: CompareHit[]; elapsedMs: number };
+
+/**
+ * 계약 v0.1.16 `GET /runs?sessionId=` 한 줄. `finishedAt` 은 아직 도는 run 에는 «없다».
+ */
+export type SessionRunSummary = {
+  runId: string;
+  incidentId: string;
+  scenarioId: string;
+  mode: string;
+  status: string;
+  startedAt: string;
+  finishedAt?: string;
+};
 
 export type RunSnapshot = {
   status: string;

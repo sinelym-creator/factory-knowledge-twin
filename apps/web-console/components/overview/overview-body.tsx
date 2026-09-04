@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 
 import { Sparkline } from "@/components/overview/sparkline";
 import { useTourAllowed } from "@/components/tour/tour-allowed";
+import Link from "next/link";
+
 import { StartInvestigation } from "@/components/overview/start-investigation";
+import type { SessionRunSummary } from "@/lib/contract";
 import type { ActiveAlarm, Overview, OverviewEquipment, Scenario } from "@/lib/contract";
 import { TZ_LABEL, clock, stamp } from "@/lib/time";
 
@@ -94,6 +97,7 @@ export function OverviewBody({
   scenarios,
   sessionId,
   sessionOrigin,
+  sessionRuns,
   headline,
   receivedAt,
   forceIntro,
@@ -103,6 +107,8 @@ export function OverviewBody({
   scenarios: Scenario[];
   sessionId: string | null;
   sessionOrigin: string | null;
+  /** 계약 v0.1.16 — 서버가 아는 「이 세션의 조사」(최신순). 없으면 빈 배열. */
+  sessionRuns: SessionRunSummary[];
   headline: { text: string; alarmId: string | null; equipmentId: string | null };
   /** 🔴 «서버가 이 응답을 그린 순간» — 렌더 안에서 `new Date()` 를 부르지 않는 이유는
    *  lib/time.ts 머리말에 있다(D-2). 값이 prop 이라 SSR·하이드레이션이 같은 글자를 낸다. */
@@ -171,6 +177,23 @@ export function OverviewBody({
           지금 공장 상태
         </p>
         <p className="fkt-display mt-2.5">{headline.text}</p>
+        {/* 🔴 D-63 — 조사를 돌린 사람이 Overview 로 돌아오면 «처음 화면»을 봤다. 서버가
+            이 세션의 조사를 아는 지금(v0.1.16), 돌아갈 자리를 여기에 둔다. 0건이면 이
+            줄 자체가 없다 — 없는 조사를 「0건」으로 말하지 않는다. */}
+        {sessionRuns.length > 0 && (
+          <div className="mt-5" data-testid="overview-resume">
+            <Link
+              href={`/incidents/${encodeURIComponent(sessionRuns[0].incidentId)}?run=${encodeURIComponent(sessionRuns[0].runId)}`}
+              className="fkt-hit fkt-pill inline-flex max-w-full items-center gap-2 bg-fill px-4 py-2 text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+              data-run={sessionRuns[0].runId}
+            >
+              <span className="truncate">
+                이 세션의 조사 {sessionRuns.length}건 · 이어보기
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        )}
         {headline.alarmId && (
           // 🔴 이 버튼과 알람 카드의 버튼은 «같은 동작»이다(§1 인터랙션 ⑥ — 진입 이중화).
           //    처음 온 방문자는 문장에서, 익숙한 사용자는 도크에서 출발한다.
