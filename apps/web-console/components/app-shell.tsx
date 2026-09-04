@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import { IconMark, IconQuestion } from "@/components/icons";
-import { FallbackBanner, LiveStatusProvider, ModeBadge } from "@/components/live-status";
+import { FallbackBanner, LiveStatusProvider, ModeBadge, RunCapCounter } from "@/components/live-status";
 import { ResetButton } from "@/components/reset-button";
 import { ShellNav } from "@/components/shell-nav";
 import { TruncationTitles } from "@/components/truncation-titles";
@@ -31,8 +31,13 @@ import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = parseSession((await cookies()).get(SESSION_COOKIE)?.value);
 
+  // 🔴 **`api` 출신 세션만 싣는다**(T7-38 · 계약 v0.1.15) — `pending` 은 백엔드가 모르는
+  //    임시 id 라, 그것으로 상한을 물으면 서버는 «그 id 의» 빈 상한을 답한다(화면이 실제로는
+  //    쓸 수 없는 세션에 대해 「N회 남음」을 말하게 된다). 모를 때는 묻지 않는다.
+  const capSessionId = session?.origin === "api" ? session.id : null;
+
   return (
-    <LiveStatusProvider>
+    <LiveStatusProvider sessionId={capSessionId}>
       {/* 🔴 T7-28 — 투어의 «허용 노드» 등록소. `<TourProvider />` 는 `<main>` 의 **형제**라
           거기 만든 컨텍스트는 본문의 안내 카드에 닿지 않는다. 그래서 둘의 공통 조상인 이
           자리에 둔다. 🔴 투어 OFF 면 등록은 배열 하나를 늘릴 뿐 화면은 변하지 않는다 —
@@ -81,6 +86,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   JS 없이 키보드로 잡힌다. */}
               <TourReopen />
               <ModeBadge />
+              {/* 🔴 T7-38 — 배지 «곁». LIVE 일 때만 서고, 그 밖의 모드에서는 렌더 0 이라
+                  앱바 폭은 지금과 같다(계약 v0.1.15 규격 · 새 요소는 이 하나뿐). */}
+              <RunCapCounter />
               {/* 🔴 정적 재생본 방문자 — 서버 세션 칩과 «같은 자리, 다른 사실»이다.
                   서버 세션이 없을 때만 서므로 두 칩이 동시에 뜨지 않는다(T4-2a ⓒ). */}
               <StaticVisitorChip />

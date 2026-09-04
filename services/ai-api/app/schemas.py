@@ -296,8 +296,47 @@ class HealthResponse(BaseModel):
     models: ModelReadiness
 
 
+class RunCapStatus(BaseModel):
+    """세션 조사 상한의 «지금» — 계약 v0.1.15.
+
+    🔴 **표면 형상을 만드는 자리는 여기 하나다.** `/live/status` 의 `runCap` 과
+       `POST …/runs` 의 `X-FKT-Run-Cap-*` 헤더는 같은 사실을 두 표면으로 낸다 —
+       각자 조립하면 같은 실행에서 두 표면이 갈린다(그때 화면은 자기 폴링과 자기가 방금
+       받은 헤더가 어긋나는 것을 보게 된다).
+    🔴 `limit <= 0`(상한 없음)은 표면에서 **0** 으로 낸다(계약 문면) — 내부 계수기는 음수를
+       상한 없음으로 쓸 수 있지만, 소비자에게 `-1` 을 주면 「-1회 남음」을 계산하게 된다.
+       그때 `remaining`·`nextFreeInSec` 은 **null** 이다: 0 은 「0회 남음」으로 읽혀 상한
+       없음이 상한 도달로 뒤집힌다(`SessionRunCap.peek` 머리말과 같은 규율).
+    """
+
+    limit: int
+    used: int
+    remaining: int | None
+    windowSec: int
+    nextFreeInSec: int | None
+
+    @classmethod
+    def of(cls, peek: dict[str, object], window_sec: float) -> "RunCapStatus":
+        """`SessionRunCap.peek` 의 내부 낱말(`next_free_sec`)을 계약 낱말로 옮긴다."""
+        limit = int(peek["limit"])  # type: ignore[arg-type]
+        remaining = peek["remaining"]
+        next_free = peek["next_free_sec"]
+        return cls(
+            limit=max(0, limit),
+            used=int(peek["used"]),  # type: ignore[arg-type]
+            remaining=None if remaining is None else int(remaining),  # type: ignore[arg-type]
+            windowSec=int(window_sec),
+            nextFreeInSec=None if next_free is None else int(next_free),  # type: ignore[arg-type]
+        )
+
+
 class LiveStatus(BaseModel):
-    """GET /live/status → `{ online, checkedAt }`"""
+    """GET /live/status → `{ online, checkedAt }` (+ v0.1.15 `runCap` — 쿼리가 있을 때만)"""
 
     online: bool
     checkedAt: datetime
+    # 🔴 **`sessionId` 쿼리가 없으면 이 필드는 «없다»** — `None` 으로 실어도 안 된다.
+    #    기존 소비자(배지 폴링·드릴)가 받는 응답은 v0.1.2 형상 그대로여야 한다. 라우트가
+    #    `response_model_exclude_unset=True` 로 그 규율을 집행한다(설정하지 않은 필드는
+    #    직렬화에서 빠진다 · 명시적으로 준 `None` 은 남는다 = 상한 없음의 `remaining: null`).
+    runCap: RunCapStatus | None = None

@@ -96,7 +96,22 @@ export const CONTRACT_SURFACE = [
 // 🔴 이 타입들은 계약의 «사본»이다. 갈리면 계약이 이긴다 — 여기서 필드를 늘리지 않는다.
 
 export type SeriesWindow = "24h" | "3w";
-export type LiveStatus = { online: boolean; checkedAt: string };
+/**
+ * 세션 조사 상한의 «지금» — 계약 v0.1.15.
+ *
+ * 🔴 `remaining`·`nextFreeInSec` 이 `null` 인 것은 «모른다»가 아니라 **뜻이 있는 값**이다:
+ *    `remaining: null` = 상한 없음(`limit: 0`) · `nextFreeInSec: null` = 기다릴 필요 없음.
+ *    화면이 이것을 `0` 으로 접으면 「0회 남음」·「0분 뒤 회복」이라는 없는 말이 된다.
+ */
+export type RunCap = {
+  limit: number;
+  used: number;
+  remaining: number | null;
+  windowSec: number;
+  nextFreeInSec: number | null;
+};
+/** 🔴 `runCap` 은 `sessionId` 쿼리를 «준 회차에만» 온다(v0.1.15 · 안 주면 v0.1.2 형상 그대로). */
+export type LiveStatus = { online: boolean; checkedAt: string; runCap?: RunCap };
 
 export type Kpi = {
   lineActive: number;
@@ -535,6 +550,45 @@ function announceCongestion(signal: CongestionSignal): void {
   for (const fn of congestionListeners) fn(signal);
 }
 
+/**
+ * 🔴 **조사 시작 응답의 상한 헤더를 화면까지 나르는 자리** — 계약 v0.1.15.
+ *
+ * 왜 `Reply<T>` 에 칸을 더하지 않았나: `Reply` 는 «모든» 호출이 공유하는 형이고, 상한 헤더는
+ * `POST …/runs` 한 라우트에만 붙는다. 공용 형을 넓히면 이 사실과 무관한 40여 개 호출처가
+ * 같이 흔들린다 — 혼잡 신호(`CongestionSignal`)를 브로드캐스트로 둔 것과 같은 이유다.
+ *
+ * 🔴 **값을 지어내지 않는다.** 헤더가 없는 회차(replay·강등·429)에서는 아무 신호도 내지
+ *    않는다 — 「모른다」와 「0회 남았다」는 다른 사실이고, 화면은 폴링이 답할 때까지 앞 값을
+ *    그대로 든다.
+ */
+export type RunCapSignal = { limit: number; used: number; remaining: number | null; at: number };
+type RunCapListener = (signal: RunCapSignal) => void;
+const runCapListeners = new Set<RunCapListener>();
+
+export function subscribeRunCap(fn: RunCapListener): () => void {
+  runCapListeners.add(fn);
+  return () => {
+    runCapListeners.delete(fn);
+  };
+}
+
+/** 응답 헤더에 상한 3칸이 실려 있으면 그 사실을 알린다(없으면 조용하다). */
+function announceRunCap(res: Response): void {
+  const limit = res.headers.get("x-fkt-run-cap-limit");
+  const used = res.headers.get("x-fkt-run-cap-used");
+  if (limit === null || used === null) return;
+  const remaining = res.headers.get("x-fkt-run-cap-remaining");
+  const signal: RunCapSignal = {
+    limit: Number(limit),
+    used: Number(used),
+    // 🔴 헤더가 «없는» 것이 상한 없음이다(서버는 그때 이 헤더를 싣지 않는다) → `null`.
+    remaining: remaining === null ? null : Number(remaining),
+    at: Date.now(),
+  };
+  if (!Number.isFinite(signal.limit) || !Number.isFinite(signal.used)) return;
+  for (const fn of runCapListeners) fn(signal);
+}
+
 async function call<T>(
   path: string,
   init?: RequestInit,
@@ -807,6 +861,9 @@ async function attempt<T>(
       };
     }
     const setCookie = res.headers.get("set-cookie") ?? undefined;
+    /* 🔴 상한 헤더는 «성공한 회차»에만 실린다(계약 v0.1.15 = live 201). 여기서 한 번 읽어
+       브로드캐스트하면 호출처(`startRunBrowser`)가 자기 반환형을 넓히지 않아도 된다. */
+    announceRunCap(res);
     return { state: "ok", data: (await res.json()) as T, setCookie };
   } catch (e) {
     // 연결 거부·타임아웃·JSON 파손 — 전부 「지금은 못 물어본다」로 같다.
@@ -864,7 +921,20 @@ export async function proxyApiRequest(req: Request, opts: { https: boolean }): P
   } as RequestInit);
 
   const out = new Headers();
-  for (const name of ["content-type", "retry-after", "cache-control"]) {
+  /* 🔴 **여기 없는 헤더는 브라우저에 «도달하지 않는다»**(허용 목록 · 위 요청 축과 같은 규율).
+     계약 v0.1.15 의 `X-FKT-Run-Cap-*` 3칸을 더한다 — 서버가 실어 보내도 이 줄에 이름이
+     없으면 화면은 영영 못 본다.
+     🔴 관측(이번 범위 밖): `X-FKT-Run-Reused`(v0.1.14)는 지금도 이 목록에 **없다** — 이
+        경로를 지나는 회차에서 그 헤더는 브라우저에 도달하지 않는다. 화면이 그 값을 읽지
+        않으므로 지금 깨지는 것은 없고, 고치는 것은 그 티켓의 판단이라 손대지 않는다. */
+  for (const name of [
+    "content-type",
+    "retry-after",
+    "cache-control",
+    "x-fkt-run-cap-limit",
+    "x-fkt-run-cap-used",
+    "x-fkt-run-cap-remaining",
+  ]) {
     const v = upstream.headers.get(name);
     if (v) out.set(name, v);
   }
@@ -1087,11 +1157,19 @@ export function resetSession(sid: string, base = ""): Promise<Reply<{ ok: boolea
 const LIVE_FIRST_TIMEOUT_MS = 5000;
 let liveStatusWarmed = false;
 
-export function liveStatus(base = ""): Promise<Reply<LiveStatus>> {
+/**
+ * 🔴 `sessionId` 는 **선택**이다(계약 v0.1.15). 주면 응답에 `runCap` 이 «더해»지고, 안 주면
+ *    v0.1.2 형상 그대로다 — 세션을 아직 모르는 회차(입장 전·pending)가 이 폴링 때문에
+ *    달라지지 않게 하는 자리다.
+ */
+export function liveStatus(base = "", sessionId?: string | null): Promise<Reply<LiveStatus>> {
   const cold = !liveStatusWarmed;
   liveStatusWarmed = true;
+  const path = sessionId
+    ? `${CONTRACT.liveStatus}?sessionId=${encodeURIComponent(sessionId)}`
+    : CONTRACT.liveStatus;
   return call<LiveStatus>(
-    CONTRACT.liveStatus,
+    path,
     { cache: "no-store" },
     base,
     cold ? LIVE_FIRST_TIMEOUT_MS : TIMEOUT_MS,
