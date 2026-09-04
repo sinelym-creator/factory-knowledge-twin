@@ -62,7 +62,7 @@
 | U-05 | 🔴 **`inert` 적용/해제** | 열림→닫힘 | 잔여 0 · **남의 `inert` 는 안 지운다** |
 | U-06 | 계약 스키마 검증기 | 정상 이벤트 | 통과 |
 | U-07 | 〃 | 🔴 **필드 누락·타입 불일치·여분 필드** | 각각 «다른» 오류로 거절 |
-| U-08 | 온톨로지 id 형식 | `EQ-*`·`WO-*`·`DOC-*` | 형식 판정 |
+| U-08 | 🔴 **chunk id 형식 판정**(`services/ai-api/app/reading/evidence.py` `CHUNK_ID_RE` · 09-04 09:0x 실물 확정 — `EQ-*`·`WO-*` 형식 판정 코드는 리포에 **없다**) | 정상 `DOC-MAN-0021@r1#006` · 위반 4형태(접두 아님 · revision 없음 · index 자리수 · 빈 값) | 정상만 통과 · 위반은 각각 «다른 자리»에서 거절(`documents.py:68` 이 `highlight_mismatch` 로 이어짐) |
 | U-09 | 🔴 **인용 파서**(근거 → 문서·구절) | 정상 | 원문 위치 복원 |
 | U-10 | 〃 | 🔴 **깨진 인용·없는 문서 id** | 조용히 넘기지 않고 «거절»한다 |
 
@@ -73,7 +73,7 @@
 | # | 회부 사유 | 🔴 결정 | 근거(실측) |
 |---|---|---|---|
 | **U-06·U-07** 계약 스키마 검증 | 검증기가 `tests/contract/` = **검증 scope** | 🔴 **검증 좌석 몫으로 이관** · **vitest 안 쓴다** — 그 자리에 이미 러너가 있다(`node tests/contract/run.js`) | `tests/contract/validator.js` = **JS · 외부 의존 0 자체 구현** |
-| **U-08** 온톨로지 id 형식 | 파이썬 여부·러너 결정 사안 | 🔴 **«대상 미확정» — 케이스를 세우기 «전에» 판정 코드를 찾아야 한다** | `packages/ontology/` = **JSON 2본뿐**(`ontology-version.json`·`projection-version.json`) · **코드 0** |
+| **U-08** 온톨로지 id 형식 | 파이썬 여부·러너 결정 사안 | 🔴 **대상 확정(33대 09-04 09:0x)** = `CHUNK_ID_RE`(`services/ai-api/app/reading/evidence.py:31` · 소비처 `documents.py:68`·`evidence.py:77`) · **러너 = 표준 `unittest`**(`python -m unittest discover -s services/ai-api/tests_unit`) — pytest 는 venv·requirements 에 **없고** 새 의존을 들이지 않는다 · 구현 좌석 몫(`services/**`) | 32대 가정(`packages/ontology`) 은 **JSON 2본뿐 · 코드 0** 으로 반증 · 실제 판정 코드는 grep 으로 찾음(`re.compile(... DOC-[A-Z]{3,4}-\d{4}@r\d+#\d{3})`) · `EQ-*`·`WO-*` 형식 판정은 **리포에 없다**(케이스로 세울 대상이 아니다) |
 
 🔴 **U-08 이 드러낸 것** — 이 계획서를 쓸 때 나는 **「온톨로지 id 형식 판정이 `packages/ontology` 에 있을 것」이라 «가정»했다.** 열어 보니 **JSON 2본뿐**이다. ⇒ **계획서의 케이스도 «실물 대조» 대상이다** — 오늘 이 팀이 열세 번 밟은 형태(「실물을 안 보고 규격·상식으로 썼다」)를 **계획서에서 한 번 더** 밟았다. **U-08 은 「어디서 판정하는가」를 찾는 것부터가 케이스다.**
 
