@@ -1,0 +1,32 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "wall": "2026-09-04T15:40:57.575Z",
+  "columns": {
+    "direct_no_session": {
+      "appeared": true,
+      "staticChip": 1,
+      "staticWrapper": 1,
+      "sessionChip": 0,
+      "runModeBadge": "replay",
+      "sourceStatic": 1,
+      "cookies": []
+    },
+    "after_overview": {
+      "appeared": false,
+      "staticChip": 0,
+      "staticWrapper": 0,
+      "sessionChip": 1,
+      "runModeBadge": "replay",
+      "sourceStatic": 1,
+      "cookies": [
+        "fkt_sid",
+        "fkt_session"
+      ]
+    }
+  },
+  "verdict": {
+    "chipShowsOnDirectEntry": true,
+    "chipSuppressedAfterOverview": true,
+    "orderExplainsIt": true
+  }
+}
