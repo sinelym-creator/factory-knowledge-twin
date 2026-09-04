@@ -40,7 +40,7 @@ export function Placeholder({
       </div>
 
       <p className="mt-3 text-foot text-muted">
-        지금 서 있는 것은 전역 셸(세션 격리 · 리셋 · Live 감지 · Replay fallback)과 라우트 골격이다.
+        지금 준비된 것은 화면 뼈대입니다. 세션 분리·초기화·실시간 감지·재생 전환이 함께 서 있습니다.
       </p>
     </section>
   );

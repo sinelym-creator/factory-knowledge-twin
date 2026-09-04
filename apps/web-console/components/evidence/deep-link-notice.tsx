@@ -27,7 +27,7 @@ export function DeepLinkNotice({
         data-testid="deep-link-notice"
         data-session="present"
       >
-        세션 안에서 열렸다 — 조사 화면으로 오갈 수 있다.
+        이 조사에서 인용한 근거입니다. Overview 로 돌아갈 수 있습니다.
         {/* 🔴 「② 조사 화면으로」 링크를 만들지 않는다 — `?run=` 은 incidentId 를 말해 주지
             않고, 계약에도 run→incident 를 되짚는 조회가 없다. 그럴듯한 incidentId 를
             지어 넣으면 눌렀을 때 남의 화면이나 404 로 간다. 아는 자리로만 보낸다. */}
@@ -55,18 +55,16 @@ export function DeepLinkNotice({
       data-session="absent"
     >
       <p className="text-body-c">
-        🔗 <span className="text-ai">세션 없이 «열람만»</span> 열린 화면이다.
+        🔗 <span className="text-ai">열람 전용</span>으로 열린 화면입니다.
       </p>
       <p className="mt-1 text-foot text-muted">
-        계약 v0.1.6 의 읽기 전용 예외 2라우트(<span className="id">GET /evidence/{"{id}"}</span> ·{" "}
-        <span className="id">GET /documents/{"{docId}"}</span>)만 세션 없이 답한다. 조사 실행·작업지시
-        초안·승인 이력은 세션 «소유» 자원이라 이 화면에서는 열리지 않는다 — 비어 있는 것이
-        아니라 이 경로에 없는 것이다.
+        근거와 문서는 세션 없이도 보실 수 있습니다. 조사 실행·작업지시 초안·승인 이력은
+        세션에 속한 자료라 이 화면에서는 열리지 않습니다.
       </p>
       {runId && (
         <p className="mt-1 text-foot text-muted">
-          링크에 <span className="id">?run={runId}</span> 이 붙어 있지만 무세션에서는 뜻이 없다 —
-          run 은 발급 세션의 것이고, 남의 세션 자원은 존재조차 숨긴다(404).
+          링크에 조사 번호가 붙어 있지만 이 화면에서는 조사 결과를 열 수 없습니다. 조사는
+          시작한 세션에서만 보실 수 있습니다.
         </p>
       )}
       <p className="mt-2 text-foot">

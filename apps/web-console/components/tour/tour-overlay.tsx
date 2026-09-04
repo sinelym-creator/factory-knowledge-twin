@@ -551,13 +551,13 @@ function TourStepView({
 
         {!onRoute && (
           <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn">
-            이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요.
+            이 단계는 다른 화면에서 이어집니다. 아래 버튼으로 이동해 주세요.
           </p>
         )}
         {missing && onRoute && (
           <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn" data-testid="tour-target-missing">
-            이 화면에서 가리킬 자리를 찾지 못했습니다 — 데이터가 아직 오지 않았거나 이 상태에는
-            없는 요소입니다. 건너뛰고 계속할 수 있습니다.
+            이 화면에서 가리킬 자리를 찾지 못했습니다. 데이터가 아직 오지 않았거나 지금 상태에는
+            없는 요소입니다. 건너뛰고 계속하실 수 있습니다.
           </p>
         )}
 

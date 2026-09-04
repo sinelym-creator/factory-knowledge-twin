@@ -101,7 +101,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
        미연결 배지가 스포트라이트되는 최악 조합도 같이 사라진다. */
     target: null,
     title: "둘러보기를 시작합니다",
-    body: "알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따라갑니다. 이 화면의 값은 전부 synthetic 데이터이고, 둘러보기는 녹화된 재생본으로만 돕니다.",
+    body: "알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따라갑니다. 이 화면의 값은 모두 시연용으로 만든 가상 데이터이고, 둘러보기는 녹화된 재생본으로만 진행됩니다.",
     advance: "next",
   },
   {
@@ -109,8 +109,8 @@ export const TOUR_STEPS: readonly TourStep[] = [
     id: "alarm",
     route: "/overview",
     target: "alarm-card",
-    title: "알람은 «울린 행»의 값이 앵커다",
-    body: "임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 울린 그 알람 행의 값입니다 — 둘이 다를 수 있어서 화면은 울린 값을 씁니다.",
+    title: "알람은 울린 그 행의 값이 기준입니다",
+    body: "임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 울린 그 알람 행의 값입니다. 둘이 다를 수 있어서 화면은 울린 값을 씁니다.",
     advance: "next",
   },
   {
@@ -137,7 +137,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     route: "/incidents/",
     target: "candidates",
     title: "후보마다 근거 ID 가 붙는다",
-    body: "화면의 모든 주장은 근거로 되돌아갈 수 있습니다. 근거 칩을 누르면 그 원본으로 갑니다 — 다음 스텝에서 직접 눌러 봅니다.",
+    body: "화면의 모든 주장은 근거로 되돌아갈 수 있습니다. 근거 칩을 누르면 그 원본으로 갑니다. 다음 걸음에서 직접 눌러 보세요.",
     advance: "next",
   },
   {
@@ -166,7 +166,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     route: "/evidence/",
     target: null,
     title: "AI 는 제안까지, 승인은 사람이",
-    body: "조사 결과로 작업지시서 «초안»이 나옵니다. 초안은 사람이 승인해야 효력이 생깁니다 — 이 콘솔은 결정을 대신하지 않습니다.",
+    body: "조사 결과로 작업지시서 초안이 나옵니다. 초안은 사람이 승인해야 효력이 생깁니다. 이 콘솔은 결정을 대신하지 않습니다.",
     advance: "next",
   },
   {

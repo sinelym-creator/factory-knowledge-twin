@@ -85,8 +85,8 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
       {state.steps.length === 0 ? (
         <p className="mt-4 text-body-c text-muted">
           {waiting
-            ? "아직 계획이 오지 않았습니다 — 첫 이벤트를 기다리는 중입니다."
-            : "이 조사의 단계를 받지 못했습니다 — 위의 사유를 보십시오."}
+            ? "아직 계획이 오지 않았습니다. 첫 소식을 기다리는 중입니다."
+            : "이 조사의 단계를 받지 못했습니다. 위의 안내를 확인해 주세요."}
         </p>
       ) : (
         <ol className="relative mt-4 space-y-2 pl-8">
@@ -128,7 +128,7 @@ export function RunTimeline({ state, waiting = true }: { state: RunState; waitin
                     {s.state === "running" && "진행중…"}
                     {s.state === "pending" && "대기"}
                     {/* 🔴 「완료」로 접지 않는다 — 이 단계는 끝나지 않았다(D-1). */}
-                    {s.state === "halted" && "중단됨 — 이 단계가 도는 중에 조사가 끝났습니다"}
+                    {s.state === "halted" && "중단됨 · 이 단계가 진행되는 중에 조사가 끝났습니다"}
                     {s.state === "done" && (
                       <>
                         {s.summary ?? "완료"} · <span className="id">{ms(s.elapsedMs)}</span>
@@ -248,8 +248,8 @@ export function CandidateList({
         const synthesis = state.steps.find((s) => s.step === "synthesize")?.synthesis;
         return synthesis?.axis === "live-rejected" && synthesis.rejectedReason ? (
           <p className="mt-1 text-xs text-warn" data-testid="synthesis-rejected-reason">
-            live 응답을 근거 결속 가드가 전량 거부했습니다 — {synthesis.rejectedReason}. 아래
-            순위는 결정적 집계입니다.
+            AI 가 쓴 종합 문장이 근거를 인용하지 못해 전량 거부되었습니다.
+            ({synthesis.rejectedReason}) 아래 순위는 집계로 낸 결과입니다.
           </p>
         ) : null;
       })()}
@@ -265,9 +265,9 @@ export function CandidateList({
       ) : state.candidates.length === 0 ? (
         <p className="mt-2 text-sm text-muted">
           {state.status === "running"
-            ? "조사가 아직 후보를 내지 않았습니다 — 종합 단계에서 옵니다."
+            ? "조사가 아직 후보를 내지 않았습니다. 종합 단계에서 나옵니다."
             : state.status === "failed"
-              ? "조사가 중단되어 후보가 나오지 않았습니다 — 위의 사유를 보십시오."
+              ? "조사가 중단되어 후보가 나오지 않았습니다. 위의 안내를 확인해 주세요."
               : "이 조사는 후보를 내지 않았습니다."}
         </p>
       ) : (
@@ -380,7 +380,7 @@ export function EvidenceStrip({
       {shown.length === 0 ? (
         <p className="mt-4 text-body-c text-muted">
           {state.evidence.length === 0
-            ? "아직 근거가 없습니다 — 조사가 진행되며 여기에 쌓입니다."
+            ? "아직 근거가 없습니다. 조사가 진행되면 여기에 쌓입니다."
             : "이 kind 의 근거가 없습니다."}
         </p>
       ) : (
