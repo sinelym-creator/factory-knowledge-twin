@@ -68,3 +68,81 @@ node tests/web/_promo9_scenario.mjs --base=https://factory-knowledge-twin.vercel
 curl -s -o /dev/null -D - -w '%{remote_ip}' https://factory-knowledge-twin.vercel.app/api/health
 curl -s https://factory-knowledge-twin.vercel.app/documents/NOSUCHDOC | grep -o 'data-why="[^"]*"'
 ```
+
+---
+
+## 5. 축 ④ — Live 조사 1회 (구독 사용 **1회** · 운영자 재가 14:10 · 새 컨테이너 `a8e6d66b`)
+
+`RUN-9f8ac2c56acd` · 전 이벤트 `mode="live"` · `/api/live/status` `online:true`(05:28:31Z) · `mode-badge` = 「◉LIVE」.
+
+### 🔴 벽시계는 **이벤트 ts** 로 잰다 — 내 클릭은 t0 가 아니었다
+
+진입 직후 이미 `run-status`=**「조사중」**, 커서 **31/31** 이었다. 즉 조사는 **시나리오 진입에서 자동 시작**했고
+내 클릭(`run-question`)은 시작 신호가 아니었다. 내가 클릭 기준으로 잰 **9.13초는 틀린 값**이다.
+
+| | 값 |
+|---|---|
+| `run.started` | `2026-09-04T05:28:39.313Z` |
+| `run.completed` | `2026-09-04T05:28:52.142Z` |
+| **start→complete(실측)** | **12.83 s** |
+| 대상 자기 신고 `totalElapsedMs` | **12831 ms** — 내 산식과 **일치**(교차 검증) |
+
+### 단계 5개 (`step.started`→`step.completed` ts 차)
+
+| 단계 | 소요 |
+|---|---|
+| `structured` | 0.00 s |
+| `vector` | 0.35 s |
+| `graph` | 0.01 s |
+| **`synthesize`** | **12.44 s** — 전체의 97% |
+| `draft_work_order` | 0.00 s |
+
+🔴 발주문의 「`synthesis` 이벤트」라는 타입은 **없다**. 실제 타입은
+`run.started`·`plan.updated`·`step.started`·`step.evidence`·`step.progress`·`step.completed`·`run.completed`
+(총 38건 · `step.evidence` 19). 이름을 지어내지 않고 있는 것으로 적는다.
+
+### 인용이 run 근거집합 «안»인가 (거부 발동 축)
+
+| | 값 |
+|---|---|
+| run 근거집합(`step.evidence` 전수) | **19건** — `record` 9 · `doc-chunk` 5 · `graph-path` 5 |
+| `citedEvidenceIds` distinct | **9건** |
+| 🔴 **집합 «밖» 인용** | **0건** ⇒ 거부 **미발동**(0/1) |
+
+`model` = **`claude-opus-5`**(화면 「◉live 합성 claude-opus-5」). 후보 **2건**(payload 기준) ·
+`workOrderDraftId` = `WOD-ffb54e51632a`.
+
+**관측(판정 아님)** — 1순위 후보의 `evidenceIds` 에 `FM-BRG-WEAR`(고장모드 id)가 들어 있고 이것은 근거집합
+19건에 없다. 고장모드는 그래프 노드라 «근거»로 볼 여지가 있어 결함으로 적지 않는다 — 밖에서는 의도를 못 가른다.
+
+### 경로 — WS 가 아니라 폴링
+
+`wss://…/api/ws/runs/RUN-…` 핸드셰이크 **404** ×5 → **폴링 폴백**. WS 프레임 **0**.
+`run-polling` 표지: 조사 중 **있음** → 완료 후 **없음**. 콘솔 오류 5건 = **전부 이 WS 404**(기지 관측 O-4).
+
+### 화면이 그렸는가
+
+근거 스트립 「전체 19 · record 9 · doc-chunk 5 · graph-path 5」 — **이벤트 계수와 일치** ·
+근거 카드 DOM 24 · 원인 후보에 순위·`failureModeId`·`confidenceNote`·근거 문장 3개가 그려졌다.
+
+## 6. REPLAY 완주 (같은 run · 구독 추가 사용 **0**)
+
+`38/38 이벤트 · seq 37` → `replay-restart` → **`0/38`** → `replay-play` → **`38/38 · seq 37`** (9.0 s) ⇒ **완주 ✓**.
+🔴 앞서 REPLAY 를 못 잰 이유가 여기서 해소된다 — 되감을 이벤트가 «있는» run 이 필요했다.
+
+## 7. 계측기 자수 (내 손 · 2건 전부 내 것)
+
+1. **1차 시도는 조사를 시작조차 못 했다.** 컨테이너 재생성 직후 `/overview` 가 `overview-loading` 인 채
+   내 **고정 4초**를 넘겼고, 그때 `start-from-alarm` 은 아직 없었다. 진입 불발 → `runId=null` →
+   폴링이 **`/api/runs/null/events`** 를 두드려 **404 5건**. 그 404 는 **내 그물의 것**이다.
+   「콘솔 오류 5건」으로 올렸으면 없는 대상 결함을 회부했다. ⇒ 손잡이가 «나타날 때까지» 대기 +
+   **`runId` 없으면 폴링 금지하고 `exit 2`**(무대 미성립은 빨강이 아니다). 구독 사용 0으로 끝났다.
+2. **근거집합 추출기가 0을 냈다.** payload 가 `payload.evidence.evidenceId` 로 한 겹 더 들어가는데 그 층을
+   안 봤다. 집합이 0이면 **모든 인용이 «밖»으로 보인다** — 하마터면 「근거집합 밖 인용 9건」을
+   P0 으로 회부할 뻔했다. 층을 고치자 **0건**이 나왔다. **빈 집합과의 비교는 비교가 아니다.**
+
+## 8. 안 잼 (이름과 함께)
+
+- 상류 단절·`HTTP 503` 열의 D-51 문면(공개면엔 자극 무대가 없다) · D-52 **강제 열**(실제 구형 엔진) · 터치 축
+- **혼잡 실자극**(D-49 는 존재 판정만) · Live **재시도·연속 실행**(1회만 재가) · 세션 상한 계수 거동
+- `TimeoutError`·`AbortError` 사유 열 · run 실패·타임아웃 경로(이번 회차는 성공했다)
