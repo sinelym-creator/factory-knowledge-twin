@@ -189,6 +189,15 @@ function New-ServiceVenv([string]$service) {
     return $py
 }
 
+# 🔴 파이썬 단의 stdout 인코딩을 «먼저» 고정한다. 실측(09-04 09:25 · 이 스크립트 1회차):
+#    `build_projection.py` 는 투영을 «끝내고»(노드 309·관계 448) 요약을 찍다가 죽었다 —
+#    `UnicodeEncodeError: 'cp949' codec can't encode character '—'`. 콘솔 코드페이지가
+#    CP949 면 em dash 한 글자가 rc 1 을 만든다. 🔴 일이 실패한 게 아니라 «일을 보고하다» 죽은
+#    것이라, 데이터는 들어가 있는데 1커맨드는 실패로 끝난다 — 가장 헷갈리는 형태의 빨강이다.
+#    여기서 고치는 것은 «이 경로»뿐이다. 손으로 runbook 6단을 돌리는 사람은 여전히 걸린다
+#    (뿌리는 services/ 의 print 라 이 티켓의 scope 밖 · 별건으로 회부).
+$env:PYTHONIOENCODING = 'utf-8'
+
 # 🔴 색인·투영은 «호스트»에서 돌고 컨테이너 밖에서 DB 를 본다 — 그래서 포트를 명시해야 한다.
 #    안 주면 실패하지 않고 기본 5434, 즉 «다른 스택»을 색인한다(README 가 경고하는 자리).
 $env:PGHOST = '127.0.0.1'; $env:PGPORT = "$PostgresPort"
