@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+
+import { useTourAllowed } from "@/components/tour/tour-allowed";
 
 /**
  * 앱바 「튜토리얼」 — 안내·투어 다시 열기.
@@ -22,8 +25,30 @@ import Link from "next/link";
 export const TOUR_OPEN_EVENT = "fkt:tour-open";
 
 export function TourReopen() {
+  /**
+   * 🔴 **D-66 — 투어가 열려 있는 동안 이 버튼이 눌리지 않았다.**
+   *
+   * 오버레이는 「허용 노드로 가는 조상 경로는 통과시키고 그 형제만 `inert` 로 덮는다」
+   * (`tour-overlay.tsx`). 안내 카드가 닫혀 있으면 허용 노드가 **0** 이라 통과시킬 경로도
+   * 없고, 앱바를 품은 `app-shell.tsx:68` 의 래퍼가 통째로 `inert` 아래 들어간다 —
+   * 실측에서 그 래퍼가 포인터를 가로챘다(`intercepts pointer events` · 대조군도 동일).
+   *
+   * 🔴 고치는 방법은 안내 카드가 이미 쓰는 것과 **같은 장치**다(`overview-body.tsx:515`).
+   *    새 예외를 만들지 않고 자기를 «허용»으로 등록한다 — 투어가 안 열려 있으면 등록은
+   *    아무 일도 하지 않고, 열리면 이 버튼으로 가는 조상 경로가 통과된다.
+   *    출구는 열려 있어야 한다: 투어를 처음부터 다시 보려는 사람이 그 투어에 갇히지 않게.
+   */
+  const { registerAllowed } = useTourAllowed();
+  const ref = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    return registerAllowed(el);
+  }, [registerAllowed]);
+
   return (
     <Link
+      ref={ref}
       href="/overview?intro=1&tour=1"
       /* 🔴 히트 44 는 «레이아웃 박스»로 만든다 — `::before` 를 좌우로 넓히면 요소가 그만큼
          밖으로 삐져나가 뷰포트 가장자리에서 문서가 넘친다(D-33 실측: coarse 60/60
