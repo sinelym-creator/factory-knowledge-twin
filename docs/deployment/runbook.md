@@ -212,7 +212,7 @@ pwsh data/seed.ps1                            # 3) synthetic seed 생성 → 적
 python -m venv services/indexer/.venv
 services\indexer\.venv\Scripts\python.exe -m pip install -r services/indexer/requirements.txt
 $env:PYTHONUTF8='1'
-$env:PGPORT='<이 스택의 게시 포트>'           # 🔴 아래 「포트 명시 의무」
+$env:FKT_POSTGRES_DSN='host=127.0.0.1 port=<이 스택의 게시 포트> user=fkt password=fkt_local_dev dbname=fkt'   # 🔴 아래 「대상 명시 의무」(D-72)
 services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py
 services\indexer\.venv\Scripts\python.exe services\indexer\verify_index.py
 
@@ -292,10 +292,13 @@ PostgreSQL = 권위 원본 · pgvector = 파생). 그래서 `seed.ps1` 이 아�
 「seed 계수 · neo4j 대조 · health ok」 **셋 다 벡터 0 을 못 본다** — 원본을 세는 축과 파생을
 세는 축이 다르기 때문이다.
 
-- 🔴 **포트 명시 의무.** `build_index.py` 의 DSN 기본 포트는 **5434**(`dsn_from_env`)이고 compose 는
-  `"${POSTGRES_PORT:-5434}:5432"` 다. 병렬 스택에서 포트를 안 주면 **다른 스택을 색인한다** —
-  실패하지 않고 «엉뚱한 DB 가 초록이 된다». `PGPORT`(또는 `--dsn`)를 반드시 명시하고, 값은
-  `docker port <postgres 컨테이너>` 로 **실측해서** 넣는다. 집행 사례: `PGPORT=5536`.
+- 🔴 **대상 명시 의무(D-72 · 09-04).** `build_index.py`·`verify_index.py`·`build_projection.py` 는 대상을
+  **`FKT_POSTGRES_DSN`(env) 또는 `--dsn`** 로만 정한다 — **기본 포트는 없다**(옛 기본 5434 와
+  `PGHOST`/`PGPORT` 조각 조립은 제거됨 · 둘 다 없으면 DB 를 건드리기 «전» rc 2 +
+  「대상 DSN 이 없다 — FKT_POSTGRES_DSN 또는 --dsn 을 주라」). 사유 = 파생 색인을 통째로 지우고
+  다시 만드는 명령의 «대상»이 기본값에 맡겨져 있으면 병렬 스택에서 **다른 스택을 지운다**(리바이2 45대
+  실측 · 5434 가 비어 있어 무사). compose 는 여전히 `"${POSTGRES_PORT:-5434}:5432"` 이므로 DSN 의
+  port 는 `docker port <postgres 컨테이너>` 로 **실측해서** 넣는다. 집행 사례: `port=5536`.
 - 🔴 **호스트에서 돈다.** ai-api 이미지에는 indexer 소스가 없다(`Dockerfile` 은 `COPY app ./app`
   뿐) — 컨테이너 안 `python -m …` 형태는 **없다**. 호스트의 `services/indexer/.venv` 를 쓴다.
 - **부작용**: `DELETE FROM document_chunk` → 전량 INSERT 를 **단일 트랜잭션**으로 한다(UPDATE 아님).
