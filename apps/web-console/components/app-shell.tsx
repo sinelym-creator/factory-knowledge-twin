@@ -97,13 +97,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   className="fkt-pill id bg-fill text-cap text-muted"
                   title={
                     session.origin === "api"
-                      ? "이 세션의 변경은 다른 방문자에게 보이지 않습니다"
-                      : "이 세션의 변경은 다른 방문자에게 보이지 않습니다 · 🔴 아직 백엔드에 등록되지 않은 임시 세션입니다"
+                      ? `내 세션 ${chipLabel(session)} · 이 세션에서 바꾼 것은 다른 방문자에게 보이지 않습니다`
+                      : `내 세션 ${chipLabel(session)} · 이 세션에서 바꾼 것은 다른 방문자에게 보이지 않습니다 · 아직 백엔드에 등록되지 않은 임시 세션입니다`
                   }
                   data-testid="session-chip"
                   data-origin={session.origin}
                 >
-                  {chipLabel(session)}
+                  내 세션 <span className="id">{chipLabel(session)}</span>
                   {session.origin === "pending" && <span className="ml-1 text-warn">*</span>}
                 </span>
               )}

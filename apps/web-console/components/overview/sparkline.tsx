@@ -44,7 +44,7 @@ export function Sparkline({
   if (why) {
     return (
       <p className="mt-2 h-8 text-foot text-warn" title={`센서 추세를 못 불렀다: ${why}`}>
-        — 추세 못 가져옴
+        추세를 가져오지 못했습니다
       </p>
     );
   }

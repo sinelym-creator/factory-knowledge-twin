@@ -31,7 +31,7 @@ export function CitedBody({
     return (
       <section data-testid="cited-body" data-highlight="out-of-range">
         <p className="rounded border border-danger/50 bg-panel p-3 text-body-c text-danger">
-          🔴 인용 좌표가 본문 범위 밖이다 — 강조를 그리지 않는다.
+          인용 위치가 본문 범위를 벗어나 강조를 표시하지 않습니다.
         </p>
         <p className="id mt-1 text-foot text-muted">
           요청 좌표 [{view.start}, {view.end}) · 본문 길이 {view.bodyLength}
@@ -46,7 +46,7 @@ export function CitedBody({
     return (
       <section data-testid="cited-body" data-highlight="none">
         <p className="mb-2 text-foot text-muted">
-          인용 구간 지정 없음 — 문서 전문을 그대로 보여 준다.
+          인용 구간이 지정되지 않아 문서 전문을 보여 드립니다.
         </p>
         <BodyText>{body}</BodyText>
       </section>
@@ -68,7 +68,7 @@ export function CitedBody({
         <span className="id">
           offset [{start}, {end}) · {end - start}자 / 본문 {body.length}자
         </span>
-        <span>— 원문에서 잘라 낸 구간이다(별도 인용문을 그리지 않는다).</span>
+        <span>원문 중 인용된 구간입니다.</span>
       </p>
       <BodyText>
         {view.before}

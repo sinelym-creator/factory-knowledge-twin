@@ -33,7 +33,7 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
     setResult(
       reply.state === "ok"
         ? "세션을 초기 상태로 되돌렸습니다."
-        : `초기화하지 못했습니다 — 백엔드 미연결(${reply.why}).`,
+        : `초기화하지 못했습니다. 서버에 연결하지 못했습니다. (${reply.why})`,
     );
   }
 

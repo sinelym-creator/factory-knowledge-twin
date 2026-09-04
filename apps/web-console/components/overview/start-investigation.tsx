@@ -106,7 +106,7 @@ type Refusal = { code: string | null; text: string; offerReplay: boolean };
  *    화면이 「30초 뒤에」를 지어내면 그 숫자는 아무 근거가 없고, 방문자는 그것을 사실로 읽는다.
  */
 function describe(code: string | undefined, why: string, retryAfterSec: number | undefined): Refusal {
-  const after = retryAfterSec !== undefined ? ` — ${retryAfterSec}초 뒤에 다시 시도할 수 있습니다` : "";
+  const after = retryAfterSec !== undefined ? ` ${retryAfterSec}초 뒤에 다시 시도할 수 있습니다.` : "";
   if (code === "live_capacity_exhausted") {
     return {
       code,

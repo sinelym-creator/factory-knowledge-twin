@@ -52,8 +52,7 @@ export default async function DocumentPage({
         <span className="id text-body-c text-ai">{docId}</span>
       </div>
       <p className="mt-1 text-foot text-muted" data-testid="registry-disambiguation">
-        🔴 P1 <span className="id">/documents</span> SSOT Registry(revision·hash·drift 목록)와
-        별개 — <span className="text-ink">단건 열람 전용</span> 화면이다.
+        <span className="text-ink">문서 한 건을 열람하는 화면</span>입니다.
       </p>
     </header>
   );
@@ -74,15 +73,15 @@ export default async function DocumentPage({
             data-testid="highlight-rejected"
             data-code={reply.detail?.code}
           >
-            <p className="text-body-c text-warn">인용 강조 요청이 거절됐다 — 문서가 없는 것은 아니다.</p>
+            <p className="text-body-c text-warn">인용 구간을 표시하지 못했습니다. 문서는 정상적으로 열렸습니다.</p>
             <p className="id mt-2 text-foot">
               {reply.detail?.code ?? "400"} · {reply.detail?.message ?? reply.why}
             </p>
             <p className="mt-2 text-foot text-muted">
               {reply.detail?.code === "highlight_mismatch"
-                ? "요청한 chunk 가 이 문서의 것이 아니다(형식 위반이거나 다른 문서)."
-                : "이 문서의 chunk id 형식이지만 그 좌표가 실재하지 않는다 — 색인되지 않은 revision 이거나 범위 밖 index 다."}{" "}
-              강조를 조용히 버리고 문서만 보여 주면, 강조를 요청한 쪽은 왜 없는지 알 수 없다.
+                ? "요청하신 인용 구간이 이 문서의 것이 아닙니다."
+                : "이 문서의 인용 구간이지만 해당 위치를 찾을 수 없습니다."}{" "}
+              문서 본문은 그대로 보여 드립니다.
             </p>
             <p className="mt-3 text-foot">
               <a

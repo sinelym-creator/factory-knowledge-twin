@@ -172,7 +172,7 @@ export default async function IncidentPage({
             두 자리에서 갈린다(같은 것을 두 번 만들지 않는다). */}
         {!run && (
           <p className="mt-2 text-foot text-muted" data-testid="ttae-row-idle">
-            이 화면은 아직 조사를 돌리지 않았습니다 — Overview의 「조사 시작」이 여기로 옵니다.
+            이 화면은 아직 조사를 시작하지 않았습니다. Overview 의 「조사 시작」을 누르면 여기로 옵니다.
             <span className="ml-2">
               │ 같은 조사를 사람이 수작업으로: 45분{" "}
               <span className="fkt-pill text-warn">잠정 목표 · 미실측</span>
@@ -245,8 +245,8 @@ export default async function IncidentPage({
               <p className="fkt-section-label">Agent 타임라인</p>
               <p className="mt-2 text-body-c">아직 조사를 돌리지 않았습니다.</p>
               <p className="mt-1 text-foot text-muted">
-                Overview 의 「조사 시작」이 <span className="id">?run=</span> 을 달고 여기로 옵니다 —
-                그때 단계·근거·경과가 이 자리에 섭니다.
+                Overview 의 「조사 시작」을 누르면 여기로 옵니다. 그때 단계·근거·경과가 이
+                자리에 나타납니다.
               </p>
             </section>
             <section className="min-w-0 flex-1 space-y-6">{context}</section>

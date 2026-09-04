@@ -93,9 +93,9 @@ function IndexBadge({ stale, indexed }: { stale: boolean; indexed: boolean }) {
         className="fkt-pill bg-fill"
         data-testid="index-badge"
         data-state="not-indexed"
-        title="계약 v0.1.1 — record 는 SSOT 를 직독하는 근거라 색인 신선도라는 축 자체가 없다. stale=false 는 상수이지 «신선 실증»이 아니다."
+        title="이 근거는 대장에서 바로 읽어 온 값이라 색인이 낡았는지 따질 대상이 아닙니다."
       >
-        ─ 색인 축 없음 (SSOT 직독)
+        ─ 대장에서 바로 읽음
       </span>
     );
   }
@@ -105,9 +105,9 @@ function IndexBadge({ stale, indexed }: { stale: boolean; indexed: boolean }) {
         className="rounded border border-warn/50 px-2 py-0.5 text-warn"
         data-testid="index-badge"
         data-state="stale"
-        title="색인이 현행 revision 과 어긋났거나(STALE), 온톨로지 버전을 확인하지 못했거나(ONTOLOGY_UNVERIFIED), 색인 빌드가 실패했다(BUILD_FAILED). 계약의 stale 은 boolean 1개라 «어느 쪽인지»는 말하지 못한다 — 6상태 노출은 Q-22(계약 v0.2 재론)."
+        title="검색 색인이 문서의 최신 판본을 아직 따라잡지 못했습니다. 원문은 정상이지만 검색 결과가 조금 늦을 수 있습니다."
       >
-        ⚠ STALE INDEX
+        ⚠ 검색 색인이 최신이 아님
       </span>
     );
   }
@@ -116,9 +116,9 @@ function IndexBadge({ stale, indexed }: { stale: boolean; indexed: boolean }) {
       className="rounded border border-ok/40 px-2 py-0.5 text-ok"
       data-testid="index-badge"
       data-state="fresh"
-      title="stale=false — 색인 신선도 뷰가 FRESH 를 «실증»했다. 계약의 보수 매핑상 FRESH 만 false 이므로(Q-22), 이 초록은 「모르는 값을 초록으로 흘린 것」이 아니다."
+      title="검색 색인이 문서의 최신 판본과 일치하는 것을 확인했습니다."
     >
-      ✓ 색인 최신 (FRESH 실증)
+      ✓ 검색 색인 최신
     </span>
   );
 }

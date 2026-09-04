@@ -186,7 +186,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
               {wo.procedures.length === 0 && <li className="text-foot text-muted">인용된 절차가 없습니다.</li>}
             </ul>
             <p className="mt-2 text-foot text-muted">
-              절차는 안전 조치의 «근거»라 편집할 수 없습니다.
+              절차는 안전 조치의 근거이므로 편집할 수 없습니다.
             </p>
           </div>
 
@@ -295,7 +295,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
 
           {wo.gaps.length > 0 && (
             <div className="fkt-card p-5" data-testid="wo-gaps">
-              <p className="text-foot text-muted">초안이 스스로 말하는 «빈 곳»</p>
+              <p className="text-foot text-muted">초안이 스스로 밝힌 빈 곳</p>
               <ul className="mt-1 list-disc pl-5 text-body-c">
                 {wo.gaps.map((g) => (
                   <li key={g}>{g}</li>
@@ -331,7 +331,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
       <section className="flex flex-wrap items-center gap-2 fkt-card p-5" data-testid="wo-actions">
         <span className="text-foot text-muted" data-testid="wo-save-state" data-changes={changes}>
           {readOnly
-            ? "종단 상태 — 편집할 수 없습니다."
+            ? "최종 상태라 편집할 수 없습니다."
             : saved === "saving"
               ? "저장 중…"
               : saved === "error"
@@ -380,7 +380,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
           {/* 🔴 이력 «조회» 라우트가 없다(실측) — approve/reject 가 주는 auditId 뿐이다.
               남아 있는 척하지 않고 한계를 화면이 말한다. */}
           <p className="mt-1 text-foot text-muted">
-            이 목록은 이 화면이 열려 있는 동안만 남습니다 — 새로고침하면 사라집니다(서버에 이력 조회
+            이 목록은 화면이 열려 있는 동안만 남습니다. 새로고침하면 사라집니다(서버에 이력 조회
             경로가 없습니다).
           </p>
         </section>

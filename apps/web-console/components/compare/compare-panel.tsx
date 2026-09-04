@@ -91,7 +91,7 @@ export function ComparePanel({
         </label>
         {questions.length === 0 ? (
           <p className="mt-1 text-body-c text-warn">
-            승인 질문 목록을 가져오지 못했습니다 — 목록 없이 임의 질문을 만들지 않습니다.
+            승인된 질문 목록을 가져오지 못했습니다. 목록 없이 임의로 질문을 만들지 않습니다.
           </p>
         ) : (
           <select
@@ -144,18 +144,18 @@ export function ComparePanel({
 
         {!usable && questions.length > 0 && (
           <p className="mt-2 text-foot text-warn" data-testid="compare-unusable">
-            이 세션은 백엔드에 등록되지 않아 비교를 실행할 수 없습니다 — 본문 <span className="id">sessionId</span> 가
-            쿠키와 같아야 서버가 받습니다(계약 v0.1.6).
+            이 세션은 서버에 등록되지 않아 비교를 실행할 수 없습니다. 화면을 새로고침해
+            다시 입장해 주세요.
           </p>
         )}
         {slow && busy && (
           <p className="mt-2 text-foot text-muted" role="status" data-testid="compare-warming">
-            검색 엔진을 준비하는 중입니다 — 첫 실행은 임베딩 모델을 올리느라 오래 걸립니다(실측 30초+ · 이후 1초 미만).
+            검색 엔진을 준비하는 중입니다. 첫 실행은 준비 시간이 필요해 30초 이상 걸릴 수 있고, 그 뒤에는 1초 안에 끝납니다.
           </p>
         )}
         {why && (
           <p className="mt-2 text-foot text-warn" role="status" data-testid="compare-error">
-            비교하지 못했습니다 — {why}
+            비교하지 못했습니다. ({why})
           </p>
         )}
       </section>
@@ -203,7 +203,7 @@ export function ComparePanel({
 
       {/* 🔴 측정-주장 경계 각주 — «상시» 노출(baseline §0.2 · wireframes §5) */}
       <p className="fkt-card px-4 py-3 text-foot text-warn" data-testid="compare-footnote">
-        🔴 이 수치는 이 실행 1회의 관측치입니다 — 정식 벤치마크(Target/Actual)는 Evaluation에서 냅니다.
+        이 수치는 이번 실행 1회의 관측값입니다. 정식 성능 측정은 평가 화면에서 확인하실 수 있습니다.
         여기의 순위·score·소요는 전략의 우열을 판정하지 않습니다.
       </p>
     </div>

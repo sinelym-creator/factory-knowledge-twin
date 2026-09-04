@@ -300,8 +300,8 @@ export function RunConsole({
          */
         setPollNote(
           r.status === 429
-            ? `서버가 조회 빈도를 제한했습니다 — 주기 조회를 멈춥니다${r.retryAfterSec !== undefined ? ` (${r.retryAfterSec}초 뒤 다시 열어 보세요)` : ""}.`
-            : `주기 조회가 실패했습니다 — ${r.why}`,
+            ? `서버가 조회 빈도를 제한해 주기 조회를 멈춥니다${r.retryAfterSec !== undefined ? ` (${r.retryAfterSec}초 뒤 다시 열어 보세요)` : ""}.`
+            : `주기 조회가 실패했습니다. (${r.why})`,
         );
         if (r.status === 429) {
           stopped = true;
@@ -375,7 +375,7 @@ export function RunConsole({
     setStopping(true);
     const r = await stopRunBrowser(runId);
     setStopping(false);
-    if (r.state !== "ok") setNote(`중지하지 못했습니다 — ${r.why}`);
+    if (r.state !== "ok") setNote(`중지하지 못했습니다. (${r.why})`);
   }, [runId]);
 
   return (
@@ -508,7 +508,7 @@ export function RunConsole({
             서버가 사람에게 하는 말이다. 둘 다 그대로 둔다. */}
         {state.failure && (
           <p className="mt-2 fkt-pill text-warn mt-3 px-3 py-2 &#124;&#124; " role="status" data-testid="run-failed" data-code={state.failure.code}>
-            🔴 조사가 중단됐습니다 — {state.failure.message} (<span className="id">{state.failure.code}</span>)
+            조사가 중단됐습니다. {state.failure.message} (<span className="id">{state.failure.code}</span>)
             {/* 🔴 **제안은 «동작»이어야 한다**(T4-2b ⓖ · §6.2 빈 화면 0). 앞판은 「서버가
                 replay 로의 전환을 제안했습니다」라는 «문장»이었다 — 방문자는 그 말을 읽고도
                 무엇을 눌러야 할지 모른 채 중단된 화면에 남는다. 정적 재생본은 셸 자산이라
@@ -532,7 +532,7 @@ export function RunConsole({
         )}
         {state.stopNote && (
           <p className="mt-2 text-foot text-muted" role="status" data-testid="run-stopped-note">
-            중지됨 — {state.stopNote}
+            중지됨 · {state.stopNote}
           </p>
         )}
 
@@ -547,7 +547,7 @@ export function RunConsole({
               ◉
             </span>
             <span className="text-muted">
-              서버가 다시 응답합니다 — 이 화면은 정적 재생본이고, 되감은 자리는 그대로 남습니다.
+              서버가 다시 응답합니다. 이 화면은 녹화 재생본이고, 되감은 자리는 그대로 남습니다.
             </span>
             <Link
               href="/"
@@ -564,7 +564,7 @@ export function RunConsole({
             🔴 종단에 닿으면 이 줄은 사라진다 — 끝난 조사에 「진행 중」이 남으면 거짓이다. */}
         {streamUnavailable && !settledNow && !pollHalted && (
           <p className="mt-2 text-foot text-muted" role="status" data-testid="run-polling" data-interval-ms={POLL_INTERVAL_MS}>
-            실시간 스트림 대신 주기 조회로 진행 중입니다 — {POLL_INTERVAL_MS / 1000}초마다 서버에
+            실시간 연결 대신 주기 조회로 진행 중입니다. {POLL_INTERVAL_MS / 1000}초마다 서버에
             다시 묻습니다. 순번이 붙어 오므로 중복되거나 빠지지 않습니다.
           </p>
         )}
@@ -607,7 +607,7 @@ export function RunConsole({
         {isStatic ? (
           <span
             className="fkt-pill bg-fill px-3.5 py-1.5 text-muted opacity-60"
-            title="정적 재생본은 검색 전략 비교를 담지 않습니다 — 서버 계산이 필요합니다"
+            title="녹화 재생본에는 검색 전략 비교가 담겨 있지 않습니다. 서버 계산이 필요합니다"
             data-testid="to-compare-live-only"
           >
             전략 비교 (Live 전용)
