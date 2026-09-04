@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { liveStatus, subscribeCongestion } from "@/lib/contract";
+import { type RunCap, liveStatus, subscribeCongestion, subscribeRunCap } from "@/lib/contract";
 import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 
 /**
@@ -34,9 +34,20 @@ type State = {
   why: string | null;
   /** 최근 창 안에 «최종» 503 을 받은 축들 — 키는 경로다(축마다 따로 걷힌다). */
   congested: Record<string, Congestion>;
+  /**
+   * 🔴 **T7-38 — 세션 조사 상한(계약 v0.1.15)**. `null` 은 「아직 모른다」다 — 세션이 없거나
+   *    (입장 전·pending) 서버가 아직 답하지 않은 회차. 「0회 남았다」와 섞지 않는다.
+   */
+  runCap: RunCap | null;
 };
 
-const LiveContext = createContext<State>({ mode: "checking", checkedAt: null, why: null, congested: {} });
+const LiveContext = createContext<State>({
+  mode: "checking",
+  checkedAt: null,
+  why: null,
+  congested: {},
+  runCap: null,
+});
 
 const POLL_MS = 30_000; // §0: 30s polling
 /**
@@ -48,8 +59,25 @@ const POLL_MS = 30_000; // §0: 30s polling
 const CONGESTION_WINDOW_MS = 30_000;
 const CONGESTION_SWEEP_MS = 1_000;
 
-export function LiveStatusProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<State>({ mode: "checking", checkedAt: null, why: null, congested: {} });
+export function LiveStatusProvider({
+  children,
+  /**
+   * 🔴 **서버가 아는 세션 id**(`api` 출신만). 상태 폴링에 실어 보내면 서버가 그 세션의
+   *    조사 상한을 함께 답한다(계약 v0.1.15 · 선택 쿼리). 없으면 안 싣는다 — 그 회차의
+   *    응답은 v0.1.2 형상 그대로이고, 화면은 상한에 대해 아무 말도 하지 않는다.
+   */
+  sessionId = null,
+}: {
+  children: React.ReactNode;
+  sessionId?: string | null;
+}) {
+  const [state, setState] = useState<State>({
+    mode: "checking",
+    checkedAt: null,
+    why: null,
+    congested: {},
+    runCap: null,
+  });
 
   /**
    * 🔴 **거절을 조용히 삼키지 않는다**(D-49 판정선). `contract.ts` 의 되묻기 경로가 «최종»
@@ -93,7 +121,7 @@ export function LiveStatusProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     let alive = true;
     const tick = async () => {
-      const reply = await liveStatus();
+      const reply = await liveStatus("", sessionId);
       if (!alive) return;
       /* 🔴 혼잡 축은 이 폴링이 «건드리지 않는다» — 다른 사실이고, 걷히는 조건도 다르다. */
       setState((prev) =>
@@ -103,6 +131,10 @@ export function LiveStatusProvider({ children }: { children: React.ReactNode }) 
               mode: reply.data.online ? "live" : "replay",
               checkedAt: reply.data.checkedAt,
               why: null,
+              /* 🔴 서버가 방금 답한 것이 정본이다 — 조사 시작 헤더로 앞질러 갱신한 값도
+                 여기서 덮인다(창 만료로 «줄어드는» 축은 폴링만 볼 수 있다). 쿼리를 안 실은
+                 회차는 `runCap` 이 없고, 그때는 `null` = 「모른다」로 돌아간다. */
+              runCap: reply.data.runCap ?? null,
             }
           : { ...prev, mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why },
       );
@@ -113,7 +145,32 @@ export function LiveStatusProvider({ children }: { children: React.ReactNode }) 
       alive = false;
       clearInterval(id);
     };
-  }, []);
+  }, [sessionId]);
+
+  /**
+   * 🔴 **조사 시작 응답이 «즉시» 카운터를 움직인다**(계약 v0.1.15 「갱신 = 폴링 + 응답 헤더」).
+   *    폴링만이면 방금 쓴 1회가 최대 30초 뒤에 보인다 — 그 창의 방문자는 자기 클릭이 먹지
+   *    않았다고 읽는다.
+   */
+  useEffect(
+    () =>
+      subscribeRunCap((s) =>
+        setState((prev) => ({
+          ...prev,
+          runCap: {
+            limit: s.limit,
+            used: s.used,
+            remaining: s.remaining,
+            /* 🔴 헤더에 없는 두 칸은 «지어내지 않는다». `windowSec` 은 상수라 앞 값을 잇고,
+               `nextFreeInSec` 은 시각에 따라 변하는 값이라 **버린다** — 옛 값을 그대로 두면
+               화면이 「N분 뒤 회복」을 지난 숫자로 계속 말한다. 다음 폴링이 채운다. */
+            windowSec: prev.runCap?.windowSec ?? 0,
+            nextFreeInSec: null,
+          },
+        })),
+      ),
+    [],
+  );
 
   return <LiveContext.Provider value={state}>{children}</LiveContext.Provider>;
 }
@@ -173,6 +230,44 @@ export function ModeBadge() {
     >
       <span aria-hidden>{face.icon}</span>
       <span>{text}</span>
+    </span>
+  );
+}
+
+/**
+ * 🔴 **T7-38 — 「얼마나 썼고 몇 회 더 되는가」**(계약 v0.1.15 · 폐하 하명 09-04 14:14).
+ *
+ * 🔴 **LIVE 일 때만 선다.** REPLAY(`online:false`)·미연결·확인 중에는 표시하지 않는다 —
+ *    재생은 이 상한을 «쓰지 않으므로»(`session_cap.py` 머리말), 그 축에 상한을 말하면 화면이
+ *    「재생도 소모된다」는 없는 사실을 암시한다. 혼잡(503)은 다른 축이라 카운터를 끄지 않는다.
+ * 🔴 **상한 없음(`limit: 0` · `remaining: null`)이면 말하지 않는다.** 「무제한」이라고 적는
+ *    것은 운영자가 상한을 끈 형상을 방문자에게 보증하는 일이 되고, 다시 켜는 날 그 문구만
+ *    남는다. 할 말이 없으면 자리를 차지하지 않는다(§0 「조건부」).
+ * 🔴 **화면 신규 요소는 이것 하나다.** 배지의 `data-mode` 계약은 한 글자도 건드리지 않는다.
+ */
+export function RunCapCounter() {
+  const { mode, runCap } = useContext(LiveContext);
+  if (mode !== "live" || !runCap || runCap.remaining === null) return null;
+
+  const exhausted = runCap.remaining === 0;
+  /* 🔴 「N분 뒤」는 서버가 `nextFreeInSec` 으로 «말한» 회차에만 적는다 — 없으면 그 절을 뺀다
+     (`retryAfterSec` 규율과 같다: 화면이 시간을 지어내면 그 숫자는 서버가 하지 않은 말이다). */
+  const minutes =
+    runCap.nextFreeInSec === null ? null : Math.max(1, Math.ceil(runCap.nextFreeInSec / 60));
+  const text = exhausted
+    ? `상한 도달${minutes === null ? "" : ` · ${minutes}분 뒤 1회 회복`} · 재생은 계속`
+    : `조사 ${runCap.used}/${runCap.limit} · 남은 ${runCap.remaining}회`;
+
+  return (
+    <span
+      className={`fkt-pill bg-fill text-foot ${exhausted ? "text-warn" : "text-muted"}`}
+      title={`이 세션이 최근 ${Math.round(runCap.windowSec / 60)}분 동안 시작한 Live 조사 ${runCap.used}회 · 상한 ${runCap.limit}회`}
+      data-testid="run-cap-counter"
+      data-runcap-limit={runCap.limit}
+      data-runcap-used={runCap.used}
+      data-runcap-remaining={runCap.remaining}
+    >
+      {text}
     </span>
   );
 }

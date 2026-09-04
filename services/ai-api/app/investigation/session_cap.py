@@ -62,6 +62,33 @@ class SessionRunCap:
         self._prune(now)
         return None
 
+    def peek(self, session_id: str, now: float | None = None) -> dict[str, object]:
+        """지금 상태를 **읽기만** 한다 — 기록하지 않는다(계수 0).
+
+        🔴 `admit` 과 «다른 함수»여야 한다. 화면이 「몇 회 남았나」를 물을 때마다 한 번씩
+           세면, 보는 행위가 쓰는 행위가 되어 방문자는 아무것도 안 하고 상한에 닿는다.
+        🔴 그래서 여기서는 `_prune` 도 부르지 않는다 — 만료된 창을 «지우는» 것은 상태 변경이고,
+           읽기 경로가 상태를 바꾸면 두 호출의 결과가 순서에 따라 달라진다. 만료분은 아래처럼
+           «세지 않기»만 한다(다음 `admit` 이 실제로 지운다).
+        🔴 `limit <= 0` = 상한 없음(클래스 머리말) → `remaining`·`nextFreeInSec` 은 **None**.
+           0 을 넣으면 화면이 「0회 남음」으로 읽어 상한 없음이 상한 도달로 뒤집힌다.
+        """
+        now = time.monotonic() if now is None else now
+        if self.limit <= 0:
+            return {"limit": self.limit, "used": 0, "remaining": None, "next_free_sec": None}
+
+        hits = self._hits.get(session_id)
+        cutoff = now - self.window_sec
+        live = [t for t in hits if t > cutoff] if hits else []
+        used = len(live)
+        remaining = max(0, self.limit - used)
+        # 다음 한 자리가 비는 시각 = 가장 오래된 기록이 창 밖으로 나갈 때. 남은 자리가 있으면
+        # 기다릴 필요가 없으므로 None 이다 — 0 을 주면 「0초 뒤 회복」이라는 없는 말이 된다.
+        next_free = None
+        if remaining == 0 and live:
+            next_free = max(1, math.ceil(live[0] + self.window_sec - now))
+        return {"limit": self.limit, "used": used, "remaining": remaining, "next_free_sec": next_free}
+
     def _prune(self, now: float) -> None:
         """빈 창 정리 + LRU 상한. 접촉 시에만 돈다(주기 태스크 0 · 세션 저장소와 같은 방식)."""
         cutoff = now - self.window_sec
