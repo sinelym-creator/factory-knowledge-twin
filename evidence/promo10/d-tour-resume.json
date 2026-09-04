@@ -1,0 +1,318 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "at": "2026-09-04T08:00:22.340Z",
+  "targetStep": 5,
+  "columns": [
+    {
+      "label": "target#1",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "https://factory-knowledge-twin.vercel.app/overview",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"dismissed\",\"step\":5}",
+      "reopenClicked": true,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target#2",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "https://factory-knowledge-twin.vercel.app/overview",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"dismissed\",\"step\":5}",
+      "reopenClicked": true,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target#3",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "https://factory-knowledge-twin.vercel.app/overview",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"dismissed\",\"step\":5}",
+      "reopenClicked": true,
+      "reopenNavigated": true
+    },
+    {
+      "label": "target-reload",
+      "tamperToStep": null,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "index": 5,
+        "stepId": "evidence",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}",
+        "text": "근거 칩을 직접 눌러 보세요 후보 카드 안의 근거 ID 를 누르면 그 근거 화면이 열립니다. 눌러야 다음으로 넘어갑니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 6/9 건너뛰기 직접 눌러 보세요",
+        "hasGoto": 0,
+        "hasNext": 0,
+        "hasAwaitClick": 1,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-preserved",
+      "reachedTarget": true,
+      "urlAtTarget": "https://factory-knowledge-twin.vercel.app/overview",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"dismissed\",\"step\":5}",
+      "reopenClicked": true,
+      "reopenNavigated": true
+    },
+    {
+      "label": "control-step0",
+      "tamperToStep": 0,
+      "steps": [
+        {
+          "index": 0,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 1,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 2,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 3,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        },
+        {
+          "index": 4,
+          "moved": true,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        }
+      ],
+      "resume": {
+        "reopened": true,
+        "url": "https://factory-knowledge-twin.vercel.app/incidents/INC-2026-014?run=STATIC-GS-01&tour=1",
+        "index": 0,
+        "stepId": "headline",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":0}",
+        "text": "둘러보기를 시작합니다 알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따라갑니다. 이 화면의 값은 전부 synthetic 데이터이고, 둘러보기는 녹화된 재생본으로만 돕니다. 이 단계는 다른 화면에서 이어집니다 — 아래 버튼으로 이동하세요. 1/9 건너뛰기 다음",
+        "hasGoto": 0,
+        "hasNext": 1,
+        "hasAwaitClick": 0,
+        "spotlight": 0,
+        "targetMissingNote": 0
+      },
+      "verdict": "index-lost",
+      "reachedTarget": true,
+      "urlAtTarget": "https://factory-knowledge-twin.vercel.app/overview",
+      "stepIdAtTarget": "evidence",
+      "calloutAfterEsc": 0,
+      "storedAfterEsc": "{\"v\":1,\"status\":\"dismissed\",\"step\":5}",
+      "storedAfterTamper": "{\"v\":1,\"status\":\"dismissed\",\"step\":0}",
+      "reopenClicked": true,
+      "reopenNavigated": true
+    }
+  ],
+  "stage": {
+    "entered": true,
+    "invite": true,
+    "reachedTarget": true
+  },
+  "controlDiscriminates": true,
+  "summary": {
+    "targetRuns": [
+      {
+        "label": "target#1",
+        "clicked": true,
+        "navigated": true,
+        "reopened": true,
+        "index": 5,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}"
+      },
+      {
+        "label": "target#2",
+        "clicked": true,
+        "navigated": true,
+        "reopened": true,
+        "index": 5,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}"
+      },
+      {
+        "label": "target#3",
+        "clicked": true,
+        "navigated": true,
+        "reopened": true,
+        "index": 5,
+        "url": "https://factory-knowledge-twin.vercel.app/overview?intro=1&tour=1",
+        "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}"
+      }
+    ],
+    "targetVerdicts": [
+      "index-preserved",
+      "index-preserved",
+      "index-preserved"
+    ],
+    "reloadColumn": {
+      "reopened": true,
+      "index": 5,
+      "stored": "{\"v\":1,\"status\":\"running\",\"step\":5}",
+      "verdict": "index-preserved"
+    },
+    "controlResumeIndex": 0,
+    "controlDiscriminates": true
+  }
+}

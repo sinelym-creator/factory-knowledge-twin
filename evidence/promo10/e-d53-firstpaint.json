@@ -1,0 +1,64 @@
+{
+ "at": "2026-09-04T08:01:51.947Z",
+ "upstreamProbe": {
+  "reachable": false,
+  "err": "TypeError: fetch failed"
+ },
+ "dead": {
+  "label": "dead",
+  "base": "http://127.0.0.1:8109",
+  "ssrDataMode": "checking",
+  "ssrHasLiveWord": false,
+  "timeline": [
+   {
+    "ms": 98,
+    "mode": "checking",
+    "text": "◌확인 중",
+    "src": "poll50"
+   },
+   {
+    "ms": 206,
+    "mode": "unavailable",
+    "text": "◌미연결",
+    "src": "poll50"
+   }
+  ],
+  "finalMode": "unavailable",
+  "everLive": false,
+  "firstNonNull": {
+   "ms": 98,
+   "mode": "checking",
+   "text": "◌확인 중",
+   "src": "poll50"
+  }
+ },
+ "alive": {
+  "label": "alive",
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "ssrDataMode": "checking",
+  "ssrHasLiveWord": false,
+  "timeline": [
+   {
+    "ms": 81,
+    "mode": "checking",
+    "text": "◌확인 중",
+    "src": "poll50"
+   },
+   {
+    "ms": 1302,
+    "mode": "live",
+    "text": "◉LIVE",
+    "src": "poll50"
+   }
+  ],
+  "finalMode": "live",
+  "everLive": true,
+  "firstNonNull": {
+   "ms": 81,
+   "mode": "checking",
+   "text": "◌확인 중",
+   "src": "poll50"
+  }
+ },
+ "discriminates": true
+}
