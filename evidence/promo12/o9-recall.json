@@ -1,0 +1,66 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "at": "2026-09-04T09:37:41.518Z",
+ "notMeasured": [
+  "목록에 조사 행 없음 — 복원 못 잼"
+ ],
+ "badgeBefore": "live",
+ "runcapBefore": {
+  "limit": "10",
+  "used": "0",
+  "remaining": "10"
+ },
+ "live": {
+  "sessionId": "TQ1unk…",
+  "a": {
+   "status": 200,
+   "headers": {
+    "x-fkt-run-cap-limit": "10",
+    "x-fkt-run-cap-remaining": "9",
+    "x-fkt-run-cap-used": "1"
+   },
+   "runId": "RUN-ff8b83537fa8",
+   "err": null
+  },
+  "b": {
+   "status": 200,
+   "headers": {
+    "x-fkt-run-cap-limit": "10",
+    "x-fkt-run-cap-remaining": "9",
+    "x-fkt-run-cap-used": "1",
+    "x-fkt-run-reused": "RUN-ff8b83537fa8"
+   },
+   "runId": "RUN-ff8b83537fa8",
+   "err": null
+  }
+ },
+ "o9": {
+  "sameRunId": true,
+  "reusedOnA": null,
+  "reusedOnB": "RUN-ff8b83537fa8",
+  "capA": [
+   "x-fkt-run-cap-limit",
+   "x-fkt-run-cap-remaining",
+   "x-fkt-run-cap-used"
+  ],
+  "capB": [
+   "x-fkt-run-cap-limit",
+   "x-fkt-run-cap-remaining",
+   "x-fkt-run-cap-used"
+  ],
+  "usedA": "1",
+  "usedB": "1"
+ },
+ "incidents": {
+  "status": 200,
+  "url": "https://factory-knowledge-twin.vercel.app/incidents",
+  "links": [
+   "/incidents/INC-2025-019",
+   "/incidents/INC-2025-019"
+  ],
+  "runRow": null
+ },
+ "runcapAfter": null,
+ "consoleErrors": [],
+ "consoleNonWs": []
+}

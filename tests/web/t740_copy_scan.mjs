@@ -71,15 +71,13 @@ await sleep(3000);
 out.screens.push(await scan(page, "overview"));
 
 /* ② 조사 화면 — 화면이 준 손잡이로만 들어간다. */
-let entered = false;
-for (const sel of ['[data-testid="start-from-alarm"]', '[data-testid="start-from-headline"]']) {
-  const l = page.locator(sel);
-  try { await l.first().waitFor({ state: "visible", timeout: 30000 }); } catch { continue; }
-  await l.first().click().catch(() => {});
-  await page.waitForURL(/incidents\//, { timeout: 30000 }).catch(() => {});
-  await sleep(3500); entered = true; break;
-}
-if (entered) out.screens.push(await scan(page, "incident-run")); else out.notMeasured.push("incident-run: 손잡이 미발견");
+/* 🔴 공개면에서는 «조사 시작»을 누르지 않는다 — online 이면 그 클릭이 Live 1발을 태운다.
+   조사 화면 문면은 정적 재생본 주소로 들어가 «구독 0» 으로 잰다(같은 화면·같은 문구). */
+const REPLAY_URL = arg("replay", "/incidents/INC-2026-014?run=STATIC-GS-01");
+const rr = await page.goto(BASE + REPLAY_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => null);
+const entered = !!rr && rr.ok();
+await sleep(4000);
+if (entered) out.screens.push(await scan(page, "incident-run")); else out.notMeasured.push("incident-run: 재생본 주소 미착지");
 
 /* ③④ 근거·문서 — 화면이 준 링크로만. id 를 지어내지 않는다. */
 const links = await page.evaluate(() => Array.from(document.querySelectorAll("a[href]")).map((a) => a.getAttribute("href")));
