@@ -1,0 +1,1811 @@
+{
+ "at": "2026-09-04T08:17:31.526Z",
+ "fixBase": "http://127.0.0.1:8120",
+ "ctrlBase": "http://127.0.0.1:8119",
+ "api": "http://127.0.0.1:8118",
+ "stimulus": {
+  "created": 200,
+  "cookie": "yes",
+  "before": 200,
+  "restart": {
+   "out": "READY tries=0",
+   "ms": 3345,
+   "ready": true
+  },
+  "after": 401
+ },
+ "A_fix": {
+  "label": "A-fix-warm",
+  "base": "http://127.0.0.1:8120",
+  "block": false,
+  "fresh": false,
+  "reqs": [
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/",
+    "t": 1788509855041
+   },
+   {
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter",
+    "t": 1788509855152
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status",
+    "t": 1788509855152
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509855179
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=64EBvAagmAisvzuu",
+    "t": 1788509855180
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509855198
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=PCqdASYdLr1kZK_LXxGxB_a8",
+    "t": 1788509855236
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+    "t": 1788509855520
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+    "t": 1788509855521
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+    "t": 1788509855521
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+    "t": 1788509855521
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+    "t": 1788509855521
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+    "t": 1788509855522
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509857427
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509857427
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509857427
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509857446
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509857447
+   },
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/overview",
+    "t": 1788509861543
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=PCqdASYdLr1kZK_LXxGxB_a8",
+    "t": 1788509861590
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509861591
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509861591
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861591
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861591
+   },
+   {
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter?renew=1",
+    "t": 1788509861593
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861613
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861614
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509861620
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509861620
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861620
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861620
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861636
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+    "t": 1788509861702
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+    "t": 1788509861702
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+    "t": 1788509861702
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+    "t": 1788509861702
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+    "t": 1788509861703
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+    "t": 1788509861703
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+    "t": 1788509861703
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+    "t": 1788509861704
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+    "t": 1788509861704
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+    "t": 1788509861704
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+    "t": 1788509861704
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+    "t": 1788509861705
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=Q2NruJWKGMDn14BzurZu-NeS",
+    "t": 1788509861705
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509861705
+   }
+  ],
+  "before": {
+   "why": [],
+   "kind": [],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "headline",
+    "start-from-headline",
+    "kpi-strip",
+    "received-at",
+    "equipment-grid",
+    "hierarchy-tree",
+    "equipment-card",
+    "sparkline",
+    "overview-dock",
+    "intro-card",
+    "alarm-dock",
+    "alarm-card",
+    "alarm-raised-at",
+    "start-from-alarm",
+    "scenario-dock"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "조사 시작",
+    "전체 12대",
+    "가공 라인 1 4대",
+    "가공 라인 2 4대",
+    "가공 라인 3 4대",
+    "✕",
+    "조사 시작"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY PCqd ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesBefore": [
+   "fkt_sid=PCqdASYdLr1k",
+   "fkt_session=api%3APCqdAS"
+  ],
+  "enteredOk": true,
+  "mark": 24,
+  "restart": {
+   "out": "READY tries=0",
+   "ms": 3813,
+   "ready": true
+  },
+  "after": {
+   "why": [],
+   "kind": [],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "headline",
+    "start-from-headline",
+    "kpi-strip",
+    "received-at",
+    "equipment-grid",
+    "hierarchy-tree",
+    "equipment-card",
+    "sparkline",
+    "overview-dock",
+    "intro-card",
+    "alarm-dock",
+    "alarm-card",
+    "alarm-raised-at",
+    "start-from-alarm",
+    "scenario-dock"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "조사 시작",
+    "전체 12대",
+    "가공 라인 1 4대",
+    "가공 라인 2 4대",
+    "가공 라인 3 4대",
+    "✕",
+    "조사 시작"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY Q2Nr ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesAfter": [
+   "fkt_sid=Q2NruJWKGMDn",
+   "fkt_session=api%3AQ2NruJ"
+  ],
+  "postReqs": [
+   "GET document /overview",
+   "GET fetch /api/live/status?sessionId=PCqdASYdLr1kZK_LXxGxB_a8",
+   "GET fetch /incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+   "GET fetch /compare?_rsc=_VWJ-N7ngsYSuaU3",
+   "GET fetch /overview?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+   "POST fetch /enter?renew=1",
+   "GET fetch /incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /compare?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /overview",
+   "GET fetch /overview?_rsc=f4-2nUB_QklxoMuL",
+   "GET fetch /incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /compare?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+   "GET fetch /api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+   "GET fetch /api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+   "GET fetch /api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+   "GET fetch /api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+   "GET fetch /api/live/status?sessionId=Q2NruJWKGMDn14BzurZu-NeS",
+   "GET fetch /compare?_rsc=qcs5AIIC-Griu4ZG"
+  ],
+  "enterCount": 1,
+  "enterAll": 2,
+  "sidChanged": true,
+  "urlAfter": "http://127.0.0.1:8120/overview",
+  "consoleErrors": []
+ },
+ "B_ctrl": {
+  "label": "B-ctrl-warm",
+  "base": "http://127.0.0.1:8119",
+  "block": false,
+  "fresh": false,
+  "reqs": [
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/",
+    "t": 1788509868695
+   },
+   {
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter",
+    "t": 1788509868788
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status",
+    "t": 1788509868788
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868789
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868789
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868789
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868789
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509868797
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509868798
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509868799
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509868803
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509868810
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=64EBvAagmAisvzuu",
+    "t": 1788509868810
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868811
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509868822
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868822
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509868834
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868835
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509868835
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868835
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868836
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509868839
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868847
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509868850
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868854
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509868858
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509868860
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509868865
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509868875
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509868876
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509868902
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=t0SjkSeknnXeWZDU_7K76zZl",
+    "t": 1788509868905
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+    "t": 1788509869190
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+    "t": 1788509869191
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+    "t": 1788509869191
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+    "t": 1788509869191
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+    "t": 1788509869191
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+    "t": 1788509869191
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+    "t": 1788509869192
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+    "t": 1788509869192
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+    "t": 1788509869193
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+    "t": 1788509869193
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+    "t": 1788509869193
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+    "t": 1788509869193
+   },
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/overview",
+    "t": 1788509874484
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=t0SjkSeknnXeWZDU_7K76zZl",
+    "t": 1788509874537
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509874554
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509874554
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509874554
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509874554
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509874569
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509874570
+   }
+  ],
+  "before": {
+   "why": [],
+   "kind": [],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "headline",
+    "start-from-headline",
+    "kpi-strip",
+    "received-at",
+    "equipment-grid",
+    "hierarchy-tree",
+    "equipment-card",
+    "sparkline",
+    "overview-dock",
+    "intro-card",
+    "alarm-dock",
+    "alarm-card",
+    "alarm-raised-at",
+    "start-from-alarm",
+    "scenario-dock"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "조사 시작",
+    "전체 12대",
+    "가공 라인 1 4대",
+    "가공 라인 2 4대",
+    "가공 라인 3 4대",
+    "✕",
+    "조사 시작"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY t0Sj ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesBefore": [
+   "fkt_sid=t0SjkSeknnXe",
+   "fkt_session=api%3At0SjkS"
+  ],
+  "enteredOk": true,
+  "mark": 44,
+  "restart": {
+   "out": "READY tries=0",
+   "ms": 3092,
+   "ready": true
+  },
+  "after": {
+   "why": [
+    "HTTP 401"
+   ],
+   "kind": [
+    "unavailable"
+   ],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "screen-unavailable"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY t0Sj ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ① Factory Overview 이 화면의 데이터를 지금 가져오지 못했다. 사유: 서버 응답 오",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesAfter": [
+   "fkt_sid=t0SjkSeknnXe",
+   "fkt_session=api%3At0SjkS"
+  ],
+  "postReqs": [
+   "GET document /overview",
+   "GET fetch /api/live/status?sessionId=t0SjkSeknnXeWZDU_7K76zZl",
+   "GET fetch /incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+   "GET fetch /compare?_rsc=_VWJ-N7ngsYSuaU3",
+   "GET fetch /overview?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /compare?_rsc=qcs5AIIC-Griu4ZG"
+  ],
+  "enterCount": 0,
+  "enterAll": 1,
+  "sidChanged": false,
+  "urlAfter": "http://127.0.0.1:8119/overview",
+  "consoleErrors": []
+ },
+ "C_fixBlocked": {
+  "label": "C-fix-blocked",
+  "base": "http://127.0.0.1:8120",
+  "block": true,
+  "fresh": false,
+  "reqs": [
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/",
+    "t": 1788509881623
+   },
+   {
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter",
+    "t": 1788509881723
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status",
+    "t": 1788509881724
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881725
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881725
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881725
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881725
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509881732
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509881733
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509881735
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509881736
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509881741
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=64EBvAagmAisvzuu",
+    "t": 1788509881741
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881741
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881755
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509881756
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881756
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881765
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509881768
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509881769
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509881769
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881769
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509881769
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881779
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881785
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509881794
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509881795
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509881799
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509881811
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509881812
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509881831
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=OR2or_Eccj96I484rLeveHVj",
+    "t": 1788509881835
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+    "t": 1788509882118
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+    "t": 1788509882118
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+    "t": 1788509882118
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+    "t": 1788509882118
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+    "t": 1788509882118
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+    "t": 1788509882119
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+    "t": 1788509882119
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+    "t": 1788509882120
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+    "t": 1788509882120
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+    "t": 1788509882120
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+    "t": 1788509882120
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+    "t": 1788509882120
+   },
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/overview",
+    "t": 1788509887211
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=OR2or_Eccj96I484rLeveHVj",
+    "t": 1788509887260
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509887274
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509887274
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509887274
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509887274
+   },
+   {
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter?renew=1",
+    "t": 1788509887277
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509887281
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509887296
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509887296
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509887298
+   }
+  ],
+  "before": {
+   "why": [],
+   "kind": [],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "headline",
+    "start-from-headline",
+    "kpi-strip",
+    "received-at",
+    "equipment-grid",
+    "hierarchy-tree",
+    "equipment-card",
+    "sparkline",
+    "overview-dock",
+    "intro-card",
+    "alarm-dock",
+    "alarm-card",
+    "alarm-raised-at",
+    "start-from-alarm",
+    "scenario-dock"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "조사 시작",
+    "전체 12대",
+    "가공 라인 1 4대",
+    "가공 라인 2 4대",
+    "가공 라인 3 4대",
+    "✕",
+    "조사 시작"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY OR2o ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesBefore": [
+   "fkt_sid=OR2or_Eccj96",
+   "fkt_session=api%3AOR2or_"
+  ],
+  "enteredOk": true,
+  "mark": 44,
+  "restart": {
+   "out": "READY tries=0",
+   "ms": 2872,
+   "ready": true
+  },
+  "after": {
+   "why": [
+    "HTTP 401"
+   ],
+   "kind": [
+    "unavailable"
+   ],
+   "mode": [
+    "unavailable"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "static-replay-offer",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "screen-unavailable",
+    "session-reenter"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "정적 재생본으로 GS-01 보기",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "다시 입장"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◌ 재입장 필요 OR2o ⟲ 세션 리셋 [ ! ] Live 상태를 확인하지 못했습니다(미연결). 백엔드가 아직 연결되지 않았습니다 — 오류가 아닙니다. 정적 재생본으로 GS-01 보기 ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ① Factory Overview 세션이 만료되었습니다. 다시 입장해 주세요. 사유: 서버 응답 오류(401) 다시 입장",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesAfter": [
+   "fkt_sid=OR2or_Eccj96",
+   "fkt_session=api%3AOR2or_"
+  ],
+  "postReqs": [
+   "GET document /overview",
+   "GET fetch /api/live/status?sessionId=OR2or_Eccj96I484rLeveHVj",
+   "GET fetch /incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+   "GET fetch /compare?_rsc=_VWJ-N7ngsYSuaU3",
+   "GET fetch /overview?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+   "POST fetch /enter?renew=1",
+   "GET fetch /overview?_rsc=f4-2nUB_QklxoMuL",
+   "GET fetch /incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /compare?_rsc=qcs5AIIC-Griu4ZG",
+   "GET fetch /overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG"
+  ],
+  "enterCount": 1,
+  "enterAll": 2,
+  "sidChanged": false,
+  "urlAfter": "http://127.0.0.1:8120/overview",
+  "consoleErrors": [
+   "Failed to load resource: net::ERR_FAILED"
+  ]
+ },
+ "D_fixFresh": {
+  "label": "D-fix-firstvisit",
+  "base": "http://127.0.0.1:8120",
+  "block": false,
+  "fresh": true,
+  "reqs": [
+   {
+    "m": "GET",
+    "rt": "document",
+    "u": "/",
+    "t": 1788509894361
+   },
+   {
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter",
+    "t": 1788509894479
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status",
+    "t": 1788509894480
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894482
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894482
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894482
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894482
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509894492
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509894495
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509894497
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/",
+    "t": 1788509894499
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509894508
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=64EBvAagmAisvzuu",
+    "t": 1788509894508
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894509
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509894529
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894529
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894530
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894533
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509894547
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509894551
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894552
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509894552
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509894554
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894555
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview",
+    "t": 1788509894557
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894568
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=5CB68i4pnAekjehf",
+    "t": 1788509894588
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509894593
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509894595
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509894633
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=ZV3AIGqMNbGXXBXA-5d1keNM",
+    "t": 1788509894635
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+    "t": 1788509894926
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+    "t": 1788509894929
+   },
+   {
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+    "t": 1788509894929
+   }
+  ],
+  "before": {
+   "why": [],
+   "kind": [],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "headline",
+    "start-from-headline",
+    "kpi-strip",
+    "received-at",
+    "equipment-grid",
+    "hierarchy-tree",
+    "equipment-card",
+    "sparkline",
+    "overview-dock",
+    "intro-card",
+    "alarm-dock",
+    "alarm-card",
+    "alarm-raised-at",
+    "start-from-alarm",
+    "scenario-dock"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "조사 시작",
+    "전체 12대",
+    "가공 라인 1 4대",
+    "가공 라인 2 4대",
+    "가공 라인 3 4대",
+    "✕",
+    "조사 시작"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY ZV3A ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesBefore": [
+   "fkt_sid=ZV3AIGqMNbGX",
+   "fkt_session=api%3AZV3AIG"
+  ],
+  "enteredOk": true,
+  "mark": 43,
+  "after": {
+   "why": [],
+   "kind": [],
+   "mode": [
+    "replay"
+   ],
+   "testids": [
+    "nav-overview",
+    "nav-incidents",
+    "nav-compare",
+    "app-bar",
+    "intro-reopen",
+    "mode-badge",
+    "session-chip",
+    "reset-button",
+    "fallback-banner",
+    "tour-invite",
+    "tour-start",
+    "tour-later",
+    "tour-never",
+    "headline",
+    "start-from-headline",
+    "kpi-strip",
+    "received-at",
+    "equipment-grid",
+    "hierarchy-tree",
+    "equipment-card",
+    "sparkline",
+    "overview-dock",
+    "intro-card",
+    "alarm-dock",
+    "alarm-card",
+    "alarm-raised-at",
+    "start-from-alarm",
+    "scenario-dock"
+   ],
+   "buttons": [
+    "⟲ 세션 리셋",
+    "✕",
+    "둘러보기 시작",
+    "나중에",
+    "다시 보지 않기",
+    "조사 시작",
+    "전체 12대",
+    "가공 라인 1 4대",
+    "가공 라인 2 4대",
+    "가공 라인 3 4대",
+    "✕",
+    "조사 시작"
+   ],
+   "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY ZV3A ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니",
+   "marker": {
+    "recovering": 0,
+    "seen": []
+   }
+  },
+  "cookiesAfter": [
+   "fkt_sid=ZV3AIGqMNbGX",
+   "fkt_session=api%3AZV3AIG"
+  ],
+  "postReqs": [],
+  "enterCount": 0,
+  "enterAll": 1,
+  "sidChanged": false,
+  "urlAfter": "http://127.0.0.1:8120/overview",
+  "consoleErrors": []
+ },
+ "discriminates": true
+}
