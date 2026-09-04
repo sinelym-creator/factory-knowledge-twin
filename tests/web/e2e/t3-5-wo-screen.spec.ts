@@ -481,8 +481,20 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     await expect(page.getByTestId("wo-title")).toBeDisabled();
     await expect(page.getByTestId("wo-approve")).toBeDisabled();
     await expect(page.getByTestId("wo-reject")).toBeDisabled();
-    await expect(page.getByTestId("wo-part-add")).toBeDisabled();
-    await expect(page.getByTestId("wo-part-delete").first()).toBeDisabled();
+    /* 🔴 **계약이 바뀌었다(D-70)** — 잠긴 초안에는 편집 UI 를 «그리지 않는다».
+       예전 형상은 `disabled` + `opacity-40` 이었고, 그것이 「눌러도 되는데 안 눌리는 것」처럼
+       보이는 데다 좁은 폭에서 «비어 보이는 긴 카드»의 절반이었다(폐하 360 실기기 · D-70).
+       그래서 `toBeDisabled()` 는 이제 **요소를 못 찾아 실패한다** — 부재로 판정선을 옮긴다.
+
+       🔴 다만 «0건»만 세면 **화면이 통째로 비어도 초록**이다. 그래서 같은 자리에서
+          ① 읽기 목록이 남아 있고 ② 잠김 사유가 문면으로 있고 ③ 🛡 안전 조치의 삭제는
+          «여전히 있다»(설계 의도 · 서버가 403 으로 막는 축)까지 함께 못박는다. */
+    await expect(page.getByTestId("wo-part-add")).toHaveCount(0);
+    await expect(page.getByTestId("wo-part-delete")).toHaveCount(0);
+    await expect(page.getByTestId("wo-part-name")).toHaveCount(0);
+    expect(await page.getByTestId("wo-part").count()).toBeGreaterThan(0);
+    await expect(page.getByTestId("wo-parts-lock")).toHaveText("✅ 승인됨 · 편집 잠김");
+    expect(await page.getByTestId("wo-safety-delete").count()).toBeGreaterThan(0);
 
     expect((await serverDraft(page, woId)).approvalState).toBe("approved");
     const patch = await serverCall(page, `/api/work-orders/${woId}`, {
