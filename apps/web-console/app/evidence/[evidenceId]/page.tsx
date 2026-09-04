@@ -68,6 +68,7 @@ export default async function EvidencePage({
           evidenceId={evidenceId}
           runId={run}
           staticIncidentId={bundle?.manifest.anchors.incidentId}
+          runIncidentId={runIncidentId}
         />
         <Unavailable
           screen={`③ Evidence 뷰 · ${evidenceId}`}
@@ -108,6 +109,7 @@ export default async function EvidencePage({
         evidenceId={ev.evidenceId}
         runId={run}
         staticIncidentId={bundle?.manifest.anchors.incidentId}
+        runIncidentId={runIncidentId}
       />
       <header className="fkt-card p-5">
         <div className="flex flex-wrap items-center gap-2">
