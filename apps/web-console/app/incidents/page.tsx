@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies, headers } from "next/headers";
 
 import { SessionRunList } from "@/components/incidents/session-run-list";
@@ -10,6 +11,7 @@ import {
   apiGetServer,
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { fetchSessionRuns } from "@/lib/session-runs";
 
 /**
  * D-61 — `/incidents` 목록.
@@ -17,14 +19,10 @@ import { SESSION_COOKIE, parseSession } from "@/lib/session";
  * 왜(E1 · 오케 curl 2026-09-04 17:09): 좌측 메뉴의 「Incidents」가 **404** 였다. 이 자리에는
  * `[incidentId]` 상세만 있었고 목록 화면 자체가 없었다 — 메뉴가 가리키는 곳이 비어 있었다.
  *
- * 🔴 **새 API 를 만들지 않는다.** 「지금 울리는 알람」은 Overview 가 이미 받는 것과 «같은»
- *    응답(`GET /plants/{id}/overview` 의 `activeAlarms`)이고, 「이 세션의 조사」는 서버가 모르는
- *    사실이라 브라우저가 기억한 것을 그린다(`lib/session-runs.ts`).
- * 🔴 **알람 행에서 상세로 «링크하지 않는다».** 계약의 `ActiveAlarm` 에는 incidentId 가 없다
- *    (`lib/contract.ts:139~148` 전수) — 알람과 상황을 잇는 값은 조사를 시작해야 나온다
- *    (`POST /scenarios/{id}/runs` 응답). 그럴듯한 주소를 지어 넣으면 404 로 데려간다.
- *    그래서 알람 행이 주는 것은 Overview 와 «같은» 「조사 시작」이고, 시작하면 그 조사가
- *    위쪽 목록에 남는다.
+ * 🔴 **「이 세션의 조사」는 이제 서버가 답한다**(T7-41b · 계약 v0.1.16 `GET /runs?sessionId=`).
+ *    앞판은 브라우저 저장소였고, 그래서 다른 탭에서는 자기 조사가 «없는 것»이 됐다.
+ * 🔴 **알람 행 링크는 «서버가 아는 연결»이 있을 때만 선다**(v0.1.16 `activeAlarms[].incidentId`).
+ *    없으면 앞판 그대로 「조사 시작」만 준다 — 알람 id 로 상황 주소를 지어내면 404 로 데려간다.
  */
 export default async function IncidentsPage() {
   const jar = await cookies();
@@ -52,6 +50,7 @@ export default async function IncidentsPage() {
     return <Unavailable screen="Incidents" why={overview.why} />;
   }
   const alarms = overview.data.activeAlarms;
+  const runs = await fetchSessionRuns();
   const scenarioId =
     (scenarios.state === "ok" ? scenarios.data[0]?.scenarioId : undefined) ?? "GS-01";
 
@@ -66,7 +65,7 @@ export default async function IncidentsPage() {
 
       <section className="fkt-card overflow-hidden">
         <p className="fkt-section-label px-5 pt-4">이 세션의 조사</p>
-        <SessionRunList />
+        <SessionRunList runs={runs} />
       </section>
 
       <section className="fkt-card overflow-hidden" data-testid="incidents-alarms">
@@ -88,12 +87,23 @@ export default async function IncidentsPage() {
                     {a.severity} · 기준 {a.thresholdValue} → 관측 {a.observedValue}
                   </p>
                 </div>
-                <StartInvestigation
-                  scenarioId={scenarioId}
-                  sessionId={session?.id ?? null}
-                  sessionOrigin={session?.origin ?? null}
-                  testId="start-from-incidents"
-                />
+                {a.incidentId ? (
+                  <Link
+                    href={`/incidents/${encodeURIComponent(a.incidentId)}`}
+                    className="fkt-pill shrink-0 bg-fill text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+                    data-testid="alarm-incident-link"
+                    data-incident={a.incidentId}
+                  >
+                    상황 보기
+                  </Link>
+                ) : (
+                  <StartInvestigation
+                    scenarioId={scenarioId}
+                    sessionId={session?.id ?? null}
+                    sessionOrigin={session?.origin ?? null}
+                    testId="start-from-incidents"
+                  />
+                )}
               </li>
             ))}
           </ul>

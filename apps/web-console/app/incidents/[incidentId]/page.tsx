@@ -16,6 +16,7 @@ import {
   type SeriesWindow,
   apiGetServer,
 } from "@/lib/contract";
+import { fetchSessionRuns, latestRunFor } from "@/lib/session-runs";
 import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
@@ -71,6 +72,8 @@ export default async function IncidentPage({
 }) {
   const { incidentId } = await params;
   const { run } = await searchParams;
+  /* 🔴 `?run=` 없이 들어왔을 때만 «되찾을 것»을 묻는다 — 있으면 이미 그 조사를 보고 있다. */
+  const resumable = run ? null : latestRunFor(await fetchSessionRuns(), incidentId);
   const cookieHeader = (await headers()).get("cookie") ?? "";
 
   /**
@@ -173,7 +176,7 @@ export default async function IncidentPage({
             두 자리에서 갈린다(같은 것을 두 번 만들지 않는다). */}
         {/* 🔴 D-60 — 이 세션이 이 상황을 이미 조사했다면 그 주소로 되돌린다(새 조회 0).
             기억이 없으면 아무 일도 하지 않고 아래 「아직 시작하지 않았습니다」가 그대로 선다. */}
-        {!run && <ResumeRun incidentId={incidentId} />}
+        {!run && resumable && <ResumeRun incidentId={incidentId} runId={resumable} />}
         {!run && (
           <p className="mt-2 text-foot text-muted" data-testid="ttae-row-idle">
             이 화면은 아직 조사를 시작하지 않았습니다. Overview 의 「조사 시작」을 누르면 여기로 옵니다.

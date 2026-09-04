@@ -16,6 +16,7 @@ import {
   documentIdOf,
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { fetchSessionRuns } from "@/lib/session-runs";
 import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
@@ -40,6 +41,10 @@ export default async function EvidencePage({
   // 🔴 인코딩된 채로 오는 세그먼트를 «값»으로 되돌린다(실측 근거는 decodeRouteParam 성문).
   const evidenceId = decodeRouteParam((await params).evidenceId);
   const { run, tab } = await searchParams;
+  /* 🔴 run→incident 는 서버 목록이 답한다(v0.1.16) — 없으면 `null` 이고 링크도 서지 않는다. */
+  const runIncidentId = run
+    ? ((await fetchSessionRuns()).find((r) => r.runId === run)?.incidentId ?? null)
+    : null;
   const cookieHeader = (await headers()).get("cookie") ?? "";
   // 🔴 세션 유무는 «실제 쿠키»에서 읽는다 — 라우트 성질에서 추정하지 않는다.
   const hasSession = parseSession((await cookies()).get(SESSION_COOKIE)?.value) !== null;
@@ -73,7 +78,7 @@ export default async function EvidencePage({
             근거 목록에서 다시 열어 주세요.
           </p>
         )}
-        <DeepLinkNotice hasSession={hasSession} runId={run} />
+        <DeepLinkNotice hasSession={hasSession} runId={run} incidentId={runIncidentId} />
       </div>
     );
   }
@@ -117,7 +122,7 @@ export default async function EvidencePage({
         </div>
       </header>
 
-      <DeepLinkNotice hasSession={hasSession} runId={run} />
+      <DeepLinkNotice hasSession={hasSession} runId={run} incidentId={runIncidentId} />
       {/* 🔴 열람 이력 — 정적 경로에서만 남긴다(ⓒ). 그리는 것이 없는 부수효과 컴포넌트다. */}
       <MarkVisited id={ev.evidenceId} run={run} />
 
