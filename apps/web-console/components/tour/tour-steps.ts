@@ -206,7 +206,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     route: "/evidence/",
     target: null,
     title: "둘러보기가 끝났습니다",
-    body: "이제 직접 조작해 보세요. 다시 보고 싶으면 상단 「?」를 누르면 됩니다.",
+    body: "이제 직접 조작해 보세요. 다시 보고 싶으면 상단 「튜토리얼」을 누르면 됩니다.",
     advance: { to: "/overview", label: "직접 해보기" },
   },
 ] as const;

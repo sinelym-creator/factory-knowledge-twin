@@ -285,7 +285,15 @@ export type RunSnapshot = {
 
 /** 🔴 계약 v0.1.1: kind 는 이 둘 «뿐»이다. `graph-path`·`sensor-series` evidenceId 는 이
  *  라우트가 다루지 않아 404 로 답한다(Q-34 성문 — 「없는 근거」와 같은 코드인 것이 현행 참). */
-export type EvidenceKind = "doc-chunk" | "record";
+export type EvidenceKind = "doc-chunk" | "record" | "graph-path";
+
+/** `meta.path` — 조사가 밟은 걸음 그대로(계약 v0.1.17 append · D-68). */
+export type GraphPath = {
+  label: string;
+  hops: number;
+  nodes: string[];
+  edges: { from: string; type: string; to: string }[];
+};
 
 /**
  * GET /evidence/{evidenceId}
@@ -309,6 +317,12 @@ export type Evidence = {
   text: string;
   highlight: { start: number; end: number } | null;
   record: { entityType: string; fields: Record<string, string | number | boolean> } | null;
+  /* 🔴 `graph-path` 에서만 실값이다(v0.1.17 append). 옵셔널로 둔다 — 정적 재생본은
+     이 필드가 없던 날 굽혀서, 필수로 적으면 낡은 번들이 타입상 거짓말이 된다. */
+  sourceId?: string | null;
+  excerpt?: string | null;
+  score?: number | null;
+  meta?: { path: GraphPath } | null;
 };
 
 /** GET /documents/{docId}?highlight={chunkId} */

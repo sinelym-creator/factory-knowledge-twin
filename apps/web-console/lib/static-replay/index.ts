@@ -125,6 +125,14 @@ export type StaticLookup<T> =
  * 🔴 굳히지 않은 것을 「없다」로 그리지 않는다 — 그것은 자산 범위의 문제이지 데이터의 부재가
  *    아니다. 화면은 「이 화면은 정적 재생본이 담지 않는다」고 말해야 한다.
  */
+/**
+ * 🔴 정적 재생본에 «그 자리가 없다»는 사유 — 문자열을 화면과 같이 쓴다(D-68).
+ *
+ * 화면이 이 값을 손으로 베끼면 한쪽 문구를 고치는 날 다른 쪽이 조용히 «서버에 닿지
+ * 못했다»로 돌아간다 — 이 티켓이 고치는 결함이 정확히 그 형태였다.
+ */
+export const STATIC_MISS = "정적 재생본이 이 자리를 담지 않는다";
+
 export function staticLookup<T>(bundle: StaticBundle, path: string): StaticLookup<T> {
   const hit = bundle.responses[path];
   if (hit !== undefined) return { state: "ok", data: hit as T };
@@ -147,5 +155,5 @@ export function staticLookup<T>(bundle: StaticBundle, path: string): StaticLooku
     return { state: "unavailable", why, status: blocked.status, detail };
   }
 
-  return { state: "unavailable", why: "정적 재생본이 이 자리를 담지 않는다", status: undefined };
+  return { state: "unavailable", why: STATIC_MISS, status: undefined };
 }
