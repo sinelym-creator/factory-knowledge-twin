@@ -55,7 +55,11 @@ export function EvidenceBreadcrumb({
 
   return (
     <nav aria-label="경로" data-testid="evidence-breadcrumb" className="text-foot text-muted">
-      <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+      {/* 🔴 `flex-wrap` 을 버린다(D-58b · 리바이2 실측: 390 폭 · B 갈래 ·
+          `DOC-MAN-0021@r1#001` 에서 마지막 조각이 둘째 줄로 내려갔다). 경로 표시는 «한 줄»이
+          약속이라, 넘칠 때 줄을 늘리는 대신 **글자를 줄이고 전체는 `title` 로 남긴다** —
+          줄이 늘면 그 아래 화면 전체가 밀리지만, 줄인 글자는 마우스와 스크린리더가 되찾는다. */}
+      <ol className="flex flex-nowrap items-center gap-x-1.5">
         <li>
           {staticHome ? (
             <span>Incidents</span>
@@ -81,13 +85,15 @@ export function EvidenceBreadcrumb({
               </Link>
             ) : (
               // 🔴 라벨이다 — 링크가 아니다(위 성문). 눌리는 것처럼 보이지 않게 색도 주지 않는다.
-              <span data-testid="evidence-breadcrumb-run">{investigation}</span>
+              <span className="min-w-0 truncate" title={investigation} data-testid="evidence-breadcrumb-run">
+              {investigation}
+            </span>
             )}
           </li>
         )}
         <li className="flex min-w-0 items-center gap-x-1.5">
           <Separator />
-          <span aria-current="page" className="min-w-0 truncate text-ink">
+          <span aria-current="page" className="min-w-0 truncate text-ink" title={`근거 ${evidenceId}`}>
             근거 <span className="id">{evidenceId}</span>
           </span>
         </li>
