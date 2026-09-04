@@ -1,4 +1,4 @@
-# X 예외 축 무대 (T7-21·T7-22) — **3/4 완성 · 나머지 1은 설계만**
+# X 예외 축 무대 (T7-21·T7-22) — **4/4 완성 · 전 무대 selftest PASS**
 
 검증이 X-01~X-25 를 «실행»하려면 **자극을 만드는 무대**가 먼저 있어야 한다. 여기 있는 것은 그 무대다.
 🔴 **`tests/**` 는 검증 좌석 자산이다** — 그쪽 `_blackhole_server.mjs` 는 **읽기만** 했고, 이 자리에 새로 뒀다.
@@ -24,6 +24,7 @@ node blackhole-proxy.mjs --selftest --port 8899 --upstream 127.0.0.1:8101 --prob
 - 🔴 **자기 생존 증인 실측(09-04 08:05)** — `SELFTEST PASS` · 상류 응답 **200 · 81 B · 2 ms** · 클라이언트 **ECONNRESET(수신 0 B)**. **두 사실이 같은 실행에서 나왔다.**
 - 🔴 **이 무대가 «못 하는 말»**: 「상태가 두 번 바뀌었나」는 **상류가 답한다.** 기본 상류 `:8101` 은 정적 재생본이라 상태가 없다 — **상태를 가진 상류를 `--upstream` 으로 지정해야** 그 판정이 선다.
 - ⚠ MSYS 셸에서 `--probe /api/plants` 처럼 **앞 슬래시**를 주면 `C:/Program Files/Git/...` 로 번역된다. `--probe api/plants` 로 준다(이 함정에 한 번 걸렸다).
+- 🔴 **재확인(09-04 09:11 · T7-22)** — 위 08:05 값은 38대의 것이라 **오늘 다시 울렸다**: 임시 상류(`:8896`)를 세우고 `--selftest --port 8898 --upstream 127.0.0.1:8896` → `SELFTEST PASS` **exit 0**(상류 도달 1 · 클라이언트 수신 0). 🔴 이 무대의 selftest 는 **외부 상류가 있어야 선다** — 기본값 `:8101` 이 죽어 있으면 「무대 고장」과 구분되지 않는다(②③④ 는 그래서 자기 상류를 데려온다).
 
 ## ② 늦추는 프록시 — `delay-proxy.mjs` ✅ **완성**
 
@@ -64,12 +65,30 @@ node capacity-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --bu
 - 🔴 **이 무대가 «못 하는 말»**: 「화면이 `Retry-After` 를 읽고 되묻는가」는 **화면이 답한다.** 이쪽은 상한이 실제로 걸렸고 통과분은 상류에 닿았다는 두 사실만 낸다.
 - 포트 **8813**.
 
-## ④ 합성 게이트웨이 — 🔴 **미구현 (설계만)**
+## ④ 합성 게이트웨이 — `synthetic-gateway.mjs` ✅ **완성**
 
 **X-23**: `online:true` 인데 **근거 0건** → 화면이 「모른다」로 가는가 (`t6-6:226`).
-- 🔴 **따로 도는 형태**로 둔다 — 전량 회귀는 `online:false` 라야 다른 스펙이 정상이다(검증 신고분).
-- 증인 = `/api/live/status` 가 `online:true` 를 냈고 **합성 응답의 근거 배열 길이가 0** 이었음을 «같은 실행»에서 남긴다.
-- 권장 포트 **8814**.
+
+```
+node synthetic-gateway.mjs --port 8814 --upstream 127.0.0.1:8101
+node synthetic-gateway.mjs --selftest                    # 내부 상류 + 대조군까지 자족
+node synthetic-gateway.mjs --selftest --passthrough      # 역방향 대조군(FAIL 이 나야 정상)
+```
+
+- 🔴 **«따로 도는» 형태다 — 기본 회귀 스택에 끼우지 않는다.** 전량 회귀는 `online:false` 라야 다른 스펙이 정상이다(검증 신고분). X-23 을 «칠 때만» 세운다.
+- 상류를 그대로 통과시키되 **두 곳만** 바꾼다: ① `GET /api/live/status` → `online:true` 합성(상류가 죽어 있어도 합성한다 — 그게 이 무대의 이름이다) ② JSON 안의 근거 배열(`evidenceIds`·`evidence`·`citations` · `--evidence-keys`)을 **길이 0**.
+- 🔴 **근거를 비우면 옆의 `evidenceCount` 도 0 으로 맞춘다.** 안 그러면 자극이 「근거 0건」이 아니라 **「계수와 목록이 어긋난다」**가 된다 — X-23 이 묻는 것과 다른 질문이다.
+- 🔴 **WS 업그레이드는 손대지 않고 소켓째 넘긴다.** 콘솔의 run 스트림(`/api/ws/runs/{id}`)이 여기로 붙는다 — 막으면 X-23 을 칠 «화면 자체»가 안 서서 무대가 아니라 장애물이 된다. 주석으로 두지 않고 selftest 에서 실제로 울린다.
+- 🔴 JSON 이 아닌 응답(SSE `text/event-stream`·바이너리)은 **버퍼링하지 않고 흘린다** — 버퍼링하는 순간 형태가 바뀐다.
+- 🔴 **자기 생존 증인 실측(09-04 09:07)** — `SELFTEST PASS`
+  - 상류(대조군) **`online:false` · 근거 [3, 1] · 계수 [3, 1]** → 게이트웨이 **`online:true` · 근거 [0, 0] · 계수 [0, 0]** (배열 2본·계수 2본 비움)
+  - `paired` = `00:06:54.331Z` / `00:06:54.335Z` — 🔴 **두 사실이 «같은 실행»에 짝으로** 있다
+  - WS 축 실측 — `HTTP/1.1 101 Switching Protocols` + 에코 수신 · `upgradesProxied` 1 · stagePort 56028
+- 🔴 **반대 방향 대조군 2본**
+  - `--passthrough` → `FAIL — servedOnlineTrue, everyEvidenceArrayEmpty, everyEvidenceCountZero, pairedInSameRun` · **exit 1**.
+  - `--evidence-keys nosuchkey` → `FAIL — controlHadEvidence, …` · **exit 1**. 🔴 **비어 있던 것을 비운 초록**을 막는 축이다 — 상류가 근거를 «실제로 갖고 있었다»가 먼저 서야 「0 으로 만들었다」가 참이 된다.
+- 🔴 **이 무대가 «못 하는 말»**: 「화면이 «모른다»로 갔는가」는 **화면이 답한다.** 이쪽은 online:true 를 냈고 근거가 0 이었다는 두 사실만 낸다.
+- 포트 **8814**.
 
 ## 포트
 
@@ -78,6 +97,6 @@ node capacity-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --bu
 | 끊는 프록시 | **8811** | ✅ 완성 · selftest PASS |
 | 늦추는 프록시 | **8812** | ✅ 완성 · selftest PASS(실측 804 ms · 대조군 +789 ms) |
 | 용량 거절 | **8813** | ✅ 완성 · selftest PASS(503 4 + 200 2 · peak 2/2) |
-| 합성 게이트웨이 | 8814 | 미구현 |
+| 합성 게이트웨이 | **8814** | ✅ 완성 · selftest PASS(online:true + 근거 [0,0] · WS 101 통과) |
 
 🔴 **`:8799`·`:8102`·`:8010` 은 검증·배포 것이다 — 쓰지 않는다.**
