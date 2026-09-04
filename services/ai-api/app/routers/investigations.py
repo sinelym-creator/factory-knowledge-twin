@@ -189,18 +189,14 @@ async def start_run(
             raise _error(
                 500, "replay_fixture_broken", "replay fixture 를 읽을 수 없다"
             ) from exc
-        # 🔴 D-48 — `replay.load` 는 동기다. 여기부터 `replay.start` 안의 `store.create`
-        #    까지 `await` 가 없으므로, 이 판정과 생성 사이에 다른 요청이 끼어들 수 없다.
-        reused = _reusable_run(_store(request), body.sessionId, scenarioId, "replay")
-        if reused is not None:
-            log.info(
-                "같은 세션의 비종결 replay run 을 재사용한다 — session=%s scenario=%s run=%s",
-                body.sessionId, scenarioId, reused.runId,
-            )
-            response.headers[RUN_REUSED_HEADER] = reused.runId
-            return RunCreated(
-                runId=reused.runId, incidentId=reused.incidentId, mode=reused.mode
-            )
+        # 🔴 D-48 의 재사용 판정을 **여기에 두지 않는다.** replay run 은 `replay.start` 안에서
+        #    이벤트 전량을 동기로 흘리고 `record.status = _TERMINAL_TYPES[...]` 로 닫힌다
+        #    (`investigation/replay.py:150→161`) — 즉 **비종결인 순간이 0**이라 「비종결 run 을
+        #    재사용한다」는 규칙이 걸릴 창 자체가 없다. 여기 판정을 두면 발동 건수 0 인 죽은
+        #    분기가 되고, 죽은 분기는 「막았다」로 읽힌다.
+        #    실측(같은 실행 · 전/후 두 무대): replay 동시 2 POST → 양쪽 다 run 2 · 갓 만든
+        #    run 의 status 가 이미 `completed`. 두 번 재생 = 각각 «완주한» 조사이므로 화면에서
+        #    경합하지 않고 세션 상한도 쓰지 않는다(live 축만 센다).
         record = replay.start(
             _store(request), session_id=body.sessionId, anchor=anchor, events=events
         )
