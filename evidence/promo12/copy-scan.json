@@ -1,0 +1,469 @@
+{
+ "label": "promo12-public",
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "at": "2026-09-04T09:35:59.814Z",
+ "screens": [
+  {
+   "screen": "overview",
+   "nodes": 199,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "run-cap-counter",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-invite",
+     "tour-later",
+     "tour-never",
+     "tour-start"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "live"
+    ],
+    "runcapUsed": [
+     "0"
+    ],
+    "tourPlacement": [],
+    "tourClear": []
+   }
+  },
+  {
+   "screen": "incident-run",
+   "nodes": 304,
+   "excludedNodes": 0,
+   "hits": [
+    {
+     "screen": "incident-run",
+     "excluded": false,
+     "pat": [
+      "한다."
+     ],
+     "text": "매뉴얼은 특정 회전수에서만 이상 진동이 발생할 때 공구 불균형을 먼저 보라고 규정한다.",
+     "tid": "candidate-rationale"
+    },
+    {
+     "screen": "incident-run",
+     "excluded": false,
+     "pat": [
+      "한다."
+     ],
+     "text": "## 5. 경보 및 알람 경보 임계는 설비 마스터의 센서 등록값을 정본으로 하며, 본 매뉴얼에 수치를 중복 기재하지 않는다. 임계값을 문서에서 찾지 말고 해당 센서의 등록값을 조회한다. ### 5.",
+     "tid": "evidence-card"
+    },
+    {
+     "screen": "incident-run",
+     "excluded": false,
+     "pat": [
+      "한다."
+     ],
+     "text": "## 7. 이상 현상별 대처 각 항목은 「증상 → 확인 → 조치」 순으로 읽는다. 조치가 분해를 수반하면 해당 작업의 표준 작업 절차서와 안전 규정을 먼저 적용한다. ### 7.1 가공면 조도 악화",
+     "tid": "evidence-card"
+    },
+    {
+     "screen": "incident-run",
+     "excluded": false,
+     "pat": [
+      "한다."
+     ],
+     "text": "# 공통 안전 운전 매뉴얼 (r1) ## 1. 개요 본 매뉴얼은 전 설비 의 운전·점검 기준을 기술한다. ## 2. 사양 정격 운전 조건과 허용 범위는 설비 명판 및 설비 마스터 등록값을 따른다. ",
+     "tid": "evidence-card"
+    },
+    {
+     "screen": "incident-run",
+     "excluded": false,
+     "pat": [
+      "한다."
+     ],
+     "text": "## 4. 진동 진단 구동부 진동 RMS가 정상 운전 시 1.2~1.8 mm/s 범위를 유지하는지 월 1회 이상 확인한다. 반송 설비는 부하 변동이 크므로, 무부하와 정격 부하의 계측값을 같은 추세",
+     "tid": "evidence-card"
+    },
+    {
+     "screen": "incident-run",
+     "excluded": false,
+     "pat": [
+      "이다.",
+      "한다 "
+     ],
+     "text": "## 2. 사양 정격 운전 조건과 허용 범위는 설비 명판 및 설비 마스터 등록값을 따른다. 주축 최고 회전수, 이송 속도, 절삭유 공급 압력은 설비 마스터에 등록된 값이 정본이다. ### 2.1 제",
+     "tid": "evidence-card"
+    }
+   ],
+   "attrs": {
+    "testid": [
+     "app-bar",
+     "candidate",
+     "candidate-rationale",
+     "candidates",
+     "equipment-context",
+     "evidence-card",
+     "evidence-filter",
+     "evidence-filter-all",
+     "evidence-strip",
+     "incident-header",
+     "intro-reopen",
+     "live-return-link",
+     "live-return-offer",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "replay-back",
+     "replay-controls",
+     "replay-cursor",
+     "replay-follow",
+     "replay-forward",
+     "replay-play",
+     "replay-restart",
+     "reset-button",
+     "run-cap-counter",
+     "run-console",
+     "run-controls",
+     "run-mode-badge",
+     "run-progress",
+     "run-question",
+     "run-source-static",
+     "run-status",
+     "run-step",
+     "run-stop",
+     "run-timeline",
+     "sensor-provenance",
+     "sensor-trend",
+     "session-chip",
+     "static-reset",
+     "static-visitor",
+     "static-visitor-chip",
+     "synthesis-badge",
+     "threshold-legend",
+     "to-compare-live-only",
+     "ttae-replay-note",
+     "ttae-row",
+     "window-24h",
+     "window-3w",
+     "work-order-draft-live-only"
+    ],
+    "why": [],
+    "kind": [
+     "doc-chunk",
+     "graph-path",
+     "record"
+    ],
+    "mode": [
+     "live",
+     "replay"
+    ],
+    "runcapUsed": [
+     "0"
+    ],
+    "tourPlacement": [],
+    "tourClear": []
+   }
+  },
+  {
+   "screen": "evidence",
+   "nodes": 64,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "app-bar",
+     "deep-link-notice",
+     "evidence-kind",
+     "index-badge",
+     "intro-reopen",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "record-view",
+     "reset-button",
+     "run-cap-counter",
+     "session-chip",
+     "static-reset",
+     "static-visited-count",
+     "static-visitor",
+     "static-visitor-chip",
+     "trust-header"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "live"
+    ],
+    "runcapUsed": [
+     "0"
+    ],
+    "tourPlacement": [],
+    "tourClear": []
+   }
+  },
+  {
+   "screen": "tour-step-1",
+   "nodes": 207,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "run-cap-counter",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-callout",
+     "tour-next",
+     "tour-progress",
+     "tour-skip",
+     "tour-title"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "live"
+    ],
+    "runcapUsed": [
+     "0"
+    ],
+    "tourPlacement": [
+     "anchor"
+    ],
+    "tourClear": []
+   },
+   "tourTitle": "둘러보기를 시작합니다알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따라갑니다. 이 화면의 값은"
+  },
+  {
+   "screen": "tour-step-2",
+   "nodes": 207,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "run-cap-counter",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-callout",
+     "tour-next",
+     "tour-progress",
+     "tour-skip",
+     "tour-spotlight",
+     "tour-title"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "live"
+    ],
+    "runcapUsed": [
+     "0"
+    ],
+    "tourPlacement": [
+     "before"
+    ],
+    "tourClear": [
+     "yes"
+    ]
+   },
+   "tourTitle": "알람은 울린 그 행의 값이 기준입니다임계와 관측값이 나란히 있습니다. 기준은 센서의 임계표가 아니라 실제로 "
+  },
+  {
+   "screen": "tour-step-3",
+   "nodes": 208,
+   "excludedNodes": 0,
+   "hits": [],
+   "attrs": {
+    "testid": [
+     "alarm-card",
+     "alarm-dock",
+     "alarm-raised-at",
+     "app-bar",
+     "equipment-card",
+     "equipment-grid",
+     "headline",
+     "hierarchy-tree",
+     "intro-card",
+     "intro-reopen",
+     "kpi-strip",
+     "mode-badge",
+     "nav-compare",
+     "nav-incidents",
+     "nav-overview",
+     "overview-dock",
+     "received-at",
+     "reset-button",
+     "run-cap-counter",
+     "scenario-dock",
+     "session-chip",
+     "sparkline",
+     "start-from-alarm",
+     "start-from-headline",
+     "tour-callout",
+     "tour-goto",
+     "tour-progress",
+     "tour-skip",
+     "tour-spotlight",
+     "tour-title"
+    ],
+    "why": [],
+    "kind": [],
+    "mode": [
+     "live"
+    ],
+    "runcapUsed": [
+     "0"
+    ],
+    "tourPlacement": [
+     "before"
+    ],
+    "tourClear": [
+     "yes"
+    ]
+   },
+   "tourTitle": "조사를 시작하면 에이전트가 5단계를 돕니다구조화 조회 → 문서 검색 → 그래프 추적 → 종합 → 작업지시 초"
+  }
+ ],
+ "notMeasured": [
+  "documents: 화면에 링크 없음",
+  "tour-step-4: «다음» 손잡이 없음(사람이 눌러야 하는 걸음)"
+ ],
+ "tourHandles": [
+  "⟲ 세션 리셋",
+  "둘러보기 시작",
+  "나중에",
+  "다시 보지 않기",
+  "조사 시작",
+  "전체 12대",
+  "가공 라인 1 4대",
+  "가공 라인 2 4대",
+  "가공 라인 3 4대",
+  "✕",
+  "조사 시작"
+ ],
+ "tourSteps": 3,
+ "total": {
+  "screens": 6,
+  "nodes": 1189,
+  "excludedNodes": 0,
+  "hitsJudged": 6,
+  "hitsExcluded": 0
+ },
+ "judgedHits": [
+  {
+   "screen": "incident-run",
+   "excluded": false,
+   "pat": [
+    "한다."
+   ],
+   "text": "매뉴얼은 특정 회전수에서만 이상 진동이 발생할 때 공구 불균형을 먼저 보라고 규정한다.",
+   "tid": "candidate-rationale"
+  },
+  {
+   "screen": "incident-run",
+   "excluded": false,
+   "pat": [
+    "한다."
+   ],
+   "text": "## 5. 경보 및 알람 경보 임계는 설비 마스터의 센서 등록값을 정본으로 하며, 본 매뉴얼에 수치를 중복 기재하지 않는다. 임계값을 문서에서 찾지 말고 해당 센서의 등록값을 조회한다. ### 5.",
+   "tid": "evidence-card"
+  },
+  {
+   "screen": "incident-run",
+   "excluded": false,
+   "pat": [
+    "한다."
+   ],
+   "text": "## 7. 이상 현상별 대처 각 항목은 「증상 → 확인 → 조치」 순으로 읽는다. 조치가 분해를 수반하면 해당 작업의 표준 작업 절차서와 안전 규정을 먼저 적용한다. ### 7.1 가공면 조도 악화",
+   "tid": "evidence-card"
+  },
+  {
+   "screen": "incident-run",
+   "excluded": false,
+   "pat": [
+    "한다."
+   ],
+   "text": "# 공통 안전 운전 매뉴얼 (r1) ## 1. 개요 본 매뉴얼은 전 설비 의 운전·점검 기준을 기술한다. ## 2. 사양 정격 운전 조건과 허용 범위는 설비 명판 및 설비 마스터 등록값을 따른다. ",
+   "tid": "evidence-card"
+  },
+  {
+   "screen": "incident-run",
+   "excluded": false,
+   "pat": [
+    "한다."
+   ],
+   "text": "## 4. 진동 진단 구동부 진동 RMS가 정상 운전 시 1.2~1.8 mm/s 범위를 유지하는지 월 1회 이상 확인한다. 반송 설비는 부하 변동이 크므로, 무부하와 정격 부하의 계측값을 같은 추세",
+   "tid": "evidence-card"
+  },
+  {
+   "screen": "incident-run",
+   "excluded": false,
+   "pat": [
+    "이다.",
+    "한다 "
+   ],
+   "text": "## 2. 사양 정격 운전 조건과 허용 범위는 설비 명판 및 설비 마스터 등록값을 따른다. 주축 최고 회전수, 이송 속도, 절삭유 공급 압력은 설비 마스터에 등록된 값이 정본이다. ### 2.1 제",
+   "tid": "evidence-card"
+  }
+ ],
+ "consoleErrors": []
+}

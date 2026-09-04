@@ -1,0 +1,16 @@
+{
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "runAtStart": "RUN-c5de128d89b1",
+ "listStatus": "https://factory-knowledge-twin.vercel.app/incidents",
+ "links": [
+  "/incidents/INC-2025-019",
+  "/incidents/INC-2025-019",
+  "/incidents/INC-2026-014?run=RUN-c5de128d89b1"
+ ],
+ "sections": [],
+ "runLink": "/incidents/INC-2026-014?run=RUN-c5de128d89b1",
+ "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2026-014?run=RUN-c5de128d89b1",
+ "runAfter": "RUN-c5de128d89b1",
+ "restored": true,
+ "tids": 74
+}
