@@ -538,7 +538,11 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     //    누설까지 통과시킨다. 좁힐 것은 낱말이 아니라 보는 범위다.
     const LEAK_WORDS = ["남의", "다른 세션", "권한", "403", "소유"];
     const text = await otherPage.locator("main").innerText();
-    expect(text).toContain("그런 작업지시 초안이 없다");
+    /* 🔴 **서버의 낱말은 `data-why` 에 산다**(D-73 · `components/unavailable.tsx`
+       「사람에게는 문장을, 계측기에게는 값을」). 화면은 `describeWhy()` 로 번역해 그리므로
+       원문을 `innerText` 에서 찾으면 «구조가 바뀐 자리»를 대상 결함으로 적게 된다.
+       그래서 «부재의 뜻»은 속성에서, «누설 없음»은 본문에서 따로 묻는다. */
+    await expect(box.locator("[data-why]")).toHaveAttribute("data-why", /그런 작업지시 초안이 없다/);
     for (const leak of LEAK_WORDS) {
       expect(text, `존재를 누설하는 낱말이 있다: ${leak}`).not.toContain(leak);
     }
