@@ -1,0 +1,111 @@
+{
+  "base": "http://127.0.0.1:8799",
+  "at": "2026-09-03T22:47:39.898Z",
+  "tally": {
+    "PASS": 10
+  },
+  "steps": [
+    {
+      "i": 1,
+      "screen": "진입",
+      "action": "브라우저로 /overview 를 연다(쿠키 없음)",
+      "expected": "세션 가드가 세션을 만들고 개요 화면이 선다 · 모드 배지가 뜬다",
+      "observed": "랜딩=http://127.0.0.1:8799/overview · 모드배지=\"◑REPLAY\"",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:23.789Z",
+      "url": "http://127.0.0.1:8799/overview"
+    },
+    {
+      "i": 2,
+      "screen": "개요",
+      "action": "알람·설비 카드와 스파크라인이 실제 값으로 서는지 센다",
+      "expected": "알람 카드 ≥1 · 설비 카드 ≥1 · 그래프 ≥1(빈 화면이 아니다)",
+      "observed": "알람=1 · 설비=12 · svg=17 · 알람문면=\"■AL-20260826-0041위험 · critical발생 2026-08-26 10:46 KST설비EQ-CNC-204 · SN-204-VIB임계 → 관측6.3 → 6.3047조사 시작\"",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:24.955Z",
+      "url": "http://127.0.0.1:8799/overview"
+    },
+    {
+      "i": 3,
+      "screen": "개요 → 조사",
+      "action": "「조사 시작」(start-from-alarm)을 누른다",
+      "expected": "조사 화면(/incidents/…)으로 이동한다",
+      "observed": "버튼 존재=true · 클릭 성공 · 이동=true",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:27.581Z",
+      "url": "http://127.0.0.1:8799/incidents/INC-2026-014?run=RUN-a763c34bd317"
+    },
+    {
+      "i": 4,
+      "screen": "조사",
+      "action": "조사가 스스로 도는 것을 최대 90초까지 지켜본다",
+      "expected": "5단계 타임라인이 서고 조사가 «완주»한다(steps-done = steps-total)",
+      "observed": "타임라인=1 · run-step=5 · 단계상태=[\"done\",\"done\",\"done\",\"done\",\"done\"] · 상태문면=\"완료\" · {\"data-testid\":\"run-progress\",\"status:data-testid\":\"run-status\"} · 완주=true",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:27.631Z",
+      "url": "http://127.0.0.1:8799/incidents/INC-2026-014?run=RUN-a763c34bd317"
+    },
+    {
+      "i": 5,
+      "screen": "조사·후보",
+      "action": "원인 후보와 «근거 ID 칩»을 센다",
+      "expected": "후보 ≥1 · 후보마다 근거 링크가 붙는다",
+      "observed": "후보=2 · 근거칩=4 · 첫 후보=\"1스핀들 베어링 마모FM-BRG-WEAR정비 이력 1건 · 문서 인용 1건 · 그래프 경로 2-hop근거 3건MR-2025-0087DOC-MAN-0021@r1#006FM-BRG-WEAR\"",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:27.680Z",
+      "url": "http://127.0.0.1:8799/incidents/INC-2026-014?run=RUN-a763c34bd317"
+    },
+    {
+      "i": 6,
+      "screen": "근거",
+      "action": "후보의 근거 칩(/evidence/MR-2025-0087?run=RUN-a763c34bd317)을 누른다",
+      "expected": "근거 화면이 열리고 출처·시각·신선도(trust-header)가 선다",
+      "observed": "클릭 성공 · 근거화면=true · trust-header=1 · 문면=\"revision 없음상태 —유효 —sha256 —─ 색인 축 없음 (SSOT 직독)\"",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:29.779Z",
+      "url": "http://127.0.0.1:8799/evidence/MR-2025-0087?run=RUN-a763c34bd317"
+    },
+    {
+      "i": 7,
+      "screen": "작업지시서",
+      "action": "조사 화면에서 작업지시서 링크를 눌러 연다",
+      "expected": "작업지시서가 열리고 편집 칸과 승인 손잡이가 있다",
+      "observed": "클릭 성공 · WO화면=true · 입력칸=2 · 승인버튼=1",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:33.854Z",
+      "url": "http://127.0.0.1:8799/work-orders/WOD-0e0f3e322d33"
+    },
+    {
+      "i": 8,
+      "screen": "승인",
+      "action": "승인 버튼 → 확인 모달에서 승인한다(사람 승인 경계)",
+      "expected": "확인 모달이 서고, 승인하면 상태가 «승인됨»이 되며 감사 흔적이 남는다",
+      "observed": "클릭 성공 · 모달=1 · 확인 클릭 성공 · 승인표시=true · 감사문면=false",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:37.699Z",
+      "url": "http://127.0.0.1:8799/work-orders/WOD-0e0f3e322d33"
+    },
+    {
+      "i": 9,
+      "screen": "비교",
+      "via": "url",
+      "action": "/compare 를 연다(전략 3종 비교)",
+      "expected": "세 전략의 열이 서고 각주가 붙는다",
+      "observed": "compare-strategy=3 · 각주=1 · 질문패널=1 · 본문길이=11150",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:39.804Z",
+      "url": "http://127.0.0.1:8799/compare"
+    },
+    {
+      "i": 10,
+      "screen": "전체",
+      "action": "이 동선 동안 브라우저 콘솔 오류를 모은다",
+      "expected": "런타임 오류 0",
+      "observed": "콘솔오류=0",
+      "verdict": "PASS",
+      "at": "2026-09-03T22:47:39.852Z",
+      "url": "http://127.0.0.1:8799/compare"
+    }
+  ],
+  "consoleErrors": []
+}

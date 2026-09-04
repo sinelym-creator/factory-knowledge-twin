@@ -1,0 +1,1058 @@
+{
+  "base": "http://127.0.0.1:3115",
+  "at": "2026-09-03T15:48:04.715Z",
+  "axes": {
+    "widths": [
+      390,
+      1440
+    ],
+    "heights": [
+      900
+    ],
+    "pointers": [
+      "fine",
+      "coarse"
+    ],
+    "states": [
+      "base",
+      "modal",
+      "tour"
+    ],
+    "routes": [
+      "C-Program-Files-Git-overview=C:/Program Files/Git/overview"
+    ]
+  },
+  "sc": {
+    "2.5.8": "at least 24 by 24 CSS pixels, except: Spacing / Equivalent / Inline / User agent control / Essential. (AA)",
+    "spacing": "if a 24 CSS pixel diameter circle is centered on the bounding box of each undersized target, the circles do not intersect another target or the circle for another undersized target.",
+    "2.5.5": "44 by 44 CSS pixels, no exception. (AAA)",
+    "machineJudged": "Spacing 만 기계 판정 — 빨강은 «AA 위반 후보»다.",
+    "populationNote": "inert 조상 아래 요소는 pointer 로 활성화 불가 ⇒ SC 의 target 이 아니다. all / nonInert 두 수를 다 낸다."
+  },
+  "calibration": [
+    {
+      "path": "/overview",
+      "total": 16,
+      "undersized24": 1,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    },
+    {
+      "path": "/incidents/INC-2026-014?run=STATIC-GS-01",
+      "total": 41,
+      "undersized24": 20,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    },
+    {
+      "path": "/evidence/MR-2025-0087?run=STATIC-GS-01",
+      "total": 8,
+      "undersized24": 2,
+      "aaFailCount": 0,
+      "landedAsRequested": true,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      }
+    }
+  ],
+  "discovery": null,
+  "cells": [
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /세션 리셋/).click()",
+      "stateEvidence": {
+        "dialogCount": 1
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 1,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 18,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "nonInert": {
+        "total": 18,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()",
+      "stateEvidence": {
+        "dialogs": 0,
+        "inertRoots": 9,
+        "hasTourControls": true
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 9,
+      "mediaCoarse": false,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 15,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 15
+      },
+      "nonInert": {
+        "total": 2,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "inertExcluded": 13,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 16
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /세션 리셋/).click()",
+      "stateEvidence": {
+        "dialogCount": 1
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 1,
+      "inertRoots": 0,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 18,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "nonInert": {
+        "total": 18,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 18
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()",
+      "stateEvidence": {
+        "dialogs": 0,
+        "inertRoots": 9,
+        "hasTourControls": true
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 9,
+      "mediaCoarse": false,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 15,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 15
+      },
+      "nonInert": {
+        "total": 2,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "inertExcluded": 13,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 8
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 8
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /세션 리셋/).click()",
+      "stateEvidence": {
+        "dialogCount": 1
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 1,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 18,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 11
+      },
+      "nonInert": {
+        "total": 18,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 11
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()",
+      "stateEvidence": {
+        "dialogs": 0,
+        "inertRoots": 9,
+        "hasTourControls": true
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 9,
+      "mediaCoarse": true,
+      "innerW": 390,
+      "innerH": 900,
+      "all": {
+        "total": 15,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 12
+      },
+      "nonInert": {
+        "total": 2,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "inertExcluded": 13,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "없음(기준 상태)",
+      "stateEvidence": null,
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "nonInert": {
+        "total": 16,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 2
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /세션 리셋/).click()",
+      "stateEvidence": {
+        "dialogCount": 1
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 1,
+      "inertRoots": 0,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 18,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 4
+      },
+      "nonInert": {
+        "total": 18,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 4
+      },
+      "inertExcluded": 0,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "prime": {
+        "status": 200,
+        "landed": "/overview",
+        "settled": true
+      },
+      "settled": true,
+      "settleMs": 700,
+      "settleCount": 19,
+      "httpStatus": null,
+      "landed": "/overview",
+      "landedAsRequested": false,
+      "notFound": false,
+      "stateOpened": true,
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()",
+      "stateEvidence": {
+        "dialogs": 0,
+        "inertRoots": 9,
+        "hasTourControls": true
+      },
+      "control": {
+        "reached": [
+          "__ctl_bad_a__",
+          "__ctl_bad_b__",
+          "__ctl_good__"
+        ],
+        "missing": [],
+        "isolated": {
+          "bad": {
+            "size": "13×13",
+            "aaPass": false,
+            "partners": 1
+          },
+          "good": {
+            "size": "61×61",
+            "aaPass": true,
+            "aaaPass": true
+          }
+        },
+        "inPageGoodAaPass": true,
+        "inPageGoodPartners": 0
+      },
+      "dialogOpen": 0,
+      "inertRoots": 9,
+      "mediaCoarse": true,
+      "innerW": 1440,
+      "innerH": 900,
+      "all": {
+        "total": 15,
+        "undersized24": 1,
+        "aaFailCount": 0,
+        "aaaFailCount": 12
+      },
+      "nonInert": {
+        "total": 2,
+        "undersized24": 0,
+        "aaFailCount": 0,
+        "aaaFailCount": 1
+      },
+      "inertExcluded": 13,
+      "aaFailures": [],
+      "aaFailInlineCandidates": 0
+    }
+  ],
+  "skipped": [
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "없음(기준 상태)"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /세션 리셋/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 390,
+      "height": 900,
+      "pointer": "fine",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "없음(기준 상태)"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /세션 리셋/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 1440,
+      "height": 900,
+      "pointer": "fine",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "없음(기준 상태)"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /세션 리셋/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 390,
+      "height": 900,
+      "pointer": "coarse",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "base",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "없음(기준 상태)"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "modal",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /세션 리셋/).click()"
+    },
+    {
+      "route": "C-Program-Files-Git-overview",
+      "path": "C:/Program Files/Git/overview",
+      "state": "tour",
+      "width": 1440,
+      "height": 900,
+      "pointer": "coarse",
+      "why": "다른 곳에 내림(/overview)",
+      "stateHow": "getByRole(button, /둘러보기 시작/).click()"
+    }
+  ],
+  "controlBroken": [],
+  "total": {
+    "cellsAttempted": 12,
+    "cellsUsable": 0,
+    "aaFailCellsNonInert": 0,
+    "aaFailUnique": [],
+    "inertActiveCells": 0
+  }
+}

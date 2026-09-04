@@ -48,16 +48,21 @@
     "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --fkt-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* ── 크기 9 (px · large 는 ≥md 34 / 모바일 28 · 숫자 2종은 «값이 주인공»인 자리) ── */
-  --fkt-t-kpi: 40px;      /* KPI 값 — 700 · tabular-nums · tracking -1px */
-  --fkt-t-metric: 28px;   /* 설비 카드·후보 신뢰도 값 — 600 */
-  --fkt-t-large: 28px;
-  --fkt-t-title: 22px;
-  --fkt-t-head: 17px;
-  --fkt-t-body: 17px;
-  --fkt-t-body-c: 15px;   /* 패널 본문(현 sm) */
-  --fkt-t-foot: 13px;     /* 현 xs */
-  --fkt-t-cap: 12px;      /* ID·시각 */
+  /* ── 크기 9 (rem · large 는 ≥md 2.125 / 모바일 1.75 · 숫자 2종은 «값이 주인공»인 자리) ──
+     🔴 **rem 인 이유** = 브라우저 «기본 글꼴 크기» 설정을 따라가기 위해서다(§9 ① · 접근성 3종
+     중 「큰 글자」). px 로 두면 사용자가 글꼴을 24px 로 키워도 **글자는 그대로이고 rem 으로 짠
+     레이아웃 상자만 커진다** — 얻는 것이 큰 글자가 아니라 낮아진 정보 밀도다(실측: 카드 폭
+     195→417px 인데 카드 이름은 15px 고정 · 2026-09-03).
+     🔴 환산 기준 16px · `clamp()` 상한을 두지 않는다(상한을 두면 그 위에서 다시 안 따라온다). */
+  --fkt-t-kpi: 2.5rem;      /* KPI 값 — 700 · tabular-nums · tracking -1px */
+  --fkt-t-metric: 1.75rem;   /* 설비 카드·후보 신뢰도 값 — 600 */
+  --fkt-t-large: 1.75rem;
+  --fkt-t-title: 1.375rem;
+  --fkt-t-head: 1.0625rem;
+  --fkt-t-body: 1.0625rem;
+  --fkt-t-body-c: 0.9375rem;   /* 패널 본문(현 sm) */
+  --fkt-t-foot: 0.8125rem;     /* 현 xs */
+  --fkt-t-cap: 0.75rem;      /* ID·시각 */
 
   /* ── 라운드 4 (큰 연속 곡률 — 작은 radius 는 즉시 「애플 아님」) ── */
   --fkt-r-card: 18px;
@@ -90,7 +95,7 @@
 
 @media (min-width: 48rem) {
   :root {
-    --fkt-t-large: 34px;
+    --fkt-t-large: 2.125rem;
   }
 }
 
@@ -121,6 +126,22 @@
     /* 🔴 그림자는 «라이트에만» 있다 — 다크에서 깊이는 밝기 차로만 만든다(그림자는 안 보인다). */
     --fkt-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.04);
     --fkt-shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+
+/* 고대비(HIG 「대비 증가」) — 🔴 **색조는 그대로 두고 «세기»만 올린다.** 다른 색으로 바꾸면
+   그건 대비 강화가 아니라 다른 팔레트이고, 화면이 자기 정체성을 잃는다.
+   🔴 앞서 이 축의 규칙이 **0건**이었다 — 자극은 도달하는데(`matchMedia` true) 켬·끔 4열의
+   대비 최솟값이 4.7 로 «전부 같았다»(실측 2026-09-03). 설정이 무시되고 있었다.
+   ⚠ 값은 «다크» 기준이다. 라이트(`:root[data-theme="light"]`)는 특이성이 높아 여기 값을
+   받지 않는다 — 라이트용 고대비 값은 아직 «없다»(§9 미정 · 회부분). */
+@media (prefers-contrast: more) {
+  :root {
+    --fkt-label-2: rgb(235 235 245 / 0.85);   /* 보조 텍스트 .6 → .85 */
+    --fkt-label-3: rgb(235 235 245 / 0.6);    /* 플레이스홀더 .3 → .6 */
+    --fkt-label-4: #5a5a5e;                   /* 헤어라인 — 면 경계가 보이게 */
+    --fkt-fill: rgb(120 120 128 / 0.55);      /* 채움 .36 → .55 (선택 상태가 읽히게) */
+    --fkt-tint-text: #7ab8ff;                 /* 파랑 글자 — 어두운 면 위 대비 상향 */
+  }
 }
 
 /* =============================================================================
@@ -284,8 +305,61 @@ body {
   .fkt-btn-primary { background: var(--fkt-tint-strong); color: #fff; }   /* 흰 라벨 4.7:1 */
   .fkt-btn-secondary { background: var(--fkt-bg-3); color: var(--fkt-label-1); }
   .fkt-btn-tertiary { background: transparent; color: var(--fkt-tint-text); }
-  @media (max-width: 47.99rem) {
-    .fkt-btn { min-height: 2.75rem; }   /* 터치 타깃 ≥44(⑧) */
+  /* 터치 타깃 ≥44(⑧). 🔴 조건은 «창 너비»가 아니라 «입력 장치»다 — `max-width:47.99rem` 로
+     두면 터치 태블릿·터치 노트북(≥768px)이 36px 로 떨어지고, 창을 좁힌 마우스 사용자는
+     필요 없는 44px 를 받는다. 손가락인지 포인터인지는 폭이 말해 주지 않는다.
+     🔴 `hover` 를 함께 걸지 않는다 — 두 조건을 섞으면 재측에서 「어느 쪽이 걸었나」를 못 가른다. */
+  @media (pointer: coarse) {
+    .fkt-btn { min-height: 2.75rem; }
+  }
+
+  /* 고대비에서는 카드 «경계»도 세운다 — 토큰만 올리면 글자는 진해지는데 면은 여전히
+     배경 차이 하나로만 나뉜다. 강해진 헤어라인(label-4)을 그대로 쓴다(새 색을 만들지 않는다). */
+  @media (prefers-contrast: more) {
+    .fkt-card { outline: 1px solid var(--fkt-label-4); }
+  }
+
+  /* ── 강제 색상(윈도우 고대비) ─────────────────────────────────────────────────
+     🔴 시스템 팔레트가 배경을 «지운다». 그래서 칸을 배경색으로만 나눈 자리는 경계가 통째로
+     사라진다 — 실측(2026-09-03)에서 설비 카드 12장·KPI 타일·알람 패널의 경계가 전멸했고,
+     「조사 시작」이 평문이 됐다. 색 하나에만 기댄 것은 여기서 전부 죽는다.
+     🔴 색은 시스템 키워드로만 준다(임의 색은 어차피 덮인다) · `forced-color-adjust: none`
+        을 쓰지 않는다 — 그건 사용자가 고른 팔레트를 우리가 되돌리는 것이다.
+     ✅ 발광은 여기서 손대지 않는다 — 브라우저가 이미 끈다(실측: 화면 전체 그림자 1→0). */
+  @media (forced-colors: active) {
+    .fkt-card { border: 1px solid CanvasText; }
+    .fkt-btn-primary { border: 1px solid ButtonBorder; }
+    /* 🔴 «선택된 탭»은 따로 짚는다 — `.fkt-pill` 에 얹으면 안 닿는다. 그 탭은 pill 이 아니라
+       `bg-fill`(반투명 그레이)로만 상태를 말하는 버튼이고, 강제 색상에서 그 배경이 사라지면
+       `font-semibold` 굵기 하나로만 버틴다. 사정거리 = overview-body.tsx:383(설비 탭 4개) ·
+       sensor-trend.tsx:112(추세 창 2개) — 두 자리가 같은 패턴이다. */
+    [aria-pressed="true"] { border: 1px solid Highlight; }
+  }
+
+  /* 🔴 히트 영역만 넓히는 자리 — «보이는 크기는 그대로»(원칙 ④). 배지·아이콘을 44px 로 키우면
+     레이아웃 결함을 접근성 이름으로 만드는 것이라, 늘리는 것은 «눌리는 영역»뿐이다.
+     🔴 `pointer-events:none` 을 주지 않는다 — 죽이면 그림일 뿐이고 실제로도 안 눌린다.
+     🔴 `min-height` 가 아니라 `::before` 인 이유가 그것이다. 다만 replaced element
+     (`<select>` 등)에는 의사 요소 박스가 «물리적으로» 안 생긴다 — 그 자리는 패딩으로 따로 푼다
+     (실측 2026-09-03: computed 는 44×44 를 내는데 요소 밖 히트 테스트는 부모를 답한다). */
+  /* 🔴 **세로로만 넓힌다.** 앞판은 가로도 `max(100%, 2.75rem)` 로 넓혔는데, 그러면 44 보다 좁은
+     요소에서 좌우로 삐져나오고 **뷰포트 가장자리에 있는 자리에서는 문서가 그만큼 넘친다**
+     (검증 실측: coarse 60/60 칸 `scrollWidth 391 / clientWidth 390` · fine 0/60 · 기준선 0/50).
+     🔴 숨겨서 없애지 않는다 — `overflow: hidden` 은 넘침을 «안 보이게» 만들 뿐이고, 그건
+        레이아웃 결함을 정직성 결함으로 바꾸는 것이다. 넘칠 «수 없는» 형태로 바꾼다.
+     ⚠ 대가: 가로가 44 에 못 미치는 두 자리(`intro-reopen` 32 · `fallback-banner` ✕ 10.6)는
+        가로 미달이 남는다. 가로까지 넓히려면 그 자리의 부모 여백을 손봐야 하므로 별건이다. */
+  @media (pointer: coarse) {
+    .fkt-hit { position: relative; }
+    .fkt-hit::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: max(100%, 2.75rem);
+      transform: translateY(-50%);
+    }
   }
 
   /* pill — 배지·칩 999 · 상태색은 호출부가 color 로 주고 배경은 currentColor 12% */
@@ -323,7 +397,11 @@ body {
      설정에서 투명도 감소와 대비 증가 상태를 고려한다」). 반투명은 장식이 아니라 «앞뒤 관계»를
      말하는 재질이므로, 끌 때도 그 관계는 남긴다 — blur 만 걷고 배경은 불투명 표면으로 바꿔
      계층은 그대로 둔다(미지원 폴백과 같은 자리로 착지한다). */
-  @media (prefers-reduced-transparency: reduce) {
+  /* 🔴 강제 색상(윈도우 고대비)에도 «같은» 처방을 건다 — 한 규칙 두 조건. 앞서는 투명도
+     감소에만 걸려 있어서, 시스템 팔레트를 쓰는 사람에게는 blur 가 그대로 남았다(실측
+     2026-09-03: `backdrop-filter: blur(20px) saturate(1.8)` 잔존). 처방을 두 자리에 나눠
+     적으면 한쪽만 고쳐진다 — 그래서 조건을 늘리지 규칙을 늘리지 않는다. */
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
     .fkt-glass {
       background: var(--fkt-bg-2);
       -webkit-backdrop-filter: none;

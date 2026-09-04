@@ -96,7 +96,7 @@ export function ComparePanel({
         ) : (
           <select
             id="compare-question"
-            className="mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c"
+            className="mt-2 w-full rounded-chip bg-inset px-3.5 py-3 text-body-c"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             data-testid="compare-question"

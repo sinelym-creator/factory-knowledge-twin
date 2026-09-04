@@ -12,6 +12,8 @@
  *    강조가 없는 것보다 나쁘다(offsets.py 「0이나 전체 범위 같은 그럴듯한 값을 지어내지
  *    않는다」의 화면 쪽 절반).
  */
+import { readCitation } from "@/components/evidence/read-citation";
+
 export function CitedBody({
   body,
   span,
@@ -22,22 +24,17 @@ export function CitedBody({
   span: { start: number; end: number } | null;
   chunkId?: string;
 }) {
-  const valid =
-    span !== null &&
-    Number.isInteger(span.start) &&
-    Number.isInteger(span.end) &&
-    span.start >= 0 &&
-    span.end > span.start &&
-    span.end <= body.length;
+  /* 🔴 판정·자르기 «규칙»은 `read-citation.ts` 로 옮겼다 — 화면 없이 재기 위해서다(U-09·U-10). */
+  const view = readCitation(body, span);
 
-  if (span !== null && !valid) {
+  if (view.kind === "out-of-range") {
     return (
       <section data-testid="cited-body" data-highlight="out-of-range">
         <p className="rounded border border-danger/50 bg-panel p-3 text-body-c text-danger">
           🔴 인용 좌표가 본문 범위 밖이다 — 강조를 그리지 않는다.
         </p>
         <p className="id mt-1 text-foot text-muted">
-          요청 좌표 [{span.start}, {span.end}) · 본문 길이 {body.length}
+          요청 좌표 [{view.start}, {view.end}) · 본문 길이 {view.bodyLength}
           {chunkId ? ` · ${chunkId}` : ""}
         </p>
         <BodyText>{body}</BodyText>
@@ -45,7 +42,7 @@ export function CitedBody({
     );
   }
 
-  if (!valid) {
+  if (view.kind === "none") {
     return (
       <section data-testid="cited-body" data-highlight="none">
         <p className="mb-2 text-foot text-muted">
@@ -56,7 +53,7 @@ export function CitedBody({
     );
   }
 
-  const { start, end } = span;
+  const { start, end } = view;
   return (
     <section data-testid="cited-body" data-highlight="ok">
       {/* 🔴 키보드 내비 — 본문이 길면 인용까지 스크롤로만 갈 수 있어서는 안 된다.
@@ -74,16 +71,16 @@ export function CitedBody({
         <span>— 원문에서 잘라 낸 구간이다(별도 인용문을 그리지 않는다).</span>
       </p>
       <BodyText>
-        {body.slice(0, start)}
+        {view.before}
         <mark
           id="cited"
           tabIndex={-1}
           data-testid="cited-span"
           className="bg-ai/15 text-ink outline-1 outline-ai/50"
         >
-          {body.slice(start, end)}
+          {view.quoted}
         </mark>
-        {body.slice(end)}
+        {view.after}
       </BodyText>
     </section>
   );

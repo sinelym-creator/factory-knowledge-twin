@@ -1,0 +1,3000 @@
+{
+  "at": "2026-09-03T10:25:30.518Z",
+  "base": "http://127.0.0.1:3102",
+  "scope": "엔진 3종 · 데스크톱 헤드리스 에뮬레이션 · 실기기 미측",
+  "settleMs": 450,
+  "cells": [
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": false,
+      "screen": "overview",
+      "route": "/overview",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 16,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+          "text": "Overview",
+          "w": 75.3,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted",
+          "text": "다시 보지 않기",
+          "w": 94.9,
+          "h": 27.5,
+          "testid": "tour-never",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "전체 12대",
+          "w": 75.9,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 1 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 2 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 3 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rou",
+          "text": "✕",
+          "w": 28,
+          "h": 28,
+          "testid": "intro-card",
+          "path": "aside.w-full>section.fkt-card>div.flex>button.fkt-hoverable",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_fine_overview.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": false,
+      "screen": "incident",
+      "route": "/incidents/INC-2025-019",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+          "text": "Incidents",
+          "w": 73.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 24시간",
+          "w": 90.1,
+          "h": 27.5,
+          "testid": "window-24h",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 3주",
+          "w": 70.5,
+          "h": 27.5,
+          "testid": "window-3w",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_fine_incident.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": false,
+      "screen": "evidence",
+      "route": "/evidence/EV-2025-001",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 7,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "text-ai underline-offset-2 hover:underline focus:outline-2 focus:outli",
+          "text": "① Overview",
+          "w": 294.5,
+          "h": 36.5,
+          "testid": "deep-link-notice",
+          "path": "main.mx-auto>div.flex>p.text-foot>a.text-ai",
+          "inline": true
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_fine_evidence.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": false,
+      "screen": "work-order",
+      "route": "/work-orders/WO-2025-001",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 6,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_fine_work-order.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": false,
+      "screen": "compare",
+      "route": "/compare",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 3,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+          "text": "Compare",
+          "w": 73.4,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "select",
+          "role": null,
+          "cls": "mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c",
+          "text": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마",
+          "w": 310,
+          "h": 42,
+          "testid": "compare-question",
+          "path": "main.mx-auto>div.flex>section.fkt-card>select.mt-2",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_fine_compare.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": false,
+      "screen": "overview",
+      "route": "/overview",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 16,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-primary rounded-pill px-5",
+          "text": "둘러보기 시작",
+          "w": 126.9,
+          "h": 36,
+          "testid": "tour-start",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.fkt-btn",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-secondary rounded-pill px-4",
+          "text": "나중에",
+          "w": 73.4,
+          "h": 36,
+          "testid": "tour-later",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.fkt-btn",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted",
+          "text": "다시 보지 않기",
+          "w": 94.9,
+          "h": 27.5,
+          "testid": "tour-never",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-primary rounded-pill px-5 fkt-glow-ai",
+          "text": "조사 시작",
+          "w": 99.3,
+          "h": 36,
+          "testid": "start-from-headline",
+          "path": "section.fkt-rise>div.mt-5>div>button.fkt-btn",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "전체 12대",
+          "w": 75.9,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 1 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 2 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 3 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rou",
+          "text": "✕",
+          "w": 28,
+          "h": 28,
+          "testid": "intro-card",
+          "path": "aside.w-full>section.fkt-card>div.flex>button.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-primary rounded-pill px-5",
+          "text": "조사 시작",
+          "w": 99.3,
+          "h": 36,
+          "testid": "start-from-alarm",
+          "path": "li.px-5>div.mt-3>div>button.fkt-btn",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_768_fine_overview.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": false,
+      "screen": "incident",
+      "route": "/incidents/INC-2025-019",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 24시간",
+          "w": 90.1,
+          "h": 27.5,
+          "testid": "window-24h",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 3주",
+          "w": 70.5,
+          "h": 27.5,
+          "testid": "window-3w",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_768_fine_incident.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": false,
+      "screen": "evidence",
+      "route": "/evidence/EV-2025-001",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 7,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "text-ai underline-offset-2 hover:underline focus:outline-2 focus:outli",
+          "text": "① Overview",
+          "w": 69.5,
+          "h": 17,
+          "testid": "deep-link-notice",
+          "path": "main.mx-auto>div.flex>p.text-foot>a.text-ai",
+          "inline": true
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_768_fine_evidence.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": false,
+      "screen": "work-order",
+      "route": "/work-orders/WO-2025-001",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 6,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_768_fine_work-order.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": false,
+      "screen": "compare",
+      "route": "/compare",
+      "media": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 3,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "select",
+          "role": null,
+          "cls": "mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c",
+          "text": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마",
+          "w": 420,
+          "h": 42,
+          "testid": "compare-question",
+          "path": "main.mx-auto>div.flex>section.fkt-card>select.mt-2",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+          "text": "실행",
+          "w": 67.6,
+          "h": 36,
+          "testid": "compare-run",
+          "path": "div.flex>section.fkt-card>div.mt-3>button.ml-auto",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_768_fine_compare.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": true,
+      "screen": "overview",
+      "route": "/overview",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 16,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+          "text": "Overview",
+          "w": 75.3,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted",
+          "text": "다시 보지 않기",
+          "w": 94.9,
+          "h": 27.5,
+          "testid": "tour-never",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "전체 12대",
+          "w": 75.9,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 1 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 2 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 3 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rou",
+          "text": "✕",
+          "w": 28,
+          "h": 28,
+          "testid": "intro-card",
+          "path": "aside.w-full>section.fkt-card>div.flex>button.fkt-hoverable",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_coarse_overview.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": true,
+      "screen": "incident",
+      "route": "/incidents/INC-2025-019",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+          "text": "Incidents",
+          "w": 73.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 24시간",
+          "w": 90.1,
+          "h": 27.5,
+          "testid": "window-24h",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 3주",
+          "w": 70.5,
+          "h": 27.5,
+          "testid": "window-3w",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_coarse_incident.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": true,
+      "screen": "evidence",
+      "route": "/evidence/EV-2025-001",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 7,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "text-ai underline-offset-2 hover:underline focus:outline-2 focus:outli",
+          "text": "① Overview",
+          "w": 294.5,
+          "h": 36.5,
+          "testid": "deep-link-notice",
+          "path": "main.mx-auto>div.flex>p.text-foot>a.text-ai",
+          "inline": true
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_coarse_evidence.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": true,
+      "screen": "work-order",
+      "route": "/work-orders/WO-2025-001",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 6,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Compare",
+          "w": 72.5,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)",
+      "shot": "t7a_chromium_dark_390_coarse_work-order.png"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 390,
+      "hasTouch": true,
+      "screen": "compare",
+      "route": "/compare",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 3,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Overview",
+          "w": 72.9,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+          "text": "Incidents",
+          "w": 71.7,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+          "text": "Compare",
+          "w": 73.4,
+          "h": 27.5,
+          "testid": "app-bar",
+          "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "select",
+          "role": null,
+          "cls": "mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c",
+          "text": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마",
+          "w": 310,
+          "h": 42,
+          "testid": "compare-question",
+          "path": "main.mx-auto>div.flex>section.fkt-card>select.mt-2",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": true,
+      "screen": "overview",
+      "route": "/overview",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 16,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-primary rounded-pill px-5",
+          "text": "둘러보기 시작",
+          "w": 126.9,
+          "h": 36,
+          "testid": "tour-start",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.fkt-btn",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-secondary rounded-pill px-4",
+          "text": "나중에",
+          "w": 73.4,
+          "h": 36,
+          "testid": "tour-later",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.fkt-btn",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted",
+          "text": "다시 보지 않기",
+          "w": 94.9,
+          "h": 27.5,
+          "testid": "tour-never",
+          "path": "div.px-5>aside.fkt-card>div.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-primary rounded-pill px-5 fkt-glow-ai",
+          "text": "조사 시작",
+          "w": 99.3,
+          "h": 36,
+          "testid": "start-from-headline",
+          "path": "section.fkt-rise>div.mt-5>div>button.fkt-btn",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "전체 12대",
+          "w": 75.9,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 1 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 2 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "가공 라인 3 4대",
+          "w": 108.5,
+          "h": 27.5,
+          "testid": "hierarchy-tree",
+          "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rou",
+          "text": "✕",
+          "w": 28,
+          "h": 28,
+          "testid": "intro-card",
+          "path": "aside.w-full>section.fkt-card>div.flex>button.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-btn fkt-btn-primary rounded-pill px-5",
+          "text": "조사 시작",
+          "w": 99.3,
+          "h": 36,
+          "testid": "start-from-alarm",
+          "path": "li.px-5>div.mt-3>div>button.fkt-btn",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": true,
+      "screen": "incident",
+      "route": "/incidents/INC-2025-019",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 24시간",
+          "w": 90.1,
+          "h": 27.5,
+          "testid": "window-24h",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+          "text": "최근 3주",
+          "w": 70.5,
+          "h": 27.5,
+          "testid": "window-3w",
+          "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": true,
+      "screen": "evidence",
+      "route": "/evidence/EV-2025-001",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 7,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "text-ai underline-offset-2 hover:underline focus:outline-2 focus:outli",
+          "text": "① Overview",
+          "w": 69.5,
+          "h": 17,
+          "testid": "deep-link-notice",
+          "path": "main.mx-auto>div.flex>p.text-foot>a.text-ai",
+          "inline": true
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": true,
+      "screen": "work-order",
+      "route": "/work-orders/WO-2025-001",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 6,
+      "touchHiddenSkipped": 0,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)"
+    },
+    {
+      "browser": "chromium",
+      "scheme": "dark",
+      "width": 768,
+      "hasTouch": true,
+      "screen": "compare",
+      "route": "/compare",
+      "media": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "overflow": false,
+      "widest": null,
+      "touchScanned": 8,
+      "touchHiddenSkipped": 3,
+      "touchUnder": [
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Overview",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Incidents",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition",
+          "text": "Compare",
+          "w": 236,
+          "h": 36,
+          "testid": null,
+          "path": "div.flex>nav.fkt-glass>a.flex",
+          "inline": false
+        },
+        {
+          "tag": "a",
+          "role": null,
+          "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+          "text": "안내와 둘러보기 다시 보기",
+          "w": 32,
+          "h": 32,
+          "testid": "intro-reopen",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+          "text": "⟲ 세션 리셋",
+          "w": 62.9,
+          "h": 24,
+          "testid": "reset-button",
+          "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "text-muted hover:text-ink",
+          "text": "✕",
+          "w": 10.6,
+          "h": 19.5,
+          "testid": "fallback-banner",
+          "path": "div.flex>div.flex>div.flex>button.text-muted",
+          "inline": false
+        },
+        {
+          "tag": "select",
+          "role": null,
+          "cls": "mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c",
+          "text": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마",
+          "w": 420,
+          "h": 42,
+          "testid": "compare-question",
+          "path": "main.mx-auto>div.flex>section.fkt-card>select.mt-2",
+          "inline": false
+        },
+        {
+          "tag": "button",
+          "role": null,
+          "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+          "text": "실행",
+          "w": 67.6,
+          "h": 36,
+          "testid": "compare-run",
+          "path": "div.flex>section.fkt-card>div.mt-3>button.ml-auto",
+          "inline": false
+        }
+      ],
+      "glassCount": 2,
+      "glassBg": "rgba(28, 28, 30, 0.72)",
+      "glassFilter": "blur(20px) saturate(1.8)"
+    }
+  ],
+  "controls": [
+    {
+      "browser": "chromium",
+      "overflowDetectorFired": true,
+      "overflowBefore": "390/390",
+      "overflowAfter": "5000/390",
+      "touchDetectorFired": true,
+      "touchUnderDelta": 1,
+      "pointerAxisFired": true,
+      "pointerMouseColumn": {
+        "pointerCoarse": false,
+        "pointerFine": true,
+        "hoverNone": false
+      },
+      "pointerTouchColumn": {
+        "pointerCoarse": true,
+        "pointerFine": false,
+        "hoverNone": true
+      }
+    }
+  ],
+  "fallback": [
+    {
+      "browser": "chromium",
+      "glassCount": 2,
+      "normalBg": "rgba(28, 28, 30, 0.72)",
+      "normalAlpha": 0.72,
+      "normalFilter": "blur(20px) saturate(1.8)",
+      "forcedBg": "rgb(28, 28, 30)",
+      "forcedAlpha": 1,
+      "forcedFilter": "blur(20px) saturate(1.8)",
+      "cssRulesRewritten": 2,
+      "stimulusLanded": true,
+      "columnsDiffer": true,
+      "fallbackOpaque": true
+    }
+  ],
+  "engineSupport": [
+    {
+      "browser": "chromium",
+      "version": "151.0.7922.34",
+      "std": true,
+      "webkit": false
+    }
+  ],
+  "errors": [],
+  "places": [
+    {
+      "id": "a|-|Overview",
+      "tag": "a",
+      "text": "Overview",
+      "inline": false,
+      "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) bg-a",
+      "testid": "app-bar",
+      "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+      "screens": [
+        "overview",
+        "incident",
+        "evidence",
+        "work-order",
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "75.3x27.5",
+        "72.9x27.5",
+        "236x36"
+      ]
+    },
+    {
+      "id": "a|-|Incidents",
+      "tag": "a",
+      "text": "Incidents",
+      "inline": false,
+      "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+      "testid": "app-bar",
+      "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+      "screens": [
+        "overview",
+        "incident",
+        "evidence",
+        "work-order",
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "71.7x27.5",
+        "73.5x27.5",
+        "236x36"
+      ]
+    },
+    {
+      "id": "a|-|Compare",
+      "tag": "a",
+      "text": "Compare",
+      "inline": false,
+      "cls": "rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) hove",
+      "testid": "app-bar",
+      "path": "div.flex>header.fkt-glass>nav.flex>a.rounded-pill",
+      "screens": [
+        "overview",
+        "incident",
+        "evidence",
+        "work-order",
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "72.5x27.5",
+        "73.4x27.5",
+        "236x36"
+      ]
+    },
+    {
+      "id": "a|-|안내와 둘러보기 다시 보기",
+      "tag": "a",
+      "text": "안내와 둘러보기 다시 보기",
+      "inline": false,
+      "cls": "fkt-hoverable flex h-8 w-8 items-center justify-center rounded-pill te",
+      "testid": "intro-reopen",
+      "path": "div.flex>header.fkt-glass>div.ml-auto>a.fkt-hoverable",
+      "screens": [
+        "overview",
+        "incident",
+        "evidence",
+        "work-order",
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "32x32"
+      ]
+    },
+    {
+      "id": "button|-|⟲ 세션 리셋",
+      "tag": "button",
+      "text": "⟲ 세션 리셋",
+      "inline": false,
+      "cls": "fkt-pill bg-fill text-foot text-muted hover:text-ink",
+      "testid": "reset-button",
+      "path": "div.flex>header.fkt-glass>div.ml-auto>button.fkt-pill",
+      "screens": [
+        "overview",
+        "incident",
+        "evidence",
+        "work-order",
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "62.9x24"
+      ]
+    },
+    {
+      "id": "button|-|✕",
+      "tag": "button",
+      "text": "✕",
+      "inline": false,
+      "cls": "text-muted hover:text-ink",
+      "testid": "fallback-banner",
+      "path": "div.flex>div.flex>div.flex>button.text-muted",
+      "screens": [
+        "overview",
+        "incident",
+        "evidence",
+        "work-order",
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "10.6x19.5",
+        "28x28"
+      ]
+    },
+    {
+      "id": "button|-|다시 보지 않기",
+      "tag": "button",
+      "text": "다시 보지 않기",
+      "inline": false,
+      "cls": "rounded-pill px-2 py-1 text-foot text-placeholder hover:text-muted",
+      "testid": "tour-never",
+      "path": "div.px-5>aside.fkt-card>div.flex>button.rounded-pill",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "94.9x27.5"
+      ]
+    },
+    {
+      "id": "button|-|전체 12대",
+      "tag": "button",
+      "text": "전체 12대",
+      "inline": false,
+      "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+      "testid": "hierarchy-tree",
+      "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "75.9x27.5"
+      ]
+    },
+    {
+      "id": "button|-|가공 라인 1 4대",
+      "tag": "button",
+      "text": "가공 라인 1 4대",
+      "inline": false,
+      "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+      "testid": "hierarchy-tree",
+      "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "108.5x27.5"
+      ]
+    },
+    {
+      "id": "button|-|가공 라인 2 4대",
+      "tag": "button",
+      "text": "가공 라인 2 4대",
+      "inline": false,
+      "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+      "testid": "hierarchy-tree",
+      "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "108.5x27.5"
+      ]
+    },
+    {
+      "id": "button|-|가공 라인 3 4대",
+      "tag": "button",
+      "text": "가공 라인 3 4대",
+      "inline": false,
+      "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+      "testid": "hierarchy-tree",
+      "path": "section.min-w-0>div.mb-3>nav.flex>button.rounded-pill",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "108.5x27.5"
+      ]
+    },
+    {
+      "id": "button|-|최근 24시간",
+      "tag": "button",
+      "text": "최근 24시간",
+      "inline": false,
+      "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+      "testid": "window-24h",
+      "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+      "screens": [
+        "incident"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "90.1x27.5"
+      ]
+    },
+    {
+      "id": "button|-|최근 3주",
+      "tag": "button",
+      "text": "최근 3주",
+      "inline": false,
+      "cls": "rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur",
+      "testid": "window-3w",
+      "path": "section.fkt-card>div.flex>div.ml-auto>button.rounded-pill",
+      "screens": [
+        "incident"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "70.5x27.5"
+      ]
+    },
+    {
+      "id": "a|-|① Overview",
+      "tag": "a",
+      "text": "① Overview",
+      "inline": true,
+      "cls": "text-ai underline-offset-2 hover:underline focus:outline-2 focus:outli",
+      "testid": "deep-link-notice",
+      "path": "main.mx-auto>div.flex>p.text-foot>a.text-ai",
+      "screens": [
+        "evidence"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "294.5x36.5",
+        "69.5x17"
+      ]
+    },
+    {
+      "id": "select|-|EQ-CNC-204의 진동 센서 경보 임계값은 얼마",
+      "tag": "select",
+      "text": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마",
+      "inline": false,
+      "cls": "mt-2 w-full rounded-chip bg-inset px-3.5 py-2.5 text-body-c",
+      "testid": "compare-question",
+      "path": "main.mx-auto>div.flex>section.fkt-card>select.mt-2",
+      "screens": [
+        "compare"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "310x42",
+        "420x42"
+      ]
+    },
+    {
+      "id": "button|-|둘러보기 시작",
+      "tag": "button",
+      "text": "둘러보기 시작",
+      "inline": false,
+      "cls": "fkt-btn fkt-btn-primary rounded-pill px-5",
+      "testid": "tour-start",
+      "path": "div.px-5>aside.fkt-card>div.flex>button.fkt-btn",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "126.9x36"
+      ]
+    },
+    {
+      "id": "button|-|나중에",
+      "tag": "button",
+      "text": "나중에",
+      "inline": false,
+      "cls": "fkt-btn fkt-btn-secondary rounded-pill px-4",
+      "testid": "tour-later",
+      "path": "div.px-5>aside.fkt-card>div.flex>button.fkt-btn",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "73.4x36"
+      ]
+    },
+    {
+      "id": "button|-|조사 시작",
+      "tag": "button",
+      "text": "조사 시작",
+      "inline": false,
+      "cls": "fkt-btn fkt-btn-primary rounded-pill px-5 fkt-glow-ai",
+      "testid": "start-from-headline",
+      "path": "section.fkt-rise>div.mt-5>div>button.fkt-btn",
+      "screens": [
+        "overview"
+      ],
+      "widths": [
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "99.3x36"
+      ]
+    },
+    {
+      "id": "button|-|실행",
+      "tag": "button",
+      "text": "실행",
+      "inline": false,
+      "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+      "testid": "compare-run",
+      "path": "div.flex>section.fkt-card>div.mt-3>button.ml-auto",
+      "screens": [
+        "compare"
+      ],
+      "widths": [
+        768
+      ],
+      "pointers": [
+        "fine",
+        "coarse"
+      ],
+      "engines": [
+        "chromium"
+      ],
+      "dims": [
+        "67.6x36"
+      ]
+    }
+  ],
+  "summary": {
+    "expectedCells": 20,
+    "measuredCells": 20,
+    "axes": {
+      "browsers": [
+        "chromium"
+      ],
+      "schemes": [
+        "dark"
+      ],
+      "widths": [
+        390,
+        768
+      ],
+      "pointers": [
+        false,
+        true
+      ]
+    },
+    "byBrowser": {
+      "chromium": {
+        "cells": 20,
+        "overflow": 0,
+        "touchCells": 20,
+        "touchAll": 170,
+        "touchWidget": 166
+      }
+    },
+    "byWidthPointer": {
+      "390|fine": {
+        "cells": 5,
+        "overflow": 0,
+        "uniq": 15,
+        "uniqWidget": 14
+      },
+      "768|fine": {
+        "cells": 5,
+        "overflow": 0,
+        "uniq": 19,
+        "uniqWidget": 18
+      },
+      "390|coarse": {
+        "cells": 5,
+        "overflow": 0,
+        "uniq": 15,
+        "uniqWidget": 14
+      },
+      "768|coarse": {
+        "cells": 5,
+        "overflow": 0,
+        "uniq": 19,
+        "uniqWidget": 18
+      }
+    },
+    "places": 19,
+    "shots": 14
+  }
+}

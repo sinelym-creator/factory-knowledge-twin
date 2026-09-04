@@ -1,0 +1,125 @@
+########## RUN2 상태 축 · :3115(fb1a0c5 앱면) · overview · base/modal/tour · 900 ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 본 측정 12/12 칸 사용 ===
+  [fine · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+  [fine · modal]
+     390×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18
+    1440×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18
+  [fine · tour]
+     390×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 0/2
+    1440×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 0/2
+  [coarse · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 8/16
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16
+  [coarse · modal]
+     390×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 7/18
+    1440×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 14/18
+  [coarse · tour]
+     390×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 1/2
+    1440×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 1/2
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 4/12
+RC2=0
+########## RUN3 높이 축 · :3115 · overview+incident · 480/640 ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 본 측정 16/16 칸 사용 ===
+  [fine · base]
+     390×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+     390×480  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 2/41
+     390×640  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+     390×640  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 2/41
+    1440×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×480  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 0/41
+    1440×640  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×640  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 0/41
+  [coarse · base]
+     390×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 8/16
+     390×480  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 6/41
+     390×640  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 8/16
+     390×640  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 6/41
+    1440×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 10/16
+    1440×480  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 6/41
+    1440×640  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16
+    1440×640  incidents-INC-2026-014-run-STATIC-GS-01 대상  41(all  41·inert제외 0) · AA통과 41/41 · AAA통과 8/41
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 0/16
+RC3=0
+########## RUN5a 상태 축 · :3116(develop 앱면 동일) · overview · base/modal/tour · 900+480 ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 본 측정 24/24 칸 사용 ===
+  [fine · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+     390×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+  [fine · modal]
+     390×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18
+     390×480  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18
+    1440×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18
+    1440×480  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 0/18
+  [fine · tour]
+     390×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 0/2
+     390×480  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 0/2
+    1440×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 0/2
+    1440×480  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 0/2
+  [coarse · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 8/16
+     390×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 8/16
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 14/16
+    1440×480  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 10/16
+  [coarse · modal]
+     390×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 7/18
+     390×480  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 7/18
+    1440×900  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 14/18
+    1440×480  overview    대상  18(all  18·inert제외 0) · AA통과 18/18 · AAA통과 10/18
+  [coarse · tour]
+     390×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 1/2
+     390×480  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 1/2
+    1440×900  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 1/2
+    1440×480  overview    대상   2(all  15·inert제외 13) · AA통과 2/2 · AAA통과 1/2
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 8/24
+RC5a=0
+########## RUN5b 화면 축 교차 · :3116 · 4화면 · fine ##########
+=== 교정 열(fine · 1440×900 · base) — 36대 산식과 같은 수인가 ===
+  /overview  대상 16 · 24미만 1 · AA위반후보 0
+  /incidents/INC-2026-014?run=STATIC-GS-01  대상 41 · 24미만 20 · AA위반후보 0
+  /evidence/MR-2025-0087?run=STATIC-GS-01  대상 8 · 24미만 2 · AA위반후보 0
+
+=== 라우트 발견 ===
+  overview = /overview
+  compare = /compare
+  work-order = /work-orders/WO-2025-0087
+  document = /documents/DOC-MAN-0021
+
+=== 본 측정 8/8 칸 사용 ===
+  [fine · base]
+     390×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+     390×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+     390×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+     390×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7
+    1440×900  overview    대상  16(all  16·inert제외 0) · AA통과 16/16 · AAA통과 0/16
+    1440×900  compare     대상   8(all   8·inert제외 0) · AA통과 8/8 · AAA통과 1/8
+    1440×900  work-order  대상   6(all   6·inert제외 0) · AA통과 6/6 · AAA통과 0/6
+    1440×900  document    대상   7(all   7·inert제외 0) · AA통과 7/7 · AAA통과 0/7
+
+AA 위반 후보 요소(non-inert): []
+inert 가 실제로 걸린 칸: 0/8
+RC5b=0

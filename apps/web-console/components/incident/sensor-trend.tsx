@@ -111,7 +111,7 @@ export function SensorTrend({
               onClick={() => setWindow(w)}
               aria-pressed={window === w}
               data-testid={`window-${w}`}
-              className={`rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
+              className={`fkt-hit rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
                 window === w ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
               }`}
             >

@@ -1,0 +1,328 @@
+### 1) t64 50칸
+{
+  "shots": 50,
+  "horizontalOverflow": 0,
+  "overflowCells": []
+}
+RC1=0
+### 2) 스킴 2열
+dark {"bodyBg":"rgb(0, 0, 0)","bodyColor":"rgb(255, 255, 255)","rootScheme":"dark","ctaBg":"rgb(0, 113, 227)","ctaColor":"rgb(255, 255, 255)"}
+light {"bodyBg":"rgb(0, 0, 0)","bodyColor":"rgb(255, 255, 255)","rootScheme":"dark","ctaBg":"rgb(0, 113, 227)","ctaColor":"rgb(255, 255, 255)"}
+### 3) e2e 전건
+== preflight — 이 실행이 상대한 것
+   web-console       http://127.0.0.1:3103   GET /overview → 307 (쿠키 없음 = 가드 홉)
+   ai-api            http://127.0.0.1:8010
+     GET  /api/live/status  → 200  {"online":false,"checkedAt":"2026-09-03T11:25:05.140206Z"}
+     POST /api/sessions     → 200  {"sessionId":"Z8nk1QmknuujzEkAZiFFwBoA"}
+   POST /sessions 가 200 이다 — 이 실행의 세션 origin 은 «api» 가 정상이다(T3-1 착지분)
+      online:false 이므로 모드 배지는 REPLAY 가 정상이다.
+
+
+Running 142 tests using 12 workers
+
+[1/142] e2e\phase2-evidence.spec.ts:66:7 › §21 증거 — 브라우저에서만 보이는 축 › E-1 세션 가드 — 가드 홉 «뒤»에서 ai-api 세션이 브라우저까지 선다
+[2/142] e2e\session-guard.spec.ts:48:9 › 세션 가드 › 쿠키 없이 /overview → `/` 경유 → /overview 착지 + 세션이 «실제로» 선다
+[3/142] e2e\mode-badge.spec.ts:24:7 › 모드 배지 › 전이: 마운트 «확인 중» → 응답 후 REPLAY (online:false)
+[4/142] e2e\t3-2-screens.spec.ts:49:7 › T3-2 ① Factory Overview › 브라우저 네트워크 축 — 화면이 부른 /api/* 가 전건 서고, 쿠키가 없으면 선다는 말이 거짓이 된다
+[5/142] e2e\reset-modal.spec.ts:26:7 › 세션 리셋 › 🔴 버튼만 눌러서는 리셋되지 않는다 — 확인 모달이 먼저 서고, 그때까지 네트워크 0
+[6/142] e2e\t3-3-evidence.spec.ts:33:7 › T3-3 딥링크 — 계약 v0.1.6 읽기 예외의 «화면» 절반 › 무세션 브라우저가 evidence 딥링크를 «열고 데이터까지» 본다
+[7/142] e2e\reset-modal-detection-control.spec.ts:46:7 › 리셋 «취소» 칸의 검출력 › 열 A — 취소(문면 없음): 계수를 남긴다
+[8/142] e2e\t3-4-run-screen.spec.ts:62:7 › T3-4 — 조사 실행 축 › ① live: 화면에서 시작 → 완주 (자극 실재 · 5단계 · 근거 누적 · TTAE 경계 · 초안 링크)
+[9/142] e2e\t3-6-isolation-walk.spec.ts:189:15 › T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함께 쓴다 › ① 두 컨텍스트는 «다른 세션»이다 (대조군 = 같은 컨텍스트는 같은 세션)
+[10/142] e2e\shell.spec.ts:39:7 › 셸·라우트 골격 › P0 6경로 전건 도달 — `/` 는 /overview 로 흡수된다(§6)
+[11/142] e2e\t3-6-keyboard.spec.ts:89:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › 🔴 세는 눈 — Tab 이 초점을 «실제로» 옮긴다 (이 행이 없으면 아래 전부가 무의미)
+[12/142] e2e\t3-5-wo-screen.spec.ts:127:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ① 표시 — 계약 12필드 · 목업 4칸 0 · 설비 고정 · 배지 · 출처 링크 (서버 대조군)
+[13/142] e2e\t3-3-evidence.spec.ts:55:7 › T3-3 딥링크 — 계약 v0.1.6 읽기 예외의 «화면» 절반 › 🔴 대조군 — 세션 화면과 «세그먼트 2» 는 무세션에서 닫힌다
+[14/142] e2e\t3-2-screens.spec.ts:77:7 › T3-2 ① Factory Overview › KPI 스트립 4칸이 응답의 kpi 를 그대로 말한다
+[15/142] e2e\phase2-evidence.spec.ts:124:7 › §21 증거 — 브라우저에서만 보이는 축 › E-2a 연쇄 1칸 — 조사 실행이 «클릭으로» incident 화면까지 잇는다
+[16/142] e2e\session-guard.spec.ts:48:9 › 세션 가드 › 쿠키 없이 /incidents/INC-2025-019 → `/` 경유 → /overview 착지 + 세션이 «실제로» 선다
+[17/142] e2e\mode-badge.spec.ts:97:7 › 모드 배지 › online:true → LIVE
+[18/142] e2e\reset-modal.spec.ts:44:7 › 세션 리셋 › R-3 회귀 — 모달 스크림이 토큰 계층을 «지난다»(하드코딩 색값 아님)
+e2e\reset-modal-detection-control.spec.ts:46:7 › 리셋 «취소» 칸의 검출력 › 열 A — 취소(문면 없음): 계수를 남긴다
+== 열 A (취소) · role=status 1 · 「되돌렸습니다」 0
+
+   옛 단언 not.toContainText → PASS
+
+   새 단언 toHaveCount(0)   → PASS
+
+   A: role=1 text=0 old=PASS new=PASS
+
+[19/142] e2e\reset-modal-detection-control.spec.ts:68:7 › 리셋 «취소» 칸의 검출력 › 열 B — 성공 모킹 + 되돌리기(문면 1건): 새 단언이 그것을 잡는가
+[20/142] e2e\t3-6-keyboard.spec.ts:99:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › ① 셸 내비 — Tab 으로 세 목적지에 닿고 Enter 로 옮겨 간다
+[21/142] e2e\mode-badge.spec.ts:121:7 › 모드 배지 › 응답 없음 → «미연결» + fallback 배너 · 🔴 REPLAY 라고 적지 않는다
+[22/142] e2e\phase2-evidence.spec.ts:156:7 › §21 증거 — 브라우저에서만 보이는 축 › E-2b 연쇄 잔여 — 근거 열람 → WO 승인이 클릭으로 이어진다
+[23/142] e2e\t3-5-wo-screen.spec.ts:207:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ② 편집 — title 디바운스 PATCH 1건 · 새로고침 일치 · parts 추가/삭제 · 신규 id 무생성
+[24/142] e2e\t3-2-screens.spec.ts:103:7 › T3-2 ① Factory Overview › 헤드라인은 «정렬된 목록의 첫 줄»이다 — 화면이 최댓값을 다시 고르지 않는다
+[25/142] e2e\session-guard.spec.ts:48:9 › 세션 가드 › 쿠키 없이 /work-orders/WO-2025-001 → `/` 경유 → /overview 착지 + 세션이 «실제로» 선다
+[26/142] e2e\t3-3-evidence.spec.ts:74:7 › T3-3 딥링크 — 계약 v0.1.6 읽기 예외의 «화면» 절반 › 딥링크 화면이 «무엇이 안 열리는지»를 말하고 세션 화면으로 가는 길을 준다
+e2e\reset-modal-detection-control.spec.ts:68:7 › 리셋 «취소» 칸의 검출력 › 열 B — 성공 모킹 + 되돌리기(문면 1건): 새 단언이 그것을 잡는가
+== 열 B (성공 모킹) · role=status 2 · 「되돌렸습니다」 1
+
+   옛 단언 not.toContainText → FAIL (expect(locator).not.toContainText(expected) failed)
+
+[27/142] e2e\t3-4-run-screen.spec.ts:119:7 › T3-4 — 조사 실행 축 › ② replay: 배지·문구 · 되감기가 «상태를 그 seq 로 다시 만든다» · 서버 events ≡ 화면
+  1) e2e\reset-modal.spec.ts:44:7 › 세션 리셋 › R-3 회귀 — 모달 스크림이 토큰 계층을 «지난다»(하드코딩 색값 아님) ──────────────
+
+    Error: --color-scrim 토큰이 브라우저에 없다
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not ""
+
+      55 |       getComputedStyle(document.documentElement).getPropertyValue("--color-scrim").trim(),
+      56 |     ]);
+    > 57 |     expect(token, "--color-scrim 토큰이 브라우저에 없다").not.toBe("");
+         |                                                     ^
+      58 |     // 적용된 배경이 «투명하지 않다» = 선언이 유효했다(V-2 처럼 무효 선언이면 버려진다)
+      59 |     expect(bg).not.toBe("rgba(0, 0, 0, 0)");
+      60 |     expect(bg).toMatch(/^rgba?\(/);
+        at <wt>\tests\web\e2e\reset-modal.spec.ts:57:53
+
+    Error Context: test-results\reset-modal-세션-리셋-R-3-회귀-—-모달-스크림이-토큰-계층을-«지난다»-하드코딩-색값-아님-\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\reset-modal-세션-리셋-R-3-회귀-—-모달-스크림이-토큰-계층을-«지난다»-하드코딩-색값-아님-\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\reset-modal-세션-리셋-R-3-회귀-—-모달-스크림이-토큰-계층을-«지난다»-하드코딩-색값-아님-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[28/142] e2e\mode-badge.spec.ts:136:7 › 모드 배지 › 모킹 없이 실제 ai-api 로 — online:false → REPLAY (E1 왕복)
+[29/142] e2e\t3-3-evidence.spec.ts:90:7 › T3-3 근거 열람 — kind 2종·인용 강조 › kind=doc-chunk 는 문서 탭과 인용 강조를, kind=record 는 «색인 축 없음»을 그린다
+[30/142] e2e\reset-modal.spec.ts:63:7 › 세션 리셋 › 취소 → 모달만 닫히고 아무 일도 없다
+[31/142] e2e\t3-6-keyboard.spec.ts:121:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › ② 초점은 «그려진다» — 클래스가 아니라 계산된 스타일 (대조군 = body 는 안 그린다)
+[32/142] e2e\t3-2-screens.spec.ts:126:7 › T3-2 ① Factory Overview › 활성 알람 0건이면 헤드라인이 «정상 가동» 대체문이 된다 (§1 인터랙션 ⑥)
+[33/142] e2e\session-guard.spec.ts:48:9 › 세션 가드 › 쿠키 없이 /compare → `/` 경유 → /overview 착지 + 세션이 «실제로» 선다
+[34/142] e2e\t3-6-isolation-walk.spec.ts:215:7 › T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함께 쓴다 › ② 남의 run 은 «없다» — 화면·서버 양쪽 (대조군 = 주인은 본다)
+[35/142] e2e\shell.spec.ts:50:7 › 셸·라우트 골격 › AppShell 4요소가 5화면 «전부»에서 보인다
+[36/142] e2e\mode-badge.spec.ts:166:7 › 모드 배지 › 배지는 색 없이도 읽힌다 — 아이콘+텍스트 병행(§10·§11.3)
+[37/142] e2e\t3-3-evidence.spec.ts:110:7 › T3-3 근거 열람 — kind 2종·인용 강조 › 🔴 인용 강조가 «원문에서 잘라 낸 그 구간»이다 (E-4 축 · AC)
+[38/142] e2e\t3-2-screens.spec.ts:154:7 › T3-2 ① Factory Overview › 알람 도크가 §1 표시 항목을 그린다 — id·severity·발생시각·임계·관측·설비·센서
+[39/142] e2e\t3-6-keyboard.spec.ts:140:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › ③ 조사 화면 — 재생·되감기·지금으로가 Tab·Enter 로 돈다
+[40/142] e2e\reset-modal.spec.ts:85:7 › 세션 리셋 › 되돌리기 → 계약 경로 그대로 나간다 (POST /api/sessions/{sid}/reset · E1)
+[41/142] e2e\session-guard.spec.ts:87:7 › 세션 가드 › 🔵 R-1 뒤집힘 — 딥링크 2라우트는 «유실되지 않는다»(v0.1.6 읽기 예외 · T3-3 착지)
+[42/142] e2e\t3-3-evidence.spec.ts:135:7 › T3-3 근거 열람 — kind 2종·인용 강조 › 계약 밖 kind 는 404 이고, 화면은 «추정 없이» 그 사실만 적는다 (Q-34 · red 아님)
+[43/142] e2e\t3-6-viewport.spec.ts:36:7 › T3-6 viewport 하네스 — 3폭 × 5화면 › 🔴 검출기 자기 검증 — 겹침·잘림·색만 구분을 «실제로» 잡는가 (대조군 3본)
+[44/142] e2e\phase2-evidence.spec.ts:188:7 › §21 증거 — 브라우저에서만 보이는 축 › E-3 전략 비교 — 세 score 를 «크기»로 견주지 않는다 (Q-17)
+[45/142] e2e\t3-4-run-screen.spec.ts:173:7 › T3-4 — 조사 실행 축 › 🔴 코드 축 — live/replay 렌더 분기는 허용 목록(testid·심볼) 밖 0
+[46/142] e2e\t3-4-run-screen.spec.ts:241:7 › T3-4 — 조사 실행 축 › ④ graph 근거는 실데이터 체인이다 — 목업 하드코딩 0 · `byRun` 미사용
+[47/142] e2e\session-guard.spec.ts:99:7 › 세션 가드 › 🔵 R-1 대조군 — 예외는 «딥링크만»이다(세션 화면은 여전히 목적지를 잃는다)
+[48/142] e2e\t3-3-evidence.spec.ts:145:7 › T3-3 근거 열람 — kind 2종·인용 강조 › 문서 화면이 신뢰 6필드를 «전부» 그린다 (wireframes §3 문서 헤더 · F-4)
+[49/142] e2e\t3-2-screens.spec.ts:188:7 › T3-2 ① Factory Overview › 조사 시작이 «두 자리»에 있고 둘이 같은 동작이다 (§1 인터랙션 ⑥ 진입 이중화)
+[50/142] e2e\reset-modal.spec.ts:99:7 › 세션 리셋 › 백엔드 실패 → «못 했다»고 말한다 (성공으로 접지 않는다)
+[51/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1280px × overview — 겹침 0 · 잘림 0 · 색만 구분 0
+   새 단언 toHaveCount(0)   → FAIL (expect(locator).toHaveCount(expected) failed)
+
+   B: role=2 text=1 old=FAIL new=FAIL
+
+[52/142] e2e\t4-4-viewport-mobile.spec.ts:75:9 › T4-4 tablet 하네스 (정본 :528 「tablet 까지 대응」) › tablet × overview — 문서 가로 밀림 0 · 겹침 0 · 색만 구분 0
+[53/142] e2e\t3-6-keyboard.spec.ts:181:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › ④ 모달 — Enter 로 열리고 Esc 로 닫힌다 (정본 T3-6 ③ · 대조군 = 닫기 전엔 열려 있다)
+[54/142] e2e\t3-3-evidence.spec.ts:197:5 › 🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울음 판정선)
+e2e\t3-3-evidence.spec.ts:197:5 › 🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울음 판정선)
+Error response from daemon: container 79ccd791673001462530eec80b7dbecca4556aa8d0e6559a96ff3a3297982f2a is not running
+
+[55/142] e2e\session-guard.spec.ts:114:9 › 세션 가드 › 딥링크 /evidence/EV-2025-001 — 쿠키 없이 열리되 «조용한 입장»은 없다 (v0.1.6 「열람만」)
+[56/142] e2e\reset-modal.spec.ts:125:7 › 세션 리셋 › 응답이 ok 일 때만 «되돌렸습니다» — 모킹으로 성공 경로 실측
+  2) e2e\t3-3-evidence.spec.ts:197:5 › 🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울음 판정선) ────────────────
+
+    Error: Command failed: docker exec fkt-levi2-postgres-1 psql -U fkt -d fkt -t -A -c SELECT build_id FROM index_build WHERE revision_id='DOC-SOP-0014@r2' ORDER BY built_at DESC LIMIT 1
+    Error response from daemon: container 79ccd791673001462530eec80b7dbecca4556aa8d0e6559a96ff3a3297982f2a is not running
+
+
+      181 |
+      182 | function psql(sql: string): string {
+    > 183 |   return execFileSync(
+          |                      ^
+      184 |     "docker",
+      185 |     ["exec", PG_CONTAINER, "psql", "-U", "fkt", "-d", "fkt", "-t", "-A", "-c", sql],
+      186 |     { encoding: "utf8" },
+        at psql (<wt>\tests\web\e2e\t3-3-evidence.spec.ts:183:22)
+        at <wt>\tests\web\e2e\t3-3-evidence.spec.ts:199:17
+
+    Error Context: test-results\t3-3-evidence-🔴-STALE-주입-—-낡음이-«화면-배지»까지-온다-Q-20-울음-판정선-\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\t3-3-evidence-🔴-STALE-주입-—-낡음이-«화면-배지»까지-온다-Q-20-울음-판정선-\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\t3-3-evidence-🔴-STALE-주입-—-낡음이-«화면-배지»까지-온다-Q-20-울음-판정선-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[57/142] e2e\t3-4-run-screen.spec.ts:266:7 › T3-4 — 조사 실행 축 › ⑤ WS 규율 — 없는 run 은 4404 문구 · 있는 run 에서는 안 뜬다 · 끊겨도 빈 화면 0
+[58/142] e2e\phase2-evidence.spec.ts:228:7 › §21 증거 — 브라우저에서만 보이는 축 › E-4 인용 강조 — 강조가 «그 문장» 위에 그려진다
+[59/142] e2e\t3-5-wo-screen.spec.ts:274:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ②′ parts — 신규 2건 중 «앞»을 지웠을 때 화면 표시가 서버와 같은가 (표시 밀림 축)
+[60/142] e2e\t42b-shell-axes.spec.ts:59:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓕ-0 🔴 세는 눈 — 절단 «없이»는 프레임이 오고 조사가 완주한다
+[61/142] e2e\shell.spec.ts:63:7 › 셸·라우트 골격 › 배너 슬롯은 «조건부»다 — 조건이 없으면 자리를 먹지 않는다
+[62/142] e2e\t3-6-isolation-walk.spec.ts:269:17 › T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함께 쓴다 › ③ 남의 WO 초안은 «없다» (대조군 = 주인은 편집 화면을 연다)
+[63/142] e2e\t3-6-keyboard.spec.ts:222:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › ④-b 모달 계통 — WO 승인 확인도 Esc 로 닫힌다 (D-7 재검 · 같은 규칙)
+[64/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1280px × compare — 겹침 0 · 잘림 0 · 색만 구분 0
+[65/142] e2e\t4-4-viewport-mobile.spec.ts:75:9 › T4-4 tablet 하네스 (정본 :528 「tablet 까지 대응」) › tablet × compare — 문서 가로 밀림 0 · 겹침 0 · 색만 구분 0
+[66/142] e2e\shell.spec.ts:75:7 › 셸·라우트 골격 › 세션 칩은 sessionId 앞 4자다(§0)
+[67/142] e2e\session-guard.spec.ts:114:9 › 세션 가드 › 딥링크 /documents/DOC-MAN-0021 — 쿠키 없이 열리되 «조용한 입장»은 없다 (v0.1.6 「열람만」)
+[68/142] e2e\reset-modal.spec.ts:135:7 › 세션 리셋 › 느린 응답 동안 «되돌리는 중…» + 버튼 잠금 — 두 번 눌러 두 번 나가지 않는다
+[69/142] e2e\shell.spec.ts:84:7 › 셸·라우트 골격 › 🔴 chat-first 금지(§10) — 셸에 입력창이 없다
+[70/142] e2e\phase2-evidence.spec.ts:269:7 › §21 증거 — 브라우저에서만 보이는 축 › E-5 R12 — 화면이 안전 조치를 «지울 수 있다»고 말하지 않는다
+[71/142] e2e\t3-4-run-screen.spec.ts:280:7 › T3-4 — 조사 실행 축 › ⑤ WS 가드 — 무쿠키는 «열리지 않는다»(대조군: 쿠키가 있으면 열린다)
+[72/142] e2e\t3-6-keyboard.spec.ts:257:7 › T3-6 키보드 — Tab·Enter·Esc·화살표만으로 걷는다 › ⑤ 근거 열람 — Tab·Enter 로 근거 카드 링크를 따라간다
+[73/142] e2e\t3-2-screens.spec.ts:209:7 › T3-2 ① Factory Overview › 🔴 첫 진입 안내는 «1회»다 — 닫으면 다시 뜨지 않고, 다시 열 자리가 있다 (§0.1 ①)
+[74/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1280px × incident — 겹침 0 · 잘림 0 · 색만 구분 0
+[75/142] e2e\t42b-shell-axes.spec.ts:75:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓕ-1 진행 «중» 절단 — 화면이 스스로 상태를 되찾고 중복 0
+[76/142] e2e\t4-4-viewport-mobile.spec.ts:75:9 › T4-4 tablet 하네스 (정본 :528 「tablet 까지 대응」) › tablet × incident — 문서 가로 밀림 0 · 겹침 0 · 색만 구분 0
+[77/142] e2e\session-guard.spec.ts:192:7 › 세션 가드 › `/` 는 머무는 곳이 아니다 — 쿠키가 «있어도» /overview 로 보낸다
+[78/142] e2e\shell.spec.ts:89:7 › 셸·라우트 골격 › 내비는 P0 화면만 노출한다 — P1(/knowledge·/documents·/system) 링크 0
+[79/142] e2e\t3-5-wo-screen.spec.ts:328:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ③ 잠금 — procedures·safety 편집 칸 0 · 삭제 시도 = 문구(조건절 0) · 서버에 요청 0
+[80/142] e2e\t6-6-synthesis-pending.spec.ts:226:7 › T6-6 ③ — 합성 대기 표시 › ① live·꼬리: synthesize 가 도는 창에서 보인다 · ② 완주 뒤 0
+[81/142] e2e\t3-6-isolation-walk.spec.ts:302:7 › T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함께 쓴다 › ④ 리셋 «뒤»에도 격리는 선다 — 지운 세션의 것은 새 세션에도 없다
+[82/142] e2e\shell.spec.ts:113:7 › 셸·라우트 골격 › V-2 회귀 — 앱바·레일 치수가 토큰 값(56px)으로 선다
+[83/142] e2e\t3-4-run-screen.spec.ts:326:7 › T3-4 — 조사 실행 축 › ③ /compare — 승인 질문만 · 열 1~3 · 차이는 집합 사실 · 각주 상시 · hit → ③
+[84/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1280px × evidence — 겹침 0 · 잘림 0 · 색만 구분 0
+[85/142] e2e\t4-4-viewport-mobile.spec.ts:75:9 › T4-4 tablet 하네스 (정본 :528 「tablet 까지 대응」) › tablet × evidence — 문서 가로 밀림 0 · 겹침 0 · 색만 구분 0
+[86/142] e2e\session-guard.spec.ts:199:7 › 세션 가드 › 한 번 받은 세션은 이동해도 그대로다 (매 진입마다 새로 발급하지 않는다)
+[87/142] e2e\t42b-shell-axes.spec.ts:103:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓕ-2 🔴 «끝난 뒤» 정상 종료(1000)는 복구 대상이 아니다
+[88/142] e2e\t3-2-screens.spec.ts:250:7 › T3-2 ① Factory Overview › 설비 카드 스파크라인이 «브라우저가 부른» series 로 선다 (계약 v0.1.7 집계 비대 방지)
+[89/142] e2e\phase2-evidence.spec.ts:329:7 › §21 증거 — 브라우저에서만 보이는 축 › E-6 배지 — Live/Replay 를 «두 축의 조합»으로 말한다 (v0.1.3)
+[90/142] e2e\shell.spec.ts:138:7 › 셸·라우트 골격 › V-2 대조군 — 토큰 «자체»는 브라우저에 살아 있다(원인이 표기임을 분리)
+e2e\t3-5-wo-screen.spec.ts:328:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ③ 잠금 — procedures·safety 편집 칸 0 · 삭제 시도 = 문구(조건절 0) · 서버에 요청 0
+   [기록] 화면 문구 대응: {"safety_measure_immutable":true,"safety_basis_immutable":true,"field_not_editable":false}
+
+[91/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1280px × document — 겹침 0 · 잘림 0 · 색만 구분 0
+[92/142] e2e\t4-4-viewport-mobile.spec.ts:75:9 › T4-4 tablet 하네스 (정본 :528 「tablet 까지 대응」) › tablet × document — 문서 가로 밀림 0 · 겹침 0 · 색만 구분 0
+[93/142] e2e\t3-4-run-screen.spec.ts:361:7 › T3-4 — 조사 실행 축 › ③ 대조군 — 본문 sessionId 가 쿠키와 다르면 422 (운반은 쿠키다)
+[94/142] e2e\t3-5-wo-screen.spec.ts:403:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ④ 반려 — 사유 빈 = 확인 비활성(화면 규칙) · 사유 있음 → rejected + auditId · 이후 잠금
+e2e\t6-6-synthesis-pending.spec.ts:226:7 › T6-6 ③ — 합성 대기 표시 › ① live·꼬리: synthesize 가 도는 창에서 보인다 · ② 완주 뒤 0
+   ⓞ 무대 — run 화면 번들 적재: script 2/15 청크 · html false
+
+[95/142] e2e\shell.spec.ts:183:7 › 셸·라우트 골격 › 다크가 기본이다(§10) — 배경이 밝게 뜨지 않는다
+[96/142] e2e\t3-6-isolation-walk.spec.ts:334:7 › T3-6 격리 통합 동선 — 두 방문자가 한 서버를 함께 쓴다 › ⑤ 딥링크는 «열람만» — 쿠키 없이 열리되 세션 화면은 여전히 닫힌다
+[97/142] e2e\t3-2-screens.spec.ts:281:7 › T3-2 ② Incident 조사 › 컨텍스트가 계약 v0.1.7 의 incident·설비를 그린다
+[98/142] e2e\t3-4-run-screen.spec.ts:380:7 › T3-4 — 조사 실행 축 (이어서) › ① [중지] — 도는 조사를 멈추면 화면이 «중지됨»으로 선다
+  3) e2e\t6-6-synthesis-pending.spec.ts:226:7 › T6-6 ③ — 합성 대기 표시 › ① live·꼬리: synthesize 가 도는 창에서 보인다 · ② 완주 뒤 0 
+
+    Error: 🔴 무대 없음 — `/api/live/status.online` 이 false 다. 게이트웨이가 없으면 합성은 대본 축으로 즉시 끝나고(실측 214ms) 「도는 중」이 존재하지 않는다. 이 축의 빨강은 처방이 아니라 무대의 것이다.
+       무대를 세우고 다시 돌려라(구독 0 · 측정 뒤 반드시 내린다):
+         node tests/web/_synthesis_hold_server.mjs 8787
+
+      151 |   });
+      152 |   if (!status.online) {
+    > 153 |     throw new Error(
+          |           ^
+      154 |       "🔴 무대 없음 — `/api/live/status.online` 이 false 다. 게이트웨이가 없으면 합성은 대본 축으로 " +
+      155 |         "즉시 끝나고(실측 214ms) 「도는 중」이 존재하지 않는다. 이 축의 빨강은 처방이 아니라 무대의 것이다.\n" +
+      156 |         "   무대를 세우고 다시 돌려라(구독 0 · 측정 뒤 반드시 내린다):\n" +
+        at requireHoldStage (<wt>\tests\web\e2e\t6-6-synthesis-pending.spec.ts:153:11)
+        at <wt>\tests\web\e2e\t6-6-synthesis-pending.spec.ts:237:5
+
+    Error Context: test-results\t6-6-synthesis-pending-T6--0b585-ize-가-도는-창에서-보인다-·-②-완주-뒤-0\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\t6-6-synthesis-pending-T6--0b585-ize-가-도는-창에서-보인다-·-②-완주-뒤-0\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\t6-6-synthesis-pending-T6--0b585-ize-가-도는-창에서-보인다-·-②-완주-뒤-0\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[99/142] e2e\session-guard.spec.ts:212:7 › 세션 가드 › 다른 방문자는 다른 세션을 받는다 (격리의 최소 조건)
+[100/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1440px × overview — 겹침 0 · 잘림 0 · 색만 구분 0
+[101/142] e2e\t4-4-viewport-mobile.spec.ts:105:9 › T4-4 전화 폭 하네스 — Pixel 7 (정본 :529 우선 제공 2종) › Pixel 7 — ① overview alert 가 «닿는다»
+[102/142] e2e\phase2-evidence.spec.ts:438:5 › 골격 정직성 — «못 잼»을 화면별 조건에 묶는다
+[103/142] e2e\t6-6-synthesis-pending.spec.ts:293:7 › T6-6 ③ — 합성 대기 표시 › ③ replay·꼬리: 같은 자리에서 0 (①과 손잡이는 mode 하나)
+[104/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1440px × compare — 겹침 0 · 잘림 0 · 색만 구분 0
+[105/142] e2e\t3-5-wo-screen.spec.ts:455:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ⑤ 승인 — 모달 → approved + auditId · 이후 잠금 · 서버 409 두 종
+[106/142] e2e\t4-4-viewport-mobile.spec.ts:145:9 › T4-4 전화 폭 하네스 — Pixel 7 (정본 :529 우선 제공 2종) › Pixel 7 — ② 승인 확인이 «닿는다»(모달까지 열린다)
+[107/142] e2e\t3-2-screens.spec.ts:306:7 › T3-2 ② Incident 조사 › `?run=` 진입이 그 run 을 화면에 싣는다
+[108/142] e2e\t3-4-run-screen.spec.ts:412:7 › T3-4 — 조사 실행 축 (이어서) › ③ cold — 느려도 «빈 화면»이 아니다(준비 중을 말한다)
+[109/142] e2e\session-guard.spec.ts:233:7 › 세션 가드 › 세션 origin 이 «지금의 사실»을 말한다 — 발급되면 api, 아니면 pending
+e2e\t6-6-synthesis-pending.spec.ts:293:7 › T6-6 ③ — 합성 대기 표시 › ③ replay·꼬리: 같은 자리에서 0 (①과 손잡이는 mode 하나)
+   ⓞ 무대 — run 화면 번들 적재: script 1/10 청크 · html false
+
+   ③ 표본 1 · synthesize=running 0 · 그중 표시 보임 0
+
+   🔴 ③ 은 판정이 아니다 — replay 꼬리 무대 없음(mode 단독 귀속 불가). 실제 차단은 ⑤(showingPast).
+
+[110/142] e2e\t6-6-synthesis-pending.spec.ts:337:7 › T6-6 ③ — 합성 대기 표시 › ⑤ replay·되감기: 커서를 synthesize 시작 직후에 세워도 0 (귀속 = showingPast)
+[111/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1440px × incident — 겹침 0 · 잘림 0 · 색만 구분 0
+[112/142] e2e\session-guard.spec.ts:280:9 › 세션 가드 › V-1 회귀 /incidents/x.svg — .svg id 도 가드를 «지난다»(§6 「모든 라우트」)
+[113/142] e2e\t3-2-screens.spec.ts:322:7 › T3-2 ② Incident 조사 › 🔵 뒤집힘 — 이벤트 상세 패널이 «T3-4 자리»를 벗고 실물이 됐다 (AC)
+[114/142] e2e\t4-4-viewport-mobile.spec.ts:105:9 › T4-4 전화 폭 하네스 — iPhone 13 (정본 :529 우선 제공 2종) › iPhone 13 — ① overview alert 가 «닿는다»
+e2e\t6-6-synthesis-pending.spec.ts:337:7 › T6-6 ③ — 합성 대기 표시 › ⑤ replay·되감기: 커서를 synthesize 시작 직후에 세워도 0 (귀속 = showingPast)
+   ⓞ 무대 — run 화면 번들 적재: script 1/10 청크 · html false
+
+[115/142] e2e\t3-5-wo-screen.spec.ts:504:7 › T3-5 — 작업지시서 편집·승인 «최소 형상» › ⑥ 소유권·가드 — 타 세션은 «없다» · 「남의 것」 문구 0 · 무쿠키는 입장으로
+[116/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1440px × evidence — 겹침 0 · 잘림 0 · 색만 구분 0
+[117/142] e2e\t42b-shell-axes.spec.ts:122:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓕ-3 🔴 재연결은 «유한»하다 — 조용한 무한 루프가 없다
+[118/142] e2e\session-guard.spec.ts:280:9 › 세션 가드 › V-1 회귀 /work-orders/x.svg — .svg id 도 가드를 «지난다»(§6 「모든 라우트」)
+[119/142] e2e\t4-4-viewport-mobile.spec.ts:145:9 › T4-4 전화 폭 하네스 — iPhone 13 (정본 :529 우선 제공 2종) › iPhone 13 — ② 승인 확인이 «닿는다»(모달까지 열린다)
+[120/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1440px × document — 겹침 0 · 잘림 0 · 색만 구분 0
+[121/142] e2e\t3-2-screens.spec.ts:333:7 › T3-2 ② Incident 조사 › 추세 창 전환이 «실제로 다른 창»을 부르고 캡션이 줄인 사실을 말한다
+[122/142] e2e\session-guard.spec.ts:287:7 › 세션 가드 › V-1 대조군 — 확장자만 다르면 가드가 «돈다»(원인이 .svg 절임을 분리)
+   ⑤ 커서 28/38 · mode=replay · synthesize=running · 표시 0건 (막은 문 = showingPast)
+
+[123/142] e2e\t6-6-synthesis-pending.spec.ts:365:7 › T6-6 ③ — 합성 대기 표시 › ④ live·되감기: 커서를 synthesize 시작 직후에 세워도 0 (①과 손잡이는 커서 하나)
+[124/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1920px × overview — 겹침 0 · 잘림 0 · 색만 구분 0
+[125/142] e2e\session-guard.spec.ts:293:7 › 세션 가드 › 🔴 V-1 처방의 «회귀 위험» — 최상위 정적 svg 는 가드에 걸리지 않는다
+[126/142] e2e\session-guard.spec.ts:303:7 › 세션 가드 › 🔵 V-1 처방이 «기대는 전제» — 중첩 자산은 가드에 걸린다(성문된 한계 · 실패 방향 확인)
+[127/142] e2e\t3-2-screens.spec.ts:359:7 › T3-2 ② Incident 조사 › 없는 incident 는 «없다»고 말한다 — «못 물어봤다»와 다른 문장이다
+[128/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1920px × compare — 겹침 0 · 잘림 0 · 색만 구분 0
+e2e\t6-6-synthesis-pending.spec.ts:365:7 › T6-6 ③ — 합성 대기 표시 › ④ live·되감기: 커서를 synthesize 시작 직후에 세워도 0 (①과 손잡이는 커서 하나)
+   ⓞ 무대 — run 화면 번들 적재: script 1/10 청크 · html false
+
+[129/142] e2e\t3-2-screens.spec.ts:373:5 › 화면이 런타임 오류를 내지 않는다 — hydration 불일치 포함
+[130/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1920px × incident — 겹침 0 · 잘림 0 · 색만 구분 0
+[131/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1920px × evidence — 겹침 0 · 잘림 0 · 색만 구분 0
+[132/142] e2e\t3-6-viewport.spec.ts:82:11 › T3-6 viewport 하네스 — 3폭 × 5화면 › 1920px × document — 겹침 0 · 잘림 0 · 색만 구분 0
+   ④ 커서 28/33 · synthesize=running · 표시 0건 · 바 0 · 스켈레톤 0
+
+[133/142] e2e\t3-2-screens.spec.ts:420:7 › T3-2 재검 — 처방의 뜻이 거동으로 서는가 › 🔴 R-3 — 차트 센서가 «알람 행의 sensorId»에서 온다(문자열 추측이 아니다)
+[134/142] e2e\t3-2-screens.spec.ts:484:7 › T3-2 재검 — 처방의 뜻이 거동으로 서는가 › 🔴 D-1 — 안내는 «세션»에 묶인다: 닫으면 안 뜨고, 새 세션이면 다시 뜬다
+[135/142] e2e\t42b-shell-axes.spec.ts:171:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓖ-1 큐 표시 — 대기는 «오류가 아니다»(queued ≠ pending) · 시작되면 지워진다
+[136/142] e2e\t42b-shell-axes.spec.ts:208:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓖ-2 용량 거절은 «code 로» 분기한다 — 503 이면 정적 재생본이 실제로 완주한다
+  4) e2e\t42b-shell-axes.spec.ts:208:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓖ-2 용량 거절은 «code 로» 분기한다 — 503 이면 정적 재생본이 실제로 완주한다 
+
+    Error: 503 이 안 났다 — 용량 거절을 잴 무대가 없다
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      227 |     );
+      228 |     const refused = fired.filter((r) => r.status === 503);
+    > 229 |     expect(refused.length, "503 이 안 났다 — 용량 거절을 잴 무대가 없다").toBeGreaterThan(0);
+          |                                                            ^
+      230 |     for (const r of refused) {
+      231 |       const code = ((r.body as { error?: { code?: string } }).error ?? {}).code;
+      232 |       expect(code, "503 인데 code 가 live_capacity_exhausted 가 아니다 — 셸이 code 로 분기할 수 없다").toBe(
+        at <wt>\tests\web\e2e\t42b-shell-axes.spec.ts:229:60
+
+    Error Context: test-results\t42b-shell-axes-T4-2b-셸-축--d9f5d-다-—-503-이면-정적-재생본이-실제로-완주한다\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\t42b-shell-axes-T4-2b-셸-축--d9f5d-다-—-503-이면-정적-재생본이-실제로-완주한다\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\t42b-shell-axes-T4-2b-셸-축--d9f5d-다-—-503-이면-정적-재생본이-실제로-완주한다\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[137/142] e2e\t42b-shell-axes.spec.ts:248:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓖ-3 큐 대기 상한 초과 = run.failed + fallback:"replay"
+[138/142] e2e\t42b-shell-axes.spec.ts:393:7 › T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10) › ⓗ-0 🔴 대조군 — 스트림이 서는 경로에서는 배너도 폴링도 «없다»
+[139/142] e2e\t42b-shell-axes.spec.ts:409:7 › T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10) › ⓗ-1 미개통(101 전 1006) → 배너가 서고 «간격을 스스로 밝힌다»
+[140/142] e2e\t42b-shell-axes.spec.ts:440:7 › T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10) › ⓗ-2 폴링이 «그 간격으로» 돈다 — 첫 회 즉시 호출 0
+[141/142] e2e\t42b-shell-axes.spec.ts:491:7 › T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10) › ⓗ-3 종단 뒤 폴링이 «멈추고» 배너가 사라진다 (:158)
+[142/142] e2e\t42b-shell-axes.spec.ts:531:7 › T4-2b ⓗ D-21 ⓒ 주기 조회 대체 (계약 v0.1.10) › ⓗ-4 429 는 «삼키지 않는다» — 조회를 멈추고 그 사실을 화면에 남긴다 (:160)
+  4 failed
+    e2e\reset-modal.spec.ts:44:7 › 세션 리셋 › R-3 회귀 — 모달 스크림이 토큰 계층을 «지난다»(하드코딩 색값 아님) ───────────────
+    e2e\t3-3-evidence.spec.ts:197:5 › 🔴 STALE 주입 — 낡음이 «화면 배지»까지 온다 (Q-20 울음 판정선) ─────────────────
+    e2e\t42b-shell-axes.spec.ts:208:7 › T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량 › ⓖ-2 용량 거절은 «code 로» 분기한다 — 503 이면 정적 재생본이 실제로 완주한다 
+    e2e\t6-6-synthesis-pending.spec.ts:226:7 › T6-6 ③ — 합성 대기 표시 › ① live·꼬리: synthesize 가 도는 창에서 보인다 · ② 완주 뒤 0 
+  4 skipped
+  134 passed (1.7m)
+RC3=1
+DONE

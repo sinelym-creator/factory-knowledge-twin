@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useModalInert } from "@/lib/use-modal-inert";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -34,6 +35,9 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
   /** 🔴 잠긴 필드를 «건드렸을 때» 뜨는 문구 — 서버 코드마다 다른 문장(3코드 = 3문구). */
   const [locked, setLocked] = useState<string | null>(null);
   const [asking, setAsking] = useState<"approve" | "reject" | null>(null);
+  /* 모달이 열려 있는 동안 배경을 실제로 막는다 — `aria-modal` 선언에 실제를 맞춘다(D-44). */
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  useModalInert(asking !== null, modalRef);
   const [reason, setReason] = useState("");
   // 🔴 이쪽 취소 버튼은 잠기지 않는다(승인·반려는 눌러야 나간다) — 그래서 열려 있으면 곧
   //    Esc 로 닫을 수 있다. 적어 둔 사유는 사라지지 않는다: `reason` 은 대화상자 «밖» 상태라
@@ -383,7 +387,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
       )}
 
       {asking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
+        <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4">
           <div className="w-full max-w-md fkt-card p-6" role="dialog" aria-modal>
             <p className="text-body-c">
               {asking === "approve" ? "이 작업지시서를 승인할까요?" : "이 작업지시서를 반려할까요?"}

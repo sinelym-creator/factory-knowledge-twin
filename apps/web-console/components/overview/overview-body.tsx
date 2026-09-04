@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { Sparkline } from "@/components/overview/sparkline";
+import { useTourAllowed } from "@/components/tour/tour-allowed";
 import { StartInvestigation } from "@/components/overview/start-investigation";
 import type { ActiveAlarm, Overview, OverviewEquipment, Scenario } from "@/lib/contract";
 import { TZ_LABEL, clock, stamp } from "@/lib/time";
@@ -243,10 +244,28 @@ export function OverviewBody({
           )}
         </section>
 
-        <aside className="w-full shrink-0 space-y-4 xl:w-(--spacing-dock)" aria-label="알람과 시나리오">
-          {showIntro && <IntroCard onClose={closeIntro} />}
+        <aside
+          className="w-full shrink-0 xl:w-(--spacing-dock)"
+          aria-label="알람과 시나리오"
+          data-testid="overview-dock"
+        >
+          {/* 🔴 두 열이 «같은 머리»를 갖게 한다 — 고정 픽셀로 내리지 않는다. 좌측은 라벨+필터
+              행 뒤에 카드가 오는데 우측은 열 top 에서 바로 시작해 39.5px 어긋나 있었다(실측
+              2026-09-03 · ≥1280 에서만 · 좁은 폭은 세로 스택이라 비교 자체가 성립 안 한다).
+              같은 클래스의 머리 행을 우측에도 두면 높이가 «구조로» 맞는다 — 안내 카드가 떠
+              있든 닫혔든 같다. 동시에 이 열이 «무엇인지» 이름이 생긴다(좌 = 설비 목록 /
+              우 = 지금 조치할 것). */}
+          <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+            {/* 🔴 `py-1` = 좌측 라인 칩과 «같은 세로 패딩 토큰»이다(둘 다 text-foot + py-1).
+                고정 8px 을 박아 맞추면 탭이 커지는 날 조용히 어긋난다 — 같은 토큰을 쓰면
+                한쪽이 바뀔 때 다른 쪽도 따라간다. */}
+            <p className="fkt-section-label py-1">지금 조치할 것</p>
+          </div>
 
-          <section className="fkt-card overflow-hidden" data-testid="alarm-dock">
+          <div className="space-y-4">
+            {showIntro && <IntroCard onClose={closeIntro} />}
+
+            <section className="fkt-card overflow-hidden" data-testid="alarm-dock">
             <p className="fkt-section-label px-5 pt-4 pb-1">
               활성 알람 {overview.activeAlarms.length}건
             </p>
@@ -332,7 +351,8 @@ export function OverviewBody({
                 ))}
               </ul>
             )}
-          </section>
+            </section>
+          </div>
         </aside>
       </div>
     </div>
@@ -381,7 +401,7 @@ function LineChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
+      className={`fkt-hit rounded-pill px-3 py-1 text-foot transition-colors duration-(--fkt-dur-1) ${
         active ? "bg-fill font-semibold text-ink" : "text-muted hover:bg-inset hover:text-ink"
       }`}
       title={id}
@@ -436,14 +456,33 @@ function EquipmentCard({
 }
 
 function IntroCard({ onClose }: { onClose: () => void }) {
+  /* 🔴 T7-28 — 이 카드는 «스스로» 투어의 허용 노드로 등록한다(D-1 재수리).
+     앞판은 오버레이가 효과 안에서 `querySelector('[data-testid="intro-card"]')` 를 한 번
+     읽었고, 카드가 그 뒤에 붙으면 다시 읽을 계기가 없어 카드가 `inert` 뒤로 들어갔다 —
+     그 안의 「안내 닫기」가 출구인데 눌리지 않았다(재열람 19/19 FAIL).
+     🔴 등록을 «카드 쪽»에 두면 순서 문제가 사라진다: 카드가 언제 붙든 붙는 그 순간에
+        등록되고, 사라질 때 해제된다. 투어가 안 열려 있으면 아무 일도 일어나지 않는다. */
+  const { registerAllowed } = useTourAllowed();
+  const ref = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    return registerAllowed(el);
+  }, [registerAllowed]);
+
   return (
-    <section className="fkt-card p-5" data-testid="intro-card" aria-label="처음 오셨나요">
+    <section
+      ref={ref}
+      className="fkt-card p-5"
+      data-testid="intro-card"
+      aria-label="처음 오셨나요"
+    >
       <div className="flex items-start gap-2">
         <p className="flex-1 text-title font-semibold tracking-[-0.01em]">처음 오셨나요?</p>
         <button
           type="button"
           onClick={onClose}
-          className="fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rounded-pill text-muted hover:text-ink"
+          className="fkt-hit fkt-hoverable -mr-1 -mt-1 flex h-7 w-7 items-center justify-center rounded-pill text-muted hover:text-ink"
           aria-label="안내 닫기"
         >
           ✕

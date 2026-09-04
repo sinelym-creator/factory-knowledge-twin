@@ -1,0 +1,402 @@
+{
+  "label": "before",
+  "base": "http://127.0.0.1:3112",
+  "at": "2026-09-03T13:12:51.537Z",
+  "control": {
+    "baseline": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0
+    },
+    "planted": {
+      "scrollWidth": 590,
+      "clientWidth": 390,
+      "over": 200
+    },
+    "removed": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0
+    }
+  },
+  "cells": [
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "overview",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "incident",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "evidence",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 768,
+      "route": "overview",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 768,
+      "route": "incident",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 768,
+      "route": "evidence",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1024,
+      "route": "overview",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1024,
+      "route": "incident",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1024,
+      "route": "evidence",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1280,
+      "route": "overview",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1280,
+      "route": "incident",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1280,
+      "route": "evidence",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1440,
+      "route": "overview",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1440,
+      "route": "incident",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1440,
+      "route": "evidence",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1920,
+      "route": "overview",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1920,
+      "route": "incident",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 1920,
+      "route": "evidence",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 390,
+      "route": "overview",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 390,
+      "route": "incident",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 390,
+      "route": "evidence",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 768,
+      "route": "overview",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 768,
+      "route": "incident",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 768,
+      "route": "evidence",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1024,
+      "route": "overview",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1024,
+      "route": "incident",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1024,
+      "route": "evidence",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1280,
+      "route": "overview",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1280,
+      "route": "incident",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1280,
+      "route": "evidence",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1440,
+      "route": "overview",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1440,
+      "route": "incident",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1440,
+      "route": "evidence",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1920,
+      "route": "overview",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1920,
+      "route": "incident",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "over": 0,
+      "overflow": false
+    },
+    {
+      "pointer": "coarse",
+      "mediaCoarse": true,
+      "width": 1920,
+      "route": "evidence",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "over": 0,
+      "overflow": false
+    }
+  ],
+  "total": {
+    "cells": 36,
+    "overflowing": 0,
+    "byPointer": {
+      "fine": 0,
+      "coarse": 0
+    },
+    "worst": {
+      "pointer": "fine",
+      "mediaCoarse": false,
+      "width": 390,
+      "route": "overview",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "over": 0,
+      "overflow": false
+    }
+  }
+}

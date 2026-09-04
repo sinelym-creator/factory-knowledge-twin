@@ -1,0 +1,1076 @@
+{
+  "at": "2026-09-03T10:54:10.349Z",
+  "base": "http://127.0.0.1:3102",
+  "note": "관측 · 판정 아님 · 처방 전 기준선",
+  "rows": [
+    {
+      "browser": "chromium",
+      "width": 768,
+      "screen": "overview",
+      "groups": [],
+      "mainBox": {
+        "top": 423.5,
+        "left": 260,
+        "w": 508,
+        "h": 2279
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 768,
+      "screen": "incident",
+      "groups": [],
+      "mainBox": {
+        "top": 127.5,
+        "left": 260,
+        "w": 508,
+        "h": 1080
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 768,
+      "screen": "compare",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "compare-strategy",
+            "cls": "mt-3 flex flex-wrap items-center gap-1.5 text-foot"
+          },
+          "containerBox": {
+            "top": 253,
+            "left": 304,
+            "w": 420,
+            "h": 36
+          },
+          "spreadPx": 4.3,
+          "inkSpreadPx": null,
+          "children": [
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 257.3,
+              "left": 304,
+              "w": 61,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 257.3,
+              "left": 370.7,
+              "w": 62,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 257.3,
+              "left": 438.8,
+              "w": 78,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "button",
+              "testid": "compare-run",
+              "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+              "top": 253,
+              "left": 656.4,
+              "w": 68,
+              "h": 36,
+              "inkTop": null
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 127.5,
+        "left": 260,
+        "w": 508,
+        "h": 773
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1024,
+      "screen": "overview",
+      "groups": [],
+      "mainBox": {
+        "top": 245,
+        "left": 260,
+        "w": 764,
+        "h": 2214
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1024,
+      "screen": "incident",
+      "groups": [],
+      "mainBox": {
+        "top": 108,
+        "left": 260,
+        "w": 764,
+        "h": 980
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1024,
+      "screen": "compare",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "compare-strategy",
+            "cls": "mt-3 flex flex-wrap items-center gap-1.5 text-foot"
+          },
+          "containerBox": {
+            "top": 233.5,
+            "left": 304,
+            "w": 676,
+            "h": 36
+          },
+          "spreadPx": 4.3,
+          "inkSpreadPx": null,
+          "children": [
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 237.8,
+              "left": 304,
+              "w": 61,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 237.8,
+              "left": 370.7,
+              "w": 62,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 237.8,
+              "left": 438.8,
+              "w": 78,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "button",
+              "testid": "compare-run",
+              "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+              "top": 233.5,
+              "left": 912.4,
+              "w": 68,
+              "h": 36,
+              "inkTop": null
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 108,
+        "left": 260,
+        "w": 764,
+        "h": 792
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1280,
+      "screen": "overview",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "kpi-strip",
+            "cls": "fkt-stagger grid grid-cols-2 gap-4 xl:grid-cols-4"
+          },
+          "containerBox": {
+            "top": 423.7,
+            "left": 284,
+            "w": 972,
+            "h": 101
+          },
+          "spreadPx": 0,
+          "inkSpreadPx": 0,
+          "children": [
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 284,
+              "w": 231,
+              "h": 101,
+              "inkTop": 439.7
+            },
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 531,
+              "w": 231,
+              "h": 101,
+              "inkTop": 439.7
+            },
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 778,
+              "w": 231,
+              "h": 101,
+              "inkTop": 439.7
+            },
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 1025,
+              "w": 231,
+              "h": 101,
+              "inkTop": 439.7
+            }
+          ]
+        },
+        {
+          "container": {
+            "tag": "div",
+            "testid": "equipment-grid",
+            "cls": "flex min-w-0 flex-col gap-8 xl:flex-row xl:gap-6"
+          },
+          "containerBox": {
+            "top": 588.2,
+            "left": 284,
+            "w": 972,
+            "h": 678
+          },
+          "spreadPx": 0,
+          "inkSpreadPx": 0,
+          "children": [
+            {
+              "tag": "section",
+              "testid": "equipment-grid",
+              "cls": "min-w-0 flex-1",
+              "top": 588.2,
+              "left": 284,
+              "w": 608,
+              "h": 678,
+              "inkTop": 588.2
+            },
+            {
+              "tag": "aside",
+              "testid": "intro-card",
+              "cls": "w-full shrink-0 space-y-4 xl:w-(--spacing-dock)",
+              "top": 588.2,
+              "left": 916,
+              "w": 340,
+              "h": 678,
+              "inkTop": 588.2
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 206,
+        "left": 260,
+        "w": 1020,
+        "h": 1084
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1280,
+      "screen": "incident",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "timeline-idle",
+            "cls": "flex min-w-0 flex-col gap-6 xl:flex-row"
+          },
+          "containerBox": {
+            "top": 238.6,
+            "left": 284,
+            "w": 972,
+            "h": 798
+          },
+          "spreadPx": 0,
+          "inkSpreadPx": 20,
+          "children": [
+            {
+              "tag": "section",
+              "testid": "timeline-idle",
+              "cls": "fkt-card w-full shrink-0 p-5 xl:w-80",
+              "top": 238.6,
+              "left": 284,
+              "w": 320,
+              "h": 798,
+              "inkTop": 258.6
+            },
+            {
+              "tag": "section",
+              "testid": "sensor-trend",
+              "cls": "min-w-0 flex-1 space-y-6",
+              "top": 238.6,
+              "left": 628,
+              "w": 224,
+              "h": 798,
+              "inkTop": 238.6
+            },
+            {
+              "tag": "aside",
+              "testid": "candidates-idle",
+              "cls": "fkt-card w-full shrink-0 p-5 xl:w-[380px]",
+              "top": 238.6,
+              "left": 876,
+              "w": 380,
+              "h": 798,
+              "inkTop": 258.6
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 88.5,
+        "left": 260,
+        "w": 1020,
+        "h": 972
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1280,
+      "screen": "compare",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "compare-strategy",
+            "cls": "mt-3 flex flex-wrap items-center gap-1.5 text-foot"
+          },
+          "containerBox": {
+            "top": 214,
+            "left": 304,
+            "w": 932,
+            "h": 36
+          },
+          "spreadPx": 4.3,
+          "inkSpreadPx": null,
+          "children": [
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 218.3,
+              "left": 304,
+              "w": 61,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 218.3,
+              "left": 370.7,
+              "w": 62,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 218.3,
+              "left": 438.8,
+              "w": 78,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "button",
+              "testid": "compare-run",
+              "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+              "top": 214,
+              "left": 1168.4,
+              "w": 68,
+              "h": 36,
+              "inkTop": null
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 88.5,
+        "left": 260,
+        "w": 1020,
+        "h": 812
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "screen": "overview",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "kpi-strip",
+            "cls": "fkt-stagger grid grid-cols-2 gap-4 xl:grid-cols-4"
+          },
+          "containerBox": {
+            "top": 423.7,
+            "left": 284,
+            "w": 1132,
+            "h": 101
+          },
+          "spreadPx": 0,
+          "inkSpreadPx": 0,
+          "children": [
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 284,
+              "w": 271,
+              "h": 101,
+              "inkTop": 439.7
+            },
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 571,
+              "w": 271,
+              "h": 101,
+              "inkTop": 439.7
+            },
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 858,
+              "w": 271,
+              "h": 101,
+              "inkTop": 439.7
+            },
+            {
+              "tag": "article",
+              "testid": null,
+              "cls": "fkt-card px-5 py-4",
+              "top": 423.7,
+              "left": 1145,
+              "w": 271,
+              "h": 101,
+              "inkTop": 439.7
+            }
+          ]
+        },
+        {
+          "container": {
+            "tag": "div",
+            "testid": "equipment-grid",
+            "cls": "flex min-w-0 flex-col gap-8 xl:flex-row xl:gap-6"
+          },
+          "containerBox": {
+            "top": 588.2,
+            "left": 284,
+            "w": 1132,
+            "h": 678
+          },
+          "spreadPx": 0,
+          "inkSpreadPx": 0,
+          "children": [
+            {
+              "tag": "section",
+              "testid": "equipment-grid",
+              "cls": "min-w-0 flex-1",
+              "top": 588.2,
+              "left": 284,
+              "w": 768,
+              "h": 678,
+              "inkTop": 588.2
+            },
+            {
+              "tag": "aside",
+              "testid": "intro-card",
+              "cls": "w-full shrink-0 space-y-4 xl:w-(--spacing-dock)",
+              "top": 588.2,
+              "left": 1076,
+              "w": 340,
+              "h": 678,
+              "inkTop": 588.2
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 206,
+        "left": 260,
+        "w": 1180,
+        "h": 1084
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "screen": "incident",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "timeline-idle",
+            "cls": "flex min-w-0 flex-col gap-6 xl:flex-row"
+          },
+          "containerBox": {
+            "top": 238.6,
+            "left": 284,
+            "w": 1132,
+            "h": 600
+          },
+          "spreadPx": 0,
+          "inkSpreadPx": 20,
+          "children": [
+            {
+              "tag": "section",
+              "testid": "timeline-idle",
+              "cls": "fkt-card w-full shrink-0 p-5 xl:w-80",
+              "top": 238.6,
+              "left": 284,
+              "w": 320,
+              "h": 600,
+              "inkTop": 258.6
+            },
+            {
+              "tag": "section",
+              "testid": "sensor-trend",
+              "cls": "min-w-0 flex-1 space-y-6",
+              "top": 238.6,
+              "left": 628,
+              "w": 384,
+              "h": 600,
+              "inkTop": 238.6
+            },
+            {
+              "tag": "aside",
+              "testid": "candidates-idle",
+              "cls": "fkt-card w-full shrink-0 p-5 xl:w-[380px]",
+              "top": 238.6,
+              "left": 1036,
+              "w": 380,
+              "h": 600,
+              "inkTop": 258.6
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 88.5,
+        "left": 260,
+        "w": 1180,
+        "h": 812
+      }
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "screen": "compare",
+      "groups": [
+        {
+          "container": {
+            "tag": "div",
+            "testid": "compare-strategy",
+            "cls": "mt-3 flex flex-wrap items-center gap-1.5 text-foot"
+          },
+          "containerBox": {
+            "top": 214,
+            "left": 304,
+            "w": 1092,
+            "h": 36
+          },
+          "spreadPx": 4.3,
+          "inkSpreadPx": null,
+          "children": [
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 218.3,
+              "left": 304,
+              "w": 61,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 218.3,
+              "left": 370.7,
+              "w": 62,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "label",
+              "testid": "compare-strategy",
+              "cls": "flex cursor-pointer items-center gap-1.5 rounded-pill px-3 p",
+              "top": 218.3,
+              "left": 438.8,
+              "w": 78,
+              "h": 28,
+              "inkTop": null
+            },
+            {
+              "tag": "button",
+              "testid": "compare-run",
+              "cls": "ml-auto fkt-btn fkt-btn-primary rounded-pill px-5",
+              "top": 214,
+              "left": 1328.4,
+              "w": 68,
+              "h": 36,
+              "inkTop": null
+            }
+          ]
+        }
+      ],
+      "mainBox": {
+        "top": 88.5,
+        "left": 260,
+        "w": 1180,
+        "h": 812
+      }
+    }
+  ],
+  "landmarks": [
+    {
+      "browser": "chromium",
+      "width": 768,
+      "screen": "overview",
+      "boxes": {
+        "equipment-grid": {
+          "found": true,
+          "top": 998.8,
+          "left": 284,
+          "w": 460,
+          "h": 1015,
+          "inkTop": 998.8
+        },
+        "equipment-first-card": {
+          "found": true,
+          "top": 1065.8,
+          "left": 284,
+          "w": 224,
+          "h": 148,
+          "inkTop": 1081.8
+        },
+        "overview-aside": {
+          "found": true,
+          "top": 2045.8,
+          "left": 284,
+          "w": 460,
+          "h": 633,
+          "inkTop": 2045.8
+        },
+        "equipment-tab-row": {
+          "found": true,
+          "top": 998.8,
+          "left": 284,
+          "w": 460,
+          "h": 55,
+          "inkTop": 998.8
+        },
+        "aside-first-card": {
+          "found": true,
+          "top": 2045.8,
+          "left": 284,
+          "w": 460,
+          "h": 281,
+          "inkTop": 2061.8
+        },
+        "alarm-dock": {
+          "found": true,
+          "top": 2342.3,
+          "left": 284,
+          "w": 460,
+          "h": 231,
+          "inkTop": 2342.3
+        },
+        "scenario-dock": {
+          "found": true,
+          "top": 2588.8,
+          "left": 284,
+          "w": 460,
+          "h": 90,
+          "inkTop": 2588.8
+        }
+      },
+      "pairs": [
+        {
+          "a": "equipment-first-card",
+          "b": "aside-first-card",
+          "measurable": false,
+          "why": "세로 스택(같은 열) — 상단 비교 무의미",
+          "boxDeltaPx": null,
+          "inkDeltaPx": null,
+          "aTop": 1065.8,
+          "bTop": 2045.8,
+          "aInk": 1081.8,
+          "bInk": 2061.8
+        },
+        {
+          "a": "equipment-grid",
+          "b": "overview-aside",
+          "measurable": false,
+          "why": "세로 스택(같은 열) — 상단 비교 무의미",
+          "boxDeltaPx": null,
+          "inkDeltaPx": null,
+          "aTop": 998.8,
+          "bTop": 2045.8,
+          "aInk": 998.8,
+          "bInk": 2045.8
+        },
+        {
+          "a": "equipment-first-card",
+          "b": "alarm-dock",
+          "measurable": false,
+          "why": "세로 스택(같은 열) — 상단 비교 무의미",
+          "boxDeltaPx": null,
+          "inkDeltaPx": null,
+          "aTop": 1065.8,
+          "bTop": 2342.3,
+          "aInk": 1081.8,
+          "bInk": 2342.3
+        }
+      ]
+    },
+    {
+      "browser": "chromium",
+      "width": 1024,
+      "screen": "overview",
+      "boxes": {
+        "equipment-grid": {
+          "found": true,
+          "top": 782.2,
+          "left": 284,
+          "w": 716,
+          "h": 988,
+          "inkTop": 782.2
+        },
+        "equipment-first-card": {
+          "found": true,
+          "top": 821.7,
+          "left": 284,
+          "w": 352,
+          "h": 148,
+          "inkTop": 837.7
+        },
+        "overview-aside": {
+          "found": true,
+          "top": 1801.7,
+          "left": 284,
+          "w": 716,
+          "h": 633,
+          "inkTop": 1801.7
+        },
+        "equipment-tab-row": {
+          "found": true,
+          "top": 782.2,
+          "left": 284,
+          "w": 716,
+          "h": 28,
+          "inkTop": 782.2
+        },
+        "aside-first-card": {
+          "found": true,
+          "top": 1801.7,
+          "left": 284,
+          "w": 716,
+          "h": 281,
+          "inkTop": 1817.7
+        },
+        "alarm-dock": {
+          "found": true,
+          "top": 2098.2,
+          "left": 284,
+          "w": 716,
+          "h": 231,
+          "inkTop": 2098.2
+        },
+        "scenario-dock": {
+          "found": true,
+          "top": 2344.7,
+          "left": 284,
+          "w": 716,
+          "h": 90,
+          "inkTop": 2344.7
+        }
+      },
+      "pairs": [
+        {
+          "a": "equipment-first-card",
+          "b": "aside-first-card",
+          "measurable": false,
+          "why": "세로 스택(같은 열) — 상단 비교 무의미",
+          "boxDeltaPx": null,
+          "inkDeltaPx": null,
+          "aTop": 821.7,
+          "bTop": 1801.7,
+          "aInk": 837.7,
+          "bInk": 1817.7
+        },
+        {
+          "a": "equipment-grid",
+          "b": "overview-aside",
+          "measurable": false,
+          "why": "세로 스택(같은 열) — 상단 비교 무의미",
+          "boxDeltaPx": null,
+          "inkDeltaPx": null,
+          "aTop": 782.2,
+          "bTop": 1801.7,
+          "aInk": 782.2,
+          "bInk": 1801.7
+        },
+        {
+          "a": "equipment-first-card",
+          "b": "alarm-dock",
+          "measurable": false,
+          "why": "세로 스택(같은 열) — 상단 비교 무의미",
+          "boxDeltaPx": null,
+          "inkDeltaPx": null,
+          "aTop": 821.7,
+          "bTop": 2098.2,
+          "aInk": 837.7,
+          "bInk": 2098.2
+        }
+      ]
+    },
+    {
+      "browser": "chromium",
+      "width": 1280,
+      "screen": "overview",
+      "boxes": {
+        "equipment-grid": {
+          "found": true,
+          "top": 588.2,
+          "left": 284,
+          "w": 608,
+          "h": 678,
+          "inkTop": 588.2
+        },
+        "equipment-first-card": {
+          "found": true,
+          "top": 627.7,
+          "left": 284,
+          "w": 195,
+          "h": 148,
+          "inkTop": 643.7
+        },
+        "overview-aside": {
+          "found": true,
+          "top": 588.2,
+          "left": 916,
+          "w": 340,
+          "h": 678,
+          "inkTop": 588.2
+        },
+        "equipment-tab-row": {
+          "found": true,
+          "top": 588.2,
+          "left": 284,
+          "w": 608,
+          "h": 28,
+          "inkTop": 588.2
+        },
+        "aside-first-card": {
+          "found": true,
+          "top": 588.2,
+          "left": 916,
+          "w": 340,
+          "h": 326,
+          "inkTop": 604.2
+        },
+        "alarm-dock": {
+          "found": true,
+          "top": 929.7,
+          "left": 916,
+          "w": 340,
+          "h": 231,
+          "inkTop": 929.7
+        },
+        "scenario-dock": {
+          "found": true,
+          "top": 1176.2,
+          "left": 916,
+          "w": 340,
+          "h": 90,
+          "inkTop": 1176.2
+        }
+      },
+      "pairs": [
+        {
+          "a": "equipment-first-card",
+          "b": "aside-first-card",
+          "measurable": true,
+          "why": null,
+          "boxDeltaPx": 39.5,
+          "inkDeltaPx": 39.5,
+          "aTop": 627.7,
+          "bTop": 588.2,
+          "aInk": 643.7,
+          "bInk": 604.2
+        },
+        {
+          "a": "equipment-grid",
+          "b": "overview-aside",
+          "measurable": true,
+          "why": null,
+          "boxDeltaPx": 0,
+          "inkDeltaPx": 0,
+          "aTop": 588.2,
+          "bTop": 588.2,
+          "aInk": 588.2,
+          "bInk": 588.2
+        },
+        {
+          "a": "equipment-first-card",
+          "b": "alarm-dock",
+          "measurable": true,
+          "why": null,
+          "boxDeltaPx": -302,
+          "inkDeltaPx": -286,
+          "aTop": 627.7,
+          "bTop": 929.7,
+          "aInk": 643.7,
+          "bInk": 929.7
+        }
+      ]
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "screen": "overview",
+      "boxes": {
+        "equipment-grid": {
+          "found": true,
+          "top": 588.2,
+          "left": 284,
+          "w": 768,
+          "h": 678,
+          "inkTop": 588.2
+        },
+        "equipment-first-card": {
+          "found": true,
+          "top": 627.7,
+          "left": 284,
+          "w": 248,
+          "h": 148,
+          "inkTop": 643.7
+        },
+        "overview-aside": {
+          "found": true,
+          "top": 588.2,
+          "left": 1076,
+          "w": 340,
+          "h": 678,
+          "inkTop": 588.2
+        },
+        "equipment-tab-row": {
+          "found": true,
+          "top": 588.2,
+          "left": 284,
+          "w": 768,
+          "h": 28,
+          "inkTop": 588.2
+        },
+        "aside-first-card": {
+          "found": true,
+          "top": 588.2,
+          "left": 1076,
+          "w": 340,
+          "h": 326,
+          "inkTop": 604.2
+        },
+        "alarm-dock": {
+          "found": true,
+          "top": 929.7,
+          "left": 1076,
+          "w": 340,
+          "h": 231,
+          "inkTop": 929.7
+        },
+        "scenario-dock": {
+          "found": true,
+          "top": 1176.2,
+          "left": 1076,
+          "w": 340,
+          "h": 90,
+          "inkTop": 1176.2
+        }
+      },
+      "pairs": [
+        {
+          "a": "equipment-first-card",
+          "b": "aside-first-card",
+          "measurable": true,
+          "why": null,
+          "boxDeltaPx": 39.5,
+          "inkDeltaPx": 39.5,
+          "aTop": 627.7,
+          "bTop": 588.2,
+          "aInk": 643.7,
+          "bInk": 604.2
+        },
+        {
+          "a": "equipment-grid",
+          "b": "overview-aside",
+          "measurable": true,
+          "why": null,
+          "boxDeltaPx": 0,
+          "inkDeltaPx": 0,
+          "aTop": 588.2,
+          "bTop": 588.2,
+          "aInk": 588.2,
+          "bInk": 588.2
+        },
+        {
+          "a": "equipment-first-card",
+          "b": "alarm-dock",
+          "measurable": true,
+          "why": null,
+          "boxDeltaPx": -302,
+          "inkDeltaPx": -286,
+          "aTop": 627.7,
+          "bTop": 929.7,
+          "aInk": 643.7,
+          "bInk": 929.7
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
