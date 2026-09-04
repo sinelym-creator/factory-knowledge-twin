@@ -29,10 +29,10 @@
 🔴 표기 변형이 `question_not_approved`(400) 로 거부되면 그것은 실패가 아니라 «같은 질문이 아니다»는
    뜻이다. 동치류 밖을 비교하면 없는 결함이 생긴다 — 그런 변형은 세지 않고 따로 적는다.
 
-전제: ai-api 기동(기본 http://127.0.0.1:8000) · 색인·그래프 적재 완료.
+전제: ai-api 기동(필수 · 기본값 없음(O-22)) · 색인·그래프 적재 완료.
 
     python tests/api/anchor_boundary_drill.py
-    FKT_API_BASE=http://127.0.0.1:8000 python tests/api/anchor_boundary_drill.py
+    FKT_API_BASE=http://127.0.0.1:<내 포트> python tests/api/anchor_boundary_drill.py
 
 exit: 0 = 전 변형 일치 · 1 = 갈림 1건 이상 · 2 = 실행 오류(드릴이 죽었거나 대상이 없다)
 """
@@ -50,10 +50,11 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · Q-40 계보)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
 REPO = Path(__file__).resolve().parents[2]
 SOURCE = REPO / "benchmarks" / "datasets" / "eval-questions-draft.md"
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 COMPARE = f"{API_BASE}/api/retrieval/compare"
 SESSION_ID = "levi2-anchor-drill"
 STRATEGIES = ["vector", "hybrid", "graphrag"]
