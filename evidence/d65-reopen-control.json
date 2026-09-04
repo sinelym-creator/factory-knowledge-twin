@@ -1,0 +1,303 @@
+{
+  "base": "http://127.0.0.1:8181",
+  "wall": "2026-09-04T11:00:53.331Z",
+  "widths": {
+    "390": {
+      "rounds": [
+        {
+          "i": 0,
+          "click": {
+            "clicked": true,
+            "blockedBy": null
+          },
+          "urlChanged": true,
+          "introBefore": 0,
+          "introAfter": 1,
+          "tourAfter": 1,
+          "introOpened": true
+        },
+        {
+          "i": 1,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 2,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 3,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 4,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 5,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        }
+      ],
+      "consoleErrors": [],
+      "reopenPresent": true,
+      "introOpenedCount": 1,
+      "tourOpenedCount": 6,
+      "urlMovedCount": 1,
+      "d66": {
+        "tourStartPresent": 0,
+        "tourRunning": 1,
+        "tourOpenBeforeClick": 1,
+        "introBefore": 0,
+        "click": {
+          "clicked": false,
+          "blockedBy": "/div"
+        },
+        "introAfter": 0,
+        "reopenedWhileTourOpen": false,
+        "keyboardReachable": false,
+        "tabsToReach": null
+      },
+      "afterReload": {
+        "intro": 0,
+        "tour": 1
+      }
+    },
+    "1280": {
+      "rounds": [
+        {
+          "i": 0,
+          "click": {
+            "clicked": true,
+            "blockedBy": null
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 1,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 2,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 3,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 4,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 5,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        }
+      ],
+      "consoleErrors": [],
+      "reopenPresent": true,
+      "introOpenedCount": 0,
+      "tourOpenedCount": 6,
+      "urlMovedCount": 0,
+      "d66": {
+        "tourStartPresent": 0,
+        "tourRunning": 1,
+        "tourOpenBeforeClick": 1,
+        "introBefore": 0,
+        "click": {
+          "clicked": false,
+          "blockedBy": "/div"
+        },
+        "introAfter": 0,
+        "reopenedWhileTourOpen": false,
+        "keyboardReachable": false,
+        "tabsToReach": null
+      },
+      "afterReload": {
+        "intro": 0,
+        "tour": 1
+      }
+    },
+    "1440": {
+      "rounds": [
+        {
+          "i": 0,
+          "click": {
+            "clicked": true,
+            "blockedBy": null
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 1,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 2,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 3,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 4,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        },
+        {
+          "i": 5,
+          "click": {
+            "clicked": false,
+            "blockedBy": "/div"
+          },
+          "urlChanged": false,
+          "introBefore": 0,
+          "introAfter": 0,
+          "tourAfter": 1,
+          "introOpened": false
+        }
+      ],
+      "consoleErrors": [],
+      "reopenPresent": true,
+      "introOpenedCount": 0,
+      "tourOpenedCount": 6,
+      "urlMovedCount": 0,
+      "d66": {
+        "tourStartPresent": 0,
+        "tourRunning": 1,
+        "tourOpenBeforeClick": 1,
+        "introBefore": 0,
+        "click": {
+          "clicked": false,
+          "blockedBy": "/div"
+        },
+        "introAfter": 0,
+        "reopenedWhileTourOpen": false,
+        "keyboardReachable": false,
+        "tabsToReach": null
+      },
+      "afterReload": {
+        "intro": 0,
+        "tour": 1
+      }
+    }
+  }
+}
