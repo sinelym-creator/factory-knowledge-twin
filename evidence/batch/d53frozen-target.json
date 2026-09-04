@@ -1,0 +1,50 @@
+{
+ "label": "target",
+ "base": "http://127.0.0.1:8151",
+ "steps": [
+  {
+   "runFor": 50,
+   "badge": {
+    "mode": "replay",
+    "text": "◑REPLAY"
+   }
+  },
+  {
+   "runFor": 150,
+   "badge": {
+    "mode": "replay",
+    "text": "◑REPLAY"
+   }
+  },
+  {
+   "runFor": 300,
+   "badge": {
+    "mode": "replay",
+    "text": "◑REPLAY"
+   }
+  },
+  {
+   "runFor": 600,
+   "badge": {
+    "mode": "replay",
+    "text": "◑REPLAY"
+   }
+  },
+  {
+   "runFor": 1200,
+   "badge": {
+    "mode": "replay",
+    "text": "◑REPLAY"
+   }
+  }
+ ],
+ "before": {
+  "mode": "replay",
+  "text": "◑REPLAY"
+ },
+ "after": {
+  "mode": "replay",
+  "text": "◑REPLAY"
+ },
+ "changed": false
+}

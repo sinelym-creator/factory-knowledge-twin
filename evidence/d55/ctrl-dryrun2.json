@@ -1,0 +1,419 @@
+{
+ "at": "2026-09-04T08:13:44.282Z",
+ "api": "http://127.0.0.1:8118",
+ "apiHealthBefore": {
+  "ok": true,
+  "version": "0.1.0",
+  "status": "ok",
+  "dependencies": {
+   "postgres": {
+    "state": "ok",
+    "detail": null,
+    "latencyMs": 4
+   },
+   "neo4j": {
+    "state": "ok",
+    "detail": null,
+    "latencyMs": 2
+   }
+  },
+  "build": "0c2bc38-levi2-43",
+  "models": {
+   "embedding": "ready",
+   "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+  }
+ },
+ "ctrl": {
+  "label": "ctrl",
+  "base": "http://127.0.0.1:8119",
+  "api": [
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "document",
+    "u": "/",
+    "t": 1788509624443
+   },
+   {
+    "s": 303,
+    "m": "POST",
+    "rt": "fetch",
+    "u": "/enter",
+    "t": 1788509624541
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status",
+    "t": 1788509624541
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=64EBvAagmAisvzuu",
+    "t": 1788509624550
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=f4-2nUB_QklxoMuL",
+    "t": 1788509624559
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=UzUyUuRguoA9lSUMnMz4OkoH",
+    "t": 1788509624590
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-101/sensors/SN-101-CUR/series?window=24h",
+    "t": 1788509624896
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h",
+    "t": 1788509624940
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-102/sensors/SN-102-CUR/series?window=24h",
+    "t": 1788509624942
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-205/sensors/SN-205-CUR/series?window=24h",
+    "t": 1788509624952
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNC-207/sensors/SN-207-CUR/series?window=24h",
+    "t": 1788509624952
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-104/sensors/SN-104-TEMP/series?window=24h",
+    "t": 1788509624959
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-CNV-308/sensors/SN-308-CUR/series?window=24h",
+    "t": 1788509624964
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-206/sensors/SN-206-CUR/series?window=24h",
+    "t": 1788509624965
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-309/sensors/SN-309-CUR/series?window=24h",
+    "t": 1788509624976
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-310/sensors/SN-310-TEMP/series?window=24h",
+    "t": 1788509624978
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-PRS-311/sensors/SN-311-TEMP/series?window=24h",
+    "t": 1788509624978
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/equipment/EQ-ROB-103/sensors/SN-103-CUR/series?window=24h",
+    "t": 1788509624980
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509626941
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509626943
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509626947
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509626960
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509626962
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "document",
+    "u": "/overview",
+    "t": 1788509630995
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509631049
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631050
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631051
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=UzUyUuRguoA9lSUMnMz4OkoH",
+    "t": 1788509631052
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509631054
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631064
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631065
+   }
+  ],
+  "landingIds": [
+   "nav-overview",
+   "nav-incidents",
+   "nav-compare",
+   "app-bar",
+   "intro-reopen",
+   "mode-badge",
+   "session-chip",
+   "reset-button",
+   "fallback-banner",
+   "tour-invite",
+   "tour-start",
+   "tour-later",
+   "tour-never",
+   "headline",
+   "start-from-headline",
+   "kpi-strip",
+   "received-at",
+   "equipment-grid",
+   "hierarchy-tree",
+   "equipment-card",
+   "sparkline",
+   "overview-dock",
+   "intro-card",
+   "alarm-dock",
+   "alarm-card",
+   "alarm-raised-at",
+   "start-from-alarm",
+   "scenario-dock"
+  ],
+  "enterHandle": null,
+  "beforeIds": [
+   "nav-overview",
+   "nav-incidents",
+   "nav-compare",
+   "app-bar",
+   "intro-reopen",
+   "mode-badge",
+   "session-chip",
+   "reset-button",
+   "fallback-banner",
+   "tour-invite",
+   "tour-start",
+   "tour-later",
+   "tour-never",
+   "headline",
+   "start-from-headline",
+   "kpi-strip",
+   "received-at",
+   "equipment-grid",
+   "hierarchy-tree",
+   "equipment-card",
+   "sparkline",
+   "overview-dock",
+   "intro-card",
+   "alarm-dock",
+   "alarm-card",
+   "alarm-raised-at",
+   "start-from-alarm",
+   "scenario-dock"
+  ],
+  "beforeText": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY UzUy ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니다 (임계 6.3 → 관측 6.3047 mm/s). 조사 시작 가동 라인 3 / 3 활성 알람 1 건 진행 Incident 2 건 승인 대기 WO 1 건 Factory A (synthetic) · 이 화면을 받은 시각 17:13:44 KST 설비 12대 전체 12대 가공 라인 1 4대 가공 라인 2 4대 가공 라인 3 4대 ● CNC 101호기 EQ-CNC-101 · 정상 · 가공 라인 1 전류 A · 24시간 ● CONVEYOR 102호기 EQ-CNV-102 · 정상 · 가공 라인 1 전류 A ",
+  "beforeBadge": {
+   "mode": "replay",
+   "text": "◑REPLAY"
+  },
+  "cookiesBefore": [
+   "fkt_sid=UzUyUuRguo",
+   "fkt_session=api%3AUzUy"
+  ],
+  "before401": 0,
+  "beforeOk": 22,
+  "entered": true,
+  "restart": {
+   "out": "READY tries=0",
+   "ms": 2757,
+   "ready": true
+  },
+  "afterIds": [
+   "nav-overview",
+   "nav-incidents",
+   "nav-compare",
+   "app-bar",
+   "intro-reopen",
+   "mode-badge",
+   "session-chip",
+   "reset-button",
+   "fallback-banner",
+   "tour-invite",
+   "tour-start",
+   "tour-later",
+   "tour-never",
+   "screen-unavailable"
+  ],
+  "afterText": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY UzUy ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ① Factory Overview 이 화면의 데이터를 지금 가져오지 못했다. 사유: 서버 응답 오류(401) 화면이 «비어 있는 것»이 아니라 «묻지 못한 것»이다 — 두 상태를 같은 모습으로 그리지 않으려고 이 자리를 둔다.",
+  "afterBadge": {
+   "mode": "replay",
+   "text": "◑REPLAY"
+  },
+  "cookiesAfter": [
+   "fkt_sid=UzUyUuRguo",
+   "fkt_session=api%3AUzUy"
+  ],
+  "sidChanged": false,
+  "urlAfter": "http://127.0.0.1:8119/overview",
+  "postRequests": [
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "document",
+    "u": "/overview",
+    "t": 1788509630995
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509631049
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631050
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631051
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/api/live/status?sessionId=UzUyUuRguoA9lSUMnMz4OkoH",
+    "t": 1788509631052
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3",
+    "t": 1788509631054
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631064
+   },
+   {
+    "s": 200,
+    "m": "GET",
+    "rt": "fetch",
+    "u": "/compare?_rsc=qcs5AIIC-Griu4ZG",
+    "t": 1788509631065
+   }
+  ],
+  "post401": 0,
+  "postOk": 8,
+  "autoReenter": 1,
+  "postDocs": [
+   "200 /overview"
+  ],
+  "consoleErrors": []
+ }
+}
