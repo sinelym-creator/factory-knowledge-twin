@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { type RunCap, liveStatus, subscribeCongestion, subscribeRunCap } from "@/lib/contract";
+import { displayState, type LiveMode } from "@/lib/live-display";
 import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 
 /**
@@ -19,7 +20,7 @@ import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 
 // 🔴 「아직 안 물어봤다」와 「물어봤는데 못 받았다」는 다른 상태다. 첫 응답 전에 «미연결»이라
 //    적으면, 확인하지도 않은 것을 확인한 척하게 된다 — 004의 「거울이 비면 판정하지 않는다」와 같은 규율.
-type Mode = "checking" | "live" | "replay" | "unavailable";
+type Mode = LiveMode;
 /**
  * 🔴 **T7-31 — 혼잡은 «모드»가 아니라 그 «위에» 얹히는 사실이다**(D-49 · X-11).
  *
@@ -28,7 +29,7 @@ type Mode = "checking" | "live" | "replay" | "unavailable";
  * 두고 별도 축으로 든다(배지의 `data-mode` 계약도 그대로 산다).
  */
 type Congestion = { since: number; retryAfterSec?: number };
-type State = {
+export type State = {
   mode: Mode;
   checkedAt: string | null;
   why: string | null;
@@ -50,6 +51,15 @@ type State = {
    *    받아도 세션은 여전히 없으므로, 이 사실은 «끈적하게» 남고 사람이 다시 입장할 때 풀린다.
    */
   sessionExpired: boolean;
+  /**
+   * 🔴 **D-53 — 「이 답을 언제 «받았나»」는 브라우저 시계로만 잰다**(처방 2).
+   *
+   *    `checkedAt` 은 **서버가 찍은** 값이다. 신선도를 그 값으로 재면 두 시계의 차이가 그대로
+   *    판정에 들어가, 멀쩡한 회차가 「낡음」이 되거나 그 반대가 된다. 화면이 답을 «손에 쥔»
+   *    시각은 화면만 알고, 그것이 이 칸이다. `checkedAt` 은 표시용으로 그대로 둔다.
+   * `null` = 아직 한 번도 성공한 적 없음(그때는 신선도를 따질 대상이 없다).
+   */
+  seenAt: number | null;
 };
 
 /**
@@ -72,6 +82,7 @@ const LiveContext = createContext<State>({
   congested: {},
   runCap: null,
   sessionExpired: false,
+  seenAt: null,
 });
 
 const POLL_MS = 30_000; // §0: 30s polling
@@ -83,6 +94,12 @@ const POLL_MS = 30_000; // §0: 30s polling
  */
 const CONGESTION_WINDOW_MS = 30_000;
 const CONGESTION_SWEEP_MS = 1_000;
+/**
+ * 🔴 마지막 «성공» 응답이 이보다 오래되면 배지는 그 값을 더 말하지 않는다(D-53 처방 2).
+ *    폴링 주기(30초)에 한 회차의 여유를 더한 값이다 — 주기와 같게 두면 정상 회차의 지터가
+ *    그대로 「낡음」으로 읽힌다.
+ */
+const STALE_AFTER_MS = 45_000;
 
 export function LiveStatusProvider({
   children,
@@ -103,6 +120,7 @@ export function LiveStatusProvider({
     congested: {},
     runCap: null,
     sessionExpired: false,
+    seenAt: null,
   });
 
   /**
@@ -161,6 +179,9 @@ export function LiveStatusProvider({
                  여기서 덮인다(창 만료로 «줄어드는» 축은 폴링만 볼 수 있다). 쿼리를 안 실은
                  회차는 `runCap` 이 없고, 그때는 `null` = 「모른다」로 돌아간다. */
               runCap: reply.data.runCap ?? null,
+              /* 🔴 «성공한» 회차에만 찍는다 — 실패는 아래 `unavailable` 이 스스로 말하므로
+                 신선도로 다시 말할 필요가 없고, 실패에 시각을 찍으면 「방금 확인함」이 된다. */
+              seenAt: Date.now(),
             }
           : { ...prev, mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why },
       );
@@ -206,13 +227,32 @@ export function LiveStatusProvider({
     };
   }, []);
 
+  /**
+   * 🔴 **D-53 처방 2 — 「30초 전의 참」을 «지금의 참»처럼 말하지 않는다.**
+   *
+   *    배지는 마지막 성공 상태를 다음 폴링(30초)까지 그대로 들고 있다. 탭이 백그라운드에
+   *    있다가 복귀하거나 폴링이 멈춘 창에서는 그 값이 임의로 오래 남는다 — 폐하 관측
+   *    (「PC 오프인데 처음에 라이브」)의 남은 설명 중 하나가 이 자리였다.
+   * 🔴 주기 렌더로 재지 않는다 — 다음 만료 시각에 **타이머 하나**를 건다. 성공할 때마다 다시
+   *    걸리므로 평상시에는 이 효과가 30초에 한 번 재설정될 뿐이고, 화면은 안 흔들린다.
+   */
+  const [stale, setStale] = useState(false);
+  useEffect(() => {
+    setStale(false);
+    if (state.seenAt === null) return;
+    const due = state.seenAt + STALE_AFTER_MS - Date.now();
+    if (due <= 0) {
+      setStale(true);
+      return;
+    }
+    const t = setTimeout(() => setStale(true), due);
+    return () => clearTimeout(t);
+  }, [state.seenAt]);
+
   /* 🔴 **폴링이 답한 것은 그대로 두고, «보이는» 값만 내린다.** 폴링 결과에 직접 덮어쓰면
      다음 주기의 200 이 그 사실을 지운다 — 세션은 여전히 없는데 배지만 초록으로 돌아간다.
      원값은 남아 있고, 사람이 다시 입장해 문서를 새로 읽으면 이 축은 처음부터 없다. */
-  const view = useMemo<State>(
-    () => (state.sessionExpired ? { ...state, mode: "unavailable", why: "재입장 필요" } : state),
-    [state],
-  );
+  const view = useMemo<State>(() => displayState(state, stale), [state, stale]);
 
   return <LiveContext.Provider value={view}>{children}</LiveContext.Provider>;
 }
