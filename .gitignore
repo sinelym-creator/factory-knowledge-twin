@@ -48,3 +48,6 @@ __pycache__/
 
 # tests/graph/graph_verify.py 가 GRAPH_DUMP_DIR 미지정 시 cwd 에 떨구는 덤프(러너는 임시 폴더를 준다)
 graph-dump.txt
+
+# O-21 — tests/web 는 npm 층(package-lock.json 추적) · pnpm 이 만든 lockfile 은 산출물
+tests/web/pnpm-lock.yaml
