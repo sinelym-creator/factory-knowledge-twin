@@ -73,6 +73,9 @@ async function branch(ctx, { name, run, width }) {
     const minH = Math.min(...box.map((b) => b.height));
     out.topSpread = Math.max(...out.tops) - Math.min(...out.tops);
     out.oneLine = out.topSpread < minH * 0.6;
+    // D-58b 재검 축 — 줄여서 한 줄을 지킨다면 «잘린 전체»가 `title` 로 남아야 한다.
+    out.lastPieceTitle = await items.nth(-1).locator("[title]").first().getAttribute("title").catch(() => null);
+    out.lastPieceText = (await items.nth(-1).innerText()).replace(/\s+/g, " ").trim();
     out.firstIsLink = (await items.nth(0).locator("a").count()) > 0;
     out.firstHref = out.firstIsLink ? await items.nth(0).locator("a").getAttribute("href") : null;
     const runPiece = page.locator('[data-testid="evidence-breadcrumb-run"]');
