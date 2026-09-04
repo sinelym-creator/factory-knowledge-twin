@@ -213,3 +213,30 @@ X-16 은 다르다 — **재시도를 부르는 것이 «응답 유실»**이라
 ## 누계 (갱신)
 
 **X 12 PASS · 3 FAIL(D-48 · X-16 · X-11=D-49) · 2 미검증(X-23 · X-13) · 8 미실행 / 25**
+
+## 조각 6 — X-06 (DB 연결 끊김) · **PASS**(API 축)
+
+### 무대 — 🔴 **내 DB 만** 끊는다
+
+`fkt-senku2-t15-postgres-1` 은 다른 좌석이 쓰고 내 `:8102` 도 그것을 문다. 그래서 **내 컨테이너
+(`fkt-levi2-postgres-1` `:5534` · `fkt-levi2-neo4j-1` `:7587`)를 무는 «두 번째» ai-api 를 `:8105` 에**
+따로 세우고, 자극은 **그 DB 에만** 넣었다(`docker stop fkt-levi2-postgres-1` → 측정 → `docker start`).
+
+### 판정표
+
+| # | 무대(증인) | 자극 | 대체 동작 | 남은 흔적 | 시점·수 | 판정 |
+|---|---|---|---|---|---|---|
+| **X-06** | 기준선 `/api/health` **`status:"ok"`** · `/api/plants` **200**(실데이터 1건) | `docker stop fkt-levi2-postgres-1` | 요청이 **503 으로 «정의된 거절»** | `{"error":{"code":"dependency_unavailable","message":"postgres 에 연결할 수 없다 — 잠시 후 다시 시도하라"}}` · `/api/health` **`degraded`** + `postgres: unavailable` | 🔴 **스택·드라이버·호스트·포트 누출 = 0건**(`traceback\|psycopg\|asyncpg\|\.py\|connection refused\|127\.0\.0\.1\|5534` 전수 grep) | **PASS** |
+
+**빨강 확인** — ✓ **같은 실행에서** 기준선 `200`(실데이터) ↔ 자극 `503`. 「전부 503 을 내는 서버」와 구별된다.
+**되돌림** — `docker start` 로 즉시 복구 확인(`status:"ok"`).
+
+### 안 잼
+
+- **화면 축** — 이 열은 API 축이다. `:8105` 를 무는 셸을 안 세웠다(셸은 빌드 시점에 상류가 박힌다).
+  「사용자 말 오류가 **화면에** 뜨는가」는 **미검증**.
+- **Neo4j 만 끊긴 경우**는 안 잼(이번엔 postgres 만 끊었다).
+
+## 누계 (갱신)
+
+**X 13 PASS · 3 FAIL(D-48 · X-16 · X-11=D-49) · 2 미검증(X-23 · X-13) · 7 미실행 / 25**
