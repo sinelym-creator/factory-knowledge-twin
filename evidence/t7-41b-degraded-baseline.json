@@ -1,0 +1,28 @@
+{
+  "base": "http://127.0.0.1:8166",
+  "label": "baseline-api-up",
+  "wall": "2026-09-04T10:29:47.772Z",
+  "screens": {
+    "/overview": {
+      "status": 200,
+      "bodyChars": 1596,
+      "appShell": 2,
+      "sessionRunsList": 0,
+      "sessionRunLinks": 0,
+      "emptyMarker": 0,
+      "overviewResume": 1,
+      "head": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY 내 세션 JjrO ⟲ 세션 리셋 [ ! ] 실시간 AI 종합이 꺼져 있습니다. 조사와 근거 수집은 그대로 실행되고, 원인 후보는 집계로 종합합니다. 화면 흐름은 같습니다"
+    },
+    "/incidents": {
+      "status": 200,
+      "bodyChars": 429,
+      "appShell": 2,
+      "sessionRunsList": 1,
+      "sessionRunLinks": 1,
+      "emptyMarker": 0,
+      "overviewResume": 0,
+      "head": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY 내 세션 JjrO ⟲ 세션 리셋 [ ! ] 실시간 AI 종합이 꺼져 있습니다. 조사와 근거 수집은 그대로 실행되고, 원인 후보는 집계로 종합합니다. 화면 흐름은 같습니다"
+    }
+  },
+  "consoleErrors": []
+}

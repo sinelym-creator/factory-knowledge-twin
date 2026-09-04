@@ -1,0 +1,54 @@
+{
+  "base": "http://127.0.0.1:8167",
+  "wall": "2026-09-04T10:26:48.991Z",
+  "seed": {
+    "startCount": 1,
+    "landed": "http://127.0.0.1:8167/incidents/INC-2026-014?run=RUN-dd4ff03a3ab8",
+    "runId": "RUN-dd4ff03a3ab8",
+    "incidentId": "INC-2026-014",
+    "step": "ok"
+  },
+  "ax3_seedTabStorage": [
+    "fkt.intro.seen:oniLH3k4nsOOw-hh61ah8K50",
+    "fkt.session-runs.v1"
+  ],
+  "ax2_otherTab": {
+    "sessionRunsPresent": false,
+    "emptyMarker": 1,
+    "linkCount": 0,
+    "hasMyRun": false,
+    "hrefs": []
+  },
+  "ax4_alarmLink": {
+    "count": 0,
+    "text": null,
+    "href": null,
+    "incidentAttr": null
+  },
+  "ax1a_backToRun": {
+    "linkCount": 0,
+    "href": null,
+    "landed": null,
+    "sameRun": false
+  },
+  "ax1b_overviewResume": {
+    "present": false,
+    "text": null,
+    "landed": null,
+    "sameRun": false
+  },
+  "ax3_sessionStorageKeys": [],
+  "ax6_narrow": {
+    "/overview": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0
+    },
+    "/incidents": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0
+    }
+  },
+  "consoleErrors": []
+}

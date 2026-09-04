@@ -1,0 +1,57 @@
+{
+  "base": "http://127.0.0.1:8166",
+  "wall": "2026-09-04T10:26:38.295Z",
+  "seed": {
+    "startCount": 1,
+    "landed": "http://127.0.0.1:8166/incidents/INC-2026-014?run=RUN-311fac518cb8",
+    "runId": "RUN-311fac518cb8",
+    "incidentId": "INC-2026-014",
+    "step": "ok"
+  },
+  "ax3_seedTabStorage": [
+    "fkt.intro.seen:x47qhPnO-VHgTFOEMYVvWj1V"
+  ],
+  "ax2_otherTab": {
+    "sessionRunsPresent": true,
+    "emptyMarker": 0,
+    "linkCount": 1,
+    "hasMyRun": true,
+    "hrefs": [
+      "/incidents/INC-2026-014?run=RUN-311fac518cb8"
+    ]
+  },
+  "ax4_alarmLink": {
+    "count": 1,
+    "text": "상황 보기",
+    "href": "/incidents/INC-2026-014",
+    "incidentAttr": "INC-2026-014"
+  },
+  "ax1a_backToRun": {
+    "linkCount": 1,
+    "href": "/incidents/INC-2026-014?run=RUN-311fac518cb8",
+    "landed": "http://127.0.0.1:8166/incidents/INC-2026-014?run=RUN-311fac518cb8",
+    "sameRun": true
+  },
+  "ax1b_overviewResume": {
+    "present": true,
+    "text": "이 세션의 조사 1건 · 이어보기 →",
+    "landed": "http://127.0.0.1:8166/incidents/INC-2026-014?run=RUN-311fac518cb8",
+    "sameRun": true,
+    "href": "/incidents/INC-2026-014?run=RUN-311fac518cb8",
+    "sameIncident": true
+  },
+  "ax3_sessionStorageKeys": [],
+  "ax6_narrow": {
+    "/overview": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0
+    },
+    "/incidents": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0
+    }
+  },
+  "consoleErrors": []
+}
