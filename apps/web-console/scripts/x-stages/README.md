@@ -71,7 +71,9 @@ node capacity-proxy.mjs --selftest --upstream 127.0.0.1:<levi2-ai-api-port> --bu
 
 ```
 node synthetic-gateway.mjs --port 8814 --upstream 127.0.0.1:8101
-node synthetic-gateway.mjs --selftest                    # 내부 상류 + 대조군까지 자족
+node synthetic-gateway.mjs --port 8814 --upstream 127.0.0.1:8101 --block-upgrade
+node synthetic-gateway.mjs --selftest                    # 내부 상류 + 대조군까지 자족(WS 통과 축)
+node synthetic-gateway.mjs --selftest --block-upgrade    # 426 거절 + 폴링 경로 재작성 축
 node synthetic-gateway.mjs --selftest --passthrough      # 역방향 대조군(FAIL 이 나야 정상)
 ```
 
