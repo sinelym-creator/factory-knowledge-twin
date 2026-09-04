@@ -1,0 +1,154 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "viewport": "1280x900",
+  "wall": "2026-09-04T15:38:55.028Z",
+  "live0": {
+    "headers": {
+      "csp": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; s",
+      "xcto": "nosniff",
+      "referrer": "no-referrer",
+      "permissions": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+      "hsts": "max-age=31536000; includeSubDomains"
+    },
+    "health": {
+      "ok": true,
+      "version": "0.1.0",
+      "status": "ok",
+      "dependencies": {
+        "postgres": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 1
+        },
+        "neo4j": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 0
+        }
+      },
+      "build": "879fc35",
+      "models": {
+        "embedding": "ready",
+        "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+      }
+    },
+    "introBefore": 0,
+    "tourInviteBefore": 0,
+    "staticReplay": {
+      "staticChip": 0,
+      "sessionChip": 1,
+      "runModeBadge": "replay"
+    },
+    "d67card390": {
+      "present": true,
+      "cardWidth": 350,
+      "bodyWidth": 310,
+      "dir": "column"
+    }
+  },
+  "live1": {
+    "startEnabled": true,
+    "runId": "RUN-ffa5115f6504",
+    "runModeBadge": null,
+    "statusTrail": [
+      {
+        "t": "2026-09-04T15:39:10.197Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T15:39:12.637Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T15:39:15.071Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T15:39:17.503Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T15:39:19.934Z",
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "t": "2026-09-04T15:39:22.352Z",
+        "status": 200,
+        "runStatus": "completed"
+      }
+    ],
+    "finalRunStatus": "completed",
+    "events": {
+      "status": 200,
+      "count": 38,
+      "types": [
+        "run.started",
+        "plan.updated",
+        "step.started",
+        "step.evidence",
+        "step.completed",
+        "step.progress",
+        "run.completed"
+      ]
+    },
+    "gpAppeared": true,
+    "gpHrefCount": 5,
+    "firstGpId": "GP-ffa5115f6504-00",
+    "prefixMatch": true,
+    "gpBody": {
+      "url": "https://factory-knowledge-twin.vercel.app/evidence/GP-ffa5115f6504-00?run=RUN-ffa5115f6504",
+      "bodyCount": 1,
+      "steps": 3,
+      "walk": "[Component · 2-hop] AL-20260826-0041 → EQ-CNC-204 → CP-204-BRG-01",
+      "anchorsInBody": 0,
+      "unreachable": 0
+    }
+  },
+  "verdict": {
+    "stageRang": true,
+    "runId": "RUN-ffa5115f6504",
+    "a_buildHeld": true,
+    "b_depsOk": true,
+    "c_embeddingReady": true,
+    "d_staticChip": false,
+    "e_headers": true,
+    "f_d67card390": true,
+    "g_liveBadge": false,
+    "h_gpBodyPresent": true,
+    "i_stepsAtLeast2": true,
+    "j_walkNonEmpty": true,
+    "k_noAnchorsInBody": true,
+    "l_noUnreachable": true,
+    "m_eventsCounted": true,
+    "n_consoleErrorsNonWs": true,
+    "d75b_pass": true,
+    "allPass": false
+  },
+  "consoleErrors": [
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-ffa5115f6504' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-ffa5115f6504' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-ffa5115f6504' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-ffa5115f6504' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-ffa5115f6504' failed: Error during WebSocket handshake: Unexpected response cod"
+    }
+  ]
+}
