@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { type RunCap, liveStatus, subscribeCongestion, subscribeRunCap } from "@/lib/contract";
 import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
@@ -144,11 +144,28 @@ export function LiveStatusProvider({
     };
   }, []);
 
+  /**
+   * 🔴 **D-64 — 한 번 못 받은 것과 계속 못 받는 것은 다르다.**
+   *
+   * 앞판은 실패 한 회차에 곧장 「미연결」로 내려갔다. 모바일망처럼 첫 호출이 가끔 시한을
+   * 넘기는 경로에서는, 서버가 멀쩡한데도 화면이 진입하자마자 「연결되지 않았습니다」를
+   * 말한다(폐하 실측). 30초 뒤 폴링이 200 을 받아 돌아오지만, 그 사이를 본 사람에게는
+   * 그것이 이 콘솔의 첫인상이다.
+   *
+   * 🔴 그래서 **연속 2회**부터 내려간다. 한 번 놓친 회차는 「확인 중」에 머문다 — 모르는
+   *    것을 아는 척하지 않는다는 규율(위 `Mode` 머리말)은 그대로다: 「확인 중」이 바로
+   *    「아직 모른다」이고, 한 번의 시한 초과가 말해 주는 것도 딱 그만큼이다.
+   */
+  const missesRef = useRef(0);
+
   useEffect(() => {
     let alive = true;
     const tick = async () => {
       const reply = await liveStatus("", sessionId);
       if (!alive) return;
+      if (reply.state === "ok") missesRef.current = 0;
+      else missesRef.current += 1;
+      const settled = missesRef.current >= 2;
       /* 🔴 혼잡 축은 이 폴링이 «건드리지 않는다» — 다른 사실이고, 걷히는 조건도 다르다. */
       setState((prev) =>
         reply.state === "ok"
@@ -162,7 +179,11 @@ export function LiveStatusProvider({
                  회차는 `runCap` 이 없고, 그때는 `null` = 「모른다」로 돌아간다. */
               runCap: reply.data.runCap ?? null,
             }
-          : { ...prev, mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why },
+          : settled
+            ? { ...prev, mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why }
+            /* 🔴 첫 놓침 — 모드는 건드리지 않는다(이미 live 였으면 live 로 머문다). 사유만
+               남겨 두어, 두 번째에 내려갈 때 「무엇 때문이었나」가 이어진다. */
+            : { ...prev, why: reply.why },
       );
     };
     void tick();
