@@ -9,12 +9,12 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 
 from ..investigation.synthesize import live_gateway_reachable
 from ..probes import Resources
 from ..retrieval import embedding
-from ..schemas import HealthResponse, LiveStatus, ModelReadiness
+from ..schemas import HealthResponse, LiveStatus, ModelReadiness, RunCapStatus
 
 router = APIRouter(tags=["ops"])
 
@@ -47,8 +47,14 @@ async def health(request: Request) -> HealthResponse:
     )
 
 
-@router.get("/live/status", response_model=LiveStatus)
-async def live_status() -> LiveStatus:
+@router.get("/live/status", response_model=LiveStatus, response_model_exclude_unset=True)
+async def live_status(
+    request: Request,
+    sessionId: str | None = Query(
+        default=None,
+        description="주면 그 세션의 조사 상한(`runCap`)을 «읽어» 함께 답한다 — 계수 0(계약 v0.1.15)",
+    ),
+) -> LiveStatus:
     """Live/Replay 배지·fallback 판단 — 계약 `{ online, checkedAt }`.
 
     🔴 **`online` = 「로컬 합성 게이트웨이에 닿을 수 있는가」**(오케 판정 J-1 (b) · T2-3).
@@ -67,4 +73,16 @@ async def live_status() -> LiveStatus:
     # 🔴 도달 프로브 1회(몇 초 캐시). blocking 이라 스레드로 던진다 — 이 라우트가 막히면
     #    배지 폴링이 서비스를 막는다.
     online = await asyncio.to_thread(live_gateway_reachable)
-    return LiveStatus(online=online, checkedAt=datetime.now(timezone.utc))
+    if sessionId is None:
+        # 🔴 **쿼리가 없으면 v0.1.2 형상 그대로**(대조군). `runCap=None` 을 «주지» 않는다 —
+        #    주면 필드가 set 이 되어 `null` 이 실리고, 기존 소비자의 응답이 달라진다.
+        return LiveStatus(online=online, checkedAt=datetime.now(timezone.utc))
+    # 🔴 **읽기만 한다** — `peek` 이지 `admit` 이 아니다(계약 v0.1.15 · session_cap 머리말).
+    #    배지 폴링이 30초마다 도는 자리라, 여기서 세면 «보는 것»이 «쓰는 것»이 되어 방문자는
+    #    아무것도 안 하고 상한에 닿는다.
+    cap = request.app.state.session_run_cap
+    return LiveStatus(
+        online=online,
+        checkedAt=datetime.now(timezone.utc),
+        runCap=RunCapStatus.of(cap.peek(sessionId), cap.window_sec),
+    )

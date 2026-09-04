@@ -142,12 +142,15 @@ class SessionRunCapExceeded(StarletteHTTPException):
     🔴 `rate_limited`(분당 · 폭주 방지)와 **다른 code** 다. 화면이 이 둘을 가르지 못하면
        「잠시 후 다시」와 「이 시간은 재생으로 계속」이 같은 배너가 되고, 방문자는 60초 뒤에
        다시 눌러 또 막힌다.
-    🔴 오류 형상은 `{error:{code,message}}` **그대로**다 — 본문에 `fallback` 같은 필드를
-       더하지 않는다(계약 11행 · 형상을 넓히는 것은 계약 개정이지 구현 판단이 아니다).
-       화면의 replay 강등은 `code` 분기로 한다.
+    🔴 `code`·`message` 는 **그대로** 둔다 — 화면의 replay 강등은 `code` 분기이고, 그 낱말을
+       바꾸면 이 티켓과 무관한 화면·드릴이 함께 흔들린다. v0.1.15 가 더한 것은 «수치 4칸»뿐
+       이고(아래), 그것도 계약 개정으로 열린 자리다 — 형상을 넓히는 것은 여전히 구현 판단이
+       아니다(v0.1.12 때의 규율은 살아 있다 · 이번엔 계약이 먼저 개정됐다).
+    🔴 `Retry-After` 헤더도 그대로다 — `retryAfterSec` 은 그 값을 «본문에도» 적은 것이지
+       헤더를 대신하는 것이 아니다(헤더만 읽는 소비자가 이미 있다).
     """
 
-    def __init__(self, retry_after_sec: int, limit: int) -> None:
+    def __init__(self, retry_after_sec: int, limit: int, used: int) -> None:
         super().__init__(
             status_code=429,
             detail={
@@ -155,6 +158,14 @@ class SessionRunCapExceeded(StarletteHTTPException):
                 "message": (
                     f"세션 조사 상한({limit}/시간) · 녹화 재생으로 계속"
                 ),
+                # 🔴 계약 v0.1.15 — 화면이 「몇 회 중 몇 회를 썼는가」를 이 응답만으로 말할 수
+                #    있게 한다. `remaining` 은 **상수 0**이다: 이 예외가 서는 조건 자체가
+                #    「남은 자리가 없다」이므로, 여기서 계산값을 다시 넣으면 계산이 틀린 날
+                #    거절 응답이 「아직 남았다」고 말하게 된다.
+                "limit": limit,
+                "used": used,
+                "remaining": 0,
+                "retryAfterSec": retry_after_sec,
             },
             headers={"Retry-After": str(retry_after_sec)},
         )
@@ -237,13 +248,23 @@ def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(StarletteHTTPException)
     async def _contract_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
         detail = exc.detail
+        extra: dict[str, object] = {}
         if isinstance(detail, dict) and {"code", "message"} <= set(detail):
             body = ErrorBody(code=str(detail["code"]), message=str(detail["message"]))
+            # 🔴 **`code`·`message` 밖의 칸을 «버리지 않는다»**(계약 v0.1.15 · T7-38 실측 수리).
+            #    앞판은 두 칸만 뽑아 다시 조립했고, 그래서 `SessionRunCapExceeded` 가 detail 에
+            #    실은 `{limit, used, remaining, retryAfterSec}` 이 이 층에서 조용히 사라졌다
+            #    (예외는 제 몫을 다했고 응답만 비어 나갔다 — 두 번 조립하면 표면이 갈린다).
+            #    여기서 나머지를 그대로 얹으면 «칸을 더하는 예외»마다 이 층을 고칠 필요가 없다.
+            extra = {k: v for k, v in detail.items() if k not in ("code", "message")}
         else:
             body = ErrorBody(code=f"http_{exc.status_code}", message=str(detail))
+        content = ErrorResponse(error=body).model_dump()
+        if extra:
+            content["error"].update(extra)
         return JSONResponse(
             status_code=exc.status_code,
-            content=ErrorResponse(error=body).model_dump(),
+            content=content,
             headers=getattr(exc, "headers", None),
         )
 

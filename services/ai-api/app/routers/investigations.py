@@ -39,7 +39,7 @@ from ..investigation import binding, replay, runner
 from ..investigation.store import RunRecord, RunStore
 from ..reading import factory as factory_reader
 from ..reading import scenarios as scenario_reader
-from ..schemas import AgentEvent, RunCreated, RunStopped, ScenarioSummary
+from ..schemas import AgentEvent, RunCapStatus, RunCreated, RunStopped, ScenarioSummary
 from ..settings import get_settings
 
 log = logging.getLogger("fkt.routers.investigation")
@@ -73,6 +73,32 @@ def _store(request: Request) -> RunStore:
 # 🔴 재사용을 «말하는» 헤더. 조용히 같은 run 을 돌려주면 호출자는 자기가 만든 줄 안다 —
 #    그러면 「두 번 눌렀는데 하나」와 「두 번째가 조용히 무시됐다」를 구별할 방법이 없다.
 RUN_REUSED_HEADER = "X-FKT-Run-Reused"
+
+# 🔴 세션 조사 상한을 «응답과 같은 왕복»에 실어 보내는 자리 — 계약 v0.1.15.
+#    폴링(30s)만으로 갱신하면 방금 쓴 1회가 화면에 최대 30초 늦게 뜬다. 그 창에서 방문자는
+#    「눌렀는데 숫자가 그대로」를 보고 자기 클릭이 먹지 않았다고 읽는다.
+RUN_CAP_LIMIT_HEADER = "X-FKT-Run-Cap-Limit"
+RUN_CAP_USED_HEADER = "X-FKT-Run-Cap-Used"
+RUN_CAP_REMAINING_HEADER = "X-FKT-Run-Cap-Remaining"
+
+
+def _stamp_run_cap(response: Response, request: Request, session_id: str) -> None:
+    """live 201 에 상한 3칸을 찍는다 — 🔴 `peek` 이라 **이 호출은 계수하지 않는다**.
+
+    🔴 `admit` «뒤»에 부른다 — 그래야 `used` 가 계약이 요구한 「이번 실행 «포함»」이 된다.
+       앞에서 부르면 방문자는 자기가 방금 쓴 회차가 빠진 숫자를 받는다.
+    🔴 `remaining` 이 None(상한 없음)이면 그 헤더는 «싣지 않는다». 빈 문자열이나 `-1` 을
+       주면 소비자가 그것을 수로 읽는다 — 없는 것은 없는 채로 두는 것이 이 리포의 규율
+       (`retryAfterSec`·`detail` 과 같다).
+    """
+    view = RunCapStatus.of(
+        request.app.state.session_run_cap.peek(session_id),
+        request.app.state.session_run_cap.window_sec,
+    )
+    response.headers[RUN_CAP_LIMIT_HEADER] = str(view.limit)
+    response.headers[RUN_CAP_USED_HEADER] = str(view.used)
+    if view.remaining is not None:
+        response.headers[RUN_CAP_REMAINING_HEADER] = str(view.remaining)
 
 
 def _reusable_run(
@@ -234,6 +260,10 @@ async def start_run(
             body.sessionId, scenarioId, reused.runId,
         )
         response.headers[RUN_REUSED_HEADER] = reused.runId
+        # 🔴 재사용 회차는 **계수 0**(계약 v0.1.15)이지만 상한 3칸은 «싣는다» — 이것도 live
+        #    201 이고, 화면은 이 응답으로 카운터를 갱신한다. 숫자를 빼면 두 번 누른 방문자의
+        #    화면만 30초 동안 낡은 값을 들고 있게 된다(계수가 0 인 것과 말하지 않는 것은 다르다).
+        _stamp_run_cap(response, request, body.sessionId)
         return RunCreated(runId=reused.runId, incidentId=reused.incidentId, mode=reused.mode)
 
     down = sorted(name for name, probe in probes.items() if probe.state != "ok")
@@ -252,7 +282,11 @@ async def start_run(
     retry_after = request.app.state.session_run_cap.admit(body.sessionId)
     if retry_after is not None:
         log.info("세션 조사 상한 초과 — 재생으로 안내한다(Retry-After %ds)", retry_after)
-        raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session)
+        # 🔴 `used` 는 «지금 창 안의 실측»이다(계약 v0.1.15) — `limit` 을 그대로 베끼지 않는다.
+        #    둘은 거의 언제나 같지만, 운영자가 상한을 «내리는» 순간 창 안에는 옛 상한만큼의
+        #    기록이 남아 `used > limit` 이 참이 된다. 그때 limit 을 베낀 응답은 사실을 지운다.
+        used = int(request.app.state.session_run_cap.peek(body.sessionId)["used"])
+        raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session, used)
 
     # --- ⓐ 자리 잡기 --------------------------------------------------------
     #
@@ -282,6 +316,11 @@ async def start_run(
         #    영구히 물리고, 상한 1 인 형상에서는 그 한 번으로 Live 가 통째로 닫힌다.
         capacity.release(ticket)
         raise
+    # 🔴 stamp 는 «생성이 선 뒤»다 — D-48 이 지킨 「판정→`store.create` 사이 suspend 0」 구간
+    #    안에 이 호출을 끼우지 않는다. 그 구간은 동기여야 하는 자리이고, 거기에 코드를 더하면
+    #    다음 사람이 「여기 await 를 넣어도 되나」를 다시 판단하게 된다. 값은 같다(같은 세션의
+    #    다음 admit 은 이 요청이 끝나야 오고, 재사용 규칙이 동시 2회를 접는다).
+    _stamp_run_cap(response, request, body.sessionId)
     return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
 
