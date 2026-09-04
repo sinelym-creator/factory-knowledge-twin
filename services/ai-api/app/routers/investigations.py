@@ -365,6 +365,54 @@ async def stop_run(runId: str, request: Request) -> RunStopped:
     return RunStopped()
 
 
+# 목록이 상한 없이 자라지 않게 — 계약 v0.1.16 이 정한 값.
+SESSION_RUNS_LIMIT = 20
+
+
+@router.get("/runs", responses={422: {"description": "`invalid_request`"}})
+async def session_runs(request: Request, sessionId: str) -> list[dict[str, Any]]:
+    """`GET /runs?sessionId=` — 그 세션이 시작한 조사 목록(계약 v0.1.16 · 읽기 전용).
+
+    🔴 **쿠키 없음 401 은 여기서 쓰지 않는다** — 앱 레벨 `session_guard` 가 이미 그 답을
+       낸다. 라우트가 같은 검사를 한 번 더 두면 「어느 층이 거절했는가」가 갈리고, 한쪽만
+       고쳐지는 날이 온다(새 검사 0 · 발주문 조건).
+
+    🔴 **쿠키와 쿼리가 다르면 422 다** — 「id 를 아는 것만으로 남의 목록을 읽는」 경로를
+       열지 않는다(v0.1.6 판정 append 와 같은 규칙). 서버는 둘 중 어느 쪽을 뜻하는지
+       고르지 않는다.
+
+    🔴 재기동 뒤 빈 배열은 **정상**이다 — 저장소가 프로세스 안이라 「없다」가 아니라
+       「이 프로세스는 모른다」이다. 그 차이를 지어내지 않고 사실만(빈 배열) 낸다.
+    """
+    cookie_sid = getattr(request.state, "session_id", None)
+    if cookie_sid != sessionId:
+        raise _error(
+            422,
+            "invalid_request",
+            "쿠키와 쿼리의 sessionId 가 다르다 — 남의 세션 목록은 열지 않는다",
+        )
+
+    # 🔴 최신순 = `startedAt` 내림차순. dict 삽입 순서에 기대지 않는다 — 그 순서는
+    #    eviction 이 한 번 돌면 «만든 순»이기를 그만둔다(store 의 `_evict_if_needed`).
+    records = sorted(_store(request).by_session(sessionId), key=lambda r: r.startedAt, reverse=True)
+
+    listed: list[dict[str, Any]] = []
+    for record in records[:SESSION_RUNS_LIMIT]:
+        item: dict[str, Any] = {
+            "runId": record.runId,
+            "incidentId": record.incidentId,
+            "scenarioId": record.scenarioId,
+            "mode": record.mode,
+            "status": record.status,
+            "startedAt": record.startedAt,
+        }
+        # 계약이 선택으로 둔 칸 — 아직 도는 run 에는 «없다»(null 을 지어 넣지 않는다).
+        if record.finishedAt is not None:
+            item["finishedAt"] = record.finishedAt
+        listed.append(item)
+    return listed
+
+
 @router.get("/runs/{runId}", responses=NOT_IMPLEMENTED)
 async def run_snapshot(runId: str, request: Request) -> dict[str, Any]:
     """완주 후 결과 스냅샷 — 계약 `{ status, candidates[], workOrderDraftId? }`.

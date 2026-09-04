@@ -24,9 +24,20 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from .events import now_iso
+
 log = logging.getLogger("fkt.investigation.store")
 
 RunStatus = Literal["running", "completed", "stopped", "failed"]
+
+# 🔴 «끝났다»고 말하는 이벤트 = 정본 한 벌. replay 가 fixture 검사에 쓰던 같은 표를 여기로
+#    올렸다 — 두 벌이면 한쪽에 종단 종류가 늘 때 다른 쪽이 조용히 뒤처진다(파생이 정본을
+#    따라가게 한다).
+TERMINAL_EVENT_STATUS: dict[str, RunStatus] = {
+    "run.completed": "completed",
+    "run.stopped": "stopped",
+    "run.failed": "failed",
+}
 
 # 프로세스 전체 run 상한. 넘으면 «완료된» 것부터 오래된 순으로 버린다.
 MAX_RUNS = 200
@@ -43,7 +54,10 @@ class RunRecord:
     scenarioId: str
     incidentId: str
     mode: Literal["live", "replay"]
-    status: RunStatus = "running"
+    startedAt: str = field(default_factory=now_iso)
+    # 🔴 아래 `status` property 의 뒷방. 직접 읽지 않는다.
+    _status: RunStatus = "running"
+    _finishedAt: str | None = None
     events: list[dict[str, Any]] = field(default_factory=list)
     candidates: list[dict[str, Any]] = field(default_factory=list)
     workOrderDraftId: str | None = None
@@ -94,6 +108,36 @@ class RunRecord:
     @property
     def terminal(self) -> bool:
         return self.status != "running"
+
+    # --- 상태와 «끝난 시각» ---------------------------------------------------
+    #
+    # 🔴 처음에는 끝난 시각을 **이벤트 로그에서 파생**했다. 실측이 그것을 깼다:
+    #    replay run 은 녹화본의 이벤트를 `ts` 까지 그대로 복원하므로(fixture 가 정본),
+    #    파생값은 «녹화된 날»을 가리켰다 — `startedAt 2026-09-04T09:35` 에 대해
+    #    `finishedAt 2026-09-03T05:29`, 즉 **끝이 시작보다 하루 앞선** 값이 나왔다.
+    #    로그는 「이 run 이 무엇을 했는가」의 정본이지만 「이 프로세스가 언제 끝냈는가」의
+    #    정본은 아니다 — 층이 다른 두 사실이었다.
+    #
+    # 🔴 그렇다고 종결 자리 아홉(runner 8 · replay 1)에 도장을 하나씩 더 찍게 두지도
+    #    않는다. 새로 느는 자리가 조용히 시각을 빠뜨린다. 그래서 «상태를 세우는 행위»
+    #    자체에 도장을 붙인다 — 호출자 코드는 한 줄도 바뀌지 않고, 앞으로 생길 자리도
+    #    자동으로 따라온다.
+
+    @property
+    def status(self) -> RunStatus:
+        return self._status
+
+    @status.setter
+    def status(self, value: RunStatus) -> None:
+        self._status = value
+        # 첫 종결만 찍는다 — 뒤늦게 status 를 다시 쓰는 자리가 시각을 밀지 않게.
+        if value != "running" and self._finishedAt is None:
+            self._finishedAt = now_iso()
+
+    @property
+    def finishedAt(self) -> str | None:
+        """이 프로세스가 이 run 을 끝낸 시각. 아직 도는 run 은 `None`."""
+        return self._finishedAt
 
 
 def _close(queue: asyncio.Queue[dict[str, Any] | None]) -> None:
