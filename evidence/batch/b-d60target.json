@@ -1,0 +1,56 @@
+{
+ "label": "d60target",
+ "base": "http://127.0.0.1:8140",
+ "at": "2026-09-04T09:16:57.694Z",
+ "notMeasured": [],
+ "incidents": {
+  "status": 200,
+  "url": "http://127.0.0.1:8140/incidents",
+  "testids": [
+   "nav-overview",
+   "nav-incidents",
+   "nav-compare",
+   "app-bar",
+   "intro-reopen",
+   "mode-badge",
+   "session-chip",
+   "reset-button",
+   "fallback-banner",
+   "incidents-screen",
+   "session-runs-empty",
+   "incidents-alarms",
+   "start-from-incidents"
+  ],
+  "rows": 2,
+  "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 안내와 둘러보기 다시 보기 ◑ REPLAY KhQs ⟲ 세션 리셋 [ ! ] Live AI 합성이 꺼져 있습니다(소유자 게이트웨이 미도달) — 조사·근거 수집은 그대로 실행되고, 원인 후보는 결정적 집계로 종합합니다. 화면 흐름은 동일합니다. ✕ Incidents 이 세션에서 시작한 조사와"
+ },
+ "restore": {
+  "entered": true,
+  "urlAfterEnter": "http://127.0.0.1:8140/incidents/INC-2026-014?run=RUN-f99f47129cf0",
+  "runInUrl": true,
+  "runId": "RUN-f99f47129cf0",
+  "evidenceHref": "/evidence/EQ-CNC-204?run=RUN-f99f47129cf0",
+  "urlAfterBack": "http://127.0.0.1:8140/incidents/INC-2026-014?run=RUN-f99f47129cf0",
+  "runAfterBack": "RUN-f99f47129cf0",
+  "overviewIncidentHref": "/incidents/INC-2025-019",
+  "urlAfterNav": "http://127.0.0.1:8140/incidents/INC-2025-019",
+  "runAfterNav": null,
+  "testidsAfterNav": 19
+ },
+ "tour": {
+  "inviteFound": true,
+  "notes": [
+   null,
+   null,
+   null
+  ],
+  "titles": [
+   "둘러보기를 시작합니다알람 하나가 조사·근거·조치로 이어지는 흐름을 아홉 걸음으로 따",
+   "알람은 «울린 행»의 값이 앵커다임계와 관측값이 나란히 있습니다. 기준은 센서의 임",
+   "조사를 시작하면 에이전트가 5단계를 돕니다구조화 조회 → 문서 검색 → 그래프 추적"
+  ],
+  "stoppedAt": 3,
+  "noteValues": []
+ },
+ "consoleErrors": []
+}

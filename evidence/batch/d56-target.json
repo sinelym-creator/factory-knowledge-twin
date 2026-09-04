@@ -1,0 +1,160 @@
+{
+ "label": "target",
+ "base": "http://127.0.0.1:8143",
+ "at": "2026-09-04T09:14:38.904Z",
+ "rows": [
+  {
+   "vp": "1920x900",
+   "resetFound": true,
+   "geom": {
+    "dialogFound": true,
+    "top": 367,
+    "left": 768,
+    "height": 166,
+    "appBarHeight": 1310,
+    "parentIsBody": false,
+    "toastRight": 1920,
+    "innerWidth": 1920,
+    "buttons": [
+     "취소",
+     "되돌리기"
+    ]
+   },
+   "bgClicked": 0,
+   "backgroundBlocked": true,
+   "closedByEsc": true
+  },
+  {
+   "vp": "1280x800",
+   "resetFound": true,
+   "geom": {
+    "dialogFound": true,
+    "top": 317,
+    "left": 448,
+    "height": 166,
+    "appBarHeight": 1330,
+    "parentIsBody": false,
+    "toastRight": 1280,
+    "innerWidth": 1280,
+    "buttons": [
+     "취소",
+     "되돌리기"
+    ]
+   },
+   "bgClicked": 0,
+   "backgroundBlocked": true,
+   "closedByEsc": true
+  },
+  {
+   "vp": "1280x400",
+   "resetFound": true,
+   "geom": {
+    "dialogFound": true,
+    "top": 117,
+    "left": 448,
+    "height": 166,
+    "appBarHeight": 1330,
+    "parentIsBody": false,
+    "toastRight": 1280,
+    "innerWidth": 1280,
+    "buttons": [
+     "취소",
+     "되돌리기"
+    ]
+   },
+   "bgClicked": 0,
+   "backgroundBlocked": true,
+   "closedByEsc": true
+  },
+  {
+   "vp": "390x844",
+   "resetFound": true,
+   "geom": {
+    "dialogFound": true,
+    "top": 339,
+    "left": 16,
+    "height": 166,
+    "appBarHeight": 0,
+    "parentIsBody": false,
+    "toastRight": 390,
+    "innerWidth": 390,
+    "buttons": [
+     "취소",
+     "되돌리기"
+    ]
+   },
+   "bgClicked": 0,
+   "backgroundBlocked": true,
+   "closedByEsc": true
+  },
+  {
+   "vp": "390x500",
+   "resetFound": true,
+   "geom": {
+    "dialogFound": true,
+    "top": 167,
+    "left": 16,
+    "height": 166,
+    "appBarHeight": 0,
+    "parentIsBody": false,
+    "toastRight": 390,
+    "innerWidth": 390,
+    "buttons": [
+     "취소",
+     "되돌리기"
+    ]
+   },
+   "bgClicked": 0,
+   "backgroundBlocked": true,
+   "closedByEsc": true
+  }
+ ],
+ "notes": [],
+ "summary": {
+  "viewports": 5,
+  "dialogOpened": 5,
+  "topAllNonNegative": true,
+  "tops": [
+   "1920x900:367",
+   "1280x800:317",
+   "1280x400:117",
+   "390x844:339",
+   "390x500:167"
+  ],
+  "appBarHeights": [
+   "1920x900:1310",
+   "1280x800:1330",
+   "1280x400:1330",
+   "390x844:0",
+   "390x500:0"
+  ],
+  "parentIsBody": [
+   "1920x900:false",
+   "1280x800:false",
+   "1280x400:false",
+   "390x844:false",
+   "390x500:false"
+  ],
+  "backgroundBlocked": [
+   "1920x900:true",
+   "1280x800:true",
+   "1280x400:true",
+   "390x844:true",
+   "390x500:true"
+  ],
+  "closedByEsc": [
+   "1920x900:true",
+   "1280x800:true",
+   "1280x400:true",
+   "390x844:true",
+   "390x500:true"
+  ],
+  "toastWithin": [
+   "1920x900:true",
+   "1280x800:true",
+   "1280x400:true",
+   "390x844:true",
+   "390x500:true"
+  ]
+ }
+}

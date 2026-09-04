@@ -1,0 +1,27 @@
+{
+ "label": "control",
+ "base": "http://127.0.0.1:8144",
+ "at": "2026-09-04T09:13:56.138Z",
+ "shots": {
+  "sessionCreated": 200,
+  "sessionId": "ul-PZS…",
+  "tries": 6,
+  "first": {
+   "status": 200,
+   "headers": {},
+   "runId": "RUN-0c59c1967510",
+   "err": null
+  },
+  "second": {
+   "status": 200,
+   "headers": {},
+   "runId": "RUN-c1afdb5280bd",
+   "err": null
+  }
+ },
+ "sameRunId": false,
+ "reusedHeaderOnSecond": false,
+ "reusedValue": null,
+ "capHeadersFirst": [],
+ "capHeadersSecond": []
+}
