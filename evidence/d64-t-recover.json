@@ -1,0 +1,226 @@
+{
+  "base": "http://127.0.0.1:8176",
+  "label": "tgt-7s-then-0",
+  "wall": "2026-09-04T10:48:53.242Z",
+  "windowSec": 50,
+  "sampleCount": 50,
+  "transitions": [
+    {
+      "atMs": 33,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 30519,
+      "badge": "◑ REPLAY"
+    }
+  ],
+  "firstBadge": "◌ 확인 중",
+  "lastBadge": "◑ REPLAY",
+  "everUnavailable": false,
+  "firstUnavailableAtMs": null,
+  "everChecking": true,
+  "liveStatusRequests": 3,
+  "consoleErrors": [],
+  "samples": [
+    {
+      "atMs": 33,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 1121,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 2163,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 3185,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 4203,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 5221,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 6236,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 7253,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 8258,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 9276,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 10292,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 11305,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 12313,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 13327,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 14337,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 15347,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 16364,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 17384,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 18391,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 19398,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 20407,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 21421,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 22435,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 23439,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 24442,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 25461,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 26465,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 27481,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 28486,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 29506,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 30519,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 31536,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 32543,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 33558,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 34565,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 35583,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 36595,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 37603,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 38619,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 39629,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 40634,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 41650,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 42665,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 43682,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 44701,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 45718,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 46736,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 47755,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 48771,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 49790,
+      "badge": "◑ REPLAY"
+    }
+  ]
+}
