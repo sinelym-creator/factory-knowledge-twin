@@ -18,11 +18,24 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from .. import ownership
-from ..errors import NOT_IMPLEMENTED, DependencyUnavailable, NotImplementedRoute, dependency_guard
+from ..errors import (
+    NOT_IMPLEMENTED,
+    DependencyUnavailable,
+    NotImplementedRoute,
+    contract_error,
+    dependency_guard,
+)
 from ..reading import documents as document_reader
 from ..reading import evidence as evidence_reader
 from ..retrieval.service import compare
-from ..schemas import CompareRequest, CompareResult, DocumentPreview, EvidenceResponse
+from ..schemas import (
+    CompareRequest,
+    CompareResult,
+    DocumentPreview,
+    EvidenceResponse,
+    GraphPathBody,
+    GraphPathMeta,
+)
 
 router = APIRouter(tags=["knowledge"])
 
@@ -42,18 +55,101 @@ def _not_found(what: str, ident: str) -> HTTPException:
     )
 
 
+#: GP 근거 id 접두 — 조사 run 이 만든다(`investigation/workflow.py` graph 단계).
+_GRAPH_PATH_PREFIX = "GP-"
+
+
+def _graph_path_run_id(evidence_id: str) -> str | None:
+    """`GP-<runId 접미>-<idx>` 에서 runId 를 되세운다 — 형식이 아니면 None.
+
+    🔴 접미에 `-` 가 들어갈 수 있으므로 **뒤에서** 한 번만 자른다. 앞에서 자르면 runId 가
+       잘려 「없는 run」이 되고, 그 404 는 부재가 아니라 파싱 실패다.
+    """
+    suffix, _, index = evidence_id.removeprefix(_GRAPH_PATH_PREFIX).rpartition("-")
+    if not suffix or not index.isdigit():
+        return None
+    return f"RUN-{suffix}"
+
+
+def _graph_path_evidence(evidenceId: str, request: Request) -> EvidenceResponse:
+    """run 상태의 `graphPaths` 를 근거 한 건으로 편다(D-68 · 계약 v0.1.17 append).
+
+    🔴 **이 kind 만 세션 스코프다.** GP id 는 조사 run 이 만들고 run 상태에만 사는데,
+       `/evidence` 는 세션 «읽기 예외» 라우트다(`session_guard.READ_ONLY_EXCEPTIONS`).
+       그래서 세션 강제를 여기서 한다 — 무세션 401 · 타 세션 404.
+
+    🔴 **부재와 타 세션이 같은 문장으로 나간다**(`ownership` 성문 · Q-25). 파싱 실패도
+       같은 404 다: 「그런 id 형식이 아니다」를 따로 말하면 GP id 규칙이 응답으로 샌다.
+    """
+    if ownership.current_session(request) is None:
+        # 🔴 세션 «없음»은 존재를 누설하지 않는다(모든 GP id 에 같은 401) — 그래서 404 로
+        #    접지 않는다. 접으면 화면이 「로그인하라」와 「없다」를 구별하지 못한다.
+        raise contract_error(
+            401, "session_required", "세션이 없다 — POST /api/sessions 로 발급받아라"
+        )
+    run_id = _graph_path_run_id(evidenceId)
+    record = ownership.find_run(request, run_id) if run_id is not None else None
+    if record is not None and record.mode == "replay":
+        # 🔴 재생 run 은 `GET /graph/paths?byRun=` 과 **같은 판정**을 낸다(J-G). 여기서만
+        #    404 를 내면 한 사건에 두 판정이 서고, 무엇보다 «원본이 없다»를
+        #    «없는 근거»로 말하게 된다 — 그 둘은 화면이 다르게 말해야 하는 다른 사건이다.
+        raise HTTPException(
+            status_code=501,
+            detail={
+                "code": "replay_path_source_absent",
+                "message": (
+                    f"run {run_id} 은 재생본이다 — replay fixture 는 이벤트만 담으므로 "
+                    "그래프 경로 원본이 없다"
+                ),
+            },
+        )
+    path = None
+    if record is not None:
+        path = next(
+            (p for p in record.graphPaths if p.get("evidenceId") == evidenceId), None
+        )
+    if path is None:
+        raise _not_found("evidence", evidenceId)
+    return EvidenceResponse(
+        evidenceId=evidenceId,
+        kind="graph-path",
+        # 🔴 revision 6필드는 null · `stale` 은 false — 색인이 아니라 그 run 이 밟은 걸음
+        #    자체라 「낡음」이라는 축이 없다(`record` kind 와 같은 사유).
+        stale=False,
+        text=str(path["excerpt"]),
+        excerpt=str(path["excerpt"]),
+        sourceId=str(path["targetId"]),
+        score=float(path["score"]),
+        meta=GraphPathBody(
+            path=GraphPathMeta(
+                label=str(path["label"]),
+                hops=int(path["hops"]),
+                nodes=[str(n) for n in path["nodes"]],
+                edges=[dict(e) for e in path["edges"]],
+            )
+        ),
+    )
+
+
 @router.get("/evidence/{evidenceId}", response_model=EvidenceResponse)
 async def evidence(evidenceId: str, request: Request) -> EvidenceResponse:
-    """kind별 실체 — `doc-chunk` · `record` (계약 v0.1.1 append · T2-2 해제).
+    """kind별 실체 — `doc-chunk` · `record` · `graph-path` (v0.1.1 · v0.1.17 append).
 
     신뢰 배지(검증 F-4)와 인용 유효 조건(T0-6 §3.3)이 이 응답에 걸려 있다. 🔴 조회는
     인용 유효 조건으로 **거르지 않는다** — 인용할 수 없는 revision 인지를 화면이 보려면
     그 revision 도 열려야 한다. 거르는 것은 검색(T2-1)의 몫이고, 여기는 «보여 주고
     표시하는» 자리다.
 
-    kind `graph-path`·`sensor-series` 는 T2-2 범위 밖이다(계약 v0.1.1 · compare 가 해당
-    evidenceId 를 만들지 않는다).
+    🔴 `graph-path` 는 **DB 를 보지 않는다**(D-68). GP 근거는 postgres 에 실린 적이 없어
+    이 라우트가 지금까지 구조적으로 404 를 냈다 — 화면의 「찾을 수 없음」은 정확히 그
+    부재였다. 원천은 run 상태이므로 분기를 pool 획득 «앞»에 둔다: postgres 가 끊긴
+    날에도 그래프 근거는 열려야 하고, 무엇보다 여기서 pool 을 먼저 잡으면 GP 조회가
+    쓰지도 않는 의존에 묶인다.
+
+    kind `sensor-series` 는 아직 범위 밖이다(compare 가 해당 evidenceId 를 만들지 않는다).
     """
+    if evidenceId.startswith(_GRAPH_PATH_PREFIX):
+        return _graph_path_evidence(evidenceId, request)
     pool = _pool(request)
     async with dependency_guard("postgres"):
         found = await evidence_reader.fetch(pool, evidenceId)
