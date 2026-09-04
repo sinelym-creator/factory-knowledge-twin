@@ -1,0 +1,62 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "engine": "chromium",
+  "wall": "2026-09-04T11:31:11.268Z",
+  "c1_tutorial": {
+    "introBefore": 0,
+    "introAfter": 1,
+    "tourAfter": 1,
+    "opened": true
+  },
+  "e_d67_invite_390": {
+    "present": false
+  },
+  "e_d67_resume_390": {
+    "present": false
+  },
+  "d_chips": {
+    "staticChip": 0,
+    "sessionChip": 1
+  },
+  "c2_investigation": {
+    "tourStillOpen": 0,
+    "startCount": 1,
+    "landed": "https://factory-knowledge-twin.vercel.app/incidents/INC-2026-014?run=RUN-bc69e95e2dd5",
+    "runId": "RUN-bc69e95e2dd5",
+    "evidenceLinks": 19,
+    "evidenceUrl": "https://factory-knowledge-twin.vercel.app/evidence/EQ-CNC-204?run=RUN-bc69e95e2dd5",
+    "breadcrumb": "Incidents › 조사 RUN-bc69e9… › 근거 EQ-CNC-204",
+    "badgeOnEvidence": [
+      "◉ LIVE",
+      "◉ LIVE",
+      "◉ LIVE",
+      "◉ LIVE",
+      "◉ LIVE",
+      "◉ LIVE"
+    ],
+    "everUnavailableOnEvidence": false,
+    "backLink": 1,
+    "backLanded": "https://factory-knowledge-twin.vercel.app/evidence/EQ-CNC-204?run=RUN-bc69e95e2dd5",
+    "backSameRun": true,
+    "resumePresent": 1,
+    "resumeText": "이 세션의 조사 1건 · 이어보기 →",
+    "resumeLanded": "https://factory-knowledge-twin.vercel.app/overview",
+    "resumeSameRun": false
+  },
+  "consoleErrors": [
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-bc69e95e2dd5' failed: Error during WebS"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-bc69e95e2dd5' failed: Error during WebS"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-bc69e95e2dd5' failed: Error during WebS"
+    }
+  ],
+  "consoleErrorsExcludedWs": 3,
+  "consoleErrorsReal": 0
+}
