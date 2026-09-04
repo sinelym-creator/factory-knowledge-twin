@@ -194,12 +194,16 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
   if (!notice || closed) return null;
   return (
     <div
-      /* 🔴 줄 높이를 44 로 «상자»로 세운다. ✕ 의 `fkt-hit::before` 는 44 였지만 배너
-         상자(36.5)를 넘어 삐져나온 위·아래를 «나중에 그려지는 이웃»(위 = sticky 앱바 ·
-         아래 = 본문)이 덮어, 실제로는 세로 20 만 눌렸다(D-26 · 1440 실측). 의사 요소를 더
-         키우거나 z-order 로 이웃을 덮으면 다른 자리가 죽는다 — 그래서 줄 자체를 44 로 한다.
-         `py-2`(위아래 8) 를 빼고 `min-h-11` 로 바꾸므로 배너는 36.5 → 44 로 «7.5px» 커진다. */
-      className="flex min-h-11 items-center gap-3 border-b border-edge bg-panel px-4 text-foot text-ink"
+      /* 🔴 **T7-29 — 띠를 36.5 로 되돌린다**(폐하 재가 09-04 ⓒ · D-26 수리분 역방향).
+         D-26 은 ✕ 의 히트를 44 로 세우려고 «줄 자체»를 36.5 → 44 로 키웠다. 그건 보이는
+         것을 바꾼 처방이라, 공개 주소의 모습과 어긋났다. 이번 원칙은 그 반대다 —
+         **보이는 상자·간격·배치는 1px 도 안 움직이고, 누르는 상자만 44 로 편다.**
+         ✕ 쪽에서 «아래로만» 넓히므로 이 줄은 원래 높이로 돌아간다.
+         🔴 `py-2` 로 되돌리지 «않는다» — 실측(390): 그러면 띠가 79 → 95 로 «커진다».
+            D-26 이 뺀 `py-2` 는 한 줄로 서는 1440 에서만 구속력이 있었고, 글이 두 줄로
+            감기는 390 에서는 내용 높이가 이미 더 컸다. 되돌릴 축은 «최소 높이»뿐이다:
+            1440 은 44 → 36.5 로 돌아가고, 390 은 79 그대로다. */
+      className="flex min-h-[36.5px] items-center gap-3 border-b border-edge bg-panel px-4 text-foot text-ink"
       role="status"
       data-testid="fallback-banner"
     >
@@ -213,9 +217,16 @@ export function FallbackBanner({ sessionPending }: { sessionPending: boolean }) 
       {mode === "unavailable" && <StaticReplayOffer />}
       <button
         /* ✕ 글리프는 가로 10.6px 뿐이라 2.5.8 의 24 미만 — 간격 예외에 기대는 자리였다.
-           위 `intro-reopen` 과 같은 형태로 «실제 박스»를 44 로 편다(글리프 크기 불변). */
-        /* 줄이 44 이므로 `self-stretch` 로 상자를 그 높이에 맞춘다 — 글리프 크기는 그대로다. */
-        className="fkt-hit inline-flex min-w-11 self-stretch items-center justify-center text-muted hover:text-ink"
+           «실제 박스»를 44 로 편다(글리프 크기 불변).
+           🔴 **T7-29 — 위로는 넓히지 않는다.** 위에는 sticky 앱바가 있고, 그건 «나중에
+           그려지는» 이웃이라 위로 뻗은 부분은 덮여서 안 눌린다(D-26 이 줄 자체를 키운 이유).
+           그래서 **아래로만** 늘리고(`pb`) 같은 값의 음수 `mb` 로 자리를 되돌린다 —
+           띠 높이·본문 위치는 그대로이고 누르는 상자만 아래로 자란다.
+           🔴 `relative z-10` 이 그 아랫부분을 본문 «위»에 둔다. 이게 없으면 넓힌 만큼이
+           본문에 덮여, CSS 로는 44 인데 화면에서는 안 눌리는 앞판의 형태로 돌아간다.
+           🔴 `self-stretch` 는 뺀다 — 늘어난 높이가 줄의 cross size 로 «흡수»되어
+           padding 이 상자를 못 키운다(그러면 이 처방 자체가 무효가 된다). */
+        className="relative z-10 inline-flex min-w-11 items-center justify-center pb-[23.5px] -mb-[23.5px] text-muted hover:text-ink"
         onClick={() => setClosed(true)}
         aria-label="배너 닫기"
       >
