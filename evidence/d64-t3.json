@@ -1,0 +1,106 @@
+{
+  "base": "http://127.0.0.1:8176",
+  "label": "tgt-3s",
+  "wall": "2026-09-04T10:45:16.673Z",
+  "windowSec": 20,
+  "sampleCount": 20,
+  "transitions": [
+    {
+      "atMs": 92,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 4233,
+      "badge": "◑ REPLAY"
+    }
+  ],
+  "firstBadge": "◌ 확인 중",
+  "lastBadge": "◑ REPLAY",
+  "everUnavailable": false,
+  "firstUnavailableAtMs": null,
+  "everChecking": true,
+  "liveStatusRequests": 2,
+  "consoleErrors": [],
+  "samples": [
+    {
+      "atMs": 92,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 1173,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 2213,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 3222,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 4233,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 5250,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 6255,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 7264,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 8278,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 9289,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 10303,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 11313,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 12326,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 13335,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 14354,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 15371,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 16391,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 17403,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 18420,
+      "badge": "◑ REPLAY"
+    },
+    {
+      "atMs": 19434,
+      "badge": "◑ REPLAY"
+    }
+  ]
+}

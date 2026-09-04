@@ -1,0 +1,106 @@
+{
+  "base": "http://127.0.0.1:8177",
+  "label": "ctl-3s",
+  "wall": "2026-09-04T10:45:38.336Z",
+  "windowSec": 20,
+  "sampleCount": 20,
+  "transitions": [
+    {
+      "atMs": 112,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 3235,
+      "badge": "◌ 미연결"
+    }
+  ],
+  "firstBadge": "◌ 확인 중",
+  "lastBadge": "◌ 미연결",
+  "everUnavailable": true,
+  "firstUnavailableAtMs": 3235,
+  "everChecking": true,
+  "liveStatusRequests": 2,
+  "consoleErrors": [],
+  "samples": [
+    {
+      "atMs": 112,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 1208,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 2225,
+      "badge": "◌ 확인 중"
+    },
+    {
+      "atMs": 3235,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 4246,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 5255,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 6261,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 7271,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 8281,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 9293,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 10303,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 11310,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 12320,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 13334,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 14341,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 15350,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 16357,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 17379,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 18385,
+      "badge": "◌ 미연결"
+    },
+    {
+      "atMs": 19395,
+      "badge": "◌ 미연결"
+    }
+  ]
+}
