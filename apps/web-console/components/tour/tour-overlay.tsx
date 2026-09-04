@@ -250,6 +250,36 @@ function TourStepView({
     };
     document.addEventListener("focusin", onFocusIn, true);
 
+    /* 🔴 **T7-35(D-52) — 폴백이 «있다»와 «막는다»는 다른 사실이다.**
+     *
+     * 위 `focusin` 감시는 **키보드 축만** 되돌린다. `inert` 가 없는 브라우저에서 마우스로
+     * 범위 밖을 누르면 아무것도 막지 않아 그대로 화면이 넘어갔다 — 리바이2 X-22 실측:
+     * `delete HTMLElement.prototype.inert` 로 강제한 열에서 투어 중 `nav-compare` 클릭이
+     * **`/compare` 이동**으로 끝났다(지원 열은 막힘 · `inert` 걸린 요소 15 → 0 이 갈래 증인).
+     *
+     * 🔴 **캡처 단계**여야 한다 — 링크·버튼의 자기 핸들러보다 «먼저» 서야 이동을 막는다.
+     * 🔴 `pointerdown` 과 `click` 을 **둘 다** 막는다: 앞의 것은 포커스·드래그 개시를,
+     *    뒤의 것은 키보드로 활성화된 클릭과 합성 클릭을 잡는다.
+     * 🔴 지원 열에서는 `inert` 가 먼저 막아 이 가드가 **발동 0 인 것이 정상**이다 — 그래서
+     *    발동을 «세되» 커밋본에 흔적을 남기지 않는다(내부 카운터 · 실측은 아래 두 열의
+     *    화면 결과로 가른다).
+     * 🔴 되돌리는 방법은 `onFocusIn` 과 **같다** — 두 축이 다른 자리로 포커스를 보내면
+     *    같은 사건이 입력 방식에 따라 다르게 끝난다.
+     */
+    let blocked = 0;
+    const onPointer = (e: Event) => {
+      if (inRange(e.target)) return;
+      blocked += 1;
+      e.preventDefault();
+      e.stopPropagation();
+      const first = callout.querySelector<HTMLElement>(
+        'button, a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      (first ?? callout).focus();
+    };
+    document.addEventListener("pointerdown", onPointer, true);
+    document.addEventListener("click", onPointer, true);
+
     /* ③ 초기 포커스. 🔴 «한 번만» 부르면 안 된다 — 클릭으로 넘어온 단계는 그 클릭이 곧 화면
        이동이라, 이 시점에 대상이 아직 DOM 에 없다(실측: `interactive` 초기 포커스가 `body`).
        그래서 다음 프레임과 정착 후 한 번 더 시도하되, **이미 범위 안에 포커스가 있으면
@@ -282,6 +312,11 @@ function TourStepView({
       window.cancelAnimationFrame(raf);
       window.clearTimeout(settle);
       document.removeEventListener("focusin", onFocusIn, true);
+      /* 🔴 포인터 가드는 `focusin` 을 떼는 «그 자리»에서 함께 뗀다 — 두 감시의 수명이 갈리면
+         투어가 끝난 화면에서 클릭이 막히는 회차가 생긴다(규격 ⑤ 화면 변화 0 위반). */
+      document.removeEventListener("pointerdown", onPointer, true);
+      document.removeEventListener("click", onPointer, true);
+      void blocked; /* 발동 계수 — 실측용으로만 세고 화면·로그에는 남기지 않는다 */
       for (const el of changed) el.inert = false;
     };
     /* 🔴 **`registered` 가 의존 배열에 «있어야» 이 수리가 성립한다**(T7-28). 카드가 붙는
