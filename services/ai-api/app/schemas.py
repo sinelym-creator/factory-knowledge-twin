@@ -175,16 +175,48 @@ class EvidenceRecord(BaseModel):
     fields: dict[str, Any]
 
 
+class GraphPathMeta(BaseModel):
+    """`meta.path` — 조사가 실제로 밟은 걸음 그대로(D-68).
+
+    🔴 여기서 그래프를 다시 걷지 않는다. `GET /graph/paths?byRun=` 이 내는 것과 «같은
+       값»이고, 원천도 같다(run 상태의 `graphPaths`) — 두 표면이 갈리면 근거를 눌러 본
+       사람에게만 보이는 거짓이 생긴다.
+    """
+
+    label: str
+    hops: int
+    nodes: list[str]
+    # 🔴 edge 는 `{from, type, to}` 객체다 — 문자열로 접으면 화면이 관계를 다시
+    #    파싱해야 하고, 그 파싱은 `str(dict)` 서식에 묶인다(재조립 금지 J-C).
+    edges: list[dict[str, Any]]
+
+
+class GraphPathBody(BaseModel):
+    """`meta` — graph-path 근거의 실체가 사는 자리."""
+
+    path: GraphPathMeta
+
+
 class EvidenceResponse(BaseModel):
-    """GET /evidence/{evidenceId} — 계약 v0.1.1 append.
+    """GET /evidence/{evidenceId} — 계약 v0.1.1 append · `graph-path` 는 v0.1.17 append(D-68).
 
     🔴 revision 6필드는 `doc-chunk` 에서만 실값이다. `record` 에는 revision 이 없으므로
        null 이며, `stale` 도 `false` 상수다 — SSOT 를 직독하는 근거라 「색인이 낡았다」는
        개념 자체가 없다(계약 v0.1.1 · 사유는 `app/reading/evidence.py` 성문).
+
+    🔴 **`graph-path` 는 DB 근거가 아니다**(D-68). GP id 는 조사 run 이 만들고 run 상태에만
+       살아서, 이 kind 만 «세션 스코프»다 — 그래서 라우트가 이 kind 에 한해 세션을
+       요구한다(무세션 401 · 타 세션 404). revision 6필드는 전부 null 이고 `stale` 은
+       false 다: 색인이 아니라 그 run 이 밟은 걸음 자체라 「낡음」이라는 축이 없다.
+
+    🔴 `text` 와 `excerpt` 는 **같은 문자열**이다(walk). `text` 는 v0.1.1 부터 있던 본문
+       칸이고 `excerpt` 는 D-68 발주문·이벤트 `evidence_ref` 가 쓰는 이름이다 — 계약이
+       하나로 못박히면 다른 하나를 지운다(자수 · 지금 지우면 어느 쪽 소비처가 깨지는지
+       모른 채 고르는 것이 된다).
     """
 
     evidenceId: str
-    kind: Literal["doc-chunk", "record"]
+    kind: Literal["doc-chunk", "record", "graph-path"]
     revisionId: str | None = None
     contentHash: str | None = None
     stale: bool
@@ -194,6 +226,10 @@ class EvidenceResponse(BaseModel):
     text: str
     highlight: Highlight | None = None
     record: EvidenceRecord | None = None
+    sourceId: str | None = None
+    excerpt: str | None = None
+    score: float | None = None
+    meta: GraphPathBody | None = None
 
 
 class DocumentPreview(BaseModel):

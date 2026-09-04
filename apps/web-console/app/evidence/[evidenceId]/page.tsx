@@ -18,7 +18,7 @@ import {
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
 import { fetchSessionRuns } from "@/lib/session-runs";
-import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
+import { STATIC_MISS, isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
  * ③ Evidence 뷰 (wireframes §3) — 근거를 원문·좌표·신뢰 배지로 되돌린다 (T3-3).
@@ -61,7 +61,10 @@ export default async function EvidencePage({
     : await apiGetServer<Evidence>(CONTRACT.evidence(evidenceId), cookieHeader);
 
   if (reply.state !== "ok") {
-    const missing = reply.status === 404;
+    /* 🔴 정적 재생본이 그 자리를 안 담은 것도 «없는 것»이다(D-68). status 가 undefined 라
+       404 검사만으로는 「묻지 못했다」쪽으로 떨어졌고, 그래서 폐하 공개면에서 GP 근거가
+       「서버에 닿지 못했습니다」로 그려졌다 — 서버는 그날 멀쩡히 살아 있었다. */
+    const missing = reply.status === 404 || reply.why === STATIC_MISS;
     return (
       <div className="flex max-w-3xl flex-col gap-3">
         <EvidenceBreadcrumb
@@ -73,6 +76,8 @@ export default async function EvidencePage({
         <Unavailable
           screen={`③ Evidence 뷰 · ${evidenceId}`}
           why={reply.detail?.message ?? reply.why}
+          /* 🔴 서버가 사유 «코드»를 말했으면 그대로 넘긴다 — 화면이 문장으로 되짚지 않는다. */
+          code={reply.detail?.code}
           kind={missing ? "not-found" : "unavailable"}
         />
         {missing && (
@@ -141,6 +146,10 @@ export default async function EvidencePage({
 
       {ev.kind === "record" ? (
         <RecordView evidence={ev} />
+      ) : ev.kind === "graph-path" ? (
+        /* 🔴 그래프 경로 근거에는 «문서 원문»이 없다 — 탭을 그리면 빈 탭 하나가 늘 남는다.
+           경로가 곧 본문이므로 그 자리를 바로 채운다(D-68). */
+        <GraphPathView evidence={ev} />
       ) : (
         <>
           {/* 탭 — 🔴 링크로 만든다. 클라이언트 JS 없이 Tab·Enter 로 오가고, 상태가 URL 에
@@ -322,6 +331,60 @@ function RecordView({ evidence }: { evidence: Evidence }) {
 }
 
 /** 그래프 경로 탭 — T3-4 자리(§3 인터랙션 ①③). 여기서 «없다»고 말한다. */
+/**
+ * 그래프 경로 근거 본문 — 조사가 밟은 걸음 그대로(D-68 · 계약 v0.1.17).
+ *
+ * 🔴 **종단 노드를 링크로 만들지 않는다.** 노드 id 로 열 수 있는 화면이 지금 없어서, 링크를
+ *    걸면 눌러 본 사람이 404 를 만난다 — 이 티켓이 고치는 결함과 같은 종류를 새로 만드는 셈이다.
+ *
+ * 🔴 걸음 문장(`excerpt`)은 서버가 지은 것을 «그대로» 쓴다. 여기서 nodes 를 다시 이어 붙이면
+ *    같은 문장을 두 자리에서 짓게 되고, 한쪽만 고치는 날 이벤트 목록과 본문이 갈린다.
+ */
+function GraphPathView({ evidence }: { evidence: Evidence }) {
+  const path = evidence.meta?.path ?? null;
+  return (
+    <section className="fkt-card p-6" data-testid="graph-path-body">
+      <p className="fkt-section-label">그래프 경로</p>
+      {evidence.excerpt && (
+        <p className="mt-2 text-body-c" data-testid="graph-path-walk">
+          {evidence.excerpt}
+        </p>
+      )}
+      {path ? (
+        <>
+          <p className="mt-3 text-foot text-muted">
+            {path.label} · {path.hops}-hop · 걸음 {path.nodes.length}개
+            {typeof evidence.score === "number" && ` · score ${evidence.score.toFixed(3)}`}
+          </p>
+          <ol className="mt-3 space-y-2 text-foot" data-testid="graph-path-steps">
+            {path.nodes.map((node, i) => {
+              const edge = i > 0 ? path.edges[i - 1] : null;
+              return (
+                <li key={`${node}-${i}`} className="flex flex-col gap-1">
+                  {edge && (
+                    <span className="text-muted">↓ {edge.type}</span>
+                  )}
+                  {/* 🔴 노드는 «글자»다 — 열 화면이 없으므로 링크로 만들지 않는다. */}
+                  <span className="id text-body-c text-ink">{node}</span>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      ) : (
+        <p className="mt-3 text-foot text-muted">
+          이 근거에는 경로 상세가 담겨 있지 않습니다.
+        </p>
+      )}
+      {evidence.sourceId && (
+        <p className="mt-3 text-foot text-muted">
+          종단 노드 <span className="id">{evidence.sourceId}</span>
+        </p>
+      )}
+    </section>
+  );
+}
+
 function GraphTab({ hasSession, runId }: { hasSession: boolean; runId?: string }) {
   return (
     <section

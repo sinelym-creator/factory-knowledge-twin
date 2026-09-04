@@ -1,0 +1,163 @@
+{
+ "at": "2026-09-04T11:28:15.202Z",
+ "base": "https://factory-knowledge-twin.vercel.app",
+ "mode": "replay",
+ "reqs": [
+  {
+   "s": 307,
+   "m": "GET",
+   "rt": "document",
+   "u": "/"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "document",
+   "u": "/overview"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/overview?_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/compare?_rsc=_VWJ-N7ngsYSuaU3"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/compare?_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/api/live/status?sessionId=rcGjOgcfVkUKOYgqI4qNGNlo"
+  },
+  {
+   "s": 303,
+   "m": "POST",
+   "rt": "fetch",
+   "u": "/enter?renew=1"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/overview?intro=1&tour=1&_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/compare?_rsc=qcs5AIIC-Griu4ZG"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/overview?_rsc=f4-2nUB_QklxoMuL"
+  },
+  {
+   "s": 200,
+   "m": "GET",
+   "rt": "fetch",
+   "u": "/api/equipment/EQ-CNC-204/sensors/SN-204-CUR/series?window=24h"
+  }
+ ],
+ "url": "https://factory-knowledge-twin.vercel.app/overview",
+ "census": {
+  "why": [],
+  "kind": [],
+  "mode": [
+   "live"
+  ],
+  "runcap": {
+   "limit": "5",
+   "used": "0",
+   "remaining": "5"
+  },
+  "testids": [
+   "nav-overview",
+   "nav-incidents",
+   "nav-compare",
+   "app-bar",
+   "intro-reopen",
+   "mode-badge",
+   "run-cap-counter",
+   "session-chip",
+   "reset-button",
+   "tour-invite",
+   "tour-start",
+   "tour-later",
+   "tour-never",
+   "headline",
+   "start-from-headline",
+   "kpi-strip",
+   "received-at",
+   "equipment-grid",
+   "hierarchy-tree",
+   "equipment-card",
+   "overview-dock",
+   "intro-card",
+   "alarm-dock",
+   "alarm-card",
+   "alarm-raised-at",
+   "start-from-alarm",
+   "scenario-dock"
+  ],
+  "buttons": [
+   "⟲ 세션 리셋",
+   "둘러보기 시작",
+   "나중에",
+   "다시 보지 않기",
+   "조사 시작",
+   "전체 12대",
+   "가공 라인 1 4대",
+   "가공 라인 2 4대",
+   "가공 라인 3 4대",
+   "✕",
+   "조사 시작"
+  ],
+  "text": "Factory Twin 화면 Overview Incidents Compare synthetic PoC · 실제 공장 데이터가 아닙니다 Factory Knowledge Twin 튜토리얼 ◉ LIVE 조사 0/5 · 남은 5회 내 세션 23Ct ⟲ 세션 리셋 둘러보시겠습니까? 이 콘솔이 알람 하나를 어떻게 조사하는지, 실제 화면을 눌러 가며 9단계로 보여 드립니다. 녹화된 조사로 진행하니 아무것도 실행되지 않습니다. 둘러보기 시작 나중에 다시 보지 않기 ① Factory Overview ■ 지금 공장 상태 지금 가공 라인 2의 CNC 204호기에서 VIB 측정값이 임계를 넘고 있습니다 (임계 6.3 → 관측 6.3047 mm/s). 조사 시작 가동 라인 3 / 3 활성 알람 1 건 진행 Incident 2 건 승인 대기 WO 1 건 Factory A (synthetic) · 이 화면을 받은 시각 20:28:18 KST 설비 12대 전체 12대 가공 라인 1 4대 가공 라인 2 4대 가공"
+ },
+ "cookies": [
+  "fkt_sid=23CtVthVoEjG",
+  "fkt_session=api%3A23CtVt"
+ ],
+ "enterCount": 1,
+ "serverAddrs": [
+  "216.198.79.195"
+ ],
+ "consoleErrors": [],
+ "status401": 0
+}

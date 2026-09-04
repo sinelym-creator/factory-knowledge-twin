@@ -1,4 +1,5 @@
 import { SessionRecovery } from "@/components/session-recovery";
+import { STATIC_MISS } from "@/lib/static-replay";
 
 /**
  * 데이터에 닿지 못한 화면 — 🔴 «빈 화면»과 «못 물어봤다»를 가른다.
@@ -19,7 +20,15 @@ import { SessionRecovery } from "@/components/session-recovery";
  * 🔴 「그 외」를 「서버에 닿지 못했다」로 두는 이유: 모르는 코드가 왔을 때 원인을 **단정하지
  *    않는다**. 값은 `data-why` 에 그대로 있으니 사실이 사라지지도 않는다.
  */
-function describeWhy(why: string): string {
+function describeWhy(why: string, code?: string): string {
+  /* 🔴 **사유 코드가 있으면 그것이 먼저다**(D-68). `why` 는 계측기의 낱말이기도 하고 서버가
+     보낸 한국어 문장이기도 해서, 문장이 오면 아래 어느 가지에도 안 맞아 «그 외»로 떨어졌다 —
+     그래서 404·501 처럼 «서버가 답한» 상황이 「서버에 닿지 못했습니다」로 그려졌다(폐하 공개면
+     실물). 코드는 계약값이라 문구보다 안정되게 갈라준다. */
+  if (code === "replay_path_source_absent") return "정적 재생에는 그래프 경로 원문이 없습니다.";
+  if (code === "session_required") return "세션이 없어 열 수 없는 자리입니다.";
+  if (code === "not_found") return "그런 항목이 없습니다.";
+  if (why === STATIC_MISS) return "이 정적 재생본에는 담기지 않은 자리입니다.";
   if (why === "TypeError") return "서버와 연결이 끊겼습니다. 마지막으로 받은 상태를 보여 드리고 있습니다.";
   if (why === "TimeoutError" || why === "AbortError") return "서버 응답이 없습니다.";
   if (why === "미구현(501)") return "아직 제공되지 않는 기능입니다(501).";
@@ -31,11 +40,14 @@ function describeWhy(why: string): string {
 export function Unavailable({
   screen,
   why,
+  code,
   kind = "unavailable",
   heading = true,
 }: {
   screen: string;
   why: string;
+  /** 서버가 말한 사유 코드(계약값) — 있으면 문장을 이것으로 고른다. */
+  code?: string;
   /** `not-found` = 서버가 「그런 것 없다」고 답했다 · `unavailable` = 묻지 못했다. */
   kind?: "not-found" | "unavailable";
   /**
@@ -71,7 +83,7 @@ export function Unavailable({
         </p>
         {/* 🔴 표시는 사람 말로, 원문은 `data-why` 로 — 두 독자(방문자·계측기)가 다른 것을 읽는다. */}
         <p className="id mt-2 text-foot text-muted" data-why={why}>
-          사유: {describeWhy(why)}
+          사유: {describeWhy(why, code)}
         </p>
         <p className="mt-3 text-foot text-muted">
           {kind === "not-found"
