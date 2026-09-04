@@ -59,7 +59,11 @@ export default async function EvidencePage({
     const missing = reply.status === 404;
     return (
       <div className="flex max-w-3xl flex-col gap-3">
-        <EvidenceBreadcrumb evidenceId={evidenceId} runId={run} />
+        <EvidenceBreadcrumb
+          evidenceId={evidenceId}
+          runId={run}
+          staticIncidentId={bundle?.manifest.anchors.incidentId}
+        />
         <Unavailable
           screen={`③ Evidence 뷰 · ${evidenceId}`}
           why={reply.detail?.message ?? reply.why}
@@ -98,7 +102,11 @@ export default async function EvidencePage({
 
   return (
     <div className="flex min-w-0 max-w-5xl flex-col gap-3">
-      <EvidenceBreadcrumb evidenceId={ev.evidenceId} runId={run} />
+      <EvidenceBreadcrumb
+        evidenceId={ev.evidenceId}
+        runId={run}
+        staticIncidentId={bundle?.manifest.anchors.incidentId}
+      />
       <header className="fkt-card p-5">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-body-c font-semibold">③ Evidence</h1>
