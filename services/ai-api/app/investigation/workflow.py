@@ -65,6 +65,10 @@ class State(TypedDict, total=False):
     citations: dict[str, str]
     graphTargets: dict[str, int]
     graphPaths: list[dict[str, Any]]
+    # 🔴 **graph 가 «문서로 옮겨 온» 인용**(D-85). `citations`(vector) 와 **따로** 둔다 —
+    #    같은 키에 병합해 실으면 순서가 바뀌는 날 vector 5건이 조용히 사라진다.
+    #    이름에 출처를 담은 이유도 같다: 발췌가 어느 단계에서 왔는지 키가 말한다.
+    graphDocumentCitations: dict[str, str]
     candidates: list[dict[str, Any]]
     workOrderDraft: dict[str, Any] | None
     evidenceIds: list[str]
@@ -206,6 +210,11 @@ def build_graph(ctx: Context):
         #    run」과 「전부 중복이라 0건인 run」이 같은 표를 그린다.
         projected = 0
         duplicated = 0
+        # 🔴 **D-85**: 근거집합에 넣는 것만으로는 모델이 그 청크를 «볼» 수 없다.
+        #    `build_evidence_text` 가 훑는 자리에 본문을 실어야 인용이 가능해진다 —
+        #    앞판은 이 자리가 비어 있어서 모델이 인용을 «안» 한 게 아니라 «못» 했고,
+        #    했다면 게이트웨이가 「인용 id 가 준 근거 밖이다」로 답 전체를 버렸다.
+        projected_texts: dict[str, str] = {}
         for chunk_id in await evidence_reader.documents_for_entities(ctx.pool, sorted(targets)):
             if chunk_id in ctx.evidence_ids:
                 duplicated += 1
@@ -224,10 +233,15 @@ def build_graph(ctx: Context):
             )
             ctx.emitter.step_evidence("graph", ref)
             ctx.evidence_ids.append(chunk_id)
+            projected_texts[chunk_id] = detail.text
             projected += 1
 
         return (
-            {"graphTargets": targets, "graphPaths": stored},
+            {
+                "graphTargets": targets,
+                "graphPaths": stored,
+                "graphDocumentCitations": projected_texts,
+            },
             f"경로 {len(stored)}건 · 종단 {sorted(targets)}"
             f" · 문서 투영 {projected}건(중복 제외 {duplicated}건)",
         )
