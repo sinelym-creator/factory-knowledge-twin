@@ -17,6 +17,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import time
 import urllib.error
 import urllib.request
@@ -57,6 +58,17 @@ NDJSON_MIME = "application/x-ndjson"
 PROBE_TIMEOUT_SEC = 2.0
 PROBE_CACHE_SEC = 5.0
 
+# 🔴 **안전 규정 id 는 근거 «본문»에 산다 — 근거 id «집합»에는 없다**(D-84).
+#    실측(#758 raw · GS-01 live 3/3 · 근거 19건): `evidenceText` 의 **키**에 `SAF-*` 0건 ·
+#    발췌 **본문**에 `SAF-LOTO-01` 1건(graph 경로 `GP-…-03/04` 의 nodes 안). 그래서 이 판정을
+#    `evidence_ids`(키 집합)로 하면 자극이 영원히 0건이 되고 초록이 거짓으로 난다.
+#    앞의 `-` 를 막는 이유: `DOC-SAF-0030` 은 그 규정을 «담은 문서»의 id 이지 규정 id 가 아니다.
+#    (실측 위양성: 같은 3 run 전량에서 이 배제로 사라지는 id 0건 — 넓혀도 이 데이터에선 같았다.)
+SAFETY_RULE_RE = re.compile(r"(?<![A-Za-z0-9-])SAF-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*")
+SAFETY_OMITTED_REASON = "safety_rule_omitted"
+# 통지에 싣는 규정 id 상한 — 통지는 프롬프트에 들어가는 문장이라 길이를 우리가 정한다.
+MAX_NOTICE_RULES = 5
+
 
 @dataclass
 class LiveResult:
@@ -67,14 +79,22 @@ class LiveResult:
     model: str | None = None
     rejected_reason: str | None = None
     rationale: dict[str, dict[str, Any]] = field(default_factory=dict)
+    safety_omitted: bool = False
 
-    def synthesis_payload(self) -> dict[str, str]:
-        """`step.completed(synthesize).payload.synthesis` — 계약 v0.1.11 형상 그대로."""
-        payload = {"axis": self.axis}
+    def synthesis_payload(self) -> dict[str, Any]:
+        """`step.completed(synthesize).payload.synthesis` — 계약 v0.1.11 형상 그대로.
+
+        🔴 `safetyOmitted` 는 **참일 때만** 싣는다(D-84). 화면이 아니라 계측이 보는 칸이라
+           평시 형상을 바꾸지 않는 편이 낫다 — 늘 붙는 `false` 는 「이 run 은 재요청까지 갔다」와
+           「이 run 은 규정이 아예 없었다」를 같은 칸으로 만든다.
+        """
+        payload: dict[str, Any] = {"axis": self.axis}
         if self.model:
             payload["model"] = self.model
         if self.rejected_reason:
             payload["rejectedReason"] = self.rejected_reason
+        if self.safety_omitted:
+            payload["safetyOmitted"] = True
         return payload
 
 
@@ -145,7 +165,51 @@ def build_evidence_text(state: dict[str, Any]) -> dict[str, str]:
     return excerpts
 
 
-def _request_body(anchor: Any, candidates: list[Candidate], evidence_text: dict[str, str]) -> bytes:
+def safety_rules_in_evidence(evidence_text: dict[str, str]) -> set[str]:
+    """발췌 **본문**에서 안전 규정 id 를 거둔다 — 키가 아니라 값을 훑는다(위 주석의 이유)."""
+    found: set[str] = set()
+    for text in evidence_text.values():
+        if isinstance(text, str):
+            found.update(SAFETY_RULE_RE.findall(text))
+    return found
+
+
+def unnamed_safety_rules(rules: set[str], rationale: dict[str, dict[str, Any]]) -> list[str]:
+    """규정 id 중 **어느 후보의 어느 문장에도** 안 나온 것.
+
+    🔴 답 쪽은 «부분일치»로 관대하게 본다 — 답이 `DOC-SAF-0030` 처럼 그 규정을 담은 문서를
+       호명해도 호명으로 친다. 거두는 쪽(위)만 엄격하다. 두 축의 기준을 같게 맞추면 둘 중
+       하나가 반드시 틀린다: 양쪽 다 엄격하면 문서 호명이 누락으로 찍히고(위양성), 양쪽 다
+       느슨하면 `DOC-SAF-0030` 만 있는 발췌가 규정 호명을 «요구»한다(허위 자극).
+    """
+    if not rules:
+        return []
+    blob = " ".join(
+        sentence
+        for entry in rationale.values()
+        for sentence in entry.get("sentences", [])
+        if isinstance(sentence, str)
+    )
+    return sorted(rule for rule in rules if rule not in blob)
+
+
+def _guard_notice(missing: list[str]) -> str:
+    """재요청 1회에 실을 통지. 담기는 것은 우리 문장 + `SAF-[A-Za-z0-9-]+` 로 제한된 id 뿐이다."""
+    shown = missing[:MAX_NOTICE_RULES]
+    return (
+        "Your previous answer for this input did not name these safety rule ids: "
+        + ", ".join(shown)
+        + ". Name each of them verbatim in the sentence text of the candidate whose work it governs. "
+        "Do not put them in `ids`."
+    )
+
+
+def _request_body(
+    anchor: Any,
+    candidates: list[Candidate],
+    evidence_text: dict[str, str],
+    guard_notice: str | None = None,
+) -> bytes:
     payload = {
         "anchor": {
             "scenarioId": getattr(anchor, "scenarioId", None),
@@ -167,6 +231,9 @@ def _request_body(anchor: Any, candidates: list[Candidate], evidence_text: dict[
         ],
         "evidenceText": evidence_text,
     }
+    # 🔴 통지가 없으면 **키 자체를 넣지 않는다** — 평시 본문은 앞판과 바이트로 같다(옵트인).
+    if guard_notice:
+        payload["guardNotice"] = guard_notice
     return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
 
@@ -425,31 +492,65 @@ async def synthesize(
         return LiveResult(axis="live-rejected", candidates=candidates, rejected_reason="보낼 근거 발췌가 0건이다")
 
     budget_sec = (timeout_ms() + CLIENT_MARGIN_MS) / 1000.0
-    body = _request_body(anchor, candidates, evidence_text)
+    safety_rules = safety_rules_in_evidence(evidence_text)
 
     model: str | None = None
-    try:
-        response = await asyncio.to_thread(_post, url, body, budget_sec, on_sentence)
-        model = response.get("model") if isinstance(response.get("model"), str) else UNKNOWN_MODEL
-        reordered, rationale = apply_guard(response, candidates, set(evidence_ids))
-    except _Rejected as exc:
-        return LiveResult(
-            axis="live-rejected",
-            candidates=candidates,
-            model=model,
-            rejected_reason=str(exc),
-        )
-    except Exception as exc:                                  # noqa: BLE001 — 축 하나가 run 을 죽이지 않는다
-        # 🔴 원문은 «여기서만» 남는다. 아래 사유에는 클래스명이 들어가지 않는다(D-23).
-        log.warning("live 합성 실패 — %s: %s", type(exc).__name__, exc)
-        return LiveResult(
-            axis="live-rejected",
-            candidates=candidates,
-            model=model,
-            rejected_reason=_refusal_wording(exc),
-        )
+    notice: str | None = None
+    safety_omitted = False
+    # 🔴 **최대 두 회차 · 그 이상 없다**(D-84). 규정 누락은 「답이 틀렸다」가 아니라 「덜 말했다」라
+    #    거부로 승격시키지 않는다 — 거부하면 결정적 순위로 내려앉아 방문자가 보는 것이 더 나빠진다.
+    #    그래서 재요청은 **1회**, 2회째 답은 누락이 남아도 **그대로 채택**하고 계측에만 표기한다.
+    for attempt in (1, 2):
+        body = _request_body(anchor, candidates, evidence_text, notice)
+        try:
+            # 🔴 **스트리밍은 1회차에만** 흘린다. 2회차까지 흘리면 같은 run 의 잠정 문장이 두 벌
+            #    겹쳐 화면에 쌓인다 — 어느 회차의 말인지 방문자가 가릴 수 없다. 잠정 문장이 최종과
+            #    다를 수 있다는 것은 이 화면이 이미 말하고 있고(걷히는 자리), 최종은 아래 결과가 준다.
+            response = await asyncio.to_thread(
+                _post, url, body, budget_sec, on_sentence if attempt == 1 else None
+            )
+            model = response.get("model") if isinstance(response.get("model"), str) else UNKNOWN_MODEL
+            reordered, rationale = apply_guard(response, candidates, set(evidence_ids))
+        except _Rejected as exc:
+            return LiveResult(
+                axis="live-rejected",
+                candidates=candidates,
+                model=model,
+                rejected_reason=str(exc),
+            )
+        except Exception as exc:                              # noqa: BLE001 — 축 하나가 run 을 죽이지 않는다
+            # 🔴 원문은 «여기서만» 남는다. 아래 사유에는 클래스명이 들어가지 않는다(D-23).
+            log.warning("live 합성 실패 — %s: %s", type(exc).__name__, exc)
+            return LiveResult(
+                axis="live-rejected",
+                candidates=candidates,
+                model=model,
+                rejected_reason=_refusal_wording(exc),
+            )
 
-    return LiveResult(axis="live", candidates=reordered, model=model, rationale=rationale)
+        missing = unnamed_safety_rules(safety_rules, rationale)
+        if not missing:
+            break
+        if attempt == 1:
+            log.warning(
+                "%s — 규정 %d건 미호명, 재요청 1회: %s",
+                SAFETY_OMITTED_REASON,
+                len(missing),
+                ", ".join(missing[:MAX_NOTICE_RULES]),
+            )
+            notice = _guard_notice(missing)
+            continue
+        # 2회차에도 남았다 — 채택하되 계측이 볼 수 있게 표기한다(화면 문면은 바꾸지 않는다).
+        safety_omitted = True
+        log.warning("%s — 재요청 뒤에도 %d건 미호명, 그대로 채택", SAFETY_OMITTED_REASON, len(missing))
+
+    return LiveResult(
+        axis="live",
+        candidates=reordered,
+        model=model,
+        rationale=rationale,
+        safety_omitted=safety_omitted,
+    )
 
 
 def attach_rationale(

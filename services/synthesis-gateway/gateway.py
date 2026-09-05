@@ -39,6 +39,10 @@ for _stream in (sys.stdout, sys.stderr):
 HERE = Path(__file__).resolve().parent
 SYSTEM_PROMPT_FILE = HERE / "system_prompt.txt"
 
+# 재요청 1회에 실리는 가드 통지의 길이 상한(D-84). 통지는 우리 층이 만든 문장이고 안의 id 는
+# `SAF-[A-Za-z0-9-]+` 로 제한돼 있다 — 그래도 프롬프트에 실리는 값이므로 자른다.
+MAX_GUARD_NOTICE = 300
+
 # 박은 값 0 — 포트·타임아웃·CLI 경로·모델은 여기 한 곳에서만 읽는다.
 # 기본은 루프백이다 — 배포 컨테이너에서 닿게 하려면 «명시적으로» 0.0.0.0 을 준다.
 BIND = os.environ.get("SYNTHESIS_GATEWAY_BIND", "127.0.0.1").strip() or "127.0.0.1"
@@ -294,14 +298,20 @@ def synthesize(req: dict, on_sentence=None) -> dict:
     if EFFORT:
         argv += ["--effort", EFFORT]
 
-    prompt = json.dumps(
-        {
-            "anchor": request.get("anchor"),
-            "candidates": request["candidates"],
-            "evidenceText": evidence_text,
-        },
-        ensure_ascii=False,
-    )
+    # 🔴 `guardNotice` 는 **옵트인 · 앞뒤 호환**이다(스트리밍 Accept 와 같은 관례). 앞판 클라이언트는
+    #    이 키를 안 보내고, 그때 프롬프트는 이전과 «바이트로» 같다 — 없는 키를 `null` 로라도 실으면
+    #    모든 회차의 입력이 달라져 앞 회차와 비교할 수 없게 된다.
+    # 🔴 문자열만 · 길이 상한. 이 값은 호출자(ai-api)의 가드가 만든 문장이지 발췌에서 온 말이 아니다 —
+    #    그래도 안에 담기는 id 는 발췌에서 뽑은 것이라 상한을 두고 자른다.
+    payload: dict = {
+        "anchor": request.get("anchor"),
+        "candidates": request["candidates"],
+        "evidenceText": evidence_text,
+    }
+    notice = request.get("guardNotice")
+    if isinstance(notice, str) and notice.strip():
+        payload["guardNotice"] = notice.strip()[:MAX_GUARD_NOTICE]
+    prompt = json.dumps(payload, ensure_ascii=False)
 
     started = time.perf_counter()
     sentences: list[dict] = []
