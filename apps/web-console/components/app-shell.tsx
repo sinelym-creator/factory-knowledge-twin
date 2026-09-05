@@ -65,7 +65,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <p className="mb-1 px-3 text-cap font-semibold text-placeholder">화면</p>
-          <ShellNav variant="rail" />
+          <ShellNav variant="rail" hasSession={!!session} />
 
           <p className="mt-auto px-3 text-cap text-placeholder">
             synthetic PoC · 실제 공장 데이터가 아닙니다
@@ -84,7 +84,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             {/* 🔴 D-79 — <md 내비는 텍스트 탭이 아니라 «햄버거 + 드로어»다. 탭 3개가 브랜드와
                 같은 줄을 다투면서 앱바가 두 줄로 접혔다(390 실측). 버튼은 브랜드 «왼쪽»에
                 둔다 — 여는 자리와 열리는 자리(좌측 슬라이드)가 같은 쪽이라야 방향이 읽힌다. */}
-            <NavDrawer shellRootId={SHELL_ROOT_ID} />
+            <NavDrawer shellRootId={SHELL_ROOT_ID} hasSession={!!session} />
             {/* 🔴 <md 는 「Factory Twin」(드로어 머리와 같은 축약) · ≥md 는 전체명. 브랜드를 두 벌
                 두고 하나씩 숨기면 문면 선택자가 «둘»을 찾는다 — 그래서 **가운데 낱말만** 접는다.
                 DOM 은 한 벌이고 텍스트 노드도 한 흐름이다. */}

@@ -32,7 +32,14 @@ function sectionOf(href: string) {
   return href.split("/").filter(Boolean)[0] ?? "";
 }
 
-export function ShellNav({ variant }: { variant: "rail" | "drawer" }) {
+export function ShellNav({
+  variant,
+  hasSession,
+}: {
+  variant: "rail" | "drawer";
+  /** 서버가 쿠키로 확정한 세션 유무 — 프리페치를 되살릴지 정하는 «유일한» 축(D-82b). */
+  hasSession: boolean;
+}) {
   const pathname = usePathname();
   const current = sectionOf(pathname ?? "");
 
@@ -52,8 +59,14 @@ export function ShellNav({ variant }: { variant: "rail" | "drawer" }) {
                  되돌아간다(리바이2 1280 실측 3/3 · 드로어는 열려야 마운트돼 안 걸렸다).
                  🔴 끄는 대가는 «첫 클릭이 미리 받아 둔 것을 못 쓴다»뿐이고, 그때는 세션이
                  이미 있어 정상 fetch 가 쿠키를 달고 나간다. 캐시에 오답을 «안 만드는» 쪽이
-                 지운 뒤 고치는 쪽보다 싸다. */
-              prefetch={false}
+                 지운 뒤 고치는 쪽보다 싸다.
+                 🔴 **D-82b — 세션이 «있으면» 되살린다.** 오염은 쿠키 없는 시점에만 생기므로,
+                 상시 끄기는 원인보다 넓었다(그 대가 = 공개면 첫 클릭 ≈300ms · 리바이2 #717).
+                 세션 유무는 서버가 쿠키로 확정한 값(`app-shell.tsx` 의 `session`)만 쓴다 —
+                 클라이언트가 «있는 것 같다»로 추측하면 그 추측이 틀린 회차에 307 이 다시
+                 캐시된다. 🔴 첫 로드 `/` 는 SSR 시점에 쿠키가 없어 off 로 렌더되는 것이
+                 **의도**다(입장 전 = off · 입장 뒤 `/overview` 서버 렌더부터 on). */
+              prefetch={hasSession ? undefined : false}
               /* 행 높이 36 · 좌우 12 · r10 — 선택은 «채움 + 흰 글자», 아이콘만 틴트. */
               data-testid={n.testid}
               /* 🔴 레일과 드로어가 «같은 `data-testid`» 를 쓴다 — 좁은 폭에서는 레일이
