@@ -171,6 +171,12 @@ def create_app() -> FastAPI:
         )
 
     install_error_handlers(app)
+    # 🔴 live 실행기 체인(langgraph·torch·psycopg·neo4j)의 «실재»는 여기서 확인한다. 앞서는
+    #    라우터 모듈의 import 가 그 역할을 겸했는데, 그 결합 때문에 단위 층이 그 라우트를
+    #    시험할 수 없었다(O-28). import 를 이 자리로 옮겨 «기동 시 먼저 죽는다»는 성질은
+    #    그대로 두고, 라우터 모듈만 그 체인에서 풀었다.
+    from .investigation import runner as _live_runner  # noqa: F401
+
     for module in (sessions, factory, investigations, knowledge, work_orders, ops):
         app.include_router(module.router, prefix=API_PREFIX)
     # 🔴 라우트가 다 등록된 «뒤»에 센다. 앞에서 세면 0개를 보고 「모순 없음」을 낸다.
