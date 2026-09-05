@@ -45,6 +45,15 @@ export function ShellNav({ variant }: { variant: "rail" | "drawer" }) {
               key={n.href}
               href={n.href}
               aria-current={active ? "page" : undefined}
+              /* 🔴 **프리페치를 끈다**(D-82). 레일은 ≥md 에서 상주라 첫 로드 즉시 이 href 를
+                 RSC 로 미리 가져오는데, 그 시점이 `/` 의 입장 마운트가 `POST /enter` 로 세션을
+                 만들기 «전»이면 쿠키 없이 나가 `proxy.ts:134` 의 307 을 받는다. 라우터 캐시에
+                 남은 그 답(`/` 로 가라)을 나중 클릭이 그대로 쓰면 화면이 `/overview` 로
+                 되돌아간다(리바이2 1280 실측 3/3 · 드로어는 열려야 마운트돼 안 걸렸다).
+                 🔴 끄는 대가는 «첫 클릭이 미리 받아 둔 것을 못 쓴다»뿐이고, 그때는 세션이
+                 이미 있어 정상 fetch 가 쿠키를 달고 나간다. 캐시에 오답을 «안 만드는» 쪽이
+                 지운 뒤 고치는 쪽보다 싸다. */
+              prefetch={false}
               /* 행 높이 36 · 좌우 12 · r10 — 선택은 «채움 + 흰 글자», 아이콘만 틴트. */
               data-testid={n.testid}
               /* 🔴 레일과 드로어가 «같은 `data-testid`» 를 쓴다 — 좁은 폭에서는 레일이
