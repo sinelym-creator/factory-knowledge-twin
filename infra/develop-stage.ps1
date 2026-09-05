@@ -97,6 +97,39 @@ function Sync-Worktree {
     if ($LASTEXITCODE -ne 0) { Write-Error '워크트리 갱신 실패'; exit 3 }
 }
 
+function Get-PromptSha12 {
+    <#
+      목표 트리 파일의 **워크트리 바이트** 해시 앞 12자. 못 읽으면 $null.
+      🔴 git blob 과 맞대지 않는다 — 체크아웃된 파일은 CRLF 이고 blob 은 LF 라 **정상인데도**
+         영원히 어긋난다(리바이2 게이트 2 판정선 정정 · 오케 채택). 게이트웨이가 읽는 것도
+         디스크의 그 바이트이므로, 같은 것끼리 맞댄다.
+    #>
+    param([string] $Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return $null }
+    return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLower().Substring(0, 12)
+}
+
+function Test-DevGatewayCurrent {
+    <#
+      지금 떠 있는 게이트웨이가 **이미 목표 상태**인가 — 그렇다면 재기동하지 않는다.
+      🔴 무조건 재기동은 그 순간 돌던 라이브 run 을 자른다(게이트 2 조건부 FAIL · pid 4824→12196).
+         이미지·컨테이너에 건 멱등 규율을 게이트웨이에도 같은 형태로 건다.
+      🔴 판정 셋: ① 리스너가 산다 ② `promptPath` 가 **목표 트리**다 ③ `promptSha256` 이 목표 파일과 같다.
+         ③ 은 「못 읽는 프롬프트로 떠 있다」(null)를 걸러 내는 자리다 — 파일 «내용»이 바뀐 경우는
+         ③ 으로 잡히지 않는다. 게이트웨이가 프롬프트를 **호출마다 재독**하기 때문이다(T7-42 A-2).
+         그래서 내용 변경에는 재기동이 **필요 없다** — 이미 새 바이트로 답하고 있다.
+    #>
+    if ((Get-ListenerPid -OnPort $GatewayPort) -eq 0) { return $false }
+    $body = Invoke-Http "http://127.0.0.1:$GatewayPort/health"
+    if (-not $body) { return $false }
+    $want = Get-PromptSha12 -Path $promptFile
+    if (-not $want) { return $false }
+    $seenSha  = if ($body -match '"promptSha256"\s*:\s*"([^"]*)"') { $Matches[1] } else { '' }
+    $seenPath = if ($body -match '"promptPath"\s*:\s*"([^"]*)"') { (($Matches[1] -replace '\\\\', '/') -replace '\\', '/') } else { '' }
+    $wantPath = ($promptFile -replace '\\', '/')
+    return (($seenSha -eq $want) -and ($seenPath -eq $wantPath))
+}
+
 function Start-DevGateway {
     $existing = Get-ListenerPid -OnPort $GatewayPort
     if ($existing -ne 0) {
@@ -230,12 +263,25 @@ switch ($Action) {
     }
     'refresh' {
         Ensure-Worktree
+        $before = Get-WorktreeSha
         Sync-Worktree
         $sha = Get-WorktreeSha
-        Stop-DevGateway
+        # 🔴 **트리가 움직였으면 재기동한다.** 프롬프트는 호출마다 재독되지만 `gateway.py` 는
+        #    아니다 — sha 가 바뀌었는데 그대로 두면 「새 코드 무대」라고 부르면서 옛 코드가 돈다.
+        #    반대로 sha 가 그대로면 재기동할 이유가 없다.
+        $treeMoved = ($before -ne $sha)
+        $keep = (Test-DevGatewayCurrent) -and (-not $treeMoved)
+        if (-not $keep) { Stop-DevGateway }
         Ensure-Container -Sha $sha
-        $gwPid = Start-DevGateway
-        Write-Host "게이트웨이 pid=$gwPid · 프롬프트 $promptFile"
+        if ($keep) {
+            # 🔴 무조건 재기동은 그 순간 돌던 라이브 run 을 자른다(게이트 2 조건부 FAIL).
+            $gwPid = Get-ListenerPid -OnPort $GatewayPort
+            Write-Host "게이트웨이 그대로 pid=$gwPid (경로·프롬프트 일치 · 트리 불변 — 재기동 생략)"
+        } else {
+            $gwPid = Start-DevGateway
+            $why = if ($treeMoved) { "트리 $before → $sha" } else { '목표 상태 아님' }
+            Write-Host "게이트웨이 재기동 pid=$gwPid ($why) · 프롬프트 $promptFile"
+        }
         Show-Status
         exit 0
     }

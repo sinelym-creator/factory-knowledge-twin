@@ -65,4 +65,9 @@ if ($env:SYNTHESIS_GATEWAY_TOKEN) {
     Write-Host "  `$env:FKT_SYNTHESIS_GATEWAY_TOKEN = '<같은 값>'   # 커밋 0 · 로그 0" -ForegroundColor DarkGray
 }
 
-python (Join-Path $here 'gateway.py')
+# 🔴 `-u` = 버퍼 끄기. 출력이 파일로 «리다이렉트»되면 python 의 stdout 은 블록 버퍼가 되어,
+#    기동 줄(주소·모델·**프롬프트 경로와 sha**)이 버퍼가 찰 때까지 파일에 안 나타난다.
+#    실측(20:51 · #769 로그 첫 기동): `gateway.log` 90바이트에 run.ps1 의 안내만 있고 gateway.py
+#    의 기동 줄은 0. 로그를 남기게 만들어 놓고 정작 필요한 줄이 안 남는 자리였다.
+#    (stderr 는 원래 버퍼가 없어 접근 로그는 `.err` 로 이미 나왔다 — 그래서 «절반만» 비어 보였다.)
+python -u (Join-Path $here 'gateway.py')
