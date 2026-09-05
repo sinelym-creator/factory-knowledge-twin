@@ -124,6 +124,21 @@ class Settings(BaseSettings):
     #    run 이벤트의 `strategy` 가 매번 말한다 — 설정을 읽어야 알 수 있게 두지 않는다.
     run_retrieval_strategy: Literal["vector", "hybrid"] = "hybrid"
 
+    # --- D-87 FastAPI 문서 표면 노출 -------------------------------------------
+    #
+    # 🔴 **기본은 «닫힘»이다.** `/docs`·`/redoc`·`/openapi.json`·`/docs/oauth2-redirect` 4종은
+    #    FastAPI 가 직접 다는 평범한 Starlette 라우트라서 앱 레벨 세션 가드의 의존 체인
+    #    «구조적 밖»에 있다(`session_guard.FRAMEWORK_UNGUARDED` 의 주석 · Q-35 → D-87).
+    #    가드를 그 4종에 «붙일» 수 없으므로, 노출 판정은 「켜는가/끄는가」로만 가능하다.
+    #
+    # 🔴 기본값을 «열림»으로 두지 않는 이유는 CORS 절(위)과 같다 — 기본값은 그대로 공개
+    #    배포까지 따라가고, 그때는 아무도 그것을 «선택»한 기억이 없다. 개발자가 스키마를
+    #    보고 싶은 형상에서만 env 로 켠다(`FKT_EXPOSE_API_DOCS=1`).
+    #
+    #    🔴 켜고 끄는 것은 «라우트의 실재»이지 가드가 아니다. 끈 형상에서 4종은 404 이고,
+    #       켠 형상에서 4종은 여전히 «가드 밖»이다 — 켜면 세션 없이 읽힌다는 뜻이다.
+    expose_api_docs: bool = False
+
     @property
     def cors_allowlist(self) -> list[str]:
         """설정 문자열 → origin 목록. 🔴 `*` 는 목록에서 «버린다».

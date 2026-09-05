@@ -117,9 +117,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
+    settings = get_settings()
     app = FastAPI(
         title="FKT ai-api",
-        version=get_settings().version,
+        version=settings.version,
         description=(
             "Factory Knowledge Twin — AI API. 계약 v0.1(packages/contracts) 표면의 "
             "비동기 골격이며 도메인 구현은 아직 없다(T1-8)."
@@ -130,6 +131,18 @@ def create_app() -> FastAPI:
         #    된다. 기본이 가드이고 면제는 `session_guard` 의 두 목록에만 적는다 — 그 목록이
         #    실재 라우트와 어긋나면 아래 `audit_guard_coverage` 가 부팅을 멈춘다.
         dependencies=[Depends(session_guard)],
+        # 🔴 **문서 표면 4종은 «끄는» 것으로만 닫힌다**(D-87 · Q-35). `/docs`·`/redoc`·
+        #    `/openapi.json`·`/docs/oauth2-redirect` 는 APIRoute 가 아니라 FastAPI 가 직접 다는
+        #    Starlette 라우트라, 바로 위 `dependencies=` 의 의존 체인이 «구조적으로» 닿지 못한다
+        #    (`session_guard.FRAMEWORK_UNGUARDED` 주석 · T3-1 대조군 A 가 실측으로 반증한 자리).
+        #    그래서 가드를 붙이는 처방이 없고, 노출 판정은 라우트를 세우는가로만 가능하다.
+        #    🔴 기본값은 «닫힘»(`Settings.expose_api_docs = False`) — 개발 형상에서만 env 로 연다.
+        #       셋을 함께 넘긴다. FastAPI 는 `openapi_url` 이 없으면 나머지도 달지 않지만
+        #       (`applications.py setup()`), 그 함의를 읽는 사람에게 맡기지 않고 형상을 적는다.
+        #       oauth2-redirect 는 `docs_url` 에 종속이라 함께 사라진다(같은 `setup()`).
+        docs_url="/docs" if settings.expose_api_docs else None,
+        redoc_url="/redoc" if settings.expose_api_docs else None,
+        openapi_url="/openapi.json" if settings.expose_api_docs else None,
     )
     # 🔴 **CORS 는 allowlist 가 «있을 때만» 켠다**(§16.3 · T4-1 ⓒ).
     #
@@ -143,8 +156,6 @@ def create_app() -> FastAPI:
     #       아예 달지 않는다 — 「열려 있는데 비어 있는 문」을 만들지 않는다.
     #    🔴 `allow_credentials=True` 는 allowlist 와 «짝»이다. 와일드카드와 함께 쓰면 브라우저가
     #       거부하고, 그 거부는 CORS 설정이 아니라 서버 오류처럼 보인다.
-    settings = get_settings()
-
     # 🔴 **미들웨어 순서는 «바깥 → 안»이 add 의 «역순»이다**(Starlette 은 새로 더한 것을 앞에
     #    꽂는다). 그래서 아래 세 줄은 실제로 CORS → rate limit → body limit 순으로 선다:
     #      · CORS 가 가장 바깥인 이유 — 429·413 응답에도 CORS 헤더가 붙어야 브라우저가 그

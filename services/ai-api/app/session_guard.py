@@ -65,8 +65,12 @@ READ_ONLY_EXCEPTIONS: Final[dict[tuple[str, str], str]] = {
 #    내가 «면제하기로 골랐다»가 아니라 **가드가 닿지 않는다**는 실측 사실이라, 면제와 같은
 #    목록에 섞지 않는다 — 섞으면 「우리가 열어 둔 것」과 「열려 있는 줄 몰랐던 것」이 한 칸이
 #    된다. 계약 표면이 아니고(계약 v0.1 에 없다) 내보내는 것은 스키마지 데이터가 아니다.
-#    🔴 아래 `audit_guard_coverage` 가 **가드가 닿지 않는 라우트 집합이 정확히 이것과 같은지**
-#       부팅에서 확인한다. 계약 라우트가 하나라도 이 집합에 들어오면 그날 부팅이 멈춘다.
+#    🔴 이 사전은 «경로 → 사유»이지 «지금 서 있는 라우트 목록»이 아니다(D-87). 문서 표면은
+#       설정으로 꺼지고(`Settings.expose_api_docs` · 기본 닫힘), 끈 형상에서 이 4종은 실재하지
+#       않는 것이 «정상»이다. 그래서 부팅 검사의 기대값은 이 상수가 아니라 **앱 형상에서 읽는다**
+#       (`expected_framework_routes`) — 상수를 정본으로 쓰면 끈 형상에서 부팅이 멈춘다.
+#    🔴 아래 `audit_guard_coverage` 가 **가드가 닿지 않는 라우트 집합이 그 형상 기대값과 정확히
+#       같은지** 부팅에서 확인한다. 계약 라우트가 하나라도 그 집합에 들어오면 그날 부팅이 멈춘다.
 FRAMEWORK_UNGUARDED: Final[dict[tuple[str, str], str]] = {
     ("GET", "/openapi.json"): "FastAPI 스키마 — 계약 표면이 아니다(데이터 아님)",
     ("GET", "/docs"): "Swagger UI",
@@ -125,6 +129,26 @@ def _guard_reaches(app: FastAPI, key: tuple[str, str]) -> bool:
     return False
 
 
+def expected_framework_routes(app: FastAPI) -> set[tuple[str, str]]:
+    """이 앱 «형상»이 실제로 세웠어야 하는 프레임워크 문서 라우트(D-87).
+
+    🔴 **기대값을 상수에 적지 않고 앱에서 읽는다.** `FRAMEWORK_UNGUARDED` 는 사유 사전이고,
+       무엇이 서 있는지는 `docs_url`·`redoc_url`·`openapi_url` 이 정한다. 분기는 FastAPI
+       `applications.py setup()` 의 조건과 같은 모양이다 — 거기서 `openapi_url` 이 없으면
+       나머지 셋도 달리지 않고, oauth2-redirect 는 `docs_url` 에 종속이다.
+    """
+    if not app.openapi_url:
+        return set()
+    expected = {("GET", app.openapi_url)}
+    if app.docs_url:
+        expected.add(("GET", app.docs_url))
+        if app.swagger_ui_oauth2_redirect_url:
+            expected.add(("GET", app.swagger_ui_oauth2_redirect_url))
+    if app.redoc_url:
+        expected.add(("GET", app.redoc_url))
+    return expected
+
+
 def guard_table(app: FastAPI) -> list[tuple[str, str, str]]:
     """라우트별 `(메서드, 경로, 모드)` — AC 「라우트별 표로 실측」의 원천."""
     return [(m, p, _mode(m, p)) for m, p in route_keys(app)]
@@ -144,17 +168,27 @@ def audit_guard_coverage(app: FastAPI) -> None:
     #    추론이고, 추론은 프레임워크가 바뀌면 조용히 틀린다 — 실제로 FastAPI 의 문서 라우트는
     #    APIRoute 가 아니라 의존 체인 밖에 있었고, 이 검사가 없었다면 표만 「guarded」라고
     #    적힌 채 열려 있었을 것이다(실측으로 걸린 자리).
+    # 🔴 **기대값은 «형상»이 정한다**(D-87). 문서 표면을 끄면 4종은 실재하지 않는 것이 정상이고,
+    #    켜면 실재하는 것이 정상이다 — 어느 쪽이든 검사는 «살아서» 운다(한쪽만 통과시키지 않는다).
+    framework = expected_framework_routes(app)
+
+    # 🔴 형상이 세운 문서 라우트가 사유 사전에 없으면 `_mode` 가 그것을 `guarded` 로 «잘못» 적는다.
+    #    (예: 누가 `docs_url` 을 다른 경로로 바꾸면 표는 가드된 척하고 실제로는 열려 있다.)
+    undocumented = sorted(framework - set(FRAMEWORK_UNGUARDED))
+    if undocumented:
+        raise RuntimeError(f"프레임워크 문서 라우트가 비가드 사유 목록에 없다: {undocumented}")
+
     unreachable = {k for k in keys if not _guard_reaches(app, k)}
-    unexpected = sorted(unreachable - set(FRAMEWORK_UNGUARDED))
+    unexpected = sorted(unreachable - framework)
     if unexpected:
         raise RuntimeError(f"세션 가드가 닿지 못하는 라우트가 있다(계약 표면일 수 있다): {unexpected}")
-    vanished = sorted(set(FRAMEWORK_UNGUARDED) - unreachable)
+    vanished = sorted(framework - unreachable)
     if vanished:
         raise RuntimeError(
             f"프레임워크 비가드 목록에 있는데 실제로는 가드되거나 사라진 라우트: {vanished}"
         )
 
-    declared = set(GUARD_EXEMPT) | set(READ_ONLY_EXCEPTIONS) | set(FRAMEWORK_UNGUARDED)
+    declared = set(GUARD_EXEMPT) | set(READ_ONLY_EXCEPTIONS) | framework
     stale = sorted(declared - keys)
     if stale:
         # 오타·삭제된 라우트가 예외 목록에 남아 있다. 그 자체로는 구멍이 아니지만(그 이름의
@@ -168,8 +202,8 @@ def audit_guard_coverage(app: FastAPI) -> None:
 
     guarded = [k for k in sorted(keys) if _mode(*k) == MODE_GUARDED]
     log.info(
-        "세션 가드 — 전 라우트 %d 중 가드 %d · 면제 %d · 읽기 예외 %d",
-        len(keys), len(guarded), len(GUARD_EXEMPT), len(READ_ONLY_EXCEPTIONS),
+        "세션 가드 — 전 라우트 %d 중 가드 %d · 면제 %d · 읽기 예외 %d · 문서 표면(비가드) %d",
+        len(keys), len(guarded), len(GUARD_EXEMPT), len(READ_ONLY_EXCEPTIONS), len(framework),
     )
 
 

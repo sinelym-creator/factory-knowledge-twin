@@ -1,0 +1,162 @@
+# release-evidence — 릴리스 시점에 «무엇이 참이었는가»를 파일로 남긴다 (baseline §34.3 · T5-3c).
+#
+# 🔴 **정적 축만.** 서버·컨테이너를 띄우지 않는다. 여기서 답하는 질문은 「이 커밋의 단위 층은
+#    몇 건이었나 · 무엇에 의존했나 · 배포가 빌드할 바이트는 무엇이었나」 셋이고, 셋 다
+#    소스와 lock 파일만으로 답할 수 있다.
+#
+# 🔴 **다른 workflow 의 초록을 «인용»하지 않는다.** `ci.yml` 의 job 결과를 읽으려면
+#    `workflow_run` 을 걸어야 하고, 그러면 이 파일은 「거기서 초록이었다더라」를 적게 된다.
+#    증거는 자기가 센 수를 담아야 하므로 단위 층을 **여기서 다시 돌린다**(중복 ≈45초).
+#
+# 🔴 **§34.3 5항 중 둘은 대상이 없어 넣지 않았다**(없는 것을 있는 척 채우지 않는다):
+#    - benchmark manifest validation — `benchmarks/` 에 gate·report json 은 있으나 검증기가 0.
+#    - README KPI ↔ result file — README 가 스스로 「성능 수치는 아직 없습니다 … 빈 칸으로
+#      둡니다」라고 적고 있다. 지금 검사기를 만들면 **0건을 검사하는 검사기**가 되고, 그것은
+#      게이트가 아니라 무자극 초록이다. 수치가 실리는 날 이 축을 연다.
+name: release-evidence
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/web-console/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: apps/web-console/pnpm-lock.yaml
+
+      - name: install (ci.yml 의 unit job 과 «같은» 목록)
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet \
+            pytest==9.1.1 pydantic==2.13.5 fastapi==0.141.1 pydantic-settings==2.15.0
+          cd apps/web-console && pnpm install --frozen-lockfile
+
+      # ── ① test summary ────────────────────────────────────────────────────────
+      # 🔴 «수»를 파일에 적는다. 「통과했다」만 남기면 다음 사람이 「몇 건이 통과했나」를
+      #    되물을 수 없고, 0건 통과와 63건 통과가 같은 문장이 된다.
+      - name: test summary
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence"
+          out="$RUNNER_TEMP/evidence/test-summary.txt"
+          {
+            echo "commit=${{ github.sha }}"
+            echo "generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "$out"
+          # 🔴 **ANSI 를 벗기고 센다.** vitest 요약 줄은 색상 코드를 달고 나오므로
+          #    `^ *Tests` 같은 앵커가 어긋난다 — 첫 판이 정확히 그 자리에서 죽었다.
+          strip() { sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g'; }
+          # 🔴 추출 실패를 여기서 «죽이지» 않는다. pipefail 아래서는 grep 0건이 job 을 끝내
+          #    버려, 「무엇이 비었는지」를 말할 기회가 사라진다. 판정은 아래 계수 step 이 한다.
+          ai=$( cd services/ai-api && python -m pytest tests_unit -q 2>&1 | strip | tail -1 || true )
+          gw=$( cd services/synthesis-gateway && python -m pytest tests_unit -q 2>&1 | strip | tail -1 || true )
+          web=$( cd apps/web-console && pnpm test:unit 2>&1 | strip | grep -E 'Tests +[0-9]+ passed' | tail -1 || true )
+          {
+            echo "ai-api: ${ai:-(추출 실패)}"
+            echo "synthesis-gateway: ${gw:-(추출 실패)}"
+            echo "web-console: ${web:-(추출 실패)}"
+          } >> "$out"
+          cat "$out"
+
+      # ── ② dependency inventory ────────────────────────────────────────────────
+      # SBOM 도구를 새로 들이지 않는다(§34.3 은 「SBOM 또는 dependency inventory」라 적었다).
+      # 내장 명령만 쓰므로 이 목록은 «리포가 이미 선언한 것»이지 도구가 해석한 것이 아니다.
+      - name: dependency inventory
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/evidence/dependency-inventory.txt"
+          echo "commit=${{ github.sha }}" > "$out"
+          for f in services/*/requirements.txt; do
+            echo "--- $f ---" >> "$out"
+            grep -vE '^\s*(#|$)' "$f" >> "$out" || true
+          done
+          echo "--- apps/web-console (pnpm licenses) ---" >> "$out"
+          ( cd apps/web-console && pnpm licenses list --prod 2>/dev/null || echo "(pnpm licenses 미지원 — lock 파일이 정본)" ) >> "$out"
+          cat "$out"
+
+      # ── ③ artifact hash ───────────────────────────────────────────────────────
+      # 🔴 승격 절차와 **같은 컨텍스트**(`git archive <sha> services/ai-api`, runbook §7-3).
+      #    다른 범위로 낸 해시는 배포가 빌드할 바이트에 대해 아무 말도 하지 않는다.
+      #    같은 커밋에서 두 번 떠 **바이트 동일**까지 본다 — 재현되지 않는 해시는 증거가 아니다.
+      - name: artifact hash (승격 컨텍스트와 동일)
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/evidence/artifact-hash.txt"
+          h1=$(git archive ${{ github.sha }} services/ai-api | sha256sum | cut -d' ' -f1)
+          h2=$(git archive ${{ github.sha }} services/ai-api | sha256sum | cut -d' ' -f1)
+          {
+            echo "commit=${{ github.sha }}"
+            echo "context=services/ai-api (runbook 7-3 와 동일)"
+            echo "sha256=$h1"
+            echo "reproduced=$([ "$h1" = "$h2" ] && echo yes || echo NO)"
+          } > "$out"
+          cat "$out"
+          if [ "$h1" != "$h2" ]; then
+            echo "::error::같은 커밋에서 아카이브 해시가 갈렸다 — 재현되지 않는 해시는 증거가 아니다"
+            exit 1
+          fi
+
+      # ── ④ 「초록 ≠ 훑음」 ──────────────────────────────────────────────────────
+      # 🔴 위 세 step 은 전부 rc 0 을 낼 수 있다 — **빈 파일을 만들고도** 그렇다.
+      #    그래서 산출물이 «무엇을 담았는지» 세고, 비어 있으면 실패시킨다.
+      #    대조군: 파일 하나를 비워 이 검사가 실제로 빨강을 내는지 같은 실행에서 확인한다.
+      - name: 증거 계수 + 대조군
+        run: |
+          set -euo pipefail
+          d="$RUNNER_TEMP/evidence"
+          check() {
+            n=$(grep -cvE '^\s*$' "$1" || true)
+            echo "  $(basename "$1"): $n 줄"
+            if [ "$n" -lt "$2" ]; then
+              echo "::error::$(basename "$1") 가 $2 줄 미만이다($n) — 빈 증거는 증거가 아니다"
+              return 1
+            fi
+          }
+          echo "증거 계수:"
+          check "$d/test-summary.txt" 5
+          check "$d/dependency-inventory.txt" 5
+          check "$d/artifact-hash.txt" 4
+
+          # 🔴 줄 수만으로는 「(추출 실패)」 세 줄도 통과한다 — **각 축이 실제로 수를 담았는지**
+          #    본다. 이 게이트가 없으면 요약은 자기가 비었다는 사실을 조용히 적고 초록이 된다.
+          for axis in "ai-api" "synthesis-gateway" "web-console"; do
+            if ! grep -qE "^${axis}: .*[0-9]+ passed" "$d/test-summary.txt"; then
+              echo "::error::${axis} 요약에 통과 «수»가 없다 — 추출이 깨졌다(초록이 아니라 무자극)"
+              exit 1
+            fi
+          done
+          echo "  test-summary: 세 축 전부 통과 수 실재"
+
+          # 🔴 검사기 자기 검증 — 죽은 검사기는 무엇이든 통과시킨다.
+          : > "$d/../empty-probe.txt"
+          if check "$d/../empty-probe.txt" 1; then
+            echo "::error::계수 검사가 빈 파일을 통과시켰다 — 검사기가 죽어 있다"
+            exit 1
+          fi
+          echo "자기 검증 OK — 빈 파일에서 빨강"
+          rm -f "$d/../empty-probe.txt"
+
+      # 🔴 마켓 액션 1개 · **커밋 sha 고정**(태그는 움직인다).
+      #    사유: 산출물을 내려받을 수단이 없으면 「증거를 만들었다」가 로그 한 줄로만 남고,
+      #    로그는 보존 기간이 지나면 사라진다.
+      - name: upload evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: error
+          retention-days: 30
