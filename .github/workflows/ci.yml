@@ -138,11 +138,17 @@ jobs:
   # 🔴 `pnpm/action-setup` 이 `setup-node` «앞»에 온다 — `cache: pnpm` 은 store 경로를
   #    물으려고 pnpm 을 먼저 찾는다. 버전은 적지 않는다: action 이 `packageManager` 필드를
   #    읽으므로 그 필드가 유일한 출처로 남는다(여기 숫자를 박으면 출처가 둘이 된다).
+  # 🔴 **`package_json_file` 을 반드시 준다.** action 의 기본값은 워크스페이스 루트의
+  #    `package.json` 인데 이 리포의 루트에는 그 파일이 없다 — 실측: 기본값으로 두었더니
+  #    `Error: No pnpm version is specified.` 로 7초 만에 죽었다(run 33949513119). 「필드를
+  #    읽는다」는 사실만으로는 부족하고 «어느 파일의» 필드인지가 판정을 정한다.
   unit-web-console:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/web-console/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
