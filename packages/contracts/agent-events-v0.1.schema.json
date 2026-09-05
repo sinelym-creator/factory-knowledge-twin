@@ -144,6 +144,7 @@
         "step": { "$ref": "#/$defs/stepId" },
         "summary": { "type": "string" },
         "elapsedMs": { "type": "integer", "minimum": 0, "description": "필수 — TTAE 합산 표시(검증 F-9)의 원천" },
+        "strategy": { "enum": ["vector", "hybrid"], "description": "v0.2.0 · T7-44 — vector 단계가 어느 검색 전략의 근거집합인지(설정 FKT_RUN_RETRIEVAL_STRATEGY). 선택 · vector 단계 전용 · 부재 = 개정 이전 생산자(replay 픽스처 포함)" },
         "synthesis": {
           "type": "object",
           "required": ["axis"],
@@ -155,7 +156,14 @@
             "safetyOmitted": { "type": "boolean", "description": "v0.1.19 · D-84 — 근거 본문에 SAF-* 규정이 있는데 답변 문장이 호명하지 않아 1회 재요청 뒤에도 미호명 = 채택하되 참으로 표기(구현은 true 일 때만 실음 · false 와 부재는 같은 뜻 · 화면이 아니라 계측이 본다)" }
           }
         }
-      }
+      },
+      "allOf": [
+        {
+          "description": "v0.2.0 · T7-44 — strategy 는 vector 단계 전용이다(계약 v0.2.0 개정 ③). 여집합을 열거하지 않고 «strategy 가 있으면 step 은 vector» 로 적는다 — stepId 가 늘어도 이 규칙은 그대로 산다.",
+          "if": { "required": ["strategy"] },
+          "then": { "properties": { "step": { "const": "vector" } } }
+        }
+      ]
     },
     "runCompleted": {
       "type": "object",

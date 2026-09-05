@@ -1333,6 +1333,82 @@
           }
         }
       }
+    },
+    {
+      "group": "⑪ v0.2.0 strategy(T7-44 · vector 단계 전용)",
+      "label": "step.completed(vector) + strategy=hybrid(기본값)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 10,
+          "strategy": "hybrid"
+        }
+      }
+    },
+    {
+      "group": "⑪ v0.2.0 strategy(T7-44 · vector 단계 전용)",
+      "label": "step.completed(vector) + strategy=vector(enum 두 값을 다 실행한다)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 10,
+          "strategy": "vector"
+        }
+      }
+    },
+    {
+      "group": "⑪ v0.2.0 strategy(T7-44 · vector 단계 전용)",
+      "label": "strategy 부재(선택 필드 — 개정 이전 생산자·replay 픽스처가 안 깨진다)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 10
+        }
+      }
+    },
+    {
+      "group": "⑪ v0.2.0 strategy(T7-44 · vector 단계 전용)",
+      "label": "strategy 값이 enum 밖(graphrag — /retrieval/compare 의 전략명이지 run 의 것이 아니다)",
+      "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 10,
+          "strategy": "graphrag"
+        }
+      }
+    },
+    {
+      "group": "⑪ v0.2.0 strategy(T7-44 · vector 단계 전용)",
+      "label": "strategy 를 graph 단계에 실음(vector 단계 전용 위반)",
+      "expect": "reject",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "graph",
+          "elapsedMs": 10,
+          "strategy": "hybrid"
+        }
+      }
+    },
+    {
+      "group": "⑪ v0.2.0 strategy(T7-44 · vector 단계 전용)",
+      "label": "strategy 를 step.started 에 실음(step.started 는 무변)",
+      "expect": "reject",
+      "event": {
+        "type": "step.started",
+        "payload": {
+          "step": "vector",
+          "strategy": "hybrid"
+        }
+      }
     }
   ]
 }
