@@ -27,7 +27,7 @@
 |---|---|---|---|---|---|
 | ① | SQL injection | `tests/api/injection_surface_drill.py` + 🆕 `tests/api/query_surface_sql_drill.py` | **exit 0** · 경로 축 HL-01~04 400 / 질의 축 5종 전건 400 `question_not_approved` · 대조군 200·hits 15 | **부분** — 경로 축 PASS · 🔴 질의 축은 **「도달 불가」**이지 SQL 계층 내성이 아니다(allowlist 가 앞문) | `[V]`§1-7 ① · `[N]`§1 |
 | ② | Cypher injection | 🆕 `tests/api/cypher_surface_drill.py` | **exit 0** · 층 A 15건(400/404·내부 노출 0) · 층 B 5건(추출 = ID 토큰·**구조 문자 0**) · 대조군 2 | **PASS** | `[N]`§2 |
-| ③ | 문서 내부 Prompt Injection | 🆕 `tests/api/prompt_injection_authority_drill.py` | **exit 0** · 표지 ② 1건(자극 실재) · A-3·A-4·A-6 PASS · A-1·A-2 **측정 불가** · 원복 md5 일치 | **PASS(조건부)** — 🔴 기전이 «무결성 배제»라 권한 축 2행은 측정 불가 · **재색인 경유 주입은 미측** | `[N]`§3·§3-1 |
+| ③ | 문서 내부 Prompt Injection | 🆕 `tests/api/prompt_injection_authority_drill.py` | **exit 0** · 표지 ② 1건(자극 실재) · A-3·A-4·A-6 PASS · A-1·A-2 **측정 불가** · 원복 md5 일치 | **PASS(조건부)** — 🔴 기전이 «무결성 배제»라 권한 축 2행은 측정 불가 · **재색인 경유 주입 = 55대 부분 측정**(`evidence/t5-2-gate7-reindex.md` · 드릴 rc=0): 도달축 REACHED(정상경로 주입→검색 hit•marker excerpt 반환) · replay 권한축 0(구조적 면역) · 원복 md5 일치 · 🔴 **live 순종 축은 여전히 미측(구독)** · 검색층 내용필터 부재는 우려 소견(E3) | `[N]`§3·§3-1 |
 | ④ | 임의 tool 호출 | `tests/api/scenario_allowlist_drill.py` | **exit 0** · 허용 10건 200 · 목록 밖 6종 전건 400 | **PASS** | `[V]`§1-7 ④ |
 | ⑤ | 관리자 endpoint 접근 | `tests/security/gate7_admin_surface.py` | **exit 0**(D-87 재검 · `:8090` `build=96ae199`) · Q-35 4종 **200→404**(전건 뒤집힘) · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존 · 같은 실행)** | **PASS** — D-87 해소(54대 · 처방 #826 `96ae199`) | `[d]`§2 |
 | ⑥ | 다른 session 접근 | `tests/api/session_guard_drill.py` | **exit 0** · 6축(은닉 4·상충 422·reset 3) | **PASS** | `[V]`§1-7 ⑥ |
