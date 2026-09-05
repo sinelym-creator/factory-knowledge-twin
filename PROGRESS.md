@@ -1,5 +1,7 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
+> **09-06 07:23 스자쿠 49대 마감** — 폐하 06:21 「미완인데 왜 멈추는가 · 위임」 → T5-2·T5-3 재개. 착지: #819 ci.yml lint+docker-build · #822 release-evidence.yml · #820 Gate 7 그물 3종(D-87 검출) · #826 D-87 픽스 · #830 D-87 재검 RESOLVED · #828 Gate 7 ⑦⑧ PASS · #829 O-42 develop 무대 replay 바인드 · develop 무대 `:8020` = `dd1a2e1`(4종 404 · B 401 · replay 바인드) · **승격 23 대기**(50대 1착). 원장 66/68 유지(T5-2·T5-3 부분 착지 · 완결 아님). 교대 3건(levi2 54 · senku2 51 · 자비스 97 = 내 집행).
+
 > **«지금»만 담는다.** Phase 상태 = project-plan §4 · 진행률 = 티켓 원장 · 재개 = checkpoint 1 Read. done 10행 초과분은 CHANGELOG로 회전.
 
 ## in progress
