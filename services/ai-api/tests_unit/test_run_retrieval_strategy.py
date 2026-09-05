@@ -119,6 +119,9 @@ def _build(monkeypatch, *, strategy: str | None, hits: list[Any], details: dict[
 
     async def fake_hybrid_search(pool, question, *a, **k):
         calls["hybrid"] += 1
+        # 🔴 «값이 닿았는가»는 결과가 아니라 인자로 센다 — 과수집 상한을 넘겼는지는
+        #    돌아온 건수로는 알 수 없다(대상이 적게 가진 날 두 설명이 같은 수를 낸다).
+        calls["hybrid_top_k"] = k.get("top_k", a[0] if a else None)
         return hits
 
     async def fake_signature(pool):
@@ -178,7 +181,7 @@ def test_vector_strategy_calls_vector_search(monkeypatch):
     )
     asyncio.run(nodes["vector"]({}))
 
-    assert calls == {"vector": 1, "hybrid": 0}
+    assert (calls["vector"], calls["hybrid"]) == (1, 0)
     # 🔴 착지 자리는 `step.completed` «하나»다 — `stepStarted` 스키마에는 additive 자리가
     #    없다(additionalProperties:false · step·note 뿐). started 에 키가 새면 계약 위반이다.
     assert [e["strategy"] for e in emitter.completed if e["step"] == "vector"] == ["vector"]
@@ -196,7 +199,7 @@ def test_default_is_hybrid_and_calls_hybrid_search(monkeypatch):
     )
     asyncio.run(nodes["vector"]({}))
 
-    assert calls == {"vector": 0, "hybrid": 1}
+    assert (calls["vector"], calls["hybrid"]) == (0, 1)
     assert [e["strategy"] for e in emitter.completed if e["step"] == "vector"] == ["hybrid"]
     assert all("strategy" not in e for e in emitter.started)
 
@@ -280,3 +283,42 @@ def test_strategy_key_is_scoped_to_the_vector_step(monkeypatch):
     assert set(by_step) == {"structured", "vector"}          # 두 단계가 실제로 돌았다
     assert by_step["vector"]["strategy"] == "hybrid"
     assert "strategy" not in by_step["structured"]
+
+
+def test_hybrid_overfetches_and_keeps_top_k_doc_chunks(monkeypatch):
+    """🔴 T7-44b — record 가 슬롯을 먹어도 doc-chunk 는 TOP_K 를 채운다.
+
+    앞판은 `_fuse` 의 top_k 칸을 세 축이 «나눠 쓴다»는 것을 안 보고 걸렀고, 그래서 거른
+    자리가 빈 채 나갔다(E1: 5→4 · `DOC-MAN-0021@r1#001` 소실). 처방은 넉넉히 받아 거른 뒤
+    상위 TOP_K 만 쓰는 것이다.
+    """
+    docs = [_hit(f"DOC-MAN-002{i}@r1#00{i}") for i in range(5)]
+    hits = [_hit("EQ-CNC-204"), *docs[:2], _hit("AL-20260826-0041"), *docs[2:]]
+    details = {h.evidenceId: _detail("doc-chunk") for h in docs}
+    details["EQ-CNC-204"] = _detail("record")
+    details["AL-20260826-0041"] = _detail("record")
+
+    nodes, emitter, calls = _build(monkeypatch, strategy="hybrid", hits=hits, details=details)
+    patch = asyncio.run(nodes["vector"]({}))
+    summary = [e["summary"] for e in emitter.completed if e["step"] == "vector"][0]
+
+    # 🔴 과수집 상한이 실제로 hybrid 에 «전달됐는가» — 인자로 실측한다.
+    assert calls["hybrid_top_k"] == wf.TOP_K * 2 == 10
+    # hit 7(record 2 + doc 5) → doc-chunk 5건 전부 살아난다(앞판이면 여기서 5가 아니다).
+    assert len(patch["citations"]) == wf.TOP_K == 5
+    assert list(patch["citations"]) == [d.evidenceId for d in docs]      # RRF 순 보존
+    assert "record 2건 제외" in summary and f"과수집 {len(hits)}" in summary
+
+
+def test_hybrid_does_not_invent_when_fewer_docs_are_available(monkeypatch):
+    """가용 doc 이 TOP_K 에 못 미치면 그 수 그대로다 — 모자란 자리를 채우지 않는다."""
+    docs = [_hit(f"DOC-SOP-001{i}@r1#00{i}") for i in range(3)]
+    hits = [_hit("EQ-CNC-204"), *docs]
+    details = {h.evidenceId: _detail("doc-chunk") for h in docs}
+    details["EQ-CNC-204"] = _detail("record")
+
+    nodes, emitter, _ = _build(monkeypatch, strategy="hybrid", hits=hits, details=details)
+    patch = asyncio.run(nodes["vector"]({}))
+
+    assert len(patch["citations"]) == 3 < wf.TOP_K
+    assert list(patch["citations"]) == [d.evidenceId for d in docs]
