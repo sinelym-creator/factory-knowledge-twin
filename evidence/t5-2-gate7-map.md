@@ -31,8 +31,8 @@
 | ④ | 임의 tool 호출 | `tests/api/scenario_allowlist_drill.py` | **exit 0** · 허용 10건 200 · 목록 밖 6종 전건 400 | **PASS** | `[V]`§1-7 ④ |
 | ⑤ | 관리자 endpoint 접근 | 🆕 `tests/security/gate7_admin_surface.py` | **exit 1** · 표면 14 · Q-35 4종 **전부 200** · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존)** | 🔴 **FAIL(D-n 회부)** — 가드 고장이 아니라 **가드가 닿지 않는 표면** | `[S]`§1 |
 | ⑥ | 다른 session 접근 | `tests/api/session_guard_drill.py` | **exit 0** · 6축(은닉 4·상충 422·reset 3) | **PASS** | `[V]`§1-7 ⑥ |
-| ⑦ | oversized request | `tests/api/t42b_limits_drill.py` | **exit 2** | 🔴 **측정 불가** — 세션 축 대조군 서버(`FKT_T42B_SESSION_BASE`) 미지정 · 그물이 기본값을 **거부**한다(Q-62) | `[V]`§1-7 ⑦ |
-| ⑧ | 반복 요청·rate limit | `t42b_xff_axes_drill.py` · `t42b_capacity_drill.py` | **exit 2**(xff) · capacity 미실행 | 🔴 **측정 불가** — BEFORE 서버·`FKT_T42B_TIMEOUT_BASE` 필요 | `[V]`§1-7 ⑧ |
+| ⑦ | oversized request | `t42b_limits_drill.py`(⑦-A) + 🆕 `tests/security/gate7_oversized_gateway.py`(⑦-B) | **PASS**(두 층) · ⑦-A 66,588B→413 payload_too_large · chunked→413 · ⑦-B 1MiB+→413 · 거짓CL «불성립» | **PASS** — T5-2c 조각 a(54대) | `[a]`§3 |
+| ⑧ | 반복 요청·rate limit | `tests/api/t42b_limits_drill.py`(R-01~09) | **exit 0** · 세션축 통과3·429 3 · IP축 통과5·429 3 · RA 60 · 축분리 200 · 제외 4종 429 아님 | **PASS** — T5-2c 조각 a(54대) | `[a]`§2 |
 | ⑨ | 잘못된 WebSocket message | 🆕 `tests/security/gate7_ws_malformed.py` | **exit 0** · 대조군 38 이벤트 · 자극 5종 **전건 서버 생존** · 없는 runId **close 4404** | **부분** — 생존 축 PASS · 🔴 (a)~(d) 「닫힘/오류」는 **불성립**(핸들러가 클라이언트 프레임을 읽지 않는다) | `[S]`§2 |
 | ⑩ | path traversal | `tests/api/injection_surface_drill.py` | **exit 0** · HL-05·06·07 400 · 대상 생존 1376자 | **PASS** | `[V]`§1-7 ⑩ |
 | ⑪ | CORS 우회 | `tests/web/t41_cors_browser_drill.mjs` | — | 🔴 **측정 불가** — 맨 페이지 서버 2본 + allowlist 주입 서버 필요 | `[V]`§1-7 ⑪ |
@@ -46,23 +46,23 @@
 
 | 구분 | 항 | 수 |
 |---|---|---|
-| **PASS** | ②④⑥⑩⑫⑬ · 〔유지〕 | **7** |
+| **PASS** | ②④⑥⑦⑧⑩⑫⑬ · 〔유지〕 | **9** |
 | **PASS(조건부)** | ③ | **1** |
 | **부분** | ① · ⑨ | **2** |
-| 🔴 **측정 불가** | ⑦⑧⑪ | **3** |
+| 🔴 **측정 불가** | ⑪ | **1** |
 | 🔴 **FAIL(회부)** | ⑤ | **1** |
 | 🔴 **미충족** | — | **0** |
 | **합**(13항 + 유지 1) | | **14** |
 
-**축소 안 §3 대비**: 재실행 8(④⑥⑦⑧⑩⑪⑫⑬) 중 **5항 초록**(④⑥⑩⑫⑬) · **3항 측정 불가**(⑦⑧⑪) ·
+**축소 안 §3 대비**: 재실행 8(④⑥⑦⑧⑩⑪⑫⑬) 중 **7항 초록**(④⑥⑦⑧⑩⑫⑬ · ⑦⑧=조각 a) · **1항 측정 불가**(⑪) ·
 신설 3(①질의·②·③) **전건 착지** · 미충족 2(⑤⑨) **무변**.
 
 🔴 **Gate 7 은 여전히 서 있지 않다.** 조각 A(53대 `06:24~06:31`)로 **미충족 2 → 0** 이 됐지만,
-그 자리를 **FAIL 1(⑤) + 부분 1(⑨)** 이 대신한다. 측정 불가 3(⑦⑧⑪)은 **무변**이다.
-⇒ 비어 있거나 붉은 항 = **⑤(FAIL) · ⑦⑧⑪(측정 불가) = 4항**. ①·⑨ 는 부분이다.
+그 자리를 **FAIL 1(⑤) + 부분 1(⑨)** 이 대신한다. 측정 불가 3(⑦⑧⑪) 중 **⑦⑧ 은 T5-2c 조각 a(54대)로 PASS**(`[a]`) · **⑪ 만 남는다**.
+⇒ 비어 있거나 붉은 항 = **⑤(FAIL) · ⑪(측정 불가) = 2항**. ①·⑨ 는 부분이다.
 🔴 **「그물이 생겼다」를 「게이트가 섰다」로 읽지 않는다** — ⑤ 는 그물이 생겨서 **빨강이 보이게 된 것**이다.
 
-출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문).
+출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문) · `[a]` = `evidence/t5-2-gate7-sliceB-a.md`(조각 a 판정문 · T5-2c · 54대 · ⑦⑧ 실측).
 
 ---
 
