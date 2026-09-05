@@ -1,0 +1,218 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "wall": "2026-09-05T03:22:59.391Z",
+  "shellRemoteIp": "64.29.17.195",
+  "gate": {
+    "respHeaders": {
+      "server": "Vercel",
+      "xVercelId": "icn1::iad1::kjw69-1788578579635-55ff6496d2c7",
+      "tailscaleKeys": []
+    },
+    "health": {
+      "ok": true,
+      "version": "0.1.0",
+      "status": "ok",
+      "dependencies": {
+        "postgres": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 1
+        },
+        "neo4j": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 0
+        }
+      },
+      "build": "879fc35",
+      "models": {
+        "embedding": "ready",
+        "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+      }
+    },
+    "buildHeld": true
+  },
+  "ax3": {
+    "headers": {
+      "csp": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self' da",
+      "xcto": "nosniff",
+      "referrer": "no-referrer",
+      "hsts": "max-age=31536000; includeSubDomains"
+    },
+    "deps": {
+      "postgres": "ok",
+      "neo4j": "ok",
+      "embedding": "ready"
+    },
+    "liveStatus": {
+      "status": 200,
+      "online": true
+    }
+  },
+  "ax1": {
+    "cols": {
+      "w390": {
+        "w": 390,
+        "appBar": {
+          "top": 0,
+          "bottom": 76,
+          "left": 0,
+          "w": 390,
+          "h": 76
+        },
+        "brand": {
+          "top": 16.8,
+          "bottom": 39.3,
+          "left": 74,
+          "w": 85.6,
+          "h": 22.5
+        },
+        "brandText": "Factory Twin",
+        "statusRow": {
+          "top": 54,
+          "bottom": 69,
+          "left": 20,
+          "w": 350,
+          "h": 15
+        },
+        "statusRowNewLine": true,
+        "buttons": {
+          "tour": 1,
+          "reset": 1
+        },
+        "toggleCount": 1,
+        "toggleVisible": true,
+        "railLinksVisible": 0,
+        "drawerBeforeOpen": 0,
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "overflowPx": 0
+        }
+      },
+      "w768": {
+        "w": 768,
+        "appBar": {
+          "top": 0,
+          "bottom": 79,
+          "left": 260,
+          "w": 508,
+          "h": 79
+        },
+        "brand": {
+          "top": 27.8,
+          "bottom": 50.3,
+          "left": 280,
+          "w": 165.9,
+          "h": 22.5
+        },
+        "brandText": "Factory Knowledge Twin",
+        "statusRow": {
+          "top": 0,
+          "bottom": 78,
+          "left": 564.3,
+          "w": 183.7,
+          "h": 78
+        },
+        "statusRowNewLine": false,
+        "buttons": {
+          "tour": 1,
+          "reset": 1
+        },
+        "toggleCount": 1,
+        "toggleVisible": false,
+        "railLinksVisible": 3,
+        "drawerBeforeOpen": 0,
+        "overflow": {
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "overflowPx": 0
+        }
+      },
+      "w1280": {
+        "w": 1280,
+        "appBar": {
+          "top": 0,
+          "bottom": 52,
+          "left": 260,
+          "w": 1020,
+          "h": 52
+        },
+        "brand": {
+          "top": 14.3,
+          "bottom": 36.8,
+          "left": 280,
+          "w": 165.9,
+          "h": 22.5
+        },
+        "brandText": "Factory Knowledge Twin",
+        "statusRow": {
+          "top": 13.5,
+          "bottom": 37.5,
+          "left": 960.6,
+          "w": 299.4,
+          "h": 24
+        },
+        "statusRowNewLine": false,
+        "buttons": {
+          "tour": 1,
+          "reset": 1
+        },
+        "toggleCount": 1,
+        "toggleVisible": false,
+        "railLinksVisible": 3,
+        "drawerBeforeOpen": 0,
+        "overflow": {
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "overflowPx": 0
+        }
+      }
+    },
+    "drawer": {
+      "openings": [
+        {
+          "count": 1,
+          "role": "dialog",
+          "ariaModal": "true",
+          "links": 3,
+          "linkIds": [
+            "nav-overview",
+            "nav-incidents",
+            "nav-compare"
+          ],
+          "scrim": 1,
+          "shellInert": {
+            "anyInert": 1,
+            "barInsideInert": true
+          }
+        },
+        {
+          "count": 1,
+          "role": "dialog",
+          "ariaModal": "true",
+          "links": 3,
+          "linkIds": [
+            "nav-overview",
+            "nav-incidents",
+            "nav-compare"
+          ],
+          "scrim": 1,
+          "shellInert": {
+            "anyInert": 1,
+            "barInsideInert": true
+          }
+        }
+      ],
+      "closes": {
+        "esc": {
+          "after": 0
+        }
+      }
+    }
+  },
+  "ax2static": {},
+  "ax2live": {},
+  "verdict": {},
+  "crash": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-drawer-scrim\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" aria-label=\"메뉴 닫기\" data-testid=\"nav-drawer-scrim\" class=\"absolute inset-0 h-full w-full bg-ink/40\"></button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled "
+}

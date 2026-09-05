@@ -1,0 +1,143 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "wall": "2026-09-05T03:27:43.577Z",
+  "cols": {
+    "drawer390": {
+      "href": "/incidents/INC-2025-019",
+      "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+      "drawerAfter": 0,
+      "net": [
+        {
+          "path": "/overview",
+          "status": 307,
+          "loc": "/"
+        },
+        {
+          "path": "/overview?_rsc=64EBvAagmAisvzuu",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=f4-2nUB_QklxoMuL",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/incidents/INC-2025-019?_rsc=_VWJ-N7ngsYSuaU3",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/incidents/INC-2025-019?_rsc=RgdOYVhsobdEnizz",
+          "status": 200,
+          "loc": null
+        }
+      ]
+    },
+    "rail1280": {
+      "href": "/incidents/INC-2025-019",
+      "urlAfter": "https://factory-knowledge-twin.vercel.app/overview",
+      "net": [
+        {
+          "path": "/overview",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=5CB68i4pnAekjehf",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=bFe_VC0g8VplWXKP",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=F-bMIZwXjbnuepS3",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/incidents/INC-2025-019?_rsc=_i_aeImnuN6u1u1r",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=_i_aeImnuN6u1u1r",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=_VWJ-N7ngsYSuaU3",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/incidents/INC-2025-019?_rsc=qcs5AIIC-Griu4ZG",
+          "status": 200,
+          "loc": null
+        }
+      ]
+    },
+    "direct1280": {
+      "href": "/incidents/INC-2025-019",
+      "gotoStatus": 200,
+      "urlAfter": "https://factory-knowledge-twin.vercel.app/overview",
+      "net": [
+        {
+          "path": "/incidents/INC-2025-019?_rsc=5CB68i4pnAekjehf",
+          "status": 307,
+          "loc": "/"
+        },
+        {
+          "path": "/overview?_rsc=5CB68i4pnAekjehf",
+          "status": 307,
+          "loc": "/"
+        },
+        {
+          "path": "/overview?_rsc=64EBvAagmAisvzuu",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=f4-2nUB_QklxoMuL",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview",
+          "status": 200,
+          "loc": null
+        },
+        {
+          "path": "/overview?_rsc=tXyZJ52UQVBCVsD3",
+          "status": 200,
+          "loc": null
+        }
+      ]
+    }
+  },
+  "verdict": {
+    "drawerUrl": "/incidents/INC-2025-019",
+    "railUrl": "/overview",
+    "directUrl": "/overview",
+    "sameAcrossColumns": false,
+    "drawerClosed": true
+  }
+}
