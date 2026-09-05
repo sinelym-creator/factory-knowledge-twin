@@ -122,6 +122,9 @@ class Emitter:
         return self._emit("plan.updated", {"steps": steps})
 
     def step_started(self, step: str, note: str | None = None) -> dict[str, Any]:
+        # 🔴 **여기에는 additive 자리가 없다**(T7-44 실측): 스키마 `stepStarted` 는
+        #    `additionalProperties: false` 이고 properties 가 `step`·`note` 뿐이다.
+        #    단계가 자기에 대해 말할 것이 생기면 `step.completed` 의 extra 로 간다.
         payload: dict[str, Any] = {"step": step}
         if note is not None:
             payload["note"] = note

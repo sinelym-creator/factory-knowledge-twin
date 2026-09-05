@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -110,6 +111,18 @@ class Settings(BaseSettings):
     # ⓔ 만료 세션 주기 정리 간격(초). 0 이하면 주기 태스크를 «띄우지 않는다»(lazy sweep 은
     #    그대로 남으므로 만료 판정 자체는 변하지 않는다 — 끄는 것은 «청소»지 «만료»가 아니다).
     session_sweep_sec: float = 300.0
+
+    # --- T7-44 조사 run 의 문서 검색 전략 ------------------------------------------
+    #
+    # 🔴 **`Literal` 이 곧 규칙이다.** 문자열로 받고 나중에 `if` 로 거르면 오타가 런타임
+    #    한복판까지 살아 들어가고, 그때는 「vector 도 hybrid 도 아닌」 값이 조용히 한쪽으로
+    #    떨어진다. 여기서 타입으로 막으면 **모르는 값은 기동에서 거부된다** — 잘못된 설정을
+    #    들고 뜬 프로세스가 없으므로, 「지금 무엇으로 도는가」를 뒤늦게 물을 일이 없다.
+    #
+    # 🔴 기본값이 `hybrid` 인 것은 폐하 결정 ⓑ(O-36 · 2026-09-06 00:17)다. 이 값은 계약이
+    #    아니라 «이 배포의 사정»이고(위 T4-2b 절과 같은 규율), 어느 전략으로 돌았는지는
+    #    run 이벤트의 `strategy` 가 매번 말한다 — 설정을 읽어야 알 수 있게 두지 않는다.
+    run_retrieval_strategy: Literal["vector", "hybrid"] = "hybrid"
 
     @property
     def cors_allowlist(self) -> list[str]:
