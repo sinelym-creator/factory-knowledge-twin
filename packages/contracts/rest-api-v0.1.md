@@ -84,7 +84,7 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - offset = 원문 대조 산출(`document_chunk`에 offset 열 없음 · 59/59 유일 매칭 실측 E1). 문장 강제 분할 경계 케이스 = 현 데이터 0건 — 발생 조건·«해당 chunk 구간만 강조» 동작은 구현 성문.
 
 **GET `/scenarios`** → `[{ scenarioId, title, questions: [string] }]`
-- 질문의 유일한 원천 = 구현 allowlist(T2-1) — `/scenarios`는 읽어서 낼 뿐 자기 목록을 갖지 않는다(이원화 = FAIL). `questions` 싣는다 — 화면이 compare 질문을 얻는 자리를 한 곳으로 고정. 평가 질문 10문의 GS-01 귀속 사유 병기(T0-8 계열 — GS-01 무대의 평가셋).
+- 질문의 유일한 원천 = 구현 allowlist(T2-1) — `/scenarios`는 읽어서 낼 뿐 자기 목록을 갖지 않는다(이원화 = FAIL). `questions` 싣는다 — 화면이 compare 질문을 얻는 자리를 한 곳으로 고정. 평가 질문 **40문**(v0.1.18 · 정본 = `benchmarks/datasets/questions.v0.3.jsonl` · 런타임 사본 = `app/retrieval/approved_questions.v0.3.jsonl` · 정본↔사본 일치는 테스트가 지킨다)의 GS-01 귀속 사유 병기(T0-8 계열 — GS-01 무대의 평가셋).
 
 ## v0.1.2 append (08-30 · T2-3 게이트 1 — 의미 확정 1건)
 
@@ -222,3 +222,9 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - **화면(계약 밖 · 규격 · D-68b)** — 근거 화면은 graph-path 근거를 «경로 걸음 목록»으로 그린다(종단 노드 링크는 만들지 않는다 · 아는 자리로만) · 404 문면 = 「찾을 수 없습니다」 · 「서버에 닿지 못했습니다」는 네트워크 실패(연결 거부·시간 초과)에만 · breadcrumb·귀환 링크 불변.
 - 잰 것/안 잰 것(구현 PR 본문 의무) — 실제 run 의 GP 근거 전건 200(형상·excerpt = 이벤트 문면) · 타 세션 404 · 무쿠키 401 · 없는 idx 404 · 대조군 = 같은 그물 404 전건 · 정적 재생본(`STATIC-GS-01`)의 GP 는 이 갈래 밖(정적 자산 · 별도 관측) · 안 잰 것 이름으로.
 - 판정선(독립 검증) — ① GP 전건 200 + 형상 ② 소유권 404 · 무쿠키 401 ③ 화면 = 폐하 경로(조사 → GP 근거 클릭 → 경로 본문) 대조군 「찾을 수 없음」 ↔ 대상 본문 ④ 404 문면 정정(네트워크 실패 회차에는 옛 문면 유지 = 대조 자극 1) ⑤ document-chunk·record 근거 회귀 0 ⑥ 대조군 같은 그물 rc=1.
+
+## v0.1.18 append (09-05 · T5-1 — 승인 질문 10문 → 40문 · 폐하 「권장승인」 16:40 · 오케 스자쿠 45대 성문 · 구현 = #751 · 독립 검증 리바이2)
+
+- `GET /scenarios` 의 `questions` = **40문**(유형 6 = 골든 hard 6 · 유사 명칭 6 · multi-hop 8 · revision 충돌 5 · 근거 부족 보류 7 · 안전 규정 8) · 순서 = 정본 파일 순서 · 기존 10문 승계(문면 불변).
+- 정본 = `benchmarks/datasets/questions.v0.3.jsonl`(검증 scope) · 런타임은 앱 패키지 안 사본을 읽는다(배포 이미지에 `benchmarks/` 가 없다) · 정본↔사본 불일치·부재·파손·id 중복 = **기동 거부**(조용한 빈 목록 금지). 정본 변경 PR 은 사본 갱신을 같은 회차에 짝 발주한다(오케).
+- allowlist 밖 질문 = 400(불변 · `service.py`).
