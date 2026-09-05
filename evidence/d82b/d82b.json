@@ -1,0 +1,426 @@
+{
+  "wall": "2026-09-05T05:09:14.097Z",
+  "settleMs": 3500,
+  "reps": 3,
+  "cols": {
+    "after": {
+      "name": "after(D-82b landed)",
+      "base": "http://127.0.0.1:8367",
+      "w1280": [
+        {
+          "w": 1280,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": null,
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 2,
+            "withCookie": 2
+          },
+          "statuses": [
+            "after:200",
+            "after:200"
+          ],
+          "status307": 0,
+          "status200": 2
+        },
+        {
+          "w": 1280,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": null,
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 2,
+            "withCookie": 2
+          },
+          "statuses": [
+            "after:200",
+            "after:200"
+          ],
+          "status307": 0,
+          "status200": 2
+        },
+        {
+          "w": 1280,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": null,
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 2,
+            "withCookie": 2
+          },
+          "statuses": [
+            "after:200",
+            "after:200"
+          ],
+          "status307": 0,
+          "status200": 2
+        }
+      ],
+      "w390": [
+        {
+          "w": 390,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3
+          },
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        },
+        {
+          "w": 390,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3
+          },
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        },
+        {
+          "w": 390,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3
+          },
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        }
+      ]
+    },
+    "before": {
+      "name": "before(D-82 only)",
+      "base": "http://127.0.0.1:8369",
+      "w1280": [
+        {
+          "w": 1280,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": null,
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        },
+        {
+          "w": 1280,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": null,
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        },
+        {
+          "w": 1280,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": null,
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        }
+      ],
+      "w390": [
+        {
+          "w": 390,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3
+          },
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        },
+        {
+          "w": 390,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3
+          },
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        },
+        {
+          "w": 390,
+          "reachedOverview": true,
+          "landed": "/incidents/INC-2025-019",
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3
+          },
+          "beforeEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "afterEntry": {
+            "count": 0,
+            "withCookie": 0
+          },
+          "statuses": [],
+          "status307": 0,
+          "status200": 0
+        }
+      ]
+    }
+  },
+  "summary": {
+    "after1280": {
+      "landed": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "beforeEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryPrefetch": [
+        2,
+        2,
+        2
+      ],
+      "afterEntryWithCookie": [
+        2,
+        2,
+        2
+      ],
+      "status307": [
+        0,
+        0,
+        0
+      ],
+      "status200": [
+        2,
+        2,
+        2
+      ],
+      "reachedOverview": [
+        true,
+        true,
+        true
+      ]
+    },
+    "after390": {
+      "landed": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "beforeEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryWithCookie": [
+        0,
+        0,
+        0
+      ],
+      "status307": [
+        0,
+        0,
+        0
+      ],
+      "status200": [
+        0,
+        0,
+        0
+      ],
+      "reachedOverview": [
+        true,
+        true,
+        true
+      ]
+    },
+    "before1280": {
+      "landed": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "beforeEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryWithCookie": [
+        0,
+        0,
+        0
+      ],
+      "status307": [
+        0,
+        0,
+        0
+      ],
+      "status200": [
+        0,
+        0,
+        0
+      ],
+      "reachedOverview": [
+        true,
+        true,
+        true
+      ]
+    },
+    "before390": {
+      "landed": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "beforeEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryPrefetch": [
+        0,
+        0,
+        0
+      ],
+      "afterEntryWithCookie": [
+        0,
+        0,
+        0
+      ],
+      "status307": [
+        0,
+        0,
+        0
+      ],
+      "status200": [
+        0,
+        0,
+        0
+      ],
+      "reachedOverview": [
+        true,
+        true,
+        true
+      ]
+    }
+  },
+  "verdict": {
+    "a_beforeEntryZero": true,
+    "b_afterEntryRestored": true,
+    "c_afterEntryCookied": true,
+    "d_no307": true,
+    "e_landed": true,
+    "f_drawerShape": true,
+    "allPass": true,
+    "fails": []
+  }
+}
