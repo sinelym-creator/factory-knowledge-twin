@@ -1,0 +1,503 @@
+{
+ "wall": "2026-09-05T02:50:15.641Z",
+ "target": "http://127.0.0.1:8367",
+ "control": "http://127.0.0.1:8365",
+ "axes": {
+  "close": {
+   "link": {
+    "branch": "link",
+    "beforeOpen": {
+     "count": 0,
+     "visible": false,
+     "role": null,
+     "ariaModal": null,
+     "links": 0
+    },
+    "toggleClick": {
+     "clicked": true,
+     "x": 36,
+     "y": 28,
+     "elementAtPoint": {
+      "tag": "span",
+      "owner": "nav-menu-toggle",
+      "insideDrawer": false
+     },
+     "box": {
+      "w": 44,
+      "h": 44
+     }
+    },
+    "opened": {
+     "count": 1,
+     "visible": true,
+     "role": "dialog",
+     "ariaModal": "true",
+     "links": 3
+    },
+    "focusOnOpen": {
+     "tag": "a",
+     "testid": "nav-overview",
+     "insideDrawer": true
+    },
+    "inertOnOpen": {
+     "inertCount": 1,
+     "inertOwners": [
+      "div"
+     ],
+     "drawerInert": false
+    },
+    "closeAction": {
+     "clicked": true,
+     "x": 130,
+     "y": 115,
+     "elementAtPoint": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "box": {
+      "w": 236,
+      "h": 36
+     }
+    },
+    "closed": {
+     "count": 0,
+     "visible": false,
+     "role": null,
+     "ariaModal": null,
+     "links": 0
+    },
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false
+    },
+    "inertAfterClose": {
+     "inertCount": 0,
+     "inertOwners": [],
+     "drawerInert": null
+    },
+    "reopenClick": {
+     "clicked": true,
+     "x": 36,
+     "y": 28,
+     "elementAtPoint": {
+      "tag": "span",
+      "owner": "nav-menu-toggle",
+      "insideDrawer": false
+     },
+     "box": {
+      "w": 44,
+      "h": 44
+     }
+    },
+    "reopened": {
+     "count": 1,
+     "visible": true,
+     "role": "dialog",
+     "ariaModal": "true",
+     "links": 3
+    }
+   },
+   "esc": {
+    "branch": "esc",
+    "beforeOpen": {
+     "count": 0,
+     "visible": false,
+     "role": null,
+     "ariaModal": null,
+     "links": 0
+    },
+    "toggleClick": {
+     "clicked": true,
+     "x": 36,
+     "y": 28,
+     "elementAtPoint": {
+      "tag": "span",
+      "owner": "nav-menu-toggle",
+      "insideDrawer": false
+     },
+     "box": {
+      "w": 44,
+      "h": 44
+     }
+    },
+    "opened": {
+     "count": 1,
+     "visible": true,
+     "role": "dialog",
+     "ariaModal": "true",
+     "links": 3
+    },
+    "focusOnOpen": {
+     "tag": "a",
+     "testid": "nav-overview",
+     "insideDrawer": true
+    },
+    "inertOnOpen": {
+     "inertCount": 1,
+     "inertOwners": [
+      "div"
+     ],
+     "drawerInert": false
+    },
+    "closeAction": {
+     "via": "Escape"
+    },
+    "closed": {
+     "count": 0,
+     "visible": false,
+     "role": null,
+     "ariaModal": null,
+     "links": 0
+    },
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false
+    },
+    "inertAfterClose": {
+     "inertCount": 0,
+     "inertOwners": [],
+     "drawerInert": null
+    },
+    "reopenClick": {
+     "clicked": true,
+     "x": 36,
+     "y": 28,
+     "elementAtPoint": {
+      "tag": "span",
+      "owner": "nav-menu-toggle",
+      "insideDrawer": false
+     },
+     "box": {
+      "w": 44,
+      "h": 44
+     }
+    },
+    "reopened": {
+     "count": 1,
+     "visible": true,
+     "role": "dialog",
+     "ariaModal": "true",
+     "links": 3
+    }
+   },
+   "scrim": {
+    "branch": "scrim",
+    "beforeOpen": {
+     "count": 0,
+     "visible": false,
+     "role": null,
+     "ariaModal": null,
+     "links": 0
+    },
+    "toggleClick": {
+     "clicked": true,
+     "x": 36,
+     "y": 28,
+     "elementAtPoint": {
+      "tag": "span",
+      "owner": "nav-menu-toggle",
+      "insideDrawer": false
+     },
+     "box": {
+      "w": 44,
+      "h": 44
+     }
+    },
+    "opened": {
+     "count": 1,
+     "visible": true,
+     "role": "dialog",
+     "ariaModal": "true",
+     "links": 3
+    },
+    "focusOnOpen": {
+     "tag": "a",
+     "testid": "nav-overview",
+     "insideDrawer": true
+    },
+    "inertOnOpen": {
+     "inertCount": 1,
+     "inertOwners": [
+      "div"
+     ],
+     "drawerInert": false
+    },
+    "scrimPointOwner": {
+     "tag": "button",
+     "owner": "nav-drawer-scrim",
+     "insideDrawer": false
+    },
+    "closeAction": {
+     "via": "scrim-coord",
+     "x": 325,
+     "y": 400
+    },
+    "closed": {
+     "count": 0,
+     "visible": false,
+     "role": null,
+     "ariaModal": null,
+     "links": 0
+    },
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false
+    },
+    "inertAfterClose": {
+     "inertCount": 0,
+     "inertOwners": [],
+     "drawerInert": null
+    },
+    "reopenClick": {
+     "clicked": true,
+     "x": 36,
+     "y": 28,
+     "elementAtPoint": {
+      "tag": "span",
+      "owner": "nav-menu-toggle",
+      "insideDrawer": false
+     },
+     "box": {
+      "w": 44,
+      "h": 44
+     }
+    },
+    "reopened": {
+     "count": 1,
+     "visible": true,
+     "role": "dialog",
+     "ariaModal": "true",
+     "links": 3
+    }
+   }
+  },
+  "tabCycle": {
+   "states": [
+    {
+     "tag": "a",
+     "testid": "nav-incidents",
+     "insideDrawer": true
+    },
+    {
+     "tag": "a",
+     "testid": "nav-compare",
+     "insideDrawer": true
+    },
+    {
+     "tag": "body",
+     "testid": null,
+     "insideDrawer": false
+    },
+    {
+     "tag": "button",
+     "testid": "nav-drawer-scrim",
+     "insideDrawer": false
+    },
+    {
+     "tag": "a",
+     "testid": "nav-overview",
+     "insideDrawer": true
+    },
+    {
+     "tag": "a",
+     "testid": "nav-incidents",
+     "insideDrawer": true
+    },
+    {
+     "tag": "a",
+     "testid": "nav-compare",
+     "insideDrawer": true
+    },
+    {
+     "tag": "body",
+     "testid": null,
+     "insideDrawer": false
+    },
+    {
+     "tag": "button",
+     "testid": "nav-drawer-scrim",
+     "insideDrawer": false
+    },
+    {
+     "tag": "a",
+     "testid": "nav-overview",
+     "insideDrawer": true
+    },
+    {
+     "tag": "a",
+     "testid": "nav-incidents",
+     "insideDrawer": true
+    },
+    {
+     "tag": "a",
+     "testid": "nav-compare",
+     "insideDrawer": true
+    }
+   ],
+   "escapedDrawer": true
+  },
+  "hit": [
+   {
+    "name": "nav-menu-toggle",
+    "sel": "[data-testid=\"nav-menu-toggle\"]",
+    "present": true,
+    "box": {
+     "w": 44,
+     "h": 44
+    },
+    "centre": {
+     "x": 36,
+     "y": 28,
+     "owner": {
+      "tag": "svg",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     }
+    },
+    "aa24_ring6": {
+     "up": {
+      "tag": "svg",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     },
+     "down": {
+      "tag": "svg",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     },
+     "left": {
+      "tag": "svg",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     },
+     "right": {
+      "tag": "rect",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     }
+    },
+    "aaa44_ring11": {
+     "up": {
+      "tag": "svg",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     },
+     "down": {
+      "tag": "div",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     },
+     "left": {
+      "tag": "svg",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     },
+     "right": {
+      "tag": "div",
+      "owner": "nav-drawer",
+      "insideDrawer": true
+     }
+    }
+   },
+   {
+    "name": "drawer-link",
+    "sel": "[data-nav-variant=\"drawer\"]",
+    "present": true,
+    "box": {
+     "w": 236,
+     "h": 36
+    },
+    "centre": {
+     "x": 130,
+     "y": 115,
+     "owner": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     }
+    },
+    "aa24_ring6": {
+     "up": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "down": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "left": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "right": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     }
+    },
+    "aaa44_ring11": {
+     "up": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "down": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "left": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     },
+     "right": {
+      "tag": "a",
+      "owner": "nav-overview",
+      "insideDrawer": true
+     }
+    }
+   }
+  ],
+  "wide": {
+   "768": {
+    "toggleInDom": 1,
+    "toggleVisible": false,
+    "rail": 3,
+    "bar": 0,
+    "drawerLinks": 0,
+    "statusRow": 1,
+    "hScroll": false
+   },
+   "1280": {
+    "toggleInDom": 1,
+    "toggleVisible": false,
+    "rail": 3,
+    "bar": 0,
+    "drawerLinks": 0,
+    "statusRow": 1,
+    "hScroll": false
+   }
+  },
+  "control": {
+   "toggleInDom": 0,
+   "toggleVisible": false,
+   "drawer": 0,
+   "bar": 3,
+   "rail": 3,
+   "statusRow": 0
+  },
+  "overflow390": {
+   "scrollWidth": 390,
+   "clientWidth": 390,
+   "overflow": false
+  }
+ }
+}

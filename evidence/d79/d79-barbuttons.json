@@ -1,0 +1,90 @@
+{
+ "target390": {
+  "barWidth": 390,
+  "total": 3,
+  "rightHalf": 2,
+  "rightHalfVisible": 2,
+  "buttons": [
+   {
+    "testid": "nav-menu-toggle",
+    "x": 14,
+    "w": 44,
+    "h": 44,
+    "rightHalf": false,
+    "visible": true
+   },
+   {
+    "testid": "intro-reopen",
+    "x": 229,
+    "w": 72,
+    "h": 32,
+    "rightHalf": true,
+    "visible": true
+   },
+   {
+    "testid": "reset-button",
+    "x": 307,
+    "w": 63,
+    "h": 24,
+    "rightHalf": true,
+    "visible": true
+   }
+  ]
+ },
+ "target1280": {
+  "barWidth": 1020,
+  "total": 3,
+  "rightHalf": 2,
+  "rightHalfVisible": 2,
+  "buttons": [
+   {
+    "testid": "nav-menu-toggle",
+    "x": 0,
+    "w": 0,
+    "h": 0,
+    "rightHalf": false,
+    "visible": false
+   },
+   {
+    "testid": "intro-reopen",
+    "x": 915,
+    "w": 72,
+    "h": 32,
+    "rightHalf": true,
+    "visible": true
+   },
+   {
+    "testid": "reset-button",
+    "x": 993,
+    "w": 63,
+    "h": 24,
+    "rightHalf": true,
+    "visible": true
+   }
+  ]
+ },
+ "control390": {
+  "barWidth": 390,
+  "total": 2,
+  "rightHalf": 1,
+  "rightHalfVisible": 1,
+  "buttons": [
+   {
+    "testid": "intro-reopen",
+    "x": 35,
+    "w": 72,
+    "h": 32,
+    "rightHalf": false,
+    "visible": true
+   },
+   {
+    "testid": "reset-button",
+    "x": 307,
+    "w": 63,
+    "h": 24,
+    "rightHalf": true,
+    "visible": true
+   }
+  ]
+ }
+}
