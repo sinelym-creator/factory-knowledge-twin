@@ -151,7 +151,8 @@
           "properties": {
             "axis": { "type": "string", "enum": ["live", "deterministic", "live-rejected"], "description": "v0.1.11 · 합성 축 — live-rejected = 게이트웨이 응답을 근거 결속 가드가 전량 거부(조용한 폴백 0)" },
             "model": { "type": "string" },
-            "rejectedReason": { "type": "string" }
+            "rejectedReason": { "type": "string" },
+            "safetyOmitted": { "type": "boolean", "description": "v0.1.19 · D-84 — 근거 본문에 SAF-* 규정이 있는데 답변 문장이 호명하지 않아 1회 재요청 뒤에도 미호명 = 채택하되 참으로 표기(구현은 true 일 때만 실음 · false 와 부재는 같은 뜻 · 화면이 아니라 계측이 본다)" }
           }
         }
       }
