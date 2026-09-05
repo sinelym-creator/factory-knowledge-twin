@@ -1,0 +1,31 @@
+HEAD is now at d0d33c4 Merge pull request #724 from sinelym-creator/lane/suzaku43-d82b
+npm rc=0
+
+--- 지원 열(대조군 · 손대지 않음) ---
+런타임 "inert" in HTMLElement.prototype = **true**
+투어 켜짐 = true · 대상(nav-compare) 발견 = true
+🔴 자극 증인 — inert 가 걸린 요소 수 = **21**
+점 소유자 = div (대상 것인가 false) · 대상의 inert 조상 = nav
+포커스 감시: 배경에 포커스 → 되돌려짐 → button[tour-skip]
+실제 클릭: https://factory-knowledge-twin.vercel.app/overview → https://factory-knowledge-twin.vercel.app/overview ⇒ **주소 안 바뀜(막혔다)**
+
+--- 강제 열(`inert` 를 프로토타입에서 제거) ---
+런타임 "inert" in HTMLElement.prototype = **false**
+투어 켜짐 = true · 대상(nav-compare) 발견 = true
+🔴 자극 증인 — inert 가 걸린 요소 수 = **0**
+점 소유자 = a[nav-compare] (대상 것인가 true) · 대상의 inert 조상 = 없음
+포커스 감시: 배경에 포커스 → 되돌려짐 → button[tour-skip]
+실제 클릭: https://factory-knowledge-twin.vercel.app/overview → https://factory-knowledge-twin.vercel.app/overview ⇒ **주소 안 바뀜(막혔다)**
+
+=============== 판정 ===============
+갈래가 갈렸나(지원 true / 강제 false) = ✓
+자극 증인(지원 열 inert 건수 21 > 0 · 강제 열 0 = 0) = ✓
+무대가 섰나(두 열 다 투어 켜짐) = ✓
+대조군 — 지원 열에서 클릭이 막히나 = ✓ 막힘
+[X-22] PASS — 폴백도 포인터를 막는다
+
+🔴 안 잼: 실제 구형 엔진(여기서는 프로토타입을 지워 «조건»만 강제했다) · 키보드 축 · 터치 축 · 다른 스텝.
+RC=0
+14:22:10
+
+[exited with code 0]
