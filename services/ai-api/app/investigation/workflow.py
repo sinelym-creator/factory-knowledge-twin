@@ -37,7 +37,9 @@ from ..retrieval import graphrag  # noqa: E402
 from ..retrieval.embedding import MODEL_ID, embed_query, ensure_ready  # noqa: E402
 from ..retrieval import vector as vector_mod  # noqa: E402
 from ..retrieval.vector import search as vector_search  # noqa: E402
+from ..retrieval.hybrid import search as hybrid_search  # noqa: E402 — T7-44 · 기존 함수를 그대로 부른다
 from ..retrieval.vector import excerpt as make_excerpt  # noqa: E402 — 발췌 규칙은 한 벌이다
+from ..settings import get_settings  # noqa: E402
 from . import structured as structured_reader  # noqa: E402
 from . import synthesize as synth  # noqa: E402
 from . import work_order as wo  # noqa: E402
@@ -89,8 +91,14 @@ class Context:
     candidates: list[Any] = field(default_factory=list)
 
 
-def _step(ctx: Context, name: str):
-    """노드 하나를 감싼다 — 중지 확인 · step 이벤트 · 실패 승격을 한 자리에서."""
+def _step(ctx: Context, name: str, extra: dict[str, Any] | None = None):
+    """노드 하나를 감싼다 — 중지 확인 · step 이벤트 · 실패 승격을 한 자리에서.
+
+    `extra` 는 그 단계가 «시작할 때 이미 아는» 사실이다(T7-44 `strategy`). 🔴 그래도
+    **`step.completed` 에만** 실린다 — `stepStarted` 스키마는 `additionalProperties: false`
+    이고 `step`·`note` 밖에 자리가 없다(실측). 계약이 열어 둔 자리가 아닌 곳에 키를 얹으면
+    그 이벤트는 스키마 밖으로 나가고, 그것은 additive 가 아니라 위반이다.
+    """
 
     def wrap(fn):
         async def node(state: State) -> State:
@@ -106,9 +114,15 @@ def _step(ctx: Context, name: str):
                 raise StepFailed(name, exc) from exc
             # 노드는 (patch, summary) 또는 (patch, summary, extra) 를 돌려준다 — extra 는 그
             # 단계의 step.completed payload 에 그대로 얹힌다(계약 additive 필드의 착지 자리).
-            patch, summary, extra = result if len(result) == 3 else (*result, None)
+            patch, summary, node_extra = result if len(result) == 3 else (*result, None)
+            # 단계 고정 사실(extra) + 그 실행에서만 아는 사실(node_extra). 노드가 같은 키를
+            # 내면 노드가 이긴다 — 실행이 본 것이 선언보다 사실에 가깝다.
+            merged = {**(extra or {}), **(node_extra or {})}
             ctx.emitter.step_completed(
-                name, int((time.perf_counter() - started) * 1000), summary=summary, extra=extra
+                name,
+                int((time.perf_counter() - started) * 1000),
+                summary=summary,
+                extra=merged or None,
             )
             return patch
 
@@ -128,7 +142,12 @@ def build_graph(ctx: Context):
             ctx.evidence_ids.append(ref["evidenceId"])
         return {"structuredEvidence": result.evidence}, result.summary()
 
-    @_step(ctx, "vector")
+    # T7-44 — 이 run 의 문서 검색 전략. 🔴 **run 이 시작할 때 한 번 읽어 고정한다.**
+    #    노드 안에서 매번 읽으면 실행 도중 설정이 바뀌는 날 `step.started` 가 말한 전략과
+    #    실제로 돈 전략이 갈릴 수 있다 — 이벤트가 자기 run 에 대해 거짓말하게 된다.
+    strategy = get_settings().run_retrieval_strategy
+
+    @_step(ctx, "vector", extra={"strategy": strategy})
     async def vector_node(_: State):
         # 🔴 **질의와 색인이 같은 공간인지 먼저 확인한다** — compare(T2-1)가 하는 그 확인을
         #    조사도 한다. 건너뛰면 다른 모델의 벡터로 검색해 「오류 없이 순위만 조용히 나쁜」
@@ -137,13 +156,34 @@ def build_graph(ctx: Context):
         if signature.model != MODEL_ID:
             raise RuntimeError(f"색인 모델 {signature.model} ≠ 질의 모델 {MODEL_ID} — 같은 공간이 아니다")
         await ensure_ready(signature.dim)
-        hits = await vector_search(ctx.pool, await embed_query(ctx.anchor.question))
+        # 🔴 두 전략은 **입력이 다르다** — vector 는 임베딩을, hybrid 는 질문 문자열을 받아
+        #    안에서 스스로 임베딩한다(`hybrid.search` 성문: 벡터 축을 물려받지 않는다).
+        #    그래서 여기서 embed_query 를 미리 불러 두면 hybrid 경로에서 «쓰지도 않을»
+        #    임베딩 비용을 한 벌 더 치른다. 갈래마다 그 갈래의 입력만 만든다.
+        if strategy == "hybrid":
+            hits = await hybrid_search(ctx.pool, ctx.anchor.question)
+        else:
+            hits = await vector_search(ctx.pool, await embed_query(ctx.anchor.question))
         citations: dict[str, str] = {}
+        # hybrid 의 구조화 축이 낸 record 근거를 이 단계에서 «세어» 뺀 수. 0 이면 필터가
+        # 아무것도 안 걸렀다는 뜻이고, 그 실행의 대조군은 검출력이 없다(요약에 그대로 낸다).
+        dropped_records = 0
         for hit in hits:
             # 🔴 doc-chunk 는 스키마가 revision 3필드를 «요구»한다. 그 값의 정본은 T2-2
             #    `/evidence` 가 보는 것과 같은 자리여야 한다 — 여기서 따로 조회해 만들면
             #    같은 근거가 두 표면에서 다른 신뢰 배지를 달 수 있다.
             detail = await evidence_reader.fetch(ctx.pool, hit.evidenceId)
+            # 🔴 **hybrid 의 구조화 축은 `kind=record` 를 낸다**(`reading/evidence.py` 표가
+            #    성문: 개념 ID → record → 「hybrid 구조화 축」). 이 단계의 근거집합은 계약상
+            #    doc-chunk 이므로 record 는 여기서 방출하지 않는다 — 실으면 같은 근거가
+            #    vector 단계와 `/evidence` 에서 다른 종류로 불린다.
+            #
+            #    🔴 **면제는 «hybrid 이고 record 인 것» 하나로 좁힌다.** 넓히면 아래 가드가
+            #    사실상 꺼져서, 검색과 읽기 표면이 어긋난 «진짜» 사고까지 조용히 통과한다.
+            #    vector 전략에서는 이 줄이 아예 서지 않으므로 앞판의 거동이 그대로다.
+            if strategy == "hybrid" and detail is not None and detail.kind == "record":
+                dropped_records += 1
+                continue
             if detail is None or detail.kind != "doc-chunk":
                 # 검색이 낸 근거를 읽기 표면이 풀지 못한다 = 두 층이 어긋났다. 조용히 빼지 않는다.
                 raise RuntimeError(f"검색 결과 {hit.evidenceId} 를 evidence 표면이 풀지 못한다")
@@ -160,7 +200,12 @@ def build_graph(ctx: Context):
             ctx.emitter.step_evidence("vector", ref)
             ctx.evidence_ids.append(hit.evidenceId)
             citations[hit.evidenceId] = detail.text
-        return {"citations": citations}, f"인용 후보 {len(citations)}건"
+        # 🔴 제외 건수를 **요약 문면에** 남긴다 — 이벤트 payload 에는 `strategy` 1키만
+        #    싣는 것이 이 티켓의 계약 범위이기 때문이다(계약 표면을 넓히지 않고 계수를 남긴다).
+        summary = f"인용 후보 {len(citations)}건"
+        if dropped_records:
+            summary += f"(구조화 축 record {dropped_records}건 제외)"
+        return {"citations": citations}, summary
 
     @_step(ctx, "graph")
     async def graph_node(_: State):
