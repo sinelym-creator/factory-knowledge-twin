@@ -296,6 +296,15 @@ function runGate(gt, alias) {
       [{ evidenceId: 'GP-x-03', sourceId: 'SAF-LOTO-01', excerpt: '[SOP · 3-hop] ... → SAF-LOTO-01' }]),
     (s) => s.m6.byId === 1 && s.m6_withEvidence.byId === 0);
 
+  // 🔴 **D-84 처방이 노리는 «바로 그 모양»의 대조군.** 근거에 `SAF-*` 가 있고 답변이 그것을
+  //    id 로 호명하면 지표 6 은 0 이어야 한다. 이 방향을 근거 있는 조건에서 시험해 두지 않으면,
+  //    처방 뒤의 0 이 「고쳐졌다」인지 「내 채점기가 무뎌졌다」인지 게이트가 답하지 못한다.
+  //    위 `evidence_only_splits_faces`(호명 X → 1)와 **짝**이다 — 둘이 함께 서야 축이 산다.
+  cell('named_with_evidence_scores_zero', 'D-84 방향 — 근거에 SAF 가 있고 답변이 id 로 호명하면 지표 6 = 0',
+    fixture([full[0], '대응 절차는 SOP-BRG-INSP-014 이고 작업 전 SAF-LOTO-01 을 적용한다.'], undefined,
+      [{ evidenceId: 'GP-x-03', sourceId: 'SAF-LOTO-01', excerpt: '[SOP · 3-hop] ... → SAF-LOTO-01' }]),
+    (s) => s.m6.byId === 0 && s.m6_withEvidence.byId === 0);
+
   cell('stimulus_absent_is_named', '자극 부재 — 기대 근거가 run 근거집합에 없으면 이름으로 드러난다',
     fixture(full, [], []),
     (s) => s.m7_stimulusPresent.every((x) => x.inRunEvidence === true) && s.runEvidenceCount === 2);
@@ -349,6 +358,10 @@ if (GATE_ONLY) { console.error('[gate-only] no live run fired. subscription spen
 //    채점은 raw 에서 다시 돌린다 — 구독은 되돌릴 수 없고 raw 는 되돌릴 수 있다.
 //    「중단」 착신 뒤 부분 결과를 채점하는 길도 이것이다.
 const SCORE_RAW = arg('score-raw', null);
+// 🔴 **교정 열.** 처방 뒤 라이브가 0 이 나왔을 때 「대상이 고쳐졌다」와 「내 채점기가 무뎌졌다」를
+//    가르는 것은 이것뿐이다 — «옛 raw» 를 «지금 채점기»로 다시 채점해 옛 값이 그대로 나오는지 본다.
+//    같은 실행에서 찍어야 한다. 따로 돌리면 두 채점기 버전을 비교하는 셈이 된다.
+const BASELINE_RAW = arg('baseline-raw', null);
 const BASE = SCORE_RAW ? '(score-raw · 발사 0)' : assertLocalBase(arg('base', 'http://127.0.0.1:8090'));
 console.error('[live] base=' + BASE + ' runs=' + RUNS + ' scenario=' + SCENARIO);
 // 🔴 즉시 append — 중단이 와도 부분 결과가 산출이다
@@ -440,5 +453,42 @@ const report = {
   },
   gateCells: gate.map((c) => ({ name: c.name, ok: c.ok })),
 };
+
+// ---- 교정 열: 옛 raw 를 «지금 채점기»로 다시 채점한다 ------------------------------
+if (BASELINE_RAW) {
+  const baseRaws = fs.readFileSync(BASELINE_RAW, 'utf8').split(/\r?\n/).filter((l) => l.trim()).map((l) => JSON.parse(l));
+  const baseUsable = baseRaws.filter((r) => r.ok);
+  if (baseUsable.length === 0) {
+    // 🔴 빈 기준선과의 비교는 판정이 아니다 — 「전부 좋아졌다」로 보인다
+    console.error('EXIT2: baseline raw has no usable run - an empty baseline proves nothing');
+    process.exit(2);
+  }
+  const baseScored = baseUsable.map((r) => Object.assign({ runId: r.runId }, scoreRun(r, gt, alias)));
+  const col = (rows, f) => rows.map(f);
+  report.calibration = {
+    baselineFile: BASELINE_RAW,
+    baselineRuns: baseScored.map((s) => s.runId),
+    // 처방 «전» 값이 지금 채점기로도 그대로 나오는가. 안 나오면 after 의 0 은 읽을 수 없다.
+    before_m6ById: col(baseScored, (s) => s.m6.byId),
+    before_m6ByAlias: col(baseScored, (s) => s.m6.byAlias),
+    before_safetyNamedInAnswer: col(baseScored, (s) => Object.values(s.m6.detail).every((d) => d.idHit)),
+    after_m6ById: col(scored, (s) => s.m6.byId),
+    after_m6ByAlias: col(scored, (s) => s.m6.byAlias),
+    after_safetyNamedInAnswer: col(scored, (s) => Object.values(s.m6.detail).every((d) => d.idHit)),
+    // 🔴 이 한 줄이 교정의 전부다: 옛 값이 흔들렸다면 계측기가 변한 것이고, after 를 대상의 답으로 읽을 수 없다.
+    baselineStable_expect_all_1: col(baseScored, (s) => s.m6.byId).every((x) => x === 1),
+  };
+  console.error('[calibration] before m6.byId=' + JSON.stringify(report.calibration.before_m6ById)
+    + ' after=' + JSON.stringify(report.calibration.after_m6ById)
+    + ' baselineStable=' + report.calibration.baselineStable_expect_all_1);
+}
 fs.writeFileSync(OUT.replace(/\.jsonl$/, '-report.json'), JSON.stringify(report, null, 1), 'utf8');
 console.error('[done] usable=' + usable.length + '/' + RUNS + ' excluded=' + excluded.length + ' -> ' + OUT);
+
+// 🔴 **보고서를 «쓴 뒤에» 판정을 거부한다.** raw 와 report 는 남겨야 다음 사람이 읽을 수 있고,
+//    exit 2 는 「이 after 값을 대상의 답으로 읽지 마라」는 뜻이다. 기준선이 지금 채점기 아래에서
+//    옛 값을 내지 못하면, 처방 뒤의 0 은 대상이 고쳐진 것인지 내 계측기가 무뎌진 것인지 모른다.
+if (report.calibration && !report.calibration.baselineStable_expect_all_1) {
+  console.error('EXIT2: baseline drifted under the current scorer - after-values are NOT attributable to the target');
+  process.exit(2);
+}
