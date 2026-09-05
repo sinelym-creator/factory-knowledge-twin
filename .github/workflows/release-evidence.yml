@@ -57,9 +57,19 @@ jobs:
             echo "commit=${{ github.sha }}"
             echo "generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } > "$out"
-          ( cd services/ai-api && python -m pytest tests_unit -q 2>&1 | tail -1 | sed 's/^/ai-api: /' ) >> "$out"
-          ( cd services/synthesis-gateway && python -m pytest tests_unit -q 2>&1 | tail -1 | sed 's/^/synthesis-gateway: /' ) >> "$out"
-          ( cd apps/web-console && pnpm test:unit 2>&1 | grep -E '^ *Tests ' | tail -1 | sed 's/^/web-console: /' ) >> "$out"
+          # 🔴 **ANSI 를 벗기고 센다.** vitest 요약 줄은 색상 코드를 달고 나오므로
+          #    `^ *Tests` 같은 앵커가 어긋난다 — 첫 판이 정확히 그 자리에서 죽었다.
+          strip() { sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g'; }
+          # 🔴 추출 실패를 여기서 «죽이지» 않는다. pipefail 아래서는 grep 0건이 job 을 끝내
+          #    버려, 「무엇이 비었는지」를 말할 기회가 사라진다. 판정은 아래 계수 step 이 한다.
+          ai=$( cd services/ai-api && python -m pytest tests_unit -q 2>&1 | strip | tail -1 || true )
+          gw=$( cd services/synthesis-gateway && python -m pytest tests_unit -q 2>&1 | strip | tail -1 || true )
+          web=$( cd apps/web-console && pnpm test:unit 2>&1 | strip | grep -E 'Tests +[0-9]+ passed' | tail -1 || true )
+          {
+            echo "ai-api: ${ai:-(추출 실패)}"
+            echo "synthesis-gateway: ${gw:-(추출 실패)}"
+            echo "web-console: ${web:-(추출 실패)}"
+          } >> "$out"
           cat "$out"
 
       # ── ② dependency inventory ────────────────────────────────────────────────
@@ -120,6 +130,16 @@ jobs:
           check "$d/test-summary.txt" 5
           check "$d/dependency-inventory.txt" 5
           check "$d/artifact-hash.txt" 4
+
+          # 🔴 줄 수만으로는 「(추출 실패)」 세 줄도 통과한다 — **각 축이 실제로 수를 담았는지**
+          #    본다. 이 게이트가 없으면 요약은 자기가 비었다는 사실을 조용히 적고 초록이 된다.
+          for axis in "ai-api" "synthesis-gateway" "web-console"; do
+            if ! grep -qE "^${axis}: .*[0-9]+ passed" "$d/test-summary.txt"; then
+              echo "::error::${axis} 요약에 통과 «수»가 없다 — 추출이 깨졌다(초록이 아니라 무자극)"
+              exit 1
+            fi
+          done
+          echo "  test-summary: 세 축 전부 통과 수 실재"
 
           # 🔴 검사기 자기 검증 — 죽은 검사기는 무엇이든 통과시킨다.
           : > "$d/../empty-probe.txt"
