@@ -1,0 +1,82 @@
+{
+  "wall": "2026-09-05T05:40:47.714Z",
+  "cols": {
+    "empty": {
+      "name": "자극(스키마만·행 0)",
+      "base": "http://127.0.0.1:8811",
+      "health": {
+        "status": "ok",
+        "postgres": "ok",
+        "neo4j": "ok",
+        "embedding": "ready"
+      },
+      "online": false,
+      "sessionId": "rmgMcYiG5WtoEduuHcm_sjnN",
+      "scenarioId": "GS-01",
+      "question": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과해 실제로 발생한 알람은 무엇이고 관측값은 얼마였는가?",
+      "compareStatus": 503,
+      "compareRaw": "{\"error\":{\"code\":\"index_unavailable\",\"message\":\"document_chunk 에 임베딩이 0건이다 — 색인(T1-4)을 먼저 확인하라\"}}",
+      "strategies": null,
+      "totalHits": null
+    },
+    "normal": {
+      "name": "대조군(정상 무대)",
+      "base": "http://127.0.0.1:8190",
+      "health": {
+        "status": "ok",
+        "postgres": "ok",
+        "neo4j": "ok",
+        "embedding": "ready"
+      },
+      "online": false,
+      "sessionId": "qSOocSOHY-3w2zG5RtEMj4Sd",
+      "scenarioId": "GS-01",
+      "question": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과해 실제로 발생한 알람은 무엇이고 관측값은 얼마였는가?",
+      "compareStatus": 200,
+      "strategies": [
+        {
+          "strategy": "vector",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        },
+        {
+          "strategy": "hybrid",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        },
+        {
+          "strategy": "graphrag",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        }
+      ],
+      "totalHits": 15
+    }
+  },
+  "verdict": {
+    "a_emptyHealthOk": true,
+    "b_emptyOnline": false,
+    "c_emptyZeroHits": false,
+    "d_controlHasHits": true,
+    "e_sameQuestion": true,
+    "f_compareOk": false,
+    "stimulusStands": false,
+    "fails": [
+      "b_emptyOnline",
+      "c_emptyZeroHits",
+      "f_compareOk"
+    ]
+  }
+}
