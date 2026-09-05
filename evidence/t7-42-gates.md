@@ -1,7 +1,7 @@
 # T7-42 게이트 — 2·4 실측 (리바이2 51대 · 2026-09-05)
 
 > 대상 무대 = `_wt/develop-stage` · `:8020`(`fkt-dev-ai-api` / `fkt-ai-api:dev-76e0e80`) · `:8797`
-> 호출 인자 = `develop-stage.ps1 <verb> -Worktree 'C:/Users/sinel/repos/_wt/develop-stage'`
+> 호출 인자 = `develop-stage.ps1 <verb> -Worktree '<repo>/../_wt/develop-stage'`
 > 🔴 **`-Worktree` 를 명시했다** — 워크트리 밖에서 부르면 `_wt/_wt/` 로 겹치는 결함(센쿠2 20:38 실측·수리 중)이 있어,
 > 기본값에 기대지 않고 인자로 박았다. 이 값이 이 게이트의 재현 조건이다.
 > **게이트 1·3 = 미측정(승격 19 허가 대기)** — production 재기동이 전제라 이 창에서 잴 수 없다. 칸을 비워 둔다.
