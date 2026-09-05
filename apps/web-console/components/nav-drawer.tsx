@@ -18,6 +18,10 @@ import { ShellNav } from "@/components/shell-nav";
  *    여는 버튼으로 «되돌아온다»(안 되돌리면 키보드 사용자는 문서 처음으로 떨어진다) ·
  *    ⓒ `aria-modal` + 배경 `inert` 속성 실재. ⓓ 초점 가둠은 이번 판정선 밖이라 두지 않았다.
  */
+/** 초점을 받을 수 있는 것들 — 패널 자신(`tabindex="-1"`)과 스크림은 «순서 밖»이라 안 걸린다. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function NavDrawer({ shellRootId }: { shellRootId: string }) {
   const [open, setOpen] = useState(false);
   const drawerId = useId();
@@ -32,10 +36,31 @@ export function NavDrawer({ shellRootId }: { shellRootId: string }) {
   const close = useCallback(() => setOpen(false), []);
 
   // Esc — 문서 축에 건다(포커스가 드로어 어디에 있든 닫힌다).
+  // ⓓ Tab 초점 가둠(D-81) — 같은 자리에서 받는다. 🔴 `inert` 는 **배경만** 끄는데 스크림은
+  //    드로어 층 «안»이라 사정거리 밖이었고, Tab 이 스크림과 `body` 로 샜다(리바이2 실측).
+  //    스크림은 `tabindex="-1"` 로 순서에서 빼고, 나머지는 여기서 첫/끝을 이어 붙인다.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.preventDefault(); close(); }
+      if (e.key === "Escape") { e.preventDefault(); close(); return; }
+      if (e.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      // 🔴 목록을 «그때» 만든다 — 항목이 늘거나 닫기 버튼이 생겨도 이 코드는 그대로 답한다.
+      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)]
+        .filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      // 초점이 패널 밖이거나 패널 «자신»(열 때 받은 자리)이면 방향에 맞는 끝으로 데려온다.
+      if (!active || !panel.contains(active) || active === panel) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+        return;
+      }
+      if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -93,11 +118,16 @@ export function NavDrawer({ shellRootId }: { shellRootId: string }) {
       {open
         ? createPortal(
             <div className="fixed inset-0 z-50 md:hidden" data-testid="nav-drawer-layer">
-              {/* 스크림 — 클릭 = 닫힘. 버튼으로 두어야 포인터 없이도 존재가 설명된다. */}
+              {/* 스크림 — 클릭 = 닫힘.
+                  🔴 **탭 순서에서는 뺀다**(D-81). 버튼으로 둔 것은 포인터 없이도 존재를 설명하기
+                     위해서였는데, 그 대가로 초점이 여기로 샜다 — 스크림은 드로어 층 «안»이라
+                     배경 `inert` 가 못 닿는다. 키보드로 닫는 길은 Esc 가 이미 답하고 있으므로
+                     `tabindex="-1"` 로 순서에서만 빼면 잃는 것이 없다. */}
               <button
                 type="button"
                 aria-label="메뉴 닫기"
                 data-testid="nav-drawer-scrim"
+                tabIndex={-1}
                 onClick={close}
                 className="absolute inset-0 h-full w-full bg-ink/40"
               />

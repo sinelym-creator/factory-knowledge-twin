@@ -1,0 +1,1415 @@
+{
+  "base": "http://127.0.0.1:8368",
+  "wall": "2026-09-05T03:48:52.708Z",
+  "reps": 3,
+  "cols": {
+    "rail1280": [
+      {
+        "mode": "rail",
+        "w": 1280,
+        "clickMs": 5559,
+        "clicked": true,
+        "urlAfter": "http://127.0.0.1:8368/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 131,
+          "resMs": 148,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 2,
+          "firstMs": 770,
+          "hasCookie": [
+            true,
+            true
+          ],
+          "beforeEnterRes": false
+        },
+        "incStatuses": [
+          {
+            "ms": 780,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 790,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 5590,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 6,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 26,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 131,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 148,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 148,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 150,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 159,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 162,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 176,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 770,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 780,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 783,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 790,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5574,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5590,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5624,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5635,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "rail",
+        "w": 1280,
+        "clickMs": 5574,
+        "clicked": true,
+        "urlAfter": "http://127.0.0.1:8368/overview",
+        "urlPath": "/overview",
+        "enter": {
+          "reqMs": 100,
+          "resMs": 111,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 2,
+          "firstMs": 103,
+          "hasCookie": [
+            false,
+            true
+          ],
+          "beforeEnterRes": true
+        },
+        "incStatuses": [
+          {
+            "ms": 113,
+            "status": 307,
+            "loc": "/"
+          },
+          {
+            "ms": 145,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 0,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 2,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 16,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 100,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 103,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 103,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 108,
+            "path": "/overview",
+            "rsc": true,
+            "status": 307,
+            "location": "/"
+          },
+          {
+            "kind": "req",
+            "ms": 108,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 111,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 111,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 113,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 307,
+            "location": "/"
+          },
+          {
+            "kind": "req",
+            "ms": 113,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 113,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 114,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 131,
+            "path": "/",
+            "rsc": false,
+            "status": 307,
+            "location": "/?_rsc=5CB68i4pnAekjehf"
+          },
+          {
+            "kind": "req",
+            "ms": 131,
+            "method": "GET",
+            "path": "/",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 132,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 132,
+            "path": "/",
+            "rsc": false,
+            "status": 307,
+            "location": "/overview"
+          },
+          {
+            "kind": "res",
+            "ms": 132,
+            "path": "/",
+            "rsc": false,
+            "status": 307,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 132,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 132,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 133,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 133,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 134,
+            "path": "/",
+            "rsc": true,
+            "status": 307,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 134,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 140,
+            "path": "/overview",
+            "rsc": false,
+            "status": 307,
+            "location": "/overview?_rsc=5CB68i4pnAekjehf"
+          },
+          {
+            "kind": "req",
+            "ms": 140,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 143,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 145,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 152,
+            "path": "/overview",
+            "rsc": false,
+            "status": 307,
+            "location": "/overview?_rsc=5CB68i4pnAekjehf"
+          },
+          {
+            "kind": "req",
+            "ms": 152,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 153,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 162,
+            "path": "/overview",
+            "rsc": false,
+            "status": 307,
+            "location": "/overview?_rsc=5CB68i4pnAekjehf"
+          },
+          {
+            "kind": "req",
+            "ms": 162,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 165,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 177,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "rail",
+        "w": 1280,
+        "clickMs": 5565,
+        "clicked": true,
+        "urlAfter": "http://127.0.0.1:8368/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 90,
+          "resMs": 99,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 3,
+          "firstMs": 99,
+          "hasCookie": [
+            true,
+            true,
+            true
+          ],
+          "beforeEnterRes": false
+        },
+        "incStatuses": [
+          {
+            "ms": 108,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 133,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 140,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 5596,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 2,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 12,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 90,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 98,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 99,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 99,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 99,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 99,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 108,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 108,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 119,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 121,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 122,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 124,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "req",
+            "ms": 124,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 133,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 133,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 137,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "res",
+            "ms": 140,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5581,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5596,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5618,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5625,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      }
+    ],
+    "drawer390": [
+      {
+        "mode": "drawer",
+        "w": 390,
+        "clickMs": 5566,
+        "clicked": true,
+        "urlAfter": "http://127.0.0.1:8368/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 102,
+          "resMs": 110,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 5607,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 5619,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 6132,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 3,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 2,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 12,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 102,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 110,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 110,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 111,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 120,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 122,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 135,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5599,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5607,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5610,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5619,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 6121,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6132,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "drawer",
+        "w": 390,
+        "clickMs": 5554,
+        "clicked": true,
+        "urlAfter": "http://127.0.0.1:8368/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 86,
+          "resMs": 92,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 5595,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 5607,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 6122,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 3,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 3,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 12,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 86,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 92,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 92,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 93,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 102,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 110,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 118,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5588,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5595,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5599,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5607,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 6112,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6122,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "drawer",
+        "w": 390,
+        "clickMs": 5555,
+        "clicked": true,
+        "urlAfter": "http://127.0.0.1:8368/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 89,
+          "resMs": 99,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 5597,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 5606,
+            "status": 200,
+            "loc": null
+          },
+          {
+            "ms": 6119,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 3,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 2,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 12,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 89,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 99,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 99,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 100,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 109,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 111,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 123,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5587,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5597,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5599,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 5606,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 6107,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6119,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "rail1280": {
+      "urlPaths": [
+        "/incidents/INC-2025-019",
+        "/overview",
+        "/incidents/INC-2025-019"
+      ],
+      "prefetchCounts": [
+        2,
+        2,
+        3
+      ],
+      "prefetchBeforeEnterRes": [
+        false,
+        true,
+        false
+      ],
+      "prefetchCookies": [
+        [
+          true,
+          true
+        ],
+        [
+          false,
+          true
+        ],
+        [
+          true,
+          true,
+          true
+        ]
+      ],
+      "incStatuses": [
+        [
+          200,
+          200,
+          200
+        ],
+        [
+          307,
+          200
+        ],
+        [
+          200,
+          200,
+          200,
+          200
+        ]
+      ],
+      "enterResMs": [
+        148,
+        111,
+        99
+      ],
+      "firstPrefetchMs": [
+        770,
+        103,
+        99
+      ]
+    },
+    "drawer390": {
+      "urlPaths": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "prefetchCounts": [
+        0,
+        0,
+        0
+      ],
+      "prefetchBeforeEnterRes": [
+        null,
+        null,
+        null
+      ],
+      "prefetchCookies": [
+        [],
+        [],
+        []
+      ],
+      "incStatuses": [
+        [
+          200,
+          200,
+          200
+        ],
+        [
+          200,
+          200,
+          200
+        ],
+        [
+          200,
+          200,
+          200
+        ]
+      ],
+      "enterResMs": [
+        110,
+        92,
+        99
+      ],
+      "firstPrefetchMs": [
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "verdict": {
+    "railPrefetchedBeforeSession": [
+      false,
+      true,
+      false
+    ],
+    "railPrefetchSaw307": [
+      false,
+      true,
+      false
+    ],
+    "railLanded": [
+      "/incidents/INC-2025-019",
+      "/overview",
+      "/incidents/INC-2025-019"
+    ],
+    "drawerPrefetchedBeforeSession": [
+      null,
+      null,
+      null
+    ],
+    "drawerLanded": [
+      "/incidents/INC-2025-019",
+      "/incidents/INC-2025-019",
+      "/incidents/INC-2025-019"
+    ]
+  }
+}

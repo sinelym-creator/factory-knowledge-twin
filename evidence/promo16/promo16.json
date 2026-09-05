@@ -1,0 +1,577 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "wall": "2026-09-05T03:25:02.524Z",
+  "shellRemoteIp": "64.29.17.195",
+  "gate": {
+    "respHeaders": {
+      "server": "Vercel",
+      "xVercelId": "icn1::iad1::2lctd-1788578702782-01561934998a",
+      "tailscaleKeys": []
+    },
+    "health": {
+      "ok": true,
+      "version": "0.1.0",
+      "status": "ok",
+      "dependencies": {
+        "postgres": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 1
+        },
+        "neo4j": {
+          "state": "ok",
+          "detail": null,
+          "latencyMs": 0
+        }
+      },
+      "build": "879fc35",
+      "models": {
+        "embedding": "ready",
+        "detail": "intfloat/multilingual-e5-small · warm-up 11.9s"
+      }
+    },
+    "buildHeld": true
+  },
+  "ax3": {
+    "headers": {
+      "csp": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self' da",
+      "xcto": "nosniff",
+      "referrer": "no-referrer",
+      "hsts": "max-age=31536000; includeSubDomains"
+    },
+    "deps": {
+      "postgres": "ok",
+      "neo4j": "ok",
+      "embedding": "ready"
+    },
+    "liveStatus": {
+      "status": 200,
+      "online": true
+    }
+  },
+  "ax1": {
+    "cols": {
+      "w390": {
+        "w": 390,
+        "appBar": {
+          "top": 0,
+          "bottom": 76,
+          "left": 0,
+          "w": 390,
+          "h": 76
+        },
+        "brand": {
+          "top": 16.8,
+          "bottom": 39.3,
+          "left": 74,
+          "w": 85.6,
+          "h": 22.5
+        },
+        "brandText": "Factory Twin",
+        "statusRow": {
+          "top": 54,
+          "bottom": 69,
+          "left": 20,
+          "w": 350,
+          "h": 15
+        },
+        "statusRowNewLine": true,
+        "buttons": {
+          "tour": 1,
+          "reset": 1
+        },
+        "toggleCount": 1,
+        "toggleVisible": true,
+        "railLinksVisible": 0,
+        "drawerBeforeOpen": 0,
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "overflowPx": 0
+        }
+      },
+      "w768": {
+        "w": 768,
+        "appBar": {
+          "top": 0,
+          "bottom": 79,
+          "left": 260,
+          "w": 508,
+          "h": 79
+        },
+        "brand": {
+          "top": 27.8,
+          "bottom": 50.3,
+          "left": 280,
+          "w": 165.9,
+          "h": 22.5
+        },
+        "brandText": "Factory Knowledge Twin",
+        "statusRow": {
+          "top": 0,
+          "bottom": 78,
+          "left": 564.3,
+          "w": 183.7,
+          "h": 78
+        },
+        "statusRowNewLine": false,
+        "buttons": {
+          "tour": 1,
+          "reset": 1
+        },
+        "toggleCount": 1,
+        "toggleVisible": false,
+        "railLinksVisible": 3,
+        "drawerBeforeOpen": 0,
+        "overflow": {
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "overflowPx": 0
+        }
+      },
+      "w1280": {
+        "w": 1280,
+        "appBar": {
+          "top": 0,
+          "bottom": 52,
+          "left": 260,
+          "w": 1020,
+          "h": 52
+        },
+        "brand": {
+          "top": 14.3,
+          "bottom": 36.8,
+          "left": 280,
+          "w": 165.9,
+          "h": 22.5
+        },
+        "brandText": "Factory Knowledge Twin",
+        "statusRow": {
+          "top": 13.5,
+          "bottom": 37.5,
+          "left": 960.6,
+          "w": 299.4,
+          "h": 24
+        },
+        "statusRowNewLine": false,
+        "buttons": {
+          "tour": 1,
+          "reset": 1
+        },
+        "toggleCount": 1,
+        "toggleVisible": false,
+        "railLinksVisible": 3,
+        "drawerBeforeOpen": 0,
+        "overflow": {
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "overflowPx": 0
+        }
+      }
+    },
+    "drawer": {
+      "openings": [
+        {
+          "count": 1,
+          "role": "dialog",
+          "ariaModal": "true",
+          "links": 3,
+          "linkIds": [
+            "nav-overview",
+            "nav-incidents",
+            "nav-compare"
+          ],
+          "scrim": 1,
+          "shellInert": {
+            "anyInert": 1,
+            "barInsideInert": true
+          }
+        },
+        {
+          "count": 1,
+          "role": "dialog",
+          "ariaModal": "true",
+          "links": 3,
+          "linkIds": [
+            "nav-overview",
+            "nav-incidents",
+            "nav-compare"
+          ],
+          "scrim": 1,
+          "shellInert": {
+            "anyInert": 1,
+            "barInsideInert": true
+          }
+        },
+        {
+          "count": 1,
+          "role": "dialog",
+          "ariaModal": "true",
+          "links": 3,
+          "linkIds": [
+            "nav-overview",
+            "nav-incidents",
+            "nav-compare"
+          ],
+          "scrim": 1,
+          "shellInert": {
+            "anyInert": 1,
+            "barInsideInert": true
+          }
+        }
+      ],
+      "closes": {
+        "esc": {
+          "after": 0
+        },
+        "scrim": {
+          "after": 0
+        },
+        "link": {
+          "after": 0,
+          "url": "https://factory-knowledge-twin.vercel.app/overview"
+        }
+      },
+      "scrimGeom": {
+        "scrim": {
+          "top": 0,
+          "bottom": 900,
+          "left": 0,
+          "w": 390,
+          "h": 900
+        },
+        "panel": {
+          "top": 0,
+          "bottom": 900,
+          "left": 0,
+          "w": 260,
+          "h": 900
+        }
+      },
+      "scrimClickAt": {
+        "x": 300,
+        "y": 450,
+        "panelRight": 260
+      },
+      "reopenAfterNav": {
+        "count": 1,
+        "role": "dialog",
+        "ariaModal": "true",
+        "links": 3,
+        "linkIds": [
+          "nav-overview",
+          "nav-incidents",
+          "nav-compare"
+        ],
+        "scrim": 1,
+        "shellInert": {
+          "anyInert": 1,
+          "barInsideInert": true
+        }
+      },
+      "inertCleared": 0
+    }
+  },
+  "ax2static": {
+    "badge": "replay",
+    "before": {
+      "cur": {
+        "applied": 38,
+        "total": 38
+      },
+      "play": {
+        "present": true,
+        "atEnd": "true",
+        "label": "처음부터 재생"
+      }
+    },
+    "toOne": {
+      "hit": true,
+      "ms": 262,
+      "applied": 1,
+      "trailLen": 6,
+      "trail": [
+        {
+          "ms": 2,
+          "applied": 0
+        },
+        {
+          "ms": 56,
+          "applied": 0
+        },
+        {
+          "ms": 104,
+          "applied": 0
+        },
+        {
+          "ms": 163,
+          "applied": 0
+        },
+        {
+          "ms": 212,
+          "applied": 0
+        },
+        {
+          "ms": 262,
+          "applied": 1
+        }
+      ]
+    },
+    "rewound": true,
+    "toEnd": {
+      "hit": true,
+      "ms": 8129,
+      "applied": 38,
+      "trailLen": 159,
+      "trail": [
+        {
+          "ms": 7785,
+          "applied": 36
+        },
+        {
+          "ms": 7833,
+          "applied": 36
+        },
+        {
+          "ms": 7880,
+          "applied": 37
+        },
+        {
+          "ms": 7924,
+          "applied": 37
+        },
+        {
+          "ms": 7979,
+          "applied": 37
+        },
+        {
+          "ms": 8025,
+          "applied": 37
+        },
+        {
+          "ms": 8074,
+          "applied": 37
+        },
+        {
+          "ms": 8129,
+          "applied": 38
+        }
+      ]
+    },
+    "totalMs": 8411,
+    "after": {
+      "cur": {
+        "applied": 38,
+        "total": 38
+      },
+      "play": {
+        "present": true,
+        "atEnd": "true",
+        "label": "일시정지"
+      }
+    }
+  },
+  "ax2live": {
+    "startEnabled": true,
+    "runId": "RUN-0a078cfb6d06",
+    "statusTrail": [
+      {
+        "ms": 0,
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "ms": 2000,
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "ms": 4000,
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "ms": 6000,
+        "status": 200,
+        "runStatus": "running"
+      },
+      {
+        "ms": 8000,
+        "status": 200,
+        "runStatus": "completed"
+      }
+    ],
+    "finalRunStatus": "completed",
+    "badgeCount": 1,
+    "badgeMode": "live",
+    "before": {
+      "cur": {
+        "applied": 33,
+        "total": 33
+      },
+      "play": {
+        "present": true,
+        "atEnd": "true",
+        "label": "처음부터 재생"
+      }
+    },
+    "toOne": {
+      "hit": true,
+      "ms": 264,
+      "applied": 1,
+      "trailLen": 6,
+      "trail": [
+        {
+          "ms": 4,
+          "applied": 0
+        },
+        {
+          "ms": 63,
+          "applied": 0
+        },
+        {
+          "ms": 109,
+          "applied": 0
+        },
+        {
+          "ms": 158,
+          "applied": 0
+        },
+        {
+          "ms": 218,
+          "applied": 0
+        },
+        {
+          "ms": 264,
+          "applied": 1
+        }
+      ]
+    },
+    "rewound": true,
+    "toEnd": {
+      "hit": true,
+      "ms": 7173,
+      "applied": 33,
+      "trailLen": 147,
+      "trail": [
+        {
+          "ms": 6845,
+          "applied": 31
+        },
+        {
+          "ms": 6888,
+          "applied": 31
+        },
+        {
+          "ms": 6946,
+          "applied": 32
+        },
+        {
+          "ms": 6993,
+          "applied": 32
+        },
+        {
+          "ms": 7036,
+          "applied": 32
+        },
+        {
+          "ms": 7082,
+          "applied": 32
+        },
+        {
+          "ms": 7126,
+          "applied": 32
+        },
+        {
+          "ms": 7173,
+          "applied": 33
+        }
+      ]
+    },
+    "totalMs": 7485,
+    "after": {
+      "cur": {
+        "applied": 33,
+        "total": 38
+      },
+      "play": {
+        "present": true,
+        "atEnd": "false",
+        "label": "일시정지"
+      }
+    }
+  },
+  "verdict": {
+    "stageRang": true,
+    "c1_deps2of2": true,
+    "c2_headers": true,
+    "c3_liveOnline": true,
+    "a1_bar390": true,
+    "a2_statusRowNewLine390": true,
+    "a3_statusRowSameLine1280": true,
+    "a4_drawerDialog": true,
+    "a5_drawerLinks3": true,
+    "a6_closeEsc": true,
+    "a7_closeScrim": true,
+    "a8_closeLink": false,
+    "a9_reopenAfterNav": true,
+    "a10_inertCleared": true,
+    "a11_rail768": true,
+    "a12_rail1280": true,
+    "a13_noOverflow": true,
+    "b1_liveBadge": true,
+    "b2_liveAtEndBefore": true,
+    "b3_liveRewound": true,
+    "b4_liveReachedEnd": true,
+    "b5_staticRewound": true,
+    "b6_staticReachedEnd": true,
+    "b7_staticBadgeReplay": true,
+    "n_consoleErrorsNonWs": true,
+    "consoleCounts": {
+      "real": 0,
+      "excludedWs": 5
+    },
+    "outsideEvidence": {
+      "shellRemoteIp": "64.29.17.195",
+      "server": "Vercel",
+      "xVercelId": "icn1::iad1::2lctd-1788578702782-01561934998a",
+      "tailscaleHeaderKeys": []
+    },
+    "measured": {
+      "liveRunId": "RUN-0a078cfb6d06",
+      "liveTotal": 33,
+      "liveClickToOneMs": 264,
+      "liveToEndMs": 7173,
+      "liveTotalMs": 7485,
+      "staticTotal": 38,
+      "staticClickToOneMs": 262,
+      "staticToEndMs": 8129
+    },
+    "allPass": false,
+    "fails": [
+      "a8_closeLink"
+    ]
+  },
+  "consoleErrors": [
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-0a078cfb6d06' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-0a078cfb6d06' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-0a078cfb6d06' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-0a078cfb6d06' failed: Error during WebSocket handshake: Unexpected response cod"
+    },
+    {
+      "excluded": true,
+      "text": "WebSocket connection to 'wss://factory-knowledge-twin.vercel.app/api/ws/runs/RUN-0a078cfb6d06' failed: Error during WebSocket handshake: Unexpected response cod"
+    }
+  ]
+}
