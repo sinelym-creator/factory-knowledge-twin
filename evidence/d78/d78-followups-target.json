@@ -1,0 +1,65 @@
+{
+ "base": "http://127.0.0.1:8365",
+ "wall": "2026-09-05T02:36:34.414Z",
+ "start": {
+  "applied": 38,
+  "total": 38,
+  "atEnd": "true",
+  "label": "처음부터 재생"
+ },
+ "reachedEnd": true,
+ "atArrival": {
+  "atEnd": "true",
+  "label": "일시정지"
+ },
+ "afterSettle": {
+  "atEnd": "true",
+  "label": "처음부터 재생",
+  "applied": 38,
+  "total": 38
+ },
+ "axis5": {
+  "clicksFired": 3,
+  "shots": [
+   {
+    "ms": 8408,
+    "appliedAtClick": 37,
+    "atEnd": "false",
+    "label": "재생",
+    "after": 37
+   },
+   {
+    "ms": 8522,
+    "appliedAtClick": 37,
+    "atEnd": "false",
+    "label": "일시정지",
+    "after": 37
+   },
+   {
+    "ms": 8640,
+    "appliedAtClick": 37,
+    "atEnd": "false",
+    "label": "재생",
+    "after": 37
+   }
+  ],
+  "endState": {
+   "atEnd": "false",
+   "label": "재생",
+   "applied": 37,
+   "total": 38
+  },
+  "rewoundOnOverlapClick": false
+ },
+ "serverReplay": {
+  "sessionStatus": 200,
+  "status": 422,
+  "json": {
+   "error": {
+    "code": "invalid_request",
+    "message": "body.sessionId: Field required"
+   }
+  },
+  "raw": "{\"error\":{\"code\":\"invalid_request\",\"message\":\"body.sessionId: Field required\"}}"
+ }
+}

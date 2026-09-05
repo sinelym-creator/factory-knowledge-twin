@@ -1,0 +1,19 @@
+{
+ "base": "http://127.0.0.1:8365",
+ "made": {
+  "status": 200,
+  "body": {
+   "runId": "RUN-7577d2ff288e",
+   "incidentId": "INC-2026-014",
+   "mode": "replay"
+  }
+ },
+ "atCompletion": {
+  "applied": null,
+  "total": null,
+  "atEnd": null,
+  "label": null
+ },
+ "mode": null,
+ "staticSrc": 0
+}
