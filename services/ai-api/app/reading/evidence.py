@@ -152,3 +152,55 @@ def _plain(value: Any) -> Any:
     if isinstance(value, (str, int, float, bool)):
         return value
     return str(value)
+
+
+# 🔴 **문서 링크를 «가진» 온톨로지 테이블**(O-33). 그 밖의 종단(설비·고장모드·정비이력)에는
+#    `current_revision_id` 가 없다 — 없는 축을 조회해 빈 결과를 「문서가 없다」로 읽지 않도록
+#    여기서 이름으로 좁힌다. 표 이름 자체는 `table_of` 화이트리스트에서 빌려 온다.
+DOC_LINKED_TABLES = frozenset({"sop", "safety_rule"})
+
+# 인용 유효 조건은 **검색이 쓰는 그 한 벌**을 그대로 쓴다(`retrieval.vector.CITABLE`).
+# 여기에 다시 적으면 「검색은 되는데 투영은 안 되는」 revision 이 생기고, 그 차이는
+# 아무도 안 본다.
+_ENTITY_DOCS_TAIL = """
+      JOIN document_revision r ON r.id = c.revision_id
+     WHERE c.embedding IS NOT NULL
+       AND r.approval_state = 'approved'
+       AND r.effective_from <= CURRENT_DATE
+       AND (r.effective_to IS NULL OR CURRENT_DATE < r.effective_to)
+     ORDER BY e.id, c.chunk_index
+"""
+
+
+async def documents_for_entities(pool: Any, entity_ids: list[str]) -> list[str]:
+    """도달한 «엔티티»가 가리키는 문서의 **인용 가능 청크 id** — O-33.
+
+    🔴 **왜 있는가.** graph 단계는 `SOP-BRG-INSP-014`·`SAF-LOTO-01` 에 도달하고도 그것을
+       `graph-path` 근거로만 냈다. 기대 근거(ground truth)는 **청크 id** 라, 도달했는데도
+       근거집합에는 영원히 0건이었다(GS-01 실측: graph 가 낸 doc-chunk 0건).
+       링크는 이미 데이터에 있다 — `sop.current_revision_id`·`safety_rule.current_revision_id`.
+
+    🔴 **여기서 «고르지» 않는다.** 그 revision 의 인용 가능한 청크를 chunk_index 순으로 전부
+       돌려준다. 유사도로 한 본만 고르면 「왜 그 청크인가」를 설명할 근거가 이 층에는 없다.
+    """
+    by_table: dict[str, list[str]] = {}
+    for entity_id in entity_ids:
+        table = table_of(entity_id)
+        if table in DOC_LINKED_TABLES:
+            by_table.setdefault(table, []).append(entity_id)
+    if not by_table:
+        return []
+
+    chunk_ids: list[str] = []
+    async with pool.acquire() as conn:
+        for table, ids in sorted(by_table.items()):
+            sql = (
+                "SELECT c.id AS chunk_id"
+                "  FROM document_chunk c"
+                f" JOIN {table} e ON e.current_revision_id = c.revision_id"  # noqa: S608 — 화이트리스트 상수
+                "  AND e.id = ANY($1::text[])"
+                + _ENTITY_DOCS_TAIL
+            )
+            rows = await conn.fetch(sql, ids)
+            chunk_ids.extend(row["chunk_id"] for row in rows)
+    return chunk_ids
