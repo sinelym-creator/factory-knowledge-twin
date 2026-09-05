@@ -1,16 +1,23 @@
 """승인 질문 allowlist — 계약 v0.1 「question 은 «승인 시나리오 질문 목록» 내 선택」.
 
-🔴 **이 목록은 손으로 옮겨 적은 것이다**(오케 판정 08-30 ⓑ). 정본은
+🔴 **이 목록은 더 이상 손으로 옮겨 적지 않는다**(T5-1 선행 · v0.3 40문). 정본은
 
-    benchmarks/datasets/eval-questions-draft.md (v0.2) §2 문항 상세의 「질문」 행 10건
+    benchmarks/datasets/questions.v0.3.jsonl (40문 · id·question)
 
-이며, 정본이 개정되면 이 파일은 «조용히» 낡는다 — 낡아도 서비스는 아무 오류 없이 돌기
-때문에 사람 눈으로는 발견되지 않는다. 그래서 대조를 자동화해 두었다:
+이고, 앱은 그것을 그대로 복사한 **패키지 안 사본**(`approved_questions.v0.3.jsonl`)을 읽는다.
+사본을 두는 이유는 `benchmarks/**` 가 검증 좌석의 트리라 배포 이미지에 들어가지 않기
+때문이다 — 런타임이 그 경로에 의존하면 배포된 서비스가 목록을 못 읽는다.
 
-    python -m tools.verify_allowlist      # 정본에서 다시 뽑아 이 목록과 대조 · 불일치 exit 1
+두 파일이 갈라지는 것은 손이 아니라 그물이 막는다:
 
-표면이 자라면(질문 추가·문항 개정) 이 목록도 함께 자라야 한다. 대조 도구가 그 사실을
-말해 주는 자리다.
+    pytest tests_unit/test_allowlist_source.py   # 정본 ↔ 사본 40/40 · 어긋나면 빨강
+
+🔴 앞판에는 「`python -m tools.verify_allowlist` 로 대조한다」고 적혀 있었으나 **그 도구는
+   이 리포에 없다**(`tools/` 디렉토리 자체가 없다 · 47대 grep 실측). 그래서 낡음 감지는
+   위 테스트가 진다 — 문서가 가리키는 검사기가 실재하지 않으면 그 문장은 방어가 아니다.
+
+표면이 자라면(질문 추가·문항 개정) **정본만 고치고 사본을 다시 복사한다.** 코드는 손대지
+않는다 — 목록이 코드에 없기 때문이다.
 
 🔴 목록 밖 질문은 «명시 거부»한다(계약 오류 스키마). 비슷한 질문으로 조용히 바꿔 실행하는
    폴백을 두지 않는다 — 그러면 화면은 자기가 묻지 않은 질문의 답을 보게 된다.
@@ -18,47 +25,53 @@
 
 from __future__ import annotations
 
+import json
 import re
 import unicodedata
+from pathlib import Path
 
-# 정본 문항 ID → 질문 원문(정본 표기 그대로 · 마크다운 강조·백틱 포함).
-# 순서는 정본 §1 문항 구성표의 1~10번과 같다.
-APPROVED_QUESTIONS: dict[str, str] = {
-    "Q-DIRECT-001": (
-        "`EQ-CNC-204`의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과해 실제로 발생한 "
-        "알람은 무엇이고 관측값은 얼마였는가?"
-    ),
-    "Q-DIRECT-002": (
-        "`SOP-BRG-INSP-014`(베어링 점검 절차)가 요구하는 필수 공구와 예상 작업 시간은 무엇인가?"
-    ),
-    "Q-DIRECT-003": (
-        "`SOP-BRG-INSP-014`에 대해 **지금 인용할 수 있는** revision은 무엇인가? "
-        "이전 revision과 내용이 다른 부분이 있다면 무엇인가?"
-    ),
-    "Q-MULTIHOP-001": (
-        "알람 `AL-20260826-0041`이 발생했다. 이 알람에서 출발해 관련 설비·부품·고장 모드·"
-        "대응 절차·필수 안전 규정까지 이어지는 경로 전체를 제시하라."
-    ),
-    "Q-MULTIHOP-002": (
-        "`EQ-CNC-204`에 과거 유사한 정비 이력이 있는가? 있다면 그 이력이 다룬 고장 모드와, "
-        "그 이력을 낳은 작업지시서·Incident는 무엇인가?"
-    ),
-    "Q-MULTIHOP-003": (
-        "`EQ-CNC-204`와 연결된 고장 모드 중 대응 SOP가 매핑되지 않은 것이 있는가? "
-        "있다면 무엇인가?"
-    ),
-    "Q-SAFETY-001": (
-        "`CP-204-BRG-01` 베어링 점검·교체 작업을 시작하기 전에 반드시 적용해야 하는 "
-        "안전 규정과 착용 PPE는 무엇인가?"
-    ),
-    "Q-SAFETY-002": (
-        "작업지시서 `WO-2026-0113`이 참조하는 절차에 근거해, 이 작업지시서에 "
-        "**반드시 포함되어야 하는 안전 규정**은 무엇인가? 그리고 이 작업지시서는 "
-        "지금 바로 실행할 수 있는 상태인가?"
-    ),
-    "Q-UNANS-001": "작업지시서 `WO-2026-0113`을 수행하는 데 드는 **비용**은 얼마인가?",
-    "Q-UNANS-002": "`EQ-CNC-999`의 최근 진동 추세는 어떠한가?",
-}
+#: 앱이 읽는 «사본» — 정본(`benchmarks/datasets/questions.v0.3.jsonl`)에서 그대로 복사한다.
+#: 🔴 `benchmarks/**` 는 검증 좌석의 scope 다. 런타임이 그 트리를 읽으면 배포 이미지가
+#:    검증 자산에 의존하게 되므로(그 디렉토리는 이미지에 없다) **사본을 앱 패키지 안에 둔다.**
+#:    두 파일이 갈라지는 것은 `tests_unit/test_allowlist_source.py` 가 40/40 으로 막는다.
+_SOURCE = Path(__file__).with_name("approved_questions.v0.3.jsonl")
+
+
+def _load(path: Path) -> dict[str, str]:
+    """문항 목록을 파일에서 읽는다 — 실패하면 **기동을 거부한다**.
+
+    🔴 조용한 빈 목록을 두지 않는다. 목록이 비면 `resolve()` 가 전부 None 을 내고, 서비스는
+       오류 없이 «모든 질문을 거부»하며 돈다 — 빨강이 아니라 «아무도 못 쓰는 초록»이다.
+       그래서 부재·파손·0건·중복 id 를 전부 여기서 예외로 만든다(import 시점에 죽는다).
+    🔴 값을 코드에 다시 박지 않는다(박은 값 0). 손으로 옮겨 적은 목록은 정본이 개정될 때
+       조용히 낡고, 낡아도 서비스는 아무 오류 없이 돈다 — 앞판이 그 자리였다.
+    """
+    if not path.exists():
+        raise RuntimeError(f"승인 질문 목록이 없다: {path}")
+
+    questions: dict[str, str] = {}
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except ValueError as exc:
+            raise RuntimeError(f"승인 질문 목록 {path}:{lineno} 를 읽을 수 없다") from exc
+        qid, question = row.get("id"), row.get("question")
+        if not isinstance(qid, str) or not isinstance(question, str) or not qid or not question:
+            raise RuntimeError(f"승인 질문 목록 {path}:{lineno} 에 id·question 이 없다")
+        if qid in questions:
+            raise RuntimeError(f"승인 질문 목록 {path}:{lineno} 의 id 가 중복이다: {qid}")
+        questions[qid] = question
+
+    if not questions:
+        raise RuntimeError(f"승인 질문 목록이 비었다: {path}")
+    return questions
+
+
+#: 문항 ID → 질문 원문(정본 표기 그대로 · 마크다운 강조·백틱 포함). 순서 = 정본 파일 순서.
+APPROVED_QUESTIONS: dict[str, str] = _load(_SOURCE)
 
 _MARKUP = re.compile(r"[`*]")
 _SPACES = re.compile(r"\s+")
