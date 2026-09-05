@@ -119,14 +119,15 @@ describe("U-07 중첩 — 오류는 «어디서» 났는지까지 말한다", ()
     expect(errors[0].startsWith(".payload.evidence:")).toBe(true);
   });
 
-  it("doc-chunk 는 같은 누락을 두 번 말한다 — 계약이 그렇게 쓰여 있기 때문이다", () => {
-    /* 🔴 이것은 검증기의 결함이 아니다: `evidenceRef.required` 가 `sourceId` 를 세고,
-       `allOf.if(kind=doc-chunk).then.required` 가 **같은 목록을 다시** 적는다(정본 실물).
-       그래서 한 결함이 두 규칙에 걸린다. 여기서 재는 것은 «건수»가 아니라
-       ① 문면이 하나로 모이는가 ② 전부 그 중첩 경로를 가리키는가 이고, 둘 다 참이어야 한다.
-       건수가 1로 바뀌면(계약이 then 에서 중복을 걷어내면) 이 테스트가 그 사실을 알린다. */
+  it("doc-chunk 갈래도 한 문면·한 경로로 말한다(규칙이 몇 번 걸리든)", () => {
+    /* 🔴 여기서 «건수»를 박지 않는다. 한 결함이 몇 개의 규칙에 걸리는지는 계약의 형상이
+       정하고, 그 형상은 움직인다 — 실제로 `evidenceRef.required` 와
+       `allOf.if(kind=doc-chunk).then.required` 가 `sourceId` 를 둘 다 적던 동안에는 2건이었고,
+       계약이 그 중복을 걷어낸 뒤(#733) 1건이 됐다. 어느 쪽이든 **호출자가 읽는 사실**은
+       같아야 한다: 말은 한 가지고, 전부 그 중첩 자리를 가리킨다. 그 둘만 건다.
+       🔴 「0건이 아니다」를 먼저 건다 — 빈 결과가 통과로 보이면 이 그물은 죽은 것이다. */
     const errors = check(brokenEvidence("step.evidence", "sourceId"));
-    expect(errors).toHaveLength(2);
+    expect(errors.length).toBeGreaterThan(0);
     expect(new Set(errors).size).toBe(1);
     expect(errors.every((e) => e.startsWith(".payload.evidence:"))).toBe(true);
   });
