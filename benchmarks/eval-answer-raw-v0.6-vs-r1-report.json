@@ -1,0 +1,581 @@
+{
+ "measuredAt": "2026-09-05T16:24:44.339Z",
+ "base": "(score-raw · 발사 0)",
+ "scenario": "GS-01",
+ "anchorQuestionId": "Q-MULTIHOP-001",
+ "runsRequested": 3,
+ "runsUsable": 3,
+ "excluded": [],
+ "syntheses": [
+  {
+   "axis": "live",
+   "model": "claude-opus-5"
+  },
+  {
+   "axis": "live",
+   "model": "claude-opus-5"
+  },
+  {
+   "axis": "live",
+   "model": "claude-opus-5"
+  }
+ ],
+ "perRun": [
+  {
+   "runId": "RUN-a594b7936ef2",
+   "reused": null,
+   "answerChars": 456,
+   "sentenceCount": 5,
+   "m1": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": false,
+     "EQ-CNC-204": false,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": false,
+    "wideAllHit": false
+   },
+   "m1_withEvidence": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": true,
+     "EQ-CNC-204": true,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": true,
+    "wideAllHit": true
+   },
+   "m5_unsupported": 0,
+   "m5_perSentence": {
+    "measurable": true,
+    "sentences": 5,
+    "count": 0,
+    "citationsPerSentence": [
+     3,
+     2,
+     4,
+     1,
+     1
+    ]
+   },
+   "m6": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m6_withEvidence": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m7": {
+    "citedCount": 9,
+    "cited": [
+     "AL-20260826-0041",
+     "SN-204-VIB",
+     "GP-a594b7936ef2-01",
+     "MR-2025-0087",
+     "DOC-SOP-0014@r2#001",
+     "GP-a594b7936ef2-03",
+     "GP-a594b7936ef2-04",
+     "DOC-SAF-0029@r3#000",
+     "DOC-MAN-0021@r1#006"
+    ],
+    "requiredHit": [
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredTotal": 2,
+    "outsideRunEvidence": 0
+   },
+   "m7_stimulusPresent": [
+    {
+     "evidenceId": "DOC-SOP-0014@r2#001",
+     "inRunEvidence": true
+    },
+    {
+     "evidenceId": "DOC-SAF-0029@r3#000",
+     "inRunEvidence": true
+    }
+   ],
+   "runEvidenceCount": 23,
+   "runEvidenceRawCount": 23,
+   "runEvidenceDuplicates": 0,
+   "m8": {
+    "totalMs": 14272,
+    "steps": {
+     "structured": 26,
+     "vector": 144,
+     "graph": 48,
+     "synthesize": 13997,
+     "draft_work_order": 16
+    },
+    "stepsSelfReported": {
+     "structured": 25,
+     "vector": 144,
+     "graph": 47,
+     "synthesize": 13998,
+     "draft_work_order": 15
+    }
+   }
+  },
+  {
+   "runId": "RUN-24568fda7c7d",
+   "reused": null,
+   "answerChars": 434,
+   "sentenceCount": 5,
+   "m1": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": false,
+     "EQ-CNC-204": false,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": false,
+    "wideAllHit": false
+   },
+   "m1_withEvidence": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": true,
+     "EQ-CNC-204": true,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": true,
+    "wideAllHit": true
+   },
+   "m5_unsupported": 0,
+   "m5_perSentence": {
+    "measurable": true,
+    "sentences": 5,
+    "count": 0,
+    "citationsPerSentence": [
+     3,
+     2,
+     4,
+     2,
+     1
+    ]
+   },
+   "m6": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m6_withEvidence": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m7": {
+    "citedCount": 9,
+    "cited": [
+     "AL-20260826-0041",
+     "SN-204-VIB",
+     "GP-24568fda7c7d-01",
+     "MR-2025-0087",
+     "DOC-MAN-0021@r1#006",
+     "GP-24568fda7c7d-03",
+     "GP-24568fda7c7d-04",
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredHit": [
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredTotal": 2,
+    "outsideRunEvidence": 0
+   },
+   "m7_stimulusPresent": [
+    {
+     "evidenceId": "DOC-SOP-0014@r2#001",
+     "inRunEvidence": true
+    },
+    {
+     "evidenceId": "DOC-SAF-0029@r3#000",
+     "inRunEvidence": true
+    }
+   ],
+   "runEvidenceCount": 23,
+   "runEvidenceRawCount": 23,
+   "runEvidenceDuplicates": 0,
+   "m8": {
+    "totalMs": 14912,
+    "steps": {
+     "structured": 14,
+     "vector": 85,
+     "graph": 38,
+     "synthesize": 14747,
+     "draft_work_order": 7
+    },
+    "stepsSelfReported": {
+     "structured": 14,
+     "vector": 85,
+     "graph": 37,
+     "synthesize": 14746,
+     "draft_work_order": 6
+    }
+   }
+  },
+  {
+   "runId": "RUN-eeee714b4c18",
+   "reused": null,
+   "answerChars": 457,
+   "sentenceCount": 5,
+   "m1": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": false,
+     "EQ-CNC-204": false,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": false,
+    "wideAllHit": false
+   },
+   "m1_withEvidence": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": true,
+     "EQ-CNC-204": true,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": true,
+    "wideAllHit": true
+   },
+   "m5_unsupported": 0,
+   "m5_perSentence": {
+    "measurable": true,
+    "sentences": 5,
+    "count": 0,
+    "citationsPerSentence": [
+     3,
+     2,
+     4,
+     2,
+     2
+    ]
+   },
+   "m6": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m6_withEvidence": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m7": {
+    "citedCount": 10,
+    "cited": [
+     "AL-20260826-0041",
+     "SN-204-VIB",
+     "GP-eeee714b4c18-01",
+     "MR-2025-0087",
+     "DOC-MAN-0021@r1#006",
+     "GP-eeee714b4c18-03",
+     "GP-eeee714b4c18-04",
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000",
+     "GP-eeee714b4c18-00"
+    ],
+    "requiredHit": [
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredTotal": 2,
+    "outsideRunEvidence": 0
+   },
+   "m7_stimulusPresent": [
+    {
+     "evidenceId": "DOC-SOP-0014@r2#001",
+     "inRunEvidence": true
+    },
+    {
+     "evidenceId": "DOC-SAF-0029@r3#000",
+     "inRunEvidence": true
+    }
+   ],
+   "runEvidenceCount": 23,
+   "runEvidenceRawCount": 23,
+   "runEvidenceDuplicates": 0,
+   "m8": {
+    "totalMs": 13971,
+    "steps": {
+     "structured": 7,
+     "vector": 59,
+     "graph": 27,
+     "synthesize": 13859,
+     "draft_work_order": 7
+    },
+    "stepsSelfReported": {
+     "structured": 6,
+     "vector": 58,
+     "graph": 26,
+     "synthesize": 13860,
+     "draft_work_order": 7
+    }
+   }
+  }
+ ],
+ "m8_totalSamples": [
+  14272,
+  14912,
+  13971
+ ],
+ "m8_totalMedian": 14272,
+ "m8_stepSamples": {
+  "structured": [
+   26,
+   14,
+   7
+  ],
+  "vector": [
+   144,
+   85,
+   59
+  ],
+  "graph": [
+   48,
+   38,
+   27
+  ],
+  "synthesize": [
+   13997,
+   14747,
+   13859
+  ],
+  "draft_work_order": [
+   16,
+   7,
+   7
+  ]
+ },
+ "crossRun": {
+  "identicalAnswerChars": false,
+  "identicalCitedSets": false,
+  "m5Samples": [
+   0,
+   0,
+   0
+  ],
+  "m5PerSentenceSamples": [
+   0,
+   0,
+   0
+  ],
+  "m6IdSamples": [
+   0,
+   0,
+   0
+  ]
+ },
+ "gateCells": [
+  {
+   "name": "truth",
+   "ok": true
+  },
+  {
+   "name": "planted_missing_sop",
+   "ok": true
+  },
+  {
+   "name": "planted_missing_safety",
+   "ok": true
+  },
+  {
+   "name": "control_citations_stripped",
+   "ok": true
+  },
+  {
+   "name": "boundary_korean_josa",
+   "ok": true
+  },
+  {
+   "name": "boundary_longer_id",
+   "ok": true
+  },
+  {
+   "name": "alias_splits_columns",
+   "ok": true
+  },
+  {
+   "name": "evidence_only_splits_faces",
+   "ok": true
+  },
+  {
+   "name": "named_with_evidence_scores_zero",
+   "ok": true
+  },
+  {
+   "name": "sentence_face_counts_uncited",
+   "ok": true
+  },
+  {
+   "name": "sentence_face_absent_is_null",
+   "ok": true
+  },
+  {
+   "name": "stimulus_absent_is_named",
+   "ok": true
+  },
+  {
+   "name": "public_surface_blocked",
+   "ok": true
+  },
+  {
+   "name": "evidence_duplicates_counted",
+   "ok": true
+  },
+  {
+   "name": "out_guard_both_sides",
+   "ok": true
+  },
+  {
+   "name": "baseline_stability_both_sides",
+   "ok": true
+  }
+ ],
+ "calibration": {
+  "baselineFile": "benchmarks/eval-answer-raw-v0.5.jsonl",
+  "baselineRuns": [
+   "RUN-d04619f3ce6b",
+   "RUN-9a10a19e6d82",
+   "RUN-1244154d1c9e"
+  ],
+  "before_m6ById": [
+   0,
+   0,
+   0
+  ],
+  "before_m6ByAlias": [
+   0,
+   0,
+   0
+  ],
+  "before_safetyNamedInAnswer": [
+   true,
+   true,
+   true
+  ],
+  "after_m6ById": [
+   0,
+   0,
+   0
+  ],
+  "after_m6ByAlias": [
+   0,
+   0,
+   0
+  ],
+  "after_safetyNamedInAnswer": [
+   true,
+   true,
+   true
+  ],
+  "before_m5PerSentence": [
+   0,
+   0,
+   0
+  ],
+  "after_m5PerSentence": [
+   0,
+   0,
+   0
+  ],
+  "before_totalMs": [
+   14068,
+   26585,
+   13562
+  ],
+  "after_totalMs": [
+   14272,
+   14912,
+   13971
+  ],
+  "baselineRecordedReport": "benchmarks/eval-answer-raw-v0.5-report.json",
+  "baselineStable": true,
+  "baselineAxesCompared": 21,
+  "baselineMismatches": []
+ }
+}
