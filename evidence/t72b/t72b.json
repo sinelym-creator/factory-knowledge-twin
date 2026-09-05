@@ -1,0 +1,977 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "settleMs": 3500,
+  "wall": "2026-09-05T05:02:07.703Z",
+  "engines": {
+    "chromium": {
+      "engine": "chromium",
+      "widths": {
+        "390": {
+          "statusRow": {
+            "present": true,
+            "w": 350,
+            "h": 15,
+            "children": 3
+          },
+          "brandText": "Factory Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 189,
+                  "top": 699
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 189,
+                  "top": 12
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 221,
+                  "top": 12
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3,
+            "tabTrail": [
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              },
+              {
+                "testid": "nav-compare",
+                "inside": true
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              },
+              {
+                "testid": "nav-compare",
+                "inside": true
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              },
+              {
+                "testid": "nav-compare",
+                "inside": true
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              }
+            ],
+            "tabEscapes": 0,
+            "closeEsc": 0,
+            "closeScrim": 0,
+            "reopen": 1,
+            "closeLink": 0
+          },
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        },
+        "768": {
+          "statusRow": {
+            "present": true,
+            "w": 183.7,
+            "h": 78,
+            "children": 3
+          },
+          "brandText": "Factory Knowledge Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 356
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 370
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 242,
+                  "top": 456
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "railLinksVisible": 3,
+          "toggleVisible": false,
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        },
+        "1280": {
+          "statusRow": {
+            "present": true,
+            "w": 299.4,
+            "h": 24,
+            "children": 3
+          },
+          "brandText": "Factory Knowledge Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 356
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 275,
+                  "top": 613
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 1,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 242,
+                  "top": 456
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 0
+          },
+          "railLinksVisible": 3,
+          "toggleVisible": false,
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        }
+      },
+      "static": {
+        "badgeCount": 1,
+        "badgeMode": "replay",
+        "playCount": 1,
+        "playLabel": "처음부터 재생",
+        "playAtEnd": "true",
+        "cursor": "38",
+        "liveBadge": "못 잼(cap 0 · 라이브 run 을 태우지 않았다)"
+      },
+      "launchError": null,
+      "version": "151.0.7922.34"
+    },
+    "webkit": {
+      "engine": "webkit",
+      "widths": {
+        "390": {
+          "statusRow": {
+            "present": true,
+            "w": 350,
+            "h": 15,
+            "children": 3
+          },
+          "brandText": "Factory Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 189,
+                  "top": 699
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 189,
+                  "top": 12
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 221,
+                  "top": 12
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3,
+            "tabTrail": [
+              {
+                "testid": "body",
+                "inside": false
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "body",
+                "inside": false
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "body",
+                "inside": false
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "body",
+                "inside": false
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "body",
+                "inside": false
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              }
+            ],
+            "tabEscapes": 5,
+            "closeEsc": 0,
+            "closeScrim": 0,
+            "reopen": 1,
+            "closeLink": 0
+          },
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        },
+        "768": {
+          "statusRow": {
+            "present": true,
+            "w": 183.9,
+            "h": 78,
+            "children": 3
+          },
+          "brandText": "Factory Knowledge Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 356
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 370
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 242,
+                  "top": 456
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "railLinksVisible": 3,
+          "toggleVisible": false,
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        },
+        "1280": {
+          "statusRow": {
+            "present": true,
+            "w": 296.4,
+            "h": 24,
+            "children": 3
+          },
+          "brandText": "Factory Knowledge Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 356
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 370
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 242,
+                  "top": 456
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "railLinksVisible": 3,
+          "toggleVisible": false,
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        }
+      },
+      "static": {
+        "badgeCount": 1,
+        "badgeMode": "replay",
+        "playCount": 1,
+        "playLabel": "처음부터 재생",
+        "playAtEnd": "true",
+        "cursor": "38",
+        "liveBadge": "못 잼(cap 0 · 라이브 run 을 태우지 않았다)"
+      },
+      "launchError": null,
+      "version": "26.5"
+    },
+    "firefox": {
+      "engine": "firefox",
+      "widths": {
+        "390": {
+          "statusRow": {
+            "present": true,
+            "w": 350,
+            "h": 15,
+            "children": 3
+          },
+          "brandText": "Factory Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 189,
+                  "top": 699
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 189,
+                  "top": 12
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 366,
+                  "h": 221,
+                  "top": 12
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "drawer": {
+            "openCount": 1,
+            "role": "dialog",
+            "ariaModal": "true",
+            "links": 3,
+            "tabTrail": [
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              },
+              {
+                "testid": "nav-compare",
+                "inside": true
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              },
+              {
+                "testid": "nav-compare",
+                "inside": true
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              },
+              {
+                "testid": "nav-compare",
+                "inside": true
+              },
+              {
+                "testid": "nav-overview",
+                "inside": true
+              },
+              {
+                "testid": "nav-incidents",
+                "inside": true
+              }
+            ],
+            "tabEscapes": 0,
+            "closeEsc": 0,
+            "closeScrim": 0,
+            "reopen": 1,
+            "closeLink": 0
+          },
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        },
+        "768": {
+          "statusRow": {
+            "present": true,
+            "w": 184.4,
+            "h": 52,
+            "children": 3
+          },
+          "brandText": "Factory Knowledge Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 356
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 370
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 242,
+                  "top": 456
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "railLinksVisible": 3,
+          "toggleVisible": false,
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        },
+        "1280": {
+          "statusRow": {
+            "present": true,
+            "w": 299.4,
+            "h": 24,
+            "children": 3
+          },
+          "brandText": "Factory Knowledge Twin",
+          "buttons": {
+            "tour": 1,
+            "reset": 1
+          },
+          "tour": {
+            "reopenClicked": true,
+            "steps": [
+              {
+                "step": 0,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 356
+                },
+                "progressDots": 9,
+                "spotlight": 0,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 1,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 189,
+                  "top": 370
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              },
+              {
+                "step": 2,
+                "callout": 1,
+                "calloutVisible": true,
+                "calloutBox": {
+                  "w": 360,
+                  "h": 242,
+                  "top": 456
+                },
+                "progressDots": 9,
+                "spotlight": 1,
+                "targetMissing": 0,
+                "awaitClick": 0
+              }
+            ],
+            "inviteBefore": 1,
+            "startBefore": 1,
+            "urlAfter": "?intro=1&tour=1",
+            "introCard": 1
+          },
+          "railLinksVisible": 3,
+          "toggleVisible": false,
+          "landedPath": "/incidents/INC-2025-019",
+          "overflowPx": 0,
+          "prefetchBeforeClick": 0,
+          "inc307": 0,
+          "consoleReal": 0,
+          "consoleWs": 0,
+          "consoleSample": []
+        }
+      },
+      "static": {
+        "badgeCount": 1,
+        "badgeMode": "replay",
+        "playCount": 1,
+        "playLabel": "처음부터 재생",
+        "playAtEnd": "true",
+        "cursor": "38",
+        "liveBadge": "못 잼(cap 0 · 라이브 run 을 태우지 않았다)"
+      },
+      "launchError": null,
+      "version": "153.0"
+    }
+  },
+  "deltas": [
+    {
+      "engine": "webkit",
+      "w": 390,
+      "axis": "tabEscapes",
+      "chromium": 0,
+      "other": 5
+    },
+    {
+      "engine": "webkit",
+      "w": 1280,
+      "axis": "tourSteps",
+      "chromium": [
+        [
+          1,
+          true,
+          9,
+          0
+        ],
+        [
+          1,
+          true,
+          9,
+          1
+        ],
+        [
+          1,
+          true,
+          9,
+          0
+        ]
+      ],
+      "other": [
+        [
+          1,
+          true,
+          9,
+          0
+        ],
+        [
+          1,
+          true,
+          9,
+          0
+        ],
+        [
+          1,
+          true,
+          9,
+          0
+        ]
+      ]
+    },
+    {
+      "engine": "firefox",
+      "w": 1280,
+      "axis": "tourSteps",
+      "chromium": [
+        [
+          1,
+          true,
+          9,
+          0
+        ],
+        [
+          1,
+          true,
+          9,
+          1
+        ],
+        [
+          1,
+          true,
+          9,
+          0
+        ]
+      ],
+      "other": [
+        [
+          1,
+          true,
+          9,
+          0
+        ],
+        [
+          1,
+          true,
+          9,
+          0
+        ],
+        [
+          1,
+          true,
+          9,
+          0
+        ]
+      ]
+    }
+  ],
+  "summary": {
+    "engines": {
+      "chromium": "151.0.7922.34",
+      "webkit": "26.5",
+      "firefox": "153.0"
+    },
+    "deltaCount": 3,
+    "deltaAxes": [
+      "webkit/390/tabEscapes",
+      "webkit/1280/tourSteps",
+      "firefox/1280/tourSteps"
+    ]
+  }
+}
