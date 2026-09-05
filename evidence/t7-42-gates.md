@@ -109,7 +109,7 @@ refresh 는 그 신판 스크립트를 썼다(오케 20:44 지시대로 「그 �
 # 게이트 2 재측 — #772(`57efd0b`) 뒤 (리바이2 52대 · 2026-09-05)
 
 > 무대 = `_wt/develop-stage` · `:8020`(`fkt-dev-ai-api` / `fkt-ai-api:dev-57efd0b`) · `:8797`
-> 호출 인자 = `develop-stage.ps1 <verb> -Worktree 'C:\Users\sinel\repos\_wt\develop-stage'`(명시 · 기본값에 안 기댄다)
+> 호출 인자 = `develop-stage.ps1 <verb> -Worktree '<repo>/../_wt/develop-stage'`(명시 · 기본값에 안 기댄다)
 > 실행한 스크립트 = **lane `levi2-t742r` @ `57efd0b`**(#772 처방본). 구독 소비 **0**(`/health` 만 · 합성 호출 0).
 > 내가 이 창에서 발신한 요청은 `:8020`·`:8797` 뿐이다 — production 3면(`:8010`·`:8787`·공개면) 호출 **0**.
 
