@@ -25,6 +25,8 @@
 #    멱등성으로는 막을 수 없다. schema_migration은 이미 그 이력을 들고 있었다 — 쓰기만
 #    하고 읽지 않았을 뿐이다.
 # 🔴 compose 스택이 기동 중이어야 한다: docker compose up -d
+#   pwsh services/ai-api/db/migrate.ps1 -Direct   # libpq 직결(PGHOST 등 env 로 psql 직접 호출)
+#   -Direct 를 안 줘도 PGHOST 가 있으면 자동 직결이고, 못 닿으면 rc 2 다(#844 와 같은 규약).
 #    그리고 기본 project 가 아닌 이름으로 띄웠다면 «그 이름을 이 스크립트에도» 줘야 한다
 #    (D-18): $env:COMPOSE_PROJECT_NAME='<project>' 또는 -Project '<project>'.
 # =============================================================================
@@ -42,8 +44,14 @@ param(
   # compose project 이름. 기본값 = 환경변수 COMPOSE_PROJECT_NAME(compose 자신이 읽는 것과 같은 값).
   # 🔴 둘 다 비면 «지정하지 않은» 것이고, 그때는 docker 가 고른 기본 project 를 본다.
   [string] $Project      = $env:COMPOSE_PROJECT_NAME,
-  [string] $DbUser       = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { 'fkt' }),
-  [string] $DbName       = $(if ($env:POSTGRES_DB)   { $env:POSTGRES_DB }   else { 'fkt' })
+  [string] $DbUser       = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } elseif ($env:PGUSER) { $env:PGUSER } else { 'fkt' }),
+  [string] $DbName       = $(if ($env:POSTGRES_DB)   { $env:POSTGRES_DB }   elseif ($env:PGDATABASE) { $env:PGDATABASE } else { 'fkt' }),
+  # libpq 직결. -Direct 이거나 PGHOST 가 있으면 compose 를 거치지 않고 psql 을 직접 부른다.
+  # 🔴 인자명·fallback 순서·실패 코드는 `tests/schema/run-probes.ps1`(#844)에서 그대로 빌린다.
+  #    같은 규약이어야 두 스크립트가 «같은 것»이 된다 — 내 판으로 지으면 이름만 같고 거동이 갈린다.
+  [switch] $Direct,
+  [string] $PsqlBin      = 'psql',
+  [string] $PgIsReadyBin = 'pg_isready'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -61,8 +69,36 @@ try {
 $compose = @('compose')
 if ($Project) { $compose += @('-p', $Project) }
 
+# 🔴 PGHOST 존재 = 직결 자동(compose 없는 환경에서 그게 유일한 경로다). -Direct 는 명시 스위치.
+if ($env:PGHOST) { $Direct = $true }
+
+# 🔴 **psql 을 부르는 자리를 하나로 모은다.** 위 `$compose` 주석과 같은 이유다 — 호출이 세 곳인데
+#    한 곳만 고치면 나머지 둘이 compose 를 계속 찾는다. 두 경로가 «같은 SQL»을 보내고, 다른 것은
+#    psql 이 어디서 도는가(컨테이너 exec vs libpq 직결)뿐이다.
+function Invoke-Psql {
+  param([string[]] $PsqlArgs = @(), [string] $StdIn)
+  if ($Direct) {
+    if ($PSBoundParameters.ContainsKey('StdIn')) { $StdIn | & $PsqlBin -U $DbUser -d $DbName @PsqlArgs }
+    else { & $PsqlBin -U $DbUser -d $DbName @PsqlArgs }
+  } else {
+    if ($PSBoundParameters.ContainsKey('StdIn')) { $StdIn | docker @compose exec -T $Service psql -U $DbUser -d $DbName @PsqlArgs }
+    else { docker @compose exec -T $Service psql -U $DbUser -d $DbName @PsqlArgs }
+  }
+}
+
+if ($Direct) {
+  # 🔴 직결에서는 «서비스 실재»를 compose 가 아니라 pg_isready 로 묻는다. 못 닿으면 rc 2 —
+  #    compose 서비스 부재와 같은 등급이다(둘 다 「대상이 없다」이지 「마이그레이션이 틀렸다」가 아니다).
+  & $PgIsReadyBin -d $DbName -U $DbUser *> $null
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "실행 오류: 직결 대상(PGHOST=$($env:PGHOST) PGPORT=$($env:PGPORT) db=$DbName)에 pg_isready 가 닿지 못했습니다." -ForegroundColor Red
+    Write-Host "  libpq env(PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE)를 확인하십시오." -ForegroundColor Red
+    exit 2
+  }
+}
+
 # 서비스가 살아 있는지 먼저 확인 — 없으면 psql 오류 대신 사람이 읽을 안내를 낸다
-$running = docker @compose ps --status running --services
+$running = if ($Direct) { @($Service) } else { docker @compose ps --status running --services }
 if ($running -notcontains $Service) {
   # 🔴 실패 문면이 «다음 수»를 들고 있어야 한다. 앞판은 project 미지정으로 못 본 경우에도
   #    「먼저 up -d 하십시오」라고만 말해, 스택이 이미 healthy 인 사람을 막다른 길로 보냈다.
@@ -90,8 +126,7 @@ if (-not $files) { throw "적용할 마이그레이션이 없습니다: $migrati
 
 # 이미 적용된 파일 목록. 테이블이 아직 없는 «최초» 실행에서는 조회가 실패하므로 빈 목록으로 둔다.
 $applied = @()
-$out = docker @compose exec -T $Service psql -U $DbUser -d $DbName -tAc `
-  "SELECT filename FROM schema_migration" 2>$null
+$out = Invoke-Psql -PsqlArgs @('-tAc', 'SELECT filename FROM schema_migration') 2>$null
 if ($LASTEXITCODE -eq 0 -and $out) { $applied = @($out | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
 
 # 🔴 배너에 «자리표시자»라고 적는다. 그냥 embedding_dim=768 이라고 찍으면 최종 차원이 768인
@@ -105,14 +140,12 @@ foreach ($f in $files) {
   }
   Write-Host "-- apply $($f.Name)" -ForegroundColor DarkCyan
   # ON_ERROR_STOP=1 : 한 문장이라도 실패하면 즉시 비정상 종료(부분 적용 방지)
-  Get-Content -Raw -Encoding UTF8 $f.FullName |
-    docker @compose exec -T $Service psql -U $DbUser -d $DbName `
-      -v ON_ERROR_STOP=1 -v embedding_dim=$EmbeddingDim -q
+  Invoke-Psql -StdIn (Get-Content -Raw -Encoding UTF8 $f.FullName) `
+    -PsqlArgs @('-v', 'ON_ERROR_STOP=1', '-v', "embedding_dim=$EmbeddingDim", '-q')
   if ($LASTEXITCODE -ne 0) { throw "실패: $($f.Name) (exit $LASTEXITCODE)" }
 }
 
 Write-Host '== 적용 완료 ==' -ForegroundColor Green
-docker @compose exec -T $Service psql -U $DbUser -d $DbName -c `
-  "SELECT filename, applied_at FROM schema_migration ORDER BY filename;"
+Invoke-Psql -PsqlArgs @('-c', 'SELECT filename, applied_at FROM schema_migration ORDER BY filename;')
 
 } finally { Pop-Location }
