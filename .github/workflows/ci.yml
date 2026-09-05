@@ -311,3 +311,57 @@ jobs:
         run: python -m pip install --disable-pip-version-check --quiet jsonschema==4.26.0
       - name: validate replay fixtures against the contract event schema
         run: python .github/scripts/validate_replay_fixtures.py
+
+  # T5-3 D(09-06): replay 축을 «실제로 기동한 컨테이너»에 자극을 넣어 확인한다.
+  #
+  # 🔴 `services:` 를 쓰지 않는다. 이 축은 DB 를 필요로 하지 않는다 — 재생 경로는 pool·conn·
+  #    driver 를 참조하지 않고(`investigation/replay.py`), 좌석 로컬 실측(09-06 08:1x · DB 0본)에서
+  #    health 200(status=degraded) · sessions 200 · replay 200 · events 38건이 그대로 섰다.
+  #    그래서 DB 를 붙이는 대신, 스크립트가 **「이 job 이 안 본 축」을 매 실행 찍는다**(의존성
+  #    상태 unconfigured). 「replay 가 초록」과 「DB 의존 축이 초록」은 다른 문장이다.
+  # 🔴 이미지는 이 job 이 «스스로» 빌드한다. `docker-build` 가 만든 이미지는 다른 러너에 없다 —
+  #    job 사이로 이미지를 넘기려면 저장/적재 단계가 필요하고, 그것은 이 조각의 범위가 아니다.
+  #    기존 job 은 무접촉이다.
+  replay-e2e-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: build image
+        run: docker build -t fkt-ai-api:smoke-${{ github.sha }} services/ai-api
+
+      # 🔴 「빌드가 rc 0 을 냈다」와 「이미지가 있다」는 다른 사실이다. 부재면 여기서 멈춘다.
+      - name: image exists
+        run: |
+          docker image inspect fkt-ai-api:smoke-${{ github.sha }} \
+            --format 'image id={{.Id}} · size={{.Size}} bytes'
+
+      - name: run container (replay bind, no database)
+        run: |
+          docker run -d --name fkt-smoke -p 8000:8000 \
+            -e FKT_REPLAY_FIXTURE_DIR=/srv/data/replay \
+            -e FKT_BUILD_SHA=${{ github.sha }} \
+            -v "$PWD/data/replay:/srv/data/replay:ro" \
+            fkt-ai-api:smoke-${{ github.sha }}
+
+      - name: replay e2e smoke (counts on stdout)
+        run: python .github/scripts/replay_e2e_smoke.py
+
+      # 🔴 빨강일 때 «왜»를 볼 수 있어야 한다 — 실패해도 로그를 남긴다.
+      - name: container log
+        if: always()
+        run: docker logs --tail 300 fkt-smoke > smoke-container.log 2>&1 || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: replay-smoke-container-log
+          path: smoke-container.log
+          if-no-files-found: warn
+
+      - name: cleanup
+        if: always()
+        run: docker rm -f fkt-smoke || true
