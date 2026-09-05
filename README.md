@@ -57,7 +57,29 @@ pwsh infra/bootstrap.ps1 -ProjectName fkt-<이름>
 
 Docker 스택 기동 → 마이그레이션 → 합성 데이터 시드 → 벡터 색인 → 그래프 투영을 순서대로 돌리고, 끝에 health와 청크·노드 수를 검산합니다. 2026-09-04에 새 클론 한 대에서 완주를 확인했습니다(약 4분). 다른 환경에서도 되는지는 아직 재보지 않았습니다.
 
-각 단계의 명령·옵션·주의사항은 [runbook §4](docs/deployment/runbook.md)에 있습니다. 전제 조건은 Docker, pnpm 10, Node 22, Python(CI는 3.12, 실측은 3.14)입니다.
+각 단계의 명령·옵션·주의사항은 [runbook §4](docs/deployment/runbook.md)에 있습니다.
+
+전제 조건은 리포가 선언한 값 그대로입니다(CI가 이 표를 리포 실물과 대조합니다).
+
+| 무엇 | 값 | 출처 |
+|---|---|---|
+| Docker | compose 스택 `pgvector/pgvector:pg16` · `neo4j:5-community` | `docker-compose.yml` |
+| pnpm | **10.32.1** | `apps/web-console/package.json` |
+| Node | **22** | `.github/workflows/security.yml` |
+| Python | CI는 3.12, 새 클론 실측은 3.14 | 단일 선언 없음 |
+
+bootstrap이 돌리는 여섯 단계의 정본 명령입니다. 5·6단은 venv를 먼저 만들어야 하고, 5단은 `PGPORT`를 꼭 지정해야 합니다(안 주면 다른 스택을 색인합니다).
+
+<!-- excerpt:runbook-4 -->
+| # | 정본 명령 | 정본 |
+|---|---|---|
+| 1 | `docker compose up -d` | [runbook §4-1](docs/deployment/runbook.md) |
+| 2 | `$env:COMPOSE_PROJECT_NAME='<project>'` | [runbook §4-1a](docs/deployment/runbook.md) |
+| 3 | `pwsh services/ai-api/db/migrate.ps1` | [runbook §4-1](docs/deployment/runbook.md) |
+| 4 | `pwsh data/seed.ps1` | [runbook §4-1](docs/deployment/runbook.md) |
+| 5 | `services\indexer\.venv\Scripts\python.exe services\indexer\build_index.py` | [runbook §4-1](docs/deployment/runbook.md) |
+| 6 | `services\projector\.venv\Scripts\python.exe services\projector\build_projection.py` | [runbook §4-1](docs/deployment/runbook.md) |
+<!-- /excerpt:runbook-4 -->
 
 ## 디자인 · 접근성
 
