@@ -241,3 +241,12 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - **바뀌지 않는 것** — `GET /evidence/{evidenceId}` 형상 · 근거 id 규칙 · 근거집합 상한(있으면 그 안에서 · 상한과 충돌하면 구현이 이름으로 회부) · replay 픽스처(재녹화 없음 · live 경로만).
 - **측정 경계** — 이 개정은 답변 축 지표 7 의 분모를 채우는 처방이지 검색 품질 처방이 아니다. run 의 vector 단계에 hybrid(어휘 다리)가 없는 것(O-36 후보)은 평가 의미를 바꾸므로 별 결정.
 
+
+## v0.2.0 append (09-06 00:4x · T7-44 — 조사 실행(run)의 문서 검색 단계에 hybrid(어휘+벡터) 반영 · 폐하 결정 「b」 00:17(O-36 ⓑ = 기준선 재정의) · 오케 스자쿠 48대 성문 · 구현 = 센쿠2 `lane/senku2-t744` · 독립 검증 리바이2 develop 무대 `:8020` · 구독 3회)
+
+- 🔴 **사실(E1 · 오케 00:18 · 센쿠2 00:33)** — run 의 vector 단계는 `retrieval.vector.search(pool, query_vec)` 만 부르고, compare 표면(`/retrieval/compare`)의 `retrieval/hybrid.py` 는 run 경로에 없다. hybrid 의 시그니처는 `search(pool, question: str, top_k)`(안에서 `embed_query`) 이고, 결과에 **개념 ID 앵커의 `record` 축**(`_structured()` · `EQ-…`·`AL-…`)이 섞인다. 그런데 vector 단계는 `doc-chunk` 가 아닌 근거를 `RuntimeError` 로 올린다(조용히 빼지 않는다) — 그대로 잇으면 앵커가 든 질문에서 기본 경로가 `run.failed` 다.
+- **개정 ① 전략 선택(설정 · 기본 hybrid)** — 서버 설정 `FKT_RUN_RETRIEVAL_STRATEGY` ∈ {`vector`,`hybrid`} · 기본 **`hybrid`**(ⓑ 결정) · 그 밖의 값 = **기동 거부**(잘못된 설정으로 조용히 vector 로 도는 일 0). `hybrid` 는 `retrieval/hybrid.py` 의 기존 함수를 그대로 부른다(새 검색 로직 0).
+- **개정 ② 방출 축(판정 ⓐ · 00:38)** — vector 단계는 전략이 무엇이든 **`kind:"doc-chunk"` 만 방출**한다(O-33 안 A 「doc-chunk 방출 무변」 유지). hybrid 결과의 `record` 축은 이 단계에서 내지 않는다(그 축의 실체는 structured 단계가 이미 낸다). 걸러진 뒤 근거 «개수»가 TOP_K 미만이 될 수 있다 — 결함이 아니라 기록이며, 구현 보고는 걸러진 건수를 함께 적는다(0건이면 그 대조군은 검출력 0).
+- **개정 ③ 이벤트(agent-events v0.1 스키마 additive · 🔴 스키마 JSON 은 `tests/contract` 커버리지 케이스와 «같은 PR»(리바이2) · 형상 정본 = 이 절)** — `step.completed(vector).payload.strategy: "vector" | "hybrid"`(**선택 · vector 단계 전용** · 착지 자리 = `_step` 의 `extra` 3-튜플 · `stepCompleted` 는 `additionalProperties:false` 라 스키마 개정 없이는 검증에 막힌다). `step.started` 는 **무변**(그 payload 에는 additive 착지 자리가 없고, 소비자(화면·채점기)는 완료 이벤트로 어느 전략의 근거집합인지 안다). 다른 단계의 `step.completed` 는 이 키를 싣지 않는다.
+- **바뀌지 않는 것** — TOP_K 상수 · graph 단계 · `graphDocumentCitations`(D-85) · `GET /evidence/{id}` 형상 · 근거 id 규칙 · type enum · replay 픽스처(재녹화 없음 · live 경로만 · replay 의 vector step 은 `strategy` 없음 = 선택 필드라 유효).
+- **측정 경계(기준선 재정의)** — 답변 축 기준선은 **v0.5 raw + report** 로 재정의한다(옛 v0.4 = «vector 기준선» 이름으로 보존 · 대조군). 판정선 = ① 이벤트에 `strategy=hybrid` ② 어휘 다리로만 잡히는 청크 ≥1 인 run 이 있다 ③ 지표 1·5·6·7 v0.4 대비 하락 0(하락 = 회부 · 재정의는 하락을 덮는 도구가 아니다) ④ dup 0 · 게이트 16/16. 검색 품질 «향상량»은 n=3·질문 1건이라 주장하지 않는다. 대조군 `vector` 설정 live run 은 구독 밖(총 4회) → v0.4 raw 로 대체.
