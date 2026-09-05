@@ -511,3 +511,31 @@ env(9)     FKT_TRUST_FORWARDED_FOR · FKT_CORS_ORIGINS · FKT_POSTGRES_DSN · FK
   교체하면 `/api/health.build` 만 새 sha 로 바뀐 «껍데기»가 선다.
 - 🔴 **`-prev` 슬롯은 이미 점유돼 있었다**(09-01 · `fkt-senku2-q3-ai-api:latest` · Exited). 7-3 의
   sha 이름 규칙은 그 실측에서 나왔다.
+
+## 8. develop 환경 ≠ production 환경 (T7-42 · 폐하 하명 2026-09-05 20:03~20:07)
+
+**production 3면** = ai-api `:8010`(`fkt-deploy-ai-api`) · 게이트웨이 `:8787`(호스트 프로세스) · Vercel production(`main`). 실제 사용자 운영 환경이며 **검증 무대가 아니다**. 변경은 `CLAUDE.md §5` 5단(develop 병합 → develop 환경 검증 → 승격 청구 → 허가 → 집행) 안에서만.
+
+### 8-1. production 은 «승격 산출물»만 읽는다
+
+| 자리 | 읽는 것 | 만드는 명령 |
+|---|---|---|
+| 게이트웨이 프롬프트·코드 | `~/.fkt/prod/gateway/`(`gateway.py`·`system_prompt.txt`·`requirements.txt`·`run.ps1`) · env `SYNTHESIS_GATEWAY_PROMPT_FILE` | `pwsh -File infra/promote-artifacts.ps1 -Sha <main sha>` — `git archive <sha>` 로 내보낸다(워킹트리 복사 0 · 해시 대조 rc) |
+| replay 픽스처 | `~/.fkt/prod/data/replay/`(컨테이너 `-v` 소스) | 같은 명령 |
+| 승격 sha 정본 | `~/.fkt/prod/BUILD_SHA`(`gateway/BUILD_SHA` 는 같은 실행의 같은 값 · 사본) | 같은 명령 |
+| 자동 시작 | 예약 작업 `FKT-Gateway-On` → `~/.fkt/gw-autostart.ps1` = 리포 `infra/gw-autostart.ps1` 의 사본 · 산출물 `run.ps1` 을 띄운다 · 산출물 아닌 프롬프트로 떠 있으면 `exit 3`(죽이지도 축복하지도 않는다) | 호스트 파일 교체 = 승격 집행 항목 |
+
+「어느 프롬프트로 도는가」는 `:8787 /health` 의 `promptPath`·`promptSha256`(호출마다 재독 · 캐시 없음)이 자기 입으로 말한다. 메인 체크아웃 `services/synthesis-gateway/system_prompt.txt` 를 바꿔도 production 은 변하지 않아야 한다(T7-42 게이트 1).
+
+### 8-2. develop 환경 = §5 ②의 무대
+
+| 축 | 값 |
+|---|---|
+| 워크트리 | `../_wt/develop-stage`(`origin/develop` detach · 좌석 것이 아님) |
+| ai-api | `fkt-dev-ai-api` · `:8020` · 이미지 `fkt-ai-api:dev-<sha>` · 재시작 정책 없음(재부팅 자동 복귀 대상 아님) · DSN/neo4j = 검증 스택 `:5534`/`:7587` |
+| 게이트웨이 | `:8797` · loopback · 토큰 없음 · 프롬프트 = 그 워크트리 파일 |
+| 명령 | `pwsh -File infra/develop-stage.ps1 up|down|status|refresh`(멱등 · production 좌표를 주면 실행 전 `exit 4`) |
+| Vercel | develop preview **없음**(`apps/web-console/vercel.json` `git.deploymentEnabled.develop=false` · `FKT_API_BASE` 없으면 빌드 실패) → 화면 축은 로컬 빌드 · API 축은 `:8020`(갈래 ⓑ · preview 를 켜는 것은 외부 노출 판단 = 운영자) |
+
+승격 청구문에는 **이 무대에서 잰 값**을 적는다. 좌석 워크트리 임시 무대(`:8090`…)는 처방 전/후 비교 같은 실험용이다.
+
