@@ -31,8 +31,8 @@
 | ④ | 임의 tool 호출 | `tests/api/scenario_allowlist_drill.py` | **exit 0** · 허용 10건 200 · 목록 밖 6종 전건 400 | **PASS** | `[V]`§1-7 ④ |
 | ⑤ | 관리자 endpoint 접근 | `tests/security/gate7_admin_surface.py` | **exit 0**(D-87 재검 · `:8090` `build=96ae199`) · Q-35 4종 **200→404**(전건 뒤집힘) · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존 · 같은 실행)** | **PASS** — D-87 해소(54대 · 처방 #826 `96ae199`) | `[d]`§2 |
 | ⑥ | 다른 session 접근 | `tests/api/session_guard_drill.py` | **exit 0** · 6축(은닉 4·상충 422·reset 3) | **PASS** | `[V]`§1-7 ⑥ |
-| ⑦ | oversized request | `tests/api/t42b_limits_drill.py` | **exit 2** | 🔴 **측정 불가** — 세션 축 대조군 서버(`FKT_T42B_SESSION_BASE`) 미지정 · 그물이 기본값을 **거부**한다(Q-62) | `[V]`§1-7 ⑦ |
-| ⑧ | 반복 요청·rate limit | `t42b_xff_axes_drill.py` · `t42b_capacity_drill.py` | **exit 2**(xff) · capacity 미실행 | 🔴 **측정 불가** — BEFORE 서버·`FKT_T42B_TIMEOUT_BASE` 필요 | `[V]`§1-7 ⑧ |
+| ⑦ | oversized request | `t42b_limits_drill.py`(⑦-A) + 🆕 `tests/security/gate7_oversized_gateway.py`(⑦-B) | **PASS**(두 층) · ⑦-A 66,588B→413 payload_too_large · chunked→413 · ⑦-B 1MiB+→413 · 거짓CL «불성립» | **PASS** — T5-2c 조각 a(54대) | `[a]`§3 |
+| ⑧ | 반복 요청·rate limit | `tests/api/t42b_limits_drill.py`(R-01~09) | **exit 0** · 세션축 통과3·429 3 · IP축 통과5·429 3 · RA 60 · 축분리 200 · 제외 4종 429 아님 | **PASS** — T5-2c 조각 a(54대) | `[a]`§2 |
 | ⑨ | 잘못된 WebSocket message | 🆕 `tests/security/gate7_ws_malformed.py` | **exit 0** · 대조군 38 이벤트 · 자극 5종 **전건 서버 생존** · 없는 runId **close 4404** | **부분** — 생존 축 PASS · 🔴 (a)~(d) 「닫힘/오류」는 **불성립**(핸들러가 클라이언트 프레임을 읽지 않는다) | `[S]`§2 |
 | ⑩ | path traversal | `tests/api/injection_surface_drill.py` | **exit 0** · HL-05·06·07 400 · 대상 생존 1376자 | **PASS** | `[V]`§1-7 ⑩ |
 | ⑪ | CORS 우회 | `tests/web/t41_cors_browser_drill.mjs` | — | 🔴 **측정 불가** — 맨 페이지 서버 2본 + allowlist 주입 서버 필요 | `[V]`§1-7 ⑪ |
@@ -46,25 +46,24 @@
 
 | 구분 | 항 | 수 |
 |---|---|---|
-| **PASS** | ②④⑥⑩⑫⑬ · 〔유지〕 | **7** |
+| **PASS** | ②④⑤⑥⑦⑧⑩⑫⑬ · 〔유지〕 | **10** |
 | **PASS(조건부)** | ③ | **1** |
 | **부분** | ① · ⑨ | **2** |
-| 🔴 **측정 불가** | ⑦⑧⑪ | **3** |
+| 🔴 **측정 불가** | ⑪ | **1** |
 | 🔴 **FAIL(회부)** | — | **0** |  ← ⑤ D-87 해소(54대 · `[d]`)
 | 🔴 **미충족** | — | **0** |
 | **합**(13항 + 유지 1) | | **14** |
 
-**축소 안 §3 대비**: 재실행 8(④⑥⑦⑧⑩⑪⑫⑬) 중 **5항 초록**(④⑥⑩⑫⑬) · **3항 측정 불가**(⑦⑧⑪) ·
-신설 3(①질의·②·③) **전건 착지** · 미충족 2(⑤⑨) **무변**.
+**축소 안 §3 대비**: 재실행 8(④⑥⑦⑧⑩⑪⑫⑬) 중 **7항 초록**(④⑥⑦⑧⑩⑫⑬ · ⑦⑧=조각 a) · **1항 측정 불가**(⑪) ·
+신설 3(①질의·②·③) **전건 착지** · 미충족 2(⑤⑨) → **⑤ 신설·PASS**(D-87 재검 `[d]`) · ⑨ 부분.
 
-🔴 **Gate 7 은 여전히 서 있지 않다.** 조각 A(53대 `06:24~06:31`)로 **미충족 2 → 0** 이 됐지만,
-그 자리를 **FAIL 1(⑤) + 부분 1(⑨)** 이 대신한다. 측정 불가 3(⑦⑧⑪)은 **무변**이다.
-⇒ 비어 있거나 붉은 항 = **⑤(FAIL) · ⑦⑧⑪(측정 불가) = 4항**. ①·⑨ 는 부분이다.
-🔴 **「그물이 생겼다」를 「게이트가 섰다」로 읽지 않는다** — ⑤ 는 그물이 생겨서 **빨강이 보이게 된 것**이다.
+🔴 **Gate 7 — FAIL 0 도달(54대).** 조각 A(53대)로 미충족 2→0 · 조각 a(#828)로 ⑦⑧ 측정불가→PASS(`[a]`) · D-87 재검(#830)으로 ⑤ FAIL→PASS(`[d]`).
+⇒ 붉은 항(FAIL) = **0** · 측정 불가 = **1(⑪ · 조각 b)** · 부분 = **2(①·⑨)**. ①은 allowlist 앞문 조건부 · ⑨는 (a)~(d) 불성립.
+🔴 **「FAIL 0」을 「게이트가 섰다」로 읽지 않는다** — 측정 불가 ⑪ · 부분 ①⑨ · 재색인 주입(미측)이 남는다. Gate 7 종결 선언은 오케 몫이다.
 
-🔴 **집계 주의(54대)**: 이 lane(d87r · ⑤ FAIL→PASS)와 #828(⑦⑧ 측정불가→PASS)이 «각각» 이 표를 고친다. PASS 행 총계는 두 lane 이 **직렬 병합된 뒤** owner 가 확정한다(⑤⑦⑧ 세 항 이동 = PASS 7→10 · 측정불가 3→1 · FAIL 1→0). 이 lane 은 충돌을 피해 **⑤ 행 + FAIL 행만** 고쳤다.
+🔴 **집계 확정(54대 · 두 lane 직렬 병합 후)**: #828(⑦⑧ 측정불가→PASS)와 이 lane #830(⑤ FAIL→PASS)이 병합됐다. ⑤⑦⑧ 세 항 이동 = **PASS 7→10 · 측정 불가 3→1(⑪) · FAIL 1→0**(오케 확정).
 
-출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문) · `[d]` = `evidence/d87-recheck.md`(D-87 재검 · 54대).
+출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문) · `[a]` = `evidence/t5-2-gate7-sliceB-a.md`(조각 a · T5-2c · ⑦⑧ 실측) · `[d]` = `evidence/d87-recheck.md`(D-87 재검 · 54대).
 
 ---
 
