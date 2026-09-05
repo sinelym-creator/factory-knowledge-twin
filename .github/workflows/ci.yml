@@ -289,3 +289,25 @@ jobs:
           set -euo pipefail
           docker image inspect fkt-ai-api:ci-${{ github.sha }} \
             --format 'image id={{.Id}} · size={{.Size}} bytes · created={{.Created}}'
+
+  # T5-3 C1(09-06): replay fixture 가 계약 이벤트 스키마를 만족하는지 매 push/PR 에 확인한다.
+  #
+  # 🔴 **이 job 의 값은 「초록」이 아니라 「무엇을 봤는가」다.** 검사기가 fixture 파일 수와
+  #    이벤트 수를 매 실행 찍고, 둘 중 하나라도 0이면 실패한다 — 경로가 바뀌거나 fixture 가
+  #    사라진 날 «아무것도 안 보고 통과»하는 검사가 되지 않게 하는 자리다(같은 규율:
+  #    session_guard.audit_guard_coverage 의 「빈 결과는 통과가 아니다」).
+  # 🔴 별 job 으로 둔다. hygiene 은 공개 경계 위생 게이트라 거기에 python·의존 설치를 얹으면
+  #    경계 검사가 그만큼 늦어진다 — 이미 unit-ai-api 가 같은 이유로 따로 서 있고 그 형태를 따른다.
+  fixture-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 🔴 검사기가 여는 import 체인은 jsonschema 하나다(로컬 실측 09-06 08:0x).
+      #    requirements.txt 를 깔지 않는 이유는 unit-ai-api 와 같다 — torch 계열이 딸려 온다.
+      - name: install (jsonschema only)
+        run: python -m pip install --disable-pip-version-check --quiet jsonschema==4.26.0
+      - name: validate replay fixtures against the contract event schema
+        run: python .github/scripts/validate_replay_fixtures.py
