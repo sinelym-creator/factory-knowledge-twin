@@ -18,6 +18,11 @@ param(
     [string] $Token,
     [string] $Model,
     [string] $Effort,
+    # 🔴 사람 손 경로에도 «산출물 프롬프트»를 가리킬 길을 준다(O-40). 이것이 없어서
+    #    `switch.ps1 on` 은 언제나 리포 옆 파일을 읽는 게이트웨이를 띄웠다 —
+    #    promote-artifacts.ps1 이 끊으려던 바로 그 결합이 이 경로에만 남아 있었다.
+    #    미지정이면 지금까지의 거동 그대로다(run.ps1 옆 파일).
+    [string] $PromptFile,
     [int]    $Port      = $(if ($env:SYNTHESIS_GATEWAY_PORT) { [int]$env:SYNTHESIS_GATEWAY_PORT } else { 8787 }),
     [string] $StatusUrl = 'http://127.0.0.1:8010/api/live/status'
 )
@@ -64,6 +69,7 @@ switch ($Action) {
         #    쓰면 그 지시가 통째로 사라진다(run.ps1 과 같은 규율).
         if ($PSBoundParameters.ContainsKey('Model'))  { $runArgs += @('-Model',  $Model) }
         if ($PSBoundParameters.ContainsKey('Effort')) { $runArgs += @('-Effort', $Effort) }
+        if ($PromptFile) { $runArgs += @('-PromptFile', $PromptFile) }
         $runArgs += @('-Port', "$Port")
 
         $proc = Start-Process -FilePath 'pwsh' -ArgumentList $runArgs -PassThru -WindowStyle Minimized
