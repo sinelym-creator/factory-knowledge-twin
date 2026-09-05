@@ -233,3 +233,11 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 
 - `step.completed(synthesize).payload.synthesis.safetyOmitted?: boolean` — 근거 발췌 **본문**에 `SAF-*` 규정 id 가 있는데 답변 문장이 그 id 를 호명하지 않으면 게이트웨이에 통지를 실어 **정확히 1회** 재요청 · 2회째도 미호명이면 채택하고 이 필드를 `true` 로 싣는다. **타입은 `boolean`** — 구현은 `true` 일 때만 싣고, 소비자는 **`false` 와 부재를 같은 뜻(생략 없음)** 으로 읽는다(`enum:[true]` 로 묶지 않는다 · 09-05 46대 판정). 화면 표시 없음 · 계측(T5-1 답변 축 지표 6)이 읽는다.
 - 프롬프트 지시는 「id 를 **문장**에」 — `ids` 에 넣으면 기존 인용 가드가 응답을 전량 폐기한다(#760 ①).
+
+## v0.1.20 append (09-05 21:3x · O-33 처방 안 A — graph 단계가 도달한 엔티티의 현행 승인 revision 청크를 doc-chunk 근거로 방출 · 오케 스자쿠 46대 성문 · 구현 = 센쿠2 `lane/senku2-o33` · 독립 검증 리바이2 develop 무대 `:8020`)
+
+- 🔴 **사실(E1 · 센쿠2 21:30)** — 조사 실행의 graph 단계는 `SOP-*`·`SAF-*` 엔티티에 도달해도 **그 엔티티의 문서 청크를 근거집합에 싣는 단계가 없다**(GS-01 근거 19건 = record 9 + vector doc-chunk 5 + graph-path 5 · graph 가 낸 doc-chunk **0**). 기대 근거가 청크 id(`DOC-SOP-0014@r2#001`·`DOC-SAF-0029@r3#000`)인 한 이 두 건은 구조적으로 영원히 0건이다(T5-1 답변 축 지표 7 = 0/2 의 주어). 청크는 실재·임베딩 有·인용가능(승인 + 유효기간 내).
+- **개정(additive · 형상 변경 0)** — graph 단계는 종단 엔티티마다 `current_revision_id`(SOP) / 연결 revision(safety_rule) 의 **인용가능 청크**를 `kind:"doc-chunk"` 근거로 함께 방출할 수 있다. ⇒ **한 step 이 `graph-path` 와 `doc-chunk` 두 kind 를 낼 수 있다** — 「graph 단계 = graph-path 만」 은 계약이 아니라 지금까지의 구현 형상이었다. 소비자(화면·계측)는 `kind` 로 분기하고 step 이름으로 kind 를 추정하지 않는다. 미승인·기간 밖 revision 은 방출 0(vector 단계 `CITABLE` 과 같은 조건).
+- **바뀌지 않는 것** — `GET /evidence/{evidenceId}` 형상 · 근거 id 규칙 · 근거집합 상한(있으면 그 안에서 · 상한과 충돌하면 구현이 이름으로 회부) · replay 픽스처(재녹화 없음 · live 경로만).
+- **측정 경계** — 이 개정은 답변 축 지표 7 의 분모를 채우는 처방이지 검색 품질 처방이 아니다. run 의 vector 단계에 hybrid(어휘 다리)가 없는 것(O-36 후보)은 평가 의미를 바꾸므로 별 결정.
+
