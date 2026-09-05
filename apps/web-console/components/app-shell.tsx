@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { IconMark, IconQuestion } from "@/components/icons";
 import { FallbackBanner, LiveStatusProvider, ModeBadge, RunCapCounter } from "@/components/live-status";
+import { NavDrawer } from "@/components/nav-drawer";
 import { ResetButton } from "@/components/reset-button";
 import { ShellNav } from "@/components/shell-nav";
 import { TruncationTitles } from "@/components/truncation-titles";
@@ -24,9 +25,15 @@ import { SESSION_COOKIE, chipLabel, parseSession } from "@/lib/session";
  *    ③ 1px 테두리로 나누던 면 → **표면 밝기 차**로 나눈다(테두리는 리스트 행 사이에만)
  * 🔴 셸이 담는 것은 «구조»까지다 — 화면별 내용(트리·도크)은 화면이 채운다.
  * 🔴 chat-first 금지(§10) — 셸에 입력창을 두지 않는다.
- * 🔴 내비는 두 벌 다 DOM 에 있다(레일 = ≥md · 앱바 텍스트 = <md). 뷰포트마다 «하나만»
- *    보이므로 화면에는 중복이 없고, 목록·순서는 `shell-nav.tsx` 한 곳에서 온다.
+ * 🔴 내비 자리는 둘이다(레일 = ≥md 상주 · 드로어 = <md 이고 «열렸을 때만» DOM 에 있다 · D-79).
+ *    목록·순서는 `shell-nav.tsx` 한 곳에서 온다.
  */
+
+/**
+ * 🔴 드로어가 열리면 이 노드에 `inert` 가 걸린다(포커스 계약 ⓒ). 드로어는 포털로 `body` 에
+ *    나가 있어서 자기가 끈 배경 «밖»에 선다 — id 를 넘겨 주는 이유가 그것이다.
+ */
+const SHELL_ROOT_ID = "fkt-shell-root";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = parseSession((await cookies()).get(SESSION_COOKIE)?.value);
@@ -45,7 +52,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <TourAllowedProvider>
       {/* 잘린 글자에 전체 값을 `title` 로 — 한 곳에서 훑는다(요소마다 달면 새 카드가 빠진다). */}
       <TruncationTitles />
-      <div className="flex min-h-screen">
+      <div id={SHELL_ROOT_ID} className="flex min-h-screen">
         {/* ── 좌측 레일 260 — glass 위에 라벨형 항목(리서치 §7-2·3) ───────────── */}
         <nav
           /* 🔴 간격 8 — 행 36 + 간격 8 = 리듬 44. 간격 4 면 44 히트가 이웃을 6px 씩 침범한다. */
@@ -74,17 +81,36 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             className="fkt-glass sticky top-0 z-20 flex min-h-(--spacing-appbar) shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-edge px-5 py-1.5 md:flex-nowrap md:py-0"
             data-testid="app-bar"
           >
+            {/* 🔴 D-79 — <md 내비는 텍스트 탭이 아니라 «햄버거 + 드로어»다. 탭 3개가 브랜드와
+                같은 줄을 다투면서 앱바가 두 줄로 접혔다(390 실측). 버튼은 브랜드 «왼쪽»에
+                둔다 — 여는 자리와 열리는 자리(좌측 슬라이드)가 같은 쪽이라야 방향이 읽힌다. */}
+            <NavDrawer shellRootId={SHELL_ROOT_ID} />
             <span className="text-body-c font-semibold">Factory Knowledge Twin</span>
-            <nav className="flex gap-1 text-foot text-muted md:hidden" aria-label="화면 이동">
-              <ShellNav variant="bar" />
-            </nav>
 
+            {/* 🔴 앱바 우측은 «버튼»만 남긴다(D-79 ②) — 상태 표지 3종은 아래 한 줄로 내려간다.
+                누르는 것과 읽는 것이 한 줄에 섞여 있으면 좁은 폭에서 어느 쪽도 자리를 못 지킨다. */}
             <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1.5">
-              {/* 🔴 안내 카드 재노출 — wireframes §0.1 ① 「앱바 `?` 아이콘으로 언제든 다시
-                  연다」. 이 자리가 없어서 한 번 닫은 사람은 영영 못 열었다(결함 D-1의 절반).
-                  링크로 둔다: 어느 화면에 있든 `/overview` 로 데려가면서 열리고, 클라이언트
-                  JS 없이 키보드로 잡힌다. */}
               <TourReopen />
+              {session && <ResetButton sessionId={session.id} />}
+            </div>
+
+            {/*
+              🔴 상태 3종 = **단일 DOM**(D-79 ③). <md 는 앱바 아래 한 줄(`basis-full order-last`)에
+                 테두리·채움 없는 텍스트로, ≥md 는 지금의 pill 그대로 — 가르는 것은 `md:` 접두뿐이다.
+                 DOM 을 두 벌 두면 히트·문면 실측이 «숨은 쪽»을 집는다(D-41 이 남긴 값).
+              🔴 pill 껍데기는 각 컴포넌트가 자기 클래스로 들고 있어서, 벗기는 일은 이 줄이
+                 자손 선택자로 한다. `.fkt-pill` 의 배경은 `background` 단축이라 `background-color`
+                 유틸로는 안 덮인다 — 그래서 `!` 를 쓴다(사정거리 = 이 행 · <md 뿐).
+            */}
+            <div
+              data-testid="app-status-row"
+              className="flex min-w-0 items-center gap-x-1.5 text-foot text-muted
+                         max-md:order-last max-md:basis-full max-md:gap-x-0 max-md:pb-0.5
+                         max-md:[&_.fkt-pill]:!min-h-0 max-md:[&_.fkt-pill]:!bg-transparent max-md:[&_.fkt-pill]:!px-0 max-md:[&_.fkt-pill]:!font-normal
+                         max-md:[&_[data-testid=session-chip]]:!bg-transparent max-md:[&_[data-testid=session-chip]]:!px-0 max-md:[&_[data-testid=session-chip]]:!font-normal
+                         max-md:[&_[data-testid=static-visitor-chip]]:!border-0 max-md:[&_[data-testid=static-visitor-chip]]:!px-0 max-md:[&_[data-testid=static-visitor-chip]]:!py-0
+                         max-md:[&>*+*]:before:mx-1.5 max-md:[&>*+*]:before:text-placeholder max-md:[&>*+*]:before:content-['·']"
+            >
               <ModeBadge />
               {/* 🔴 T7-38 — 배지 «곁». LIVE 일 때만 서고, 그 밖의 모드에서는 렌더 0 이라
                   앱바 폭은 지금과 같다(계약 v0.1.15 규격 · 새 요소는 이 하나뿐). */}
@@ -112,7 +138,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   {session.origin === "pending" && <span className="ml-1 text-warn">*</span>}
                 </span>
               )}
-              {session && <ResetButton sessionId={session.id} />}
             </div>
           </header>
 
