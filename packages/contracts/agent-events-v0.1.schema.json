@@ -61,7 +61,7 @@
       "allOf": [
         {
           "if": { "properties": { "kind": { "const": "doc-chunk" } } },
-          "then": { "required": ["evidenceId", "kind", "sourceId", "revisionId", "contentHash", "stale"] }
+          "then": { "required": ["revisionId", "contentHash", "stale"] }
         }
       ]
     },
