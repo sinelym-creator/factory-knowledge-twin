@@ -458,7 +458,7 @@ env(12 · 09-06 01:34 inspect 실측 정본 — 수는 낡는다 · 옮길 땐 �
            FKT_REPLAY_FIXTURE_DIR=/srv/data/replay · FKT_BUILD_SHA=<sha>
 ```
 
-🔴 **바인드 원본 2본은 «메인 체크아웃 안»이지 워크트리 안이 아니다.** D-13(§4-2)의 대상이 정확히 이
+🔴 **바인드 원본 중 메인 체크아웃 «안»에 남은 것은 `.volumes-deploy/models` 1본이다**(replay 는 §8-1 산출물 `~/.fkt/prod/data/replay` · 리포 밖 · 09-06 07:43 센쿠2 inspect 실측 — 「2본」은 T7-42 이전 문면). D-13(§4-2)의 대상이 정확히 이
 축이니, 워크트리를 지우기 전에 `docker ps -a` 전수의 `Mounts.Source` 를 대조한다.
 
 순서(고정):
@@ -472,7 +472,7 @@ env(12 · 09-06 01:34 inspect 실측 정본 — 수는 낡는다 · 옮길 땐 �
    실제로 09-03 07:5x 실측에서 `fkt-deploy-ai-api-prev` 는 **이미 점유돼 있었다**(09-01 생성 ·
    `fkt-senku2-q3-ai-api:latest` · Exited). sha 를 붙이면 충돌이 구조적으로 없고 이름만 보고
    어느 세대인지 안다. 🔴 **낡은 세대의 정리(삭제)는 destructive 라 운영자·오케 회귀 사안**이다.
-4. 위 형상 그대로 새 컨테이너 기동(포트·네트워크·바인드 2 · env 9 + 필요 시 7-2 의 env 2 · `FKT_BUILD_SHA=<새sha>`).
+4. 위 형상 그대로 새 컨테이너 기동(포트 · 🔴 **네트워크 `fkt-senku2-t15_default` 명시**(DSN·neo4j 가 서비스명 DNS · O-44) · 바인드 2 · env = **구 컨테이너 `inspect` 의 `FKT_*` 키 전수 − `FKT_BUILD_SHA`**(수를 적지 않는다 — 이 절이 12·9·11 로 서로 다르게 말한 자리 · 기본값과 같은 키도 «명시성»을 위해 승계) + `FKT_BUILD_SHA=<새sha>`).
    🔴 **`FKT_BUILD_SHA` 는 «승계하지 않는다» — 새 이미지의 값을 쓴다.** 구 컨테이너의 env 를
    기계적으로 옮기는 방식(`docker inspect` → `-e` 재부여)은 이 키까지 옮기는데, 구 이미지는
    `FKT_BUILD_SHA=unknown` 으로 구워져 있어 sha 의 «정본이 런타임 `-e`» 였다. 실측(09-03 09:19 ·
