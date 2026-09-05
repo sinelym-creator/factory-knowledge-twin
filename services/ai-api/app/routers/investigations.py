@@ -191,6 +191,16 @@ async def start_run(
     if not session_id.is_valid(body.sessionId):
         raise _error(422, "invalid_session_id", "sessionId 형식이 아니다(영숫자·-·_ 8~64자)")
 
+    # 🔴 세션 출처는 «가드가 확정한 것» 하나다(`session_guard.py` 성문 · 정본
+    #    `ownership.current_session`). 본문 `sessionId` 는 계약 v0.1.6 의 «잔존 표기»이고,
+    #    가드가 「쿠키≠본문 = 422 · 본문 단독 = 401」로 이미 끊으므로 이 자리에서 두 값은
+    #    **항상 같다** — 지금 갈려 있는 것이 아니다. 그럼에도 라우트가 본문을 다시 꺼내면,
+    #    가드 규칙이 완화되는 날 «등록 세션»과 «판정 세션»이 조용히 갈린다(D-80 의 형태).
+    #    아래 전부가 이 한 값을 읽는다(상한·재사용·강등·stamp 포함 — 출처가 둘이면 통일이 아니다).
+    session = ownership.current_session(request)
+    if session is None:  # pragma: no cover — 쓰기 라우트는 가드가 세션 없이 통과시키지 않는다
+        raise _error(401, "session_required", "세션이 없다 — POST /api/sessions 로 발급받아라")
+
     anchor = binding.anchor_for(scenarioId)
     if anchor is None:
         # 🔴 비슷한 시나리오로 «조용히» 바꿔 돌리지 않는다(allowlist 규율과 같다).
@@ -224,7 +234,7 @@ async def start_run(
         #    run 의 status 가 이미 `completed`. 두 번 재생 = 각각 «완주한» 조사이므로 화면에서
         #    경합하지 않고 세션 상한도 쓰지 않는다(live 축만 센다).
         record = replay.start(
-            _store(request), session_id=body.sessionId, anchor=anchor, events=events
+            _store(request), session_id=session, anchor=anchor, events=events
         )
         return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
@@ -253,17 +263,17 @@ async def start_run(
     #
     # 🔴 **상한보다 «앞»에 둔다.** 뒤에 두면 중복 요청이 세션 상한과 Live 슬롯을 먼저 먹고
     #    나서 재사용으로 접힌다 — 그 찰나에 정상 요청이 503 을 맞는다.
-    reused = _reusable_run(_store(request), body.sessionId, scenarioId, "live")
+    reused = _reusable_run(_store(request), session, scenarioId, "live")
     if reused is not None:
         log.info(
             "같은 세션의 비종결 live run 을 재사용한다 — session=%s scenario=%s run=%s",
-            body.sessionId, scenarioId, reused.runId,
+            session, scenarioId, reused.runId,
         )
         response.headers[RUN_REUSED_HEADER] = reused.runId
         # 🔴 재사용 회차는 **계수 0**(계약 v0.1.15)이지만 상한 3칸은 «싣는다» — 이것도 live
         #    201 이고, 화면은 이 응답으로 카운터를 갱신한다. 숫자를 빼면 두 번 누른 방문자의
         #    화면만 30초 동안 낡은 값을 들고 있게 된다(계수가 0 인 것과 말하지 않는 것은 다르다).
-        _stamp_run_cap(response, request, body.sessionId)
+        _stamp_run_cap(response, request, session)
         return RunCreated(runId=reused.runId, incidentId=reused.incidentId, mode=reused.mode)
 
     down = sorted(name for name, probe in probes.items() if probe.state != "ok")
@@ -271,7 +281,7 @@ async def start_run(
         # 🔴 「부분 성공 0」 — graph 단계를 건너뛴 반쪽 조사를 내지 않는다. 대신 같은 조사를
         #    재생으로 보여 준다(계약: 강등). 재생본조차 없으면 그때는 답할 수 없다고 말한다.
         log.info("의존 정지로 live 를 강등한다 — %s", ", ".join(down))
-        return _degrade_to_replay(request, scenarioId, anchor, body.sessionId, down[0])
+        return _degrade_to_replay(request, scenarioId, anchor, session, down[0])
 
     # --- 세션 조사 상한 (계약 v0.1.12 · T6-2 ②) --------------------------------
     #
@@ -279,13 +289,13 @@ async def start_run(
     #    않는다 — 그것까지 상한에 세면 게이트웨이가 꺼진 시간에 상한만 소진된다.
     # 🔴 **자리 잡기보다 «앞»에 둔다.** 순서가 바뀌면 상한에 걸릴 요청이 슬롯을 먼저 잡았다가
     #    돌려주고, 그 찰나에 정상 요청이 503 을 맞는다.
-    retry_after = request.app.state.session_run_cap.admit(body.sessionId)
+    retry_after = request.app.state.session_run_cap.admit(session)
     if retry_after is not None:
         log.info("세션 조사 상한 초과 — 재생으로 안내한다(Retry-After %ds)", retry_after)
         # 🔴 `used` 는 «지금 창 안의 실측»이다(계약 v0.1.15) — `limit` 을 그대로 베끼지 않는다.
         #    둘은 거의 언제나 같지만, 운영자가 상한을 «내리는» 순간 창 안에는 옛 상한만큼의
         #    기록이 남아 `used > limit` 이 참이 된다. 그때 limit 을 베낀 응답은 사실을 지운다.
-        used = int(request.app.state.session_run_cap.peek(body.sessionId)["used"])
+        used = int(request.app.state.session_run_cap.peek(session)["used"])
         raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session, used)
 
     # --- ⓐ 자리 잡기 --------------------------------------------------------
@@ -304,7 +314,7 @@ async def start_run(
                 pool=resources.pg_pool,
                 driver=resources.neo4j_driver,
                 anchor=anchor,
-                session_id=body.sessionId,
+                session_id=session,
                 mode="live",
                 capacity=capacity,
                 ticket=ticket,
@@ -320,7 +330,7 @@ async def start_run(
     #    안에 이 호출을 끼우지 않는다. 그 구간은 동기여야 하는 자리이고, 거기에 코드를 더하면
     #    다음 사람이 「여기 await 를 넣어도 되나」를 다시 판단하게 된다. 값은 같다(같은 세션의
     #    다음 admit 은 이 요청이 끝나야 오고, 재사용 규칙이 동시 2회를 접는다).
-    _stamp_run_cap(response, request, body.sessionId)
+    _stamp_run_cap(response, request, session)
     return RunCreated(runId=record.runId, incidentId=record.incidentId, mode=record.mode)
 
 
