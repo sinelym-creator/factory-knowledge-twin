@@ -29,7 +29,7 @@
 | ② | Cypher injection | 🆕 `tests/api/cypher_surface_drill.py` | **exit 0** · 층 A 15건(400/404·내부 노출 0) · 층 B 5건(추출 = ID 토큰·**구조 문자 0**) · 대조군 2 | **PASS** | `[N]`§2 |
 | ③ | 문서 내부 Prompt Injection | 🆕 `tests/api/prompt_injection_authority_drill.py` | **exit 0** · 표지 ② 1건(자극 실재) · A-3·A-4·A-6 PASS · A-1·A-2 **측정 불가** · 원복 md5 일치 | **PASS(조건부)** — 🔴 기전이 «무결성 배제»라 권한 축 2행은 측정 불가 · **재색인 경유 주입은 미측** | `[N]`§3·§3-1 |
 | ④ | 임의 tool 호출 | `tests/api/scenario_allowlist_drill.py` | **exit 0** · 허용 10건 200 · 목록 밖 6종 전건 400 | **PASS** | `[V]`§1-7 ④ |
-| ⑤ | 관리자 endpoint 접근 | 🆕 `tests/security/gate7_admin_surface.py` | **exit 1** · 표면 14 · Q-35 4종 **전부 200** · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존)** | 🔴 **FAIL(D-n 회부)** — 가드 고장이 아니라 **가드가 닿지 않는 표면** | `[S]`§1 |
+| ⑤ | 관리자 endpoint 접근 | `tests/security/gate7_admin_surface.py` | **exit 0**(D-87 재검 · `:8090` `build=96ae199`) · Q-35 4종 **200→404**(전건 뒤집힘) · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존 · 같은 실행)** | **PASS** — D-87 해소(54대 · 처방 #826 `96ae199`) | `[d]`§2 |
 | ⑥ | 다른 session 접근 | `tests/api/session_guard_drill.py` | **exit 0** · 6축(은닉 4·상충 422·reset 3) | **PASS** | `[V]`§1-7 ⑥ |
 | ⑦ | oversized request | `tests/api/t42b_limits_drill.py` | **exit 2** | 🔴 **측정 불가** — 세션 축 대조군 서버(`FKT_T42B_SESSION_BASE`) 미지정 · 그물이 기본값을 **거부**한다(Q-62) | `[V]`§1-7 ⑦ |
 | ⑧ | 반복 요청·rate limit | `t42b_xff_axes_drill.py` · `t42b_capacity_drill.py` | **exit 2**(xff) · capacity 미실행 | 🔴 **측정 불가** — BEFORE 서버·`FKT_T42B_TIMEOUT_BASE` 필요 | `[V]`§1-7 ⑧ |
@@ -50,7 +50,7 @@
 | **PASS(조건부)** | ③ | **1** |
 | **부분** | ① · ⑨ | **2** |
 | 🔴 **측정 불가** | ⑦⑧⑪ | **3** |
-| 🔴 **FAIL(회부)** | ⑤ | **1** |
+| 🔴 **FAIL(회부)** | — | **0** |  ← ⑤ D-87 해소(54대 · `[d]`)
 | 🔴 **미충족** | — | **0** |
 | **합**(13항 + 유지 1) | | **14** |
 
@@ -62,7 +62,9 @@
 ⇒ 비어 있거나 붉은 항 = **⑤(FAIL) · ⑦⑧⑪(측정 불가) = 4항**. ①·⑨ 는 부분이다.
 🔴 **「그물이 생겼다」를 「게이트가 섰다」로 읽지 않는다** — ⑤ 는 그물이 생겨서 **빨강이 보이게 된 것**이다.
 
-출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문).
+🔴 **집계 주의(54대)**: 이 lane(d87r · ⑤ FAIL→PASS)와 #828(⑦⑧ 측정불가→PASS)이 «각각» 이 표를 고친다. PASS 행 총계는 두 lane 이 **직렬 병합된 뒤** owner 가 확정한다(⑤⑦⑧ 세 항 이동 = PASS 7→10 · 측정불가 3→1 · FAIL 1→0). 이 lane 은 충돌을 피해 **⑤ 행 + FAIL 행만** 고쳤다.
+
+출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문) · `[d]` = `evidence/d87-recheck.md`(D-87 재검 · 54대).
 
 ---
 
