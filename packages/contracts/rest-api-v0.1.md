@@ -231,5 +231,5 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 
 ## v0.1.19 append (09-05 19:58 · D-84 — live 합성 답변의 안전 규정 호명 가드 · 오케 스자쿠 45대 성문 · 구현 = #760 · 재검 리바이2)
 
-- `step.completed(synthesize).payload.synthesis.safetyOmitted?: boolean` — 근거 발췌 **본문**에 `SAF-*` 규정 id 가 있는데 답변 문장이 그 id 를 호명하지 않으면 게이트웨이에 통지를 실어 **정확히 1회** 재요청 · 2회째도 미호명이면 채택하고 이 필드를 `true` 로 싣는다(참일 때만 · 거짓은 생략). 화면 표시 없음 · 계측(T5-1 답변 축 지표 6)이 읽는다.
+- `step.completed(synthesize).payload.synthesis.safetyOmitted?: boolean` — 근거 발췌 **본문**에 `SAF-*` 규정 id 가 있는데 답변 문장이 그 id 를 호명하지 않으면 게이트웨이에 통지를 실어 **정확히 1회** 재요청 · 2회째도 미호명이면 채택하고 이 필드를 `true` 로 싣는다. **타입은 `boolean`** — 구현은 `true` 일 때만 싣고, 소비자는 **`false` 와 부재를 같은 뜻(생략 없음)** 으로 읽는다(`enum:[true]` 로 묶지 않는다 · 09-05 46대 판정). 화면 표시 없음 · 계측(T5-1 답변 축 지표 6)이 읽는다.
 - 프롬프트 지시는 「id 를 **문장**에」 — `ids` 에 넣으면 기존 인용 가드가 응답을 전량 폐기한다(#760 ①).
