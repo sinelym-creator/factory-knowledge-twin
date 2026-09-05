@@ -322,3 +322,22 @@ def test_hybrid_does_not_invent_when_fewer_docs_are_available(monkeypatch):
 
     assert len(patch["citations"]) == 3 < wf.TOP_K
     assert list(patch["citations"]) == [d.evidenceId for d in docs]
+
+
+def test_hybrid_truncates_when_more_doc_chunks_than_top_k_come_back(monkeypatch):
+    """🔴 절단 자체를 자극한다 — 과수집분이 그대로 나가지 않는가.
+
+    ⑦(record 2 + doc 5)은 doc 이 «정확히» TOP_K 라 절단을 시험하지 못한다: break 를 지워도
+    5가 나온다. 과수집 상한이 TOP_K*2 인 이상 doc 이 TOP_K 를 넘겨 올 수 있고, 그때 절단이
+    없으면 이 단계는 계약이 말하는 근거집합 크기를 넘겨 방출한다.
+    """
+    docs = [_hit(f"DOC-MAN-00{i:02d}@r1#001") for i in range(7)]
+    details = {h.evidenceId: _detail("doc-chunk") for h in docs}
+
+    nodes, emitter, _ = _build(monkeypatch, strategy="hybrid", hits=docs, details=details)
+    patch = asyncio.run(nodes["vector"]({}))
+
+    assert len(patch["citations"]) == wf.TOP_K == 5
+    assert list(patch["citations"]) == [d.evidenceId for d in docs[:5]]   # 앞에서부터 자른다
+    # 🔴 방출도 함께 멈춰야 한다 — citations 만 자르고 이벤트를 다 내보내면 화면과 상태가 갈린다.
+    assert [e["evidenceId"] for e in emitter.evidence] == [d.evidenceId for d in docs[:5]]
