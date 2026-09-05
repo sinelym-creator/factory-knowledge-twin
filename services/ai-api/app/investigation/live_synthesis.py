@@ -153,6 +153,15 @@ def build_evidence_text(state: dict[str, Any]) -> dict[str, str]:
         if isinstance(evidence_id, str) and isinstance(text, str):
             excerpts[evidence_id] = text[:_MAX_EXCERPT]
 
+    # 🔴 **graph 가 문서로 옮겨 온 인용**(D-85 · O-33 의 나머지 절반). 근거집합에만 넣고
+    #    본문을 여기 싣지 않으면 모델은 그 청크를 «볼» 수 없다 — 인용을 안 하는 게 아니라
+    #    못 하고, 억지로 인용하면 게이트웨이가 답 **전체**를 버린다(`인용 id 가 준 근거 밖이다`).
+    # 🔴 `citations` 와 **키를 나눠** 읽는 이유: 한 키에 병합하면 어느 단계가 준 발췌인지
+    #    사라지고, 병합을 빠뜨리는 날 vector 쪽이 조용히 없어진다.
+    for evidence_id, text in (state.get("graphDocumentCitations") or {}).items():
+        if isinstance(evidence_id, str) and isinstance(text, str):
+            excerpts[evidence_id] = text[:_MAX_EXCERPT]
+
     for path in state.get("graphPaths", []) or []:
         evidence_id = path.get("evidenceId")
         if not isinstance(evidence_id, str):
