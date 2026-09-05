@@ -1315,6 +1315,24 @@
           }
         }
       }
+    },
+    {
+      "group": "⑪ v0.1.19 safetyOmitted(D-84)",
+      "label": "safetyOmitted: false(적법 — 부재와 같은 뜻)",
+      "expect": "accept",
+      "why": "문면이 「false 와 부재는 같은 뜻」을 «주장»한다 — 그 주장을 밟는 칸이 없으면 enum:[true] 로 좁히는 변경이 초록으로 지나간다(46대 판정 09-05)",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "synthesize",
+          "elapsedMs": 12963,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "safetyOmitted": false
+          }
+        }
+      }
     }
   ]
 }
