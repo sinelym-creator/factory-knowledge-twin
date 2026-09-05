@@ -15,6 +15,9 @@ import { writeFileSync } from "node:fs";
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : d; };
 const BASE = arg("base");
 const OUT = arg("out");
+/* 🔴 무대마다 시계가 다르다 — 공개면은 `/enter` 왕복이 1.4~3.8s 라 로컬용 1500ms 로는
+   세션이 서기 «전»을 찍는다(리셋 버튼이 없는 것처럼 보인다). 창은 «값»으로 선언한다. */
+const SETTLE = Number(arg("settle", "1500"));
 if (!BASE || !OUT) { console.error("--base 와 --out 은 필수다"); process.exit(9); }
 const NAVV = (v) => `[data-nav-variant="${v}"]`;
 
@@ -30,7 +33,7 @@ const rect = async (p, sel) => {
   return l.first().evaluate((el) => { const r = el.getBoundingClientRect(); return { top: +r.top.toFixed(1), bottom: +r.bottom.toFixed(1), left: +r.left.toFixed(1), w: +r.width.toFixed(1) }; });
 };
 
-const out = { base: BASE, wall: new Date().toISOString(), cols: {} };
+const out = { base: BASE, settleMs: SETTLE, wall: new Date().toISOString(), cols: {} };
 const errs = [];
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -40,7 +43,7 @@ const widthCol = async (w) => {
   p.on("console", (m) => { if (m.type() === "error") errs.push({ w, excluded: /ws|websocket|wss:/i.test(m.text()), text: m.text().slice(0, 140) }); });
   await p.setViewportSize({ width: w, height: 900 });
   await p.goto(BASE + "/overview", { waitUntil: "domcontentloaded", timeout: 60000 });
-  await p.waitForTimeout(1500);
+  await p.waitForTimeout(SETTLE);
   await dismiss(p);
   const col = { w };
   col.brandText = (await p.locator('[data-testid="app-brand"]').first().innerText()).replace(/\s+/g, " ").trim();

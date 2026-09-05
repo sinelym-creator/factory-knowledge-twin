@@ -1,0 +1,864 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "wall": "2026-09-05T04:36:50.334Z",
+  "reps": 3,
+  "cols": {
+    "rail1280": [
+      {
+        "mode": "rail",
+        "w": 1280,
+        "clickMs": 6006,
+        "clicked": true,
+        "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 1141,
+          "resMs": 2454,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 6341,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 8,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 405,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 1141,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 2454,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 2454,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 2455,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 2803,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 2818,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 3114,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 6029,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6341,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "rail",
+        "w": 1280,
+        "clickMs": 5872,
+        "clicked": true,
+        "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 447,
+          "resMs": 1593,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 6206,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 2,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 353,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 447,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 1593,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 1593,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 1595,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 1906,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 1932,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 2222,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5892,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6206,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "rail",
+        "w": 1280,
+        "clickMs": 5901,
+        "clicked": true,
+        "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 438,
+          "resMs": 1447,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 6239,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 3,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 331,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 438,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 1447,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 1447,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 1447,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 1740,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 1769,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 2058,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 5936,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6239,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      }
+    ],
+    "drawer390": [
+      {
+        "mode": "drawer",
+        "w": 390,
+        "clickMs": 5866,
+        "clicked": true,
+        "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 426,
+          "resMs": 1379,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 6715,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 3,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 327,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 426,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 1379,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 1379,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 1380,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 1677,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 1693,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 1994,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 6420,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6715,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "drawer",
+        "w": 390,
+        "clickMs": 5893,
+        "clicked": true,
+        "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 424,
+          "resMs": 1415,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 6759,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 2,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 344,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 424,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 1415,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 1415,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 1416,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 1720,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 1734,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 2023,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 6458,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 6759,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      },
+      {
+        "mode": "drawer",
+        "w": 390,
+        "clickMs": 6509,
+        "clicked": true,
+        "urlAfter": "https://factory-knowledge-twin.vercel.app/incidents/INC-2025-019",
+        "urlPath": "/incidents/INC-2025-019",
+        "enter": {
+          "reqMs": 448,
+          "resMs": 3796,
+          "status": 303
+        },
+        "prefetch": {
+          "count": 0,
+          "firstMs": null,
+          "hasCookie": [],
+          "beforeEnterRes": null
+        },
+        "incStatuses": [
+          {
+            "ms": 7391,
+            "status": 200,
+            "loc": null
+          }
+        ],
+        "postClickIncCount": 1,
+        "net": [
+          {
+            "kind": "req",
+            "ms": 1,
+            "method": "GET",
+            "path": "/",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 328,
+            "path": "/",
+            "rsc": false,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 448,
+            "method": "POST",
+            "path": "/enter",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "res",
+            "ms": 3796,
+            "path": "/enter",
+            "rsc": false,
+            "status": 303,
+            "location": "/overview"
+          },
+          {
+            "kind": "req",
+            "ms": 3796,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": false,
+            "hasCookie": false,
+            "cookieLen": 0
+          },
+          {
+            "kind": "req",
+            "ms": 3797,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 4101,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 4126,
+            "method": "GET",
+            "path": "/overview",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 4426,
+            "path": "/overview",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          },
+          {
+            "kind": "req",
+            "ms": 7100,
+            "method": "GET",
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "hasCookie": true,
+            "cookieLen": 76
+          },
+          {
+            "kind": "res",
+            "ms": 7391,
+            "path": "/incidents/INC-2025-019",
+            "rsc": true,
+            "status": 200,
+            "location": null
+          }
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "rail1280": {
+      "urlPaths": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "prefetchCounts": [
+        0,
+        0,
+        0
+      ],
+      "prefetchBeforeEnterRes": [
+        null,
+        null,
+        null
+      ],
+      "prefetchCookies": [
+        [],
+        [],
+        []
+      ],
+      "incStatuses": [
+        [
+          200
+        ],
+        [
+          200
+        ],
+        [
+          200
+        ]
+      ],
+      "enterResMs": [
+        2454,
+        1593,
+        1447
+      ],
+      "firstPrefetchMs": [
+        null,
+        null,
+        null
+      ]
+    },
+    "drawer390": {
+      "urlPaths": [
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019",
+        "/incidents/INC-2025-019"
+      ],
+      "prefetchCounts": [
+        0,
+        0,
+        0
+      ],
+      "prefetchBeforeEnterRes": [
+        null,
+        null,
+        null
+      ],
+      "prefetchCookies": [
+        [],
+        [],
+        []
+      ],
+      "incStatuses": [
+        [
+          200
+        ],
+        [
+          200
+        ],
+        [
+          200
+        ]
+      ],
+      "enterResMs": [
+        1379,
+        1415,
+        3796
+      ],
+      "firstPrefetchMs": [
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "verdict": {
+    "railPrefetchedBeforeSession": [
+      null,
+      null,
+      null
+    ],
+    "railPrefetchSaw307": [
+      false,
+      false,
+      false
+    ],
+    "railLanded": [
+      "/incidents/INC-2025-019",
+      "/incidents/INC-2025-019",
+      "/incidents/INC-2025-019"
+    ],
+    "drawerPrefetchedBeforeSession": [
+      null,
+      null,
+      null
+    ],
+    "drawerLanded": [
+      "/incidents/INC-2025-019",
+      "/incidents/INC-2025-019",
+      "/incidents/INC-2025-019"
+    ]
+  }
+}

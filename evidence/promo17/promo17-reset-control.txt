@@ -1,0 +1,5 @@
+# 리셋 버튼 부재의 주어 가르기 (2026-09-05 13:40 KST · 대기 2500ms · cap 0)
+# 그물 = tests/web/promo17_reset_button_control.mjs
+{"name":"390 cold(첫 페이지)","w":390,"warm":false,"reset":1,"tour":1,"sessionChip":1,"cookies":["fkt_sid","fkt_session"]}
+{"name":"390 warm(두 번째 페이지)","w":390,"warm":true,"reset":1,"tour":1,"sessionChip":1,"cookies":["fkt_sid","fkt_session"]}
+{"name":"1280 cold(첫 페이지)","w":1280,"warm":false,"reset":1,"tour":1,"sessionChip":1,"cookies":["fkt_sid","fkt_session"]}
