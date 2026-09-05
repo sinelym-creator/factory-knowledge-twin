@@ -1,0 +1,466 @@
+{
+ "wall": "2026-09-05T03:08:30.857Z",
+ "baseline_d79_escapes": 4,
+ "after": {
+  "name": "after(trap landed)",
+  "base": "http://127.0.0.1:8367",
+  "openedVisible": true,
+  "focusOnOpen": {
+   "tag": "a",
+   "testid": "nav-overview",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "tab": [
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   }
+  ],
+  "tabEscapes": [],
+  "tabEscapeCount": 0,
+  "shiftTab": [
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   }
+  ],
+  "shiftEscapes": [],
+  "shiftEscapeCount": 0,
+  "panelFocusable": true,
+  "panelFocusState": {
+   "tag": "div",
+   "testid": "nav-drawer",
+   "insideDrawer": true,
+   "isDrawerItself": true
+  },
+  "afterTabFromPanel": {
+   "tag": "a",
+   "testid": "nav-overview",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "afterShiftTabFromPanel": {
+   "tag": "a",
+   "testid": "nav-compare",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "close": {
+   "link": {
+    "opened": true,
+    "closed": true,
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false,
+     "isDrawerItself": false
+    },
+    "reopened": true
+   },
+   "esc": {
+    "opened": true,
+    "closed": true,
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false,
+     "isDrawerItself": false
+    },
+    "reopened": true
+   },
+   "scrim": {
+    "opened": true,
+    "scrimOwner": {
+     "tag": "button",
+     "owner": "nav-drawer-scrim"
+    },
+    "closed": true,
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false,
+     "isDrawerItself": false
+    },
+    "reopened": true
+   }
+  }
+ },
+ "before": {
+  "name": "before(no trap)",
+  "base": "http://127.0.0.1:8368",
+  "openedVisible": true,
+  "focusOnOpen": {
+   "tag": "a",
+   "testid": "nav-overview",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "tab": [
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "body",
+    "testid": null,
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "body",
+    "testid": null,
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   }
+  ],
+  "tabEscapes": [
+   {
+    "n": 3,
+    "tag": "body",
+    "testid": null,
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "n": 4,
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "n": 8,
+    "tag": "body",
+    "testid": null,
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "n": 9,
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   }
+  ],
+  "tabEscapeCount": 4,
+  "shiftTab": [
+   {
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "body",
+    "testid": null,
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-compare",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-incidents",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "a",
+    "testid": "nav-overview",
+    "insideDrawer": true,
+    "isDrawerItself": false
+   },
+   {
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   }
+  ],
+  "shiftEscapes": [
+   {
+    "n": 1,
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "n": 2,
+    "tag": "body",
+    "testid": null,
+    "insideDrawer": false,
+    "isDrawerItself": false
+   },
+   {
+    "n": 6,
+    "tag": "button",
+    "testid": "nav-drawer-scrim",
+    "insideDrawer": false,
+    "isDrawerItself": false
+   }
+  ],
+  "shiftEscapeCount": 3,
+  "panelFocusable": true,
+  "panelFocusState": {
+   "tag": "div",
+   "testid": "nav-drawer",
+   "insideDrawer": true,
+   "isDrawerItself": true
+  },
+  "afterTabFromPanel": {
+   "tag": "a",
+   "testid": "nav-overview",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "afterShiftTabFromPanel": {
+   "tag": "button",
+   "testid": "nav-drawer-scrim",
+   "insideDrawer": false,
+   "isDrawerItself": false
+  },
+  "close": {
+   "link": {
+    "opened": true,
+    "closed": true,
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false,
+     "isDrawerItself": false
+    },
+    "reopened": true
+   },
+   "esc": {
+    "opened": true,
+    "closed": true,
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false,
+     "isDrawerItself": false
+    },
+    "reopened": true
+   },
+   "scrim": {
+    "opened": true,
+    "scrimOwner": {
+     "tag": "button",
+     "owner": "nav-drawer-scrim"
+    },
+    "closed": true,
+    "focusAfterClose": {
+     "tag": "button",
+     "testid": "nav-menu-toggle",
+     "insideDrawer": false,
+     "isDrawerItself": false
+    },
+    "reopened": true
+   }
+  }
+ },
+ "verdict": {
+  "after_tabEscapes": 0,
+  "before_tabEscapes": 4,
+  "before_reproducesBaseline": true,
+  "after_shiftEscapes": 0,
+  "before_shiftEscapes": 3,
+  "after_panelFocusable": true,
+  "after_tabFromPanel": {
+   "tag": "a",
+   "testid": "nav-overview",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "after_shiftTabFromPanel": {
+   "tag": "a",
+   "testid": "nav-compare",
+   "insideDrawer": true,
+   "isDrawerItself": false
+  },
+  "after_close": {
+   "link": {
+    "closed": true,
+    "reopened": true,
+    "focus": "nav-menu-toggle"
+   },
+   "esc": {
+    "closed": true,
+    "reopened": true,
+    "focus": "nav-menu-toggle"
+   },
+   "scrim": {
+    "closed": true,
+    "reopened": true,
+    "focus": "nav-menu-toggle"
+   }
+  },
+  "scrimOwner": {
+   "tag": "button",
+   "owner": "nav-drawer-scrim"
+  }
+ }
+}
