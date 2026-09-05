@@ -1,0 +1,155 @@
+{
+ "wall": "2026-09-05T02:52:05.340Z",
+ "target": "http://127.0.0.1:8367",
+ "control": "http://127.0.0.1:8365",
+ "fixed": {
+  "toggleClosed": {
+   "box": {
+    "w": 44,
+    "h": 44
+   },
+   "centre": {
+    "tag": "span",
+    "owner": "nav-menu-toggle"
+   },
+   "aa24_r12": {
+    "r": 12,
+    "up": {
+     "tag": "button",
+     "owner": "nav-menu-toggle"
+    },
+    "down": {
+     "tag": "button",
+     "owner": "nav-menu-toggle"
+    },
+    "left": {
+     "tag": "button",
+     "owner": "nav-menu-toggle"
+    },
+    "right": {
+     "tag": "button",
+     "owner": "nav-menu-toggle"
+    }
+   },
+   "aaa44_r22": {
+    "r": 22,
+    "up": {
+     "tag": "button",
+     "owner": "nav-menu-toggle"
+    },
+    "down": {
+     "tag": "header",
+     "owner": "app-bar"
+    },
+    "left": {
+     "tag": "button",
+     "owner": "nav-menu-toggle"
+    },
+    "right": {
+     "tag": "header",
+     "owner": "app-bar"
+    }
+   },
+   "aa24_pass": true,
+   "aaa44_pass": false
+  },
+  "drawerLink": {
+   "box": {
+    "w": 236,
+    "h": 36
+   },
+   "centre": {
+    "tag": "a",
+    "owner": "nav-overview"
+   },
+   "aa24_r12": {
+    "r": 12,
+    "up": {
+     "tag": "a",
+     "owner": "nav-overview"
+    },
+    "down": {
+     "tag": "a",
+     "owner": "nav-overview"
+    },
+    "left": {
+     "tag": "a",
+     "owner": "nav-overview"
+    },
+    "right": {
+     "tag": "a",
+     "owner": "nav-overview"
+    }
+   },
+   "aaa44_r22": {
+    "r": 22,
+    "up": {
+     "tag": "div",
+     "owner": "nav-drawer"
+    },
+    "down": {
+     "tag": "div",
+     "owner": "nav-drawer"
+    },
+    "left": {
+     "tag": "a",
+     "owner": "nav-overview"
+    },
+    "right": {
+     "tag": "a",
+     "owner": "nav-overview"
+    }
+   },
+   "want": "nav-overview",
+   "aa24_pass": true,
+   "aaa44_pass": false
+  }
+ },
+ "axis4": {
+  "390": {
+   "statusRowCount": 1,
+   "rowTop": 54,
+   "rowHeight": 15,
+   "barTop": 0,
+   "barHeight": 76,
+   "topDelta": 54,
+   "barButtons": 3,
+   "hScroll": false
+  },
+  "767": {
+   "statusRowCount": 1,
+   "rowTop": 54,
+   "rowHeight": 15,
+   "barTop": 0,
+   "barHeight": 76,
+   "topDelta": 54,
+   "barButtons": 3,
+   "hScroll": false
+  },
+  "768": {
+   "statusRowCount": 1,
+   "rowTop": 13,
+   "rowHeight": 36,
+   "barTop": 0,
+   "barHeight": 63,
+   "topDelta": 13,
+   "barButtons": 3,
+   "hScroll": false
+  },
+  "1280": {
+   "statusRowCount": 1,
+   "rowTop": 13.5,
+   "rowHeight": 24,
+   "barTop": 0,
+   "barHeight": 52,
+   "topDelta": 13.5,
+   "barButtons": 3,
+   "hScroll": false
+  },
+  "control390": {
+   "statusRowCount": 0,
+   "barButtons": 2,
+   "hScroll": false
+  }
+ }
+}

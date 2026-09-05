@@ -38,6 +38,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 공용 «세션 운반» 어댑터(T3-6 · 가드 미착지에서는 엄격 no-op)
 import _colocation  # noqa: E402  — 🔴 판정 앞의 «귀속 증명»(Q-42 · 이 드릴이 물린 자리에서 나왔다)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
 REPO = Path(__file__).resolve().parents[2]
 # 🔴 시험 대상 서버가 «실제로 읽는» 리포. 그물이 lane 워크트리에 있고 서버가 주 체크아웃에서
@@ -45,7 +46,7 @@ REPO = Path(__file__).resolve().parents[2]
 SERVER_REPO = Path(os.environ.get("FKT_SERVER_REPO", str(REPO)))
 FIXTURE = SERVER_REPO / "data" / "replay" / "gs-01.events.jsonl"
 AUDIT = SERVER_REPO / "services" / "ai-api" / "tools" / "audit_replay_fixture.py"
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 PYTHON = os.environ.get("FKT_PYTHON", str(SERVER_REPO / "services" / "ai-api" / ".venv" / "Scripts" / "python.exe"))
 SESSION_ID = "levi2-replay-drill"
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")

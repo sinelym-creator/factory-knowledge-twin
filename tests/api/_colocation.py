@@ -42,6 +42,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402  — 가드 착지 후 세션을 실어 준다(미착지면 엄격 no-op)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
 # 🔴 녹화본의 원값과 겹치지 않는 표지. 겹치면 「바뀌었다」를 못 본다.
 SENTINEL_TS = "2020-01-02T03:04:05Z"
@@ -126,7 +127,7 @@ def _replay_ts(base: str) -> str | None:
 
 def prove(api_base: str | None = None, *, quiet: bool = False) -> None:
     """서버가 «이 트리»의 fixture 를 읽는지 증명한다. 못 하면 `Unproven`."""
-    base = api_base or os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+    base = api_base or _env.api_base()
     fixture = _fixture()
     if not fixture.is_file():
         raise Unproven(f"귀속 탐침의 정본이 없다: {fixture}")
@@ -256,7 +257,7 @@ def require(api_base: str | None = None, *, quiet: bool = False) -> None:
        Q-62 와 같다 — 기본값이 어느 자리를 가리키면 확인 없이 돌린 사람이 그 자리를 잰다.
     """
     probe_base = os.environ.get("FKT_COLOCATION_LOCAL_PROBE", "").strip()
-    base = api_base or os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+    base = api_base or _env.api_base()
     try:
         if probe_base:
             prove_external(base, probe_base, quiet=quiet)

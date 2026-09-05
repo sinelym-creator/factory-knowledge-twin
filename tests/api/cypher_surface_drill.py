@@ -40,8 +40,9 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402
 import _colocation  # noqa: E402
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 SERVICE_DIR = Path(__file__).resolve().parents[2] / "services" / "ai-api"
 
 # 자극 5종 — 「사용자 문자열이 Cypher 구조가 되려 한다」의 대표형.

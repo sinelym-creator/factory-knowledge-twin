@@ -27,8 +27,11 @@ import os
 import sys
 import urllib.error
 import urllib.request
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+API_BASE = _env.api_base()
 
 # 계약 v0.1.6 — 가드 «제외» 3라우트. 세션을 실을 이유가 없는 자리다.
 EXCLUDED = ("/api/sessions", "/api/health", "/api/live/status")

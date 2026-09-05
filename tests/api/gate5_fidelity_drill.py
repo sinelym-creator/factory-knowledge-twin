@@ -46,8 +46,9 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _session  # noqa: E402
 import _colocation  # noqa: E402  — 🔴 판정 앞의 귀속 증명(Q-42 · Q-40 계보)
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
-API_BASE = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8000")
+API_BASE = _env.api_base()
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 SESSION_ID = "levi2-t36-gate5"
 REPO = Path(__file__).resolve().parents[2]

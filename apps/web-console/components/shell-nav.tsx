@@ -6,7 +6,11 @@ import { usePathname } from "next/navigation";
 import { IconAlert, IconCompare, IconGrid } from "@/components/icons";
 
 /**
- * 셸 내비 — 레일(라벨형)·앱바(모바일 텍스트) 두 자리에서 «같은 목록»을 그린다(T6-4 ③ 셸 행).
+ * 셸 내비 — 레일(≥md)·드로어(<md) 두 자리에서 «같은 목록»을 그린다(T6-4 ③ 셸 행 · D-79).
+ *
+ * 🔴 D-79 에서 앱바 텍스트 탭(`variant="bar"`)이 사라졌다 — 그 자리는 햄버거 + 드로어가 받는다.
+ *    두 자리가 «같은 생김새»가 되어 분기가 하나로 줄었고, `variant` 는 이제 그리는 방식이
+ *    아니라 «어느 자리에 선 것인지»만 말한다(그 값이 그대로 `data-nav-variant` 가 된다).
  *
  * 🔴 클라이언트인 이유 하나: «현재 항목» 표시는 pathname 을 알아야 한다. 셸 자체는 서버
  *    컴포넌트(쿠키를 읽는다)라 여기만 떼어 냈다. 링크 순서·sr-only 라벨은 그대로다.
@@ -28,12 +32,11 @@ function sectionOf(href: string) {
   return href.split("/").filter(Boolean)[0] ?? "";
 }
 
-export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
+export function ShellNav({ variant }: { variant: "rail" | "drawer" }) {
   const pathname = usePathname();
   const current = sectionOf(pathname ?? "");
 
-  if (variant === "rail") {
-    return (
+  return (
       <>
         {NAV.map((n) => {
           const active = sectionOf(n.href) === current;
@@ -44,11 +47,12 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
               aria-current={active ? "page" : undefined}
               /* 행 높이 36 · 좌우 12 · r10 — 선택은 «채움 + 흰 글자», 아이콘만 틴트. */
               data-testid={n.testid}
-              /* 🔴 레일과 바가 «같은 `data-testid`» 를 쓴다 — 좁은 폭에서는 레일이
-                 `display:none` 이라 사람 눈엔 하나지만 DOM 에는 둘 다 있다. 그래서 히트 실측이
-                 «숨은 쪽»을 집어 「측정 불가」가 났다(D-41). 🔴 testid 를 바꾸면 이미 그걸
-                 쓰는 선택자·증거가 같이 죽으므로, **가르는 축을 하나 «더한다»**. */
-              data-nav-variant="rail"
+              /* 🔴 레일과 드로어가 «같은 `data-testid`» 를 쓴다 — 좁은 폭에서는 레일이
+                 `display:none` 이고 드로어는 열렸을 때만 DOM 에 있다. 사람 눈엔 하나지만
+                 둘이 함께 서는 순간이 있으므로 히트 실측이 «숨은 쪽»을 집을 수 있다(D-41).
+                 🔴 testid 를 바꾸면 이미 그걸 쓰는 선택자·증거가 같이 죽으므로, **가르는 축을
+                 하나 «더한다»**. `variant` 가 곧 그 값이다. */
+              data-nav-variant={variant}
               /* 🔴 `.fkt-hit` 은 세로 히트를 44 로 편다(coarse). 리듬이 44 라야 그 44 가
                  이웃을 안 밟는다 — 그래서 간격 8 과 «같이» 붙인다(둘 중 하나만은 회귀다). */
               className={`fkt-hit flex h-9 items-center gap-2.5 rounded-chip px-3 text-body-c transition-colors duration-(--fkt-dur-1) ${
@@ -64,31 +68,5 @@ export function ShellNav({ variant }: { variant: "rail" | "bar" }) {
           );
         })}
       </>
-    );
-  }
-
-  return (
-    <>
-      {NAV.map((n) => {
-        const active = sectionOf(n.href) === current;
-        return (
-          <Link
-            key={n.href}
-            href={n.href}
-            aria-current={active ? "page" : undefined}
-            data-testid={n.testid}
-            data-nav-variant="bar"
-            /* 🔴 레일에만 `fkt-hit` 이 붙어 있었다 — 바는 실측에서 72~75x28 로 서고
-               세로 히트가 44 에 못 미쳤다(D-26 · 390 실측 3건). 같은 줄에 나란한 항목이라
-               넓어지는 축은 «세로»뿐이고, 이웃(좌우)을 밟지 않는다. */
-            className={`fkt-hit rounded-pill px-2.5 py-1 transition-colors duration-(--fkt-dur-1) ${
-              active ? "bg-ai/12 font-semibold text-ai" : "hover:text-ink"
-            }`}
-          >
-            {n.label}
-          </Link>
-        );
-      })}
-    </>
   );
 }

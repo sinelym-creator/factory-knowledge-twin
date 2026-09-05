@@ -26,12 +26,15 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import _env  # noqa: E402  — 공용 «대상 주소» 게이트(O-22 · 미지정이면 즉시 죽는다)
 
 for _s in (sys.stdout, sys.stderr):
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8", errors="replace")
 
-API = os.environ.get("FKT_API_BASE", "http://127.0.0.1:8010").rstrip("/")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+API = _env.api_base()
 SCENARIO = os.environ.get("FKT_SCENARIO", "GS-01")
 
 

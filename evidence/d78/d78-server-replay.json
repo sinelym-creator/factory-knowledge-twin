@@ -1,0 +1,15 @@
+{
+ "sessionStatus": 200,
+ "sessionKeys": [
+  "sessionId"
+ ],
+ "sessionIdFound": true,
+ "replay": {
+  "status": 200,
+  "body": {
+   "runId": "RUN-558581be20c6",
+   "incidentId": "INC-2026-014",
+   "mode": "replay"
+  }
+ }
+}
