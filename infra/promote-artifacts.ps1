@@ -22,6 +22,13 @@ param(
     # 산출물 뿌리 — 리포·`_wt/` 밖 고정 경로(D-13). 절대경로를 박지 않는다.
     [string] $Dest = (Join-Path $HOME '.fkt/prod'),
 
+    # 🔴 로그온 예약 작업 `FKT-Gateway-On` 이 부르는 호스트 사본의 «자리»(D-86).
+    #    기본은 실제 경로이고, **시험은 여기에 임시 경로를 준다**. 예전엔 시험이 `$HOME` 을
+    #    임시로 바꿔 격리하려 했는데 `$HOME` 은 ReadOnly 자동 변수라 그 대입이 **조용히
+    #    거부**됐고, 스크립트는 그대로 돌아 production 기동 경로 파일을 갈아치웠다.
+    #    격리를 «호출자의 선의»에 맡기지 않고 인자로 만든다 — 닿을 수 있는 구조를 없앤다.
+    [string] $HostAutostartPath = (Join-Path $HOME '.fkt/gw-autostart.ps1'),
+
     # production 게이트웨이 재기동 = **배포 행위**다. 승격 허가 안에서만 준다.
     [switch] $Restart,
 
@@ -151,7 +158,7 @@ if ($MoveModels) {
 #    부르는 사람이 없는 형태다. 승격 도구가 산출물을 깔 때 이 사본도 같이 간다.
 # 🔴 워킹트리를 복사하지 않는다(이 스크립트의 규율 그대로). `git archive` 로 **승격 sha 의
 #    커밋된 바이트**를 낸다 — cmd 리다이렉트를 쓰는 이유도 위 Export-Tree 와 같다.
-$hostAuto = Join-Path $HOME '.fkt/gw-autostart.ps1'
+$hostAuto = $HostAutostartPath
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $hostAuto) | Out-Null
 if (Test-Path -LiteralPath $hostAuto) {
     $before = (Get-FileHash -Algorithm SHA256 -LiteralPath $hostAuto).Hash.ToLower().Substring(0, 12)
