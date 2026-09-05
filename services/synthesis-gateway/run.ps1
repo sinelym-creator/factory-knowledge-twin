@@ -14,7 +14,10 @@ param(
     [int]    $TimeoutMs,
     [string] $CliBin,
     [string] $Model,
-    [string] $Effort
+    [string] $Effort,
+    # 🔴 시스템 프롬프트를 «다른 곳»에서 읽게 한다(T7-42 A-1). production 은 승격 산출물
+    #    디렉터리를 가리키고, 미지정이면 이 스크립트 옆 파일 = 지금까지의 거동 그대로다.
+    [string] $PromptFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,6 +33,15 @@ if ($Port)      { $env:SYNTHESIS_GATEWAY_PORT  = "$Port" }
 #    조용히 무시된다(값은 기본 60000 인데 운영자는 자기 값이 걸린 줄 안다).
 if ($TimeoutMs) { $env:SYNTHESIS_GATEWAY_TIMEOUT_MS = "$TimeoutMs" }
 if ($CliBin)    { $env:SYNTHESIS_CLI_BIN       = $CliBin }
+if ($PromptFile) {
+    # 🔴 **여기서 존재를 확인한다.** gateway.py 도 없으면 exit 2 로 거부하지만, 그때는 이미
+    #    「띄웠는데 안 뜬다」다. 오타 난 경로를 준 사람에게 그 자리에서 말하는 편이 낫다.
+    if (-not (Test-Path -LiteralPath $PromptFile)) {
+        Write-Error "프롬프트 파일이 없다: $PromptFile"
+        exit 5
+    }
+    $env:SYNTHESIS_GATEWAY_PROMPT_FILE = (Resolve-Path -LiteralPath $PromptFile).Path
+}
 if ($PSBoundParameters.ContainsKey('Model'))  { $env:SYNTHESIS_MODEL  = $Model }
 # 🔴 ContainsKey 로 본다 — 빈 문자열은 «CLI 기본으로 돌려라»는 뜻이라
 #    `if ($Model)` 로 쓰면 그 지시가 통째로 사라진다.
@@ -53,4 +65,9 @@ if ($env:SYNTHESIS_GATEWAY_TOKEN) {
     Write-Host "  `$env:FKT_SYNTHESIS_GATEWAY_TOKEN = '<같은 값>'   # 커밋 0 · 로그 0" -ForegroundColor DarkGray
 }
 
-python (Join-Path $here 'gateway.py')
+# 🔴 `-u` = 버퍼 끄기. 출력이 파일로 «리다이렉트»되면 python 의 stdout 은 블록 버퍼가 되어,
+#    기동 줄(주소·모델·**프롬프트 경로와 sha**)이 버퍼가 찰 때까지 파일에 안 나타난다.
+#    실측(20:51 · #769 로그 첫 기동): `gateway.log` 90바이트에 run.ps1 의 안내만 있고 gateway.py
+#    의 기동 줄은 0. 로그를 남기게 만들어 놓고 정작 필요한 줄이 안 남는 자리였다.
+#    (stderr 는 원래 버퍼가 없어 접근 로그는 `.err` 로 이미 나왔다 — 그래서 «절반만» 비어 보였다.)
+python -u (Join-Path $here 'gateway.py')

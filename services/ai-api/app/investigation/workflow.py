@@ -37,6 +37,7 @@ from ..retrieval import graphrag  # noqa: E402
 from ..retrieval.embedding import MODEL_ID, embed_query, ensure_ready  # noqa: E402
 from ..retrieval import vector as vector_mod  # noqa: E402
 from ..retrieval.vector import search as vector_search  # noqa: E402
+from ..retrieval.vector import excerpt as make_excerpt  # noqa: E402 — 발췌 규칙은 한 벌이다
 from . import structured as structured_reader  # noqa: E402
 from . import synthesize as synth  # noqa: E402
 from . import work_order as wo  # noqa: E402
@@ -64,6 +65,10 @@ class State(TypedDict, total=False):
     citations: dict[str, str]
     graphTargets: dict[str, int]
     graphPaths: list[dict[str, Any]]
+    # 🔴 **graph 가 «문서로 옮겨 온» 인용**(D-85). `citations`(vector) 와 **따로** 둔다 —
+    #    같은 키에 병합해 실으면 순서가 바뀌는 날 vector 5건이 조용히 사라진다.
+    #    이름에 출처를 담은 이유도 같다: 발췌가 어느 단계에서 왔는지 키가 말한다.
+    graphDocumentCitations: dict[str, str]
     candidates: list[dict[str, Any]]
     workOrderDraft: dict[str, Any] | None
     evidenceIds: list[str]
@@ -195,9 +200,50 @@ def build_graph(ctx: Context):
                 **{k: path[k] for k in ("label", "hops", "nodes", "edges")},
             })
             targets[target] = int(path["hops"])
+
+        # 🔴 **O-33 · 도달한 «엔티티»를 그 문서 청크로 옮긴다.** 앞판은 `SOP-BRG-INSP-014`·
+        #    `SAF-LOTO-01` 에 도달하고도 `graph-path` 근거만 냈다. 기대 근거는 **청크 id** 라,
+        #    아무리 잘 걸어도 근거집합에는 0건이었다(GS-01 실측: graph 가 낸 doc-chunk 0건).
+        # 🔴 푸는 자리는 **vector 단계와 같은 `evidence_reader`** 다. 여기서 따로 조회해 만들면
+        #    같은 근거가 두 표면에서 다른 신뢰 배지를 달 수 있다(vector 단계 주석과 같은 이유).
+        # 🔴 이미 있는 id 는 «건너뛰고 센다» — 한 근거는 한 번이다. 조용히 빼면 「투영이 0건인
+        #    run」과 「전부 중복이라 0건인 run」이 같은 표를 그린다.
+        projected = 0
+        duplicated = 0
+        # 🔴 **D-85**: 근거집합에 넣는 것만으로는 모델이 그 청크를 «볼» 수 없다.
+        #    `build_evidence_text` 가 훑는 자리에 본문을 실어야 인용이 가능해진다 —
+        #    앞판은 이 자리가 비어 있어서 모델이 인용을 «안» 한 게 아니라 «못» 했고,
+        #    했다면 게이트웨이가 「인용 id 가 준 근거 밖이다」로 답 전체를 버렸다.
+        projected_texts: dict[str, str] = {}
+        for chunk_id in await evidence_reader.documents_for_entities(ctx.pool, sorted(targets)):
+            if chunk_id in ctx.evidence_ids:
+                duplicated += 1
+                continue
+            detail = await evidence_reader.fetch(ctx.pool, chunk_id)
+            if detail is None or detail.kind != "doc-chunk":
+                raise RuntimeError(f"투영한 {chunk_id} 를 evidence 표면이 풀지 못한다")
+            ref = evidence_ref(
+                evidence_id=chunk_id,
+                kind="doc-chunk",
+                source_id=detail.revisionId or chunk_id,
+                excerpt=make_excerpt(detail.text),
+                revision_id=detail.revisionId,
+                content_hash=detail.contentHash,
+                stale=detail.stale,
+            )
+            ctx.emitter.step_evidence("graph", ref)
+            ctx.evidence_ids.append(chunk_id)
+            projected_texts[chunk_id] = detail.text
+            projected += 1
+
         return (
-            {"graphTargets": targets, "graphPaths": stored},
-            f"경로 {len(stored)}건 · 종단 {sorted(targets)}",
+            {
+                "graphTargets": targets,
+                "graphPaths": stored,
+                "graphDocumentCitations": projected_texts,
+            },
+            f"경로 {len(stored)}건 · 종단 {sorted(targets)}"
+            f" · 문서 투영 {projected}건(중복 제외 {duplicated}건)",
         )
 
     @_step(ctx, "synthesize")

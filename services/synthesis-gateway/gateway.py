@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import hmac
 import ipaddress
 import json
@@ -37,7 +38,53 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 HERE = Path(__file__).resolve().parent
-SYSTEM_PROMPT_FILE = HERE / "system_prompt.txt"
+
+# 🔴 **프롬프트는 «어디서 읽을지»를 밖에서 정할 수 있어야 한다**(T7-42 · A-1). 앞판은 `HERE`
+#    고정이었고, 그 `HERE` 가 곧 «메인 체크아웃»이라 develop 병합 + ff 만으로 production
+#    게이트웨이의 프롬프트가 재기동 없이 바뀌었다(09-05 19:58 실측 · D-84 ⑥(a)).
+#    미설정이면 지금과 **같은 경로**다 — 좌석 무대·기존 호출자는 손대지 않아도 그대로 돈다.
+PROMPT_FILE_ENV = "SYNTHESIS_GATEWAY_PROMPT_FILE"
+
+
+def prompt_file() -> Path:
+    """읽을 시스템 프롬프트 경로. env 가 이기고, 없으면 이 파일 옆(`HERE`)이다."""
+    raw = os.environ.get(PROMPT_FILE_ENV, "").strip()
+    return Path(raw).expanduser() if raw else HERE / "system_prompt.txt"
+
+
+SYSTEM_PROMPT_FILE = prompt_file()
+
+
+def prompt_sha256(path: Path | None = None) -> str | None:
+    """프롬프트 파일 내용 해시 **앞 12자**. 못 읽으면 `None`.
+
+    🔴 **부를 때마다 다시 읽는다.** 기동 시 한 번 재서 캐시하면 「메인 체크아웃 파일을 바꿔도
+       이 값이 안 변한다」는 판정이 **언제나 참**이 되어 검사가 자기 자신을 증명한다 —
+       그 판정을 성립시키는 것이 이 함수의 목적이라, 캐시는 그 목적을 지운다.
+    🔴 **`None` 은 「나쁜 프롬프트」가 아니라 「못 쟀다」**다. 없는 값과 틀린 값을 같은 칸에
+       담지 않는다(소비자는 이 둘에 다르게 행동한다 — 앞은 경로를 보고, 뒤는 내용을 본다).
+    """
+    target = path or SYSTEM_PROMPT_FILE
+    try:
+        return hashlib.sha256(target.read_bytes()).hexdigest()[:12]
+    except OSError:
+        return None
+
+
+def health_payload() -> dict:
+    """`/health` 본문. 무대가 **자기 입으로** 어느 프롬프트로 도는지 말하는 자리."""
+    return {
+        "ok": True,
+        "timeoutMs": TIMEOUT_MS,
+        "model": MODEL or "cli-default",
+        "effort": EFFORT or "cli-default",
+        "promptPath": str(SYSTEM_PROMPT_FILE),
+        "promptSha256": prompt_sha256(),
+    }
+
+# 재요청 1회에 실리는 가드 통지의 길이 상한(D-84). 통지는 우리 층이 만든 문장이고 안의 id 는
+# `SAF-[A-Za-z0-9-]+` 로 제한돼 있다 — 그래도 프롬프트에 실리는 값이므로 자른다.
+MAX_GUARD_NOTICE = 300
 
 # 박은 값 0 — 포트·타임아웃·CLI 경로·모델은 여기 한 곳에서만 읽는다.
 # 기본은 루프백이다 — 배포 컨테이너에서 닿게 하려면 «명시적으로» 0.0.0.0 을 준다.
@@ -294,14 +341,20 @@ def synthesize(req: dict, on_sentence=None) -> dict:
     if EFFORT:
         argv += ["--effort", EFFORT]
 
-    prompt = json.dumps(
-        {
-            "anchor": request.get("anchor"),
-            "candidates": request["candidates"],
-            "evidenceText": evidence_text,
-        },
-        ensure_ascii=False,
-    )
+    # 🔴 `guardNotice` 는 **옵트인 · 앞뒤 호환**이다(스트리밍 Accept 와 같은 관례). 앞판 클라이언트는
+    #    이 키를 안 보내고, 그때 프롬프트는 이전과 «바이트로» 같다 — 없는 키를 `null` 로라도 실으면
+    #    모든 회차의 입력이 달라져 앞 회차와 비교할 수 없게 된다.
+    # 🔴 문자열만 · 길이 상한. 이 값은 호출자(ai-api)의 가드가 만든 문장이지 발췌에서 온 말이 아니다 —
+    #    그래도 안에 담기는 id 는 발췌에서 뽑은 것이라 상한을 두고 자른다.
+    payload: dict = {
+        "anchor": request.get("anchor"),
+        "candidates": request["candidates"],
+        "evidenceText": evidence_text,
+    }
+    notice = request.get("guardNotice")
+    if isinstance(notice, str) and notice.strip():
+        payload["guardNotice"] = notice.strip()[:MAX_GUARD_NOTICE]
+    prompt = json.dumps(payload, ensure_ascii=False)
 
     started = time.perf_counter()
     sentences: list[dict] = []
@@ -469,15 +522,7 @@ class Handler(BaseHTTPRequestHandler):
             self._reject_unauthorized()
             return
         if self.path.rstrip("/") == "/health":
-            self._send(
-                200,
-                {
-                    "ok": True,
-                    "timeoutMs": TIMEOUT_MS,
-                    "model": MODEL or "cli-default",
-                    "effort": EFFORT or "cli-default",
-                },
-            )
+            self._send(200, health_payload())
             return
         self._send(404, {"rejectedReason": "없는 경로"})
 
@@ -645,6 +690,8 @@ def main() -> int:
     server = HTTPServer((BIND, PORT), Handler)
     print(f"synthesis-gateway · http://{BIND}:{PORT} · timeout {TIMEOUT_MS}ms · 동시 1")
     print(f"모델 = {MODEL or 'CLI 기본(미지정)'} · effort = {EFFORT or 'CLI 기본'} · CLI = {CLI_BIN}")
+    # 어느 프롬프트로 뜨는지 기동 로그에서 바로 읽힌다 — `/health` 와 같은 값이다.
+    print(f"프롬프트 = {SYSTEM_PROMPT_FILE} · sha256[:12] = {prompt_sha256() or '(못 읽음)'}")
     # 값이 아니라 «있다/없다»만 말한다.
     print(f"토큰 = {'설정됨(모든 라우트가 요구한다)' if TOKEN else '없음 — 루프백 전용'}")
     try:

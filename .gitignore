@@ -51,3 +51,6 @@ graph-dump.txt
 
 # O-21 — tests/web 는 npm 층(package-lock.json 추적) · pnpm 이 만든 lockfile 은 산출물
 tests/web/pnpm-lock.yaml
+
+# 답변 축 채점기 --gate-only 무인자 scratch(#780 · 매번 재생성 · 정본 아님)
+benchmarks/eval-answer-gate-latest.json

@@ -29,6 +29,7 @@ from starlette.exceptions import HTTPException  # 🔴 `contract_error` 가 내�
 from starlette.requests import Request
 
 from app import session_guard
+from app.routers import investigations
 from app.session_store import SESSION_COOKIE
 
 COOKIE_SESSION = "cookie-session-1"
@@ -73,12 +74,6 @@ def test_guard_does_not_carry_a_body_only_session() -> None:
 
 def _run_replay(monkeypatch: pytest.MonkeyPatch, *, guard: str | None, body: str) -> str | None:
     """replay 갈래로 `start_run` 을 돌리고 «등록에 쓰인 세션»을 돌려준다."""
-    # 🔴 라우터 import 체인은 `langgraph` 를 요구하고, CI 설치 목록(pytest·pydantic·fastapi·
-    #    pydantic-settings)에는 그것이 없다. 그래서 이 두 건만 건너뛴다 — 위 가드 두 건은
-    #    그대로 돌고, 건너뛴다는 사실은 pytest 요약에 수로 남는다(조용한 초록 방지).
-    pytest.importorskip("langgraph", reason="라우터 import 체인이 요구 — CI 설치 목록에 없다")
-    from app.routers import investigations
-
     seen: dict[str, str | None] = {}
 
     def fake_start(store: object, *, session_id: str | None, anchor: object, events: object) -> object:
