@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 
-import { IconMark, IconQuestion } from "@/components/icons";
+import { IconMark } from "@/components/icons";
 import { FallbackBanner, LiveStatusProvider, ModeBadge, RunCapCounter } from "@/components/live-status";
 import { NavDrawer } from "@/components/nav-drawer";
 import { ResetButton } from "@/components/reset-button";

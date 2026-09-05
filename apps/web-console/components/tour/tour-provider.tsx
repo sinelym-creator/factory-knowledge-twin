@@ -11,7 +11,6 @@ import {
   openedFrom,
   parseTourState,
   type TourState,
-  type TourStatus,
 } from "@/components/tour/tour-state";
 
 /**
@@ -64,12 +63,17 @@ export function TourProvider() {
   /* 「나중에」 = 이 탭에서만 접는다. 저장으로 남기면 «명시적으로 고르지 않은 것»이 영구가 된다. */
   const [laterHidden, setLaterHidden] = useState(false);
 
+  /* 🔴 `set-state-in-effect` 를 여기서만 끈다 — 이 효과는 «외부 저장소(localStorage)를 읽어
+     React 상태로 들여오는» 자리다. 규칙이 권하는 형태(렌더 중 파생)로 바꾸려면 저장소 읽기가
+     렌더에 들어가야 하는데, 그러면 서버 렌더에서 `window` 가 없어 첫 페인트가 죽는다. 상태를
+     null 로 두고 첫 페인트에 아무것도 안 그리는 이 설계(위 주석)가 판정선이라 유지한다. */
   useEffect(() => {
     const loaded = readState();
     // `?tour=1` 로 들어오면 «다시 보기»다 — 끝냈거나 건너뛴 사람도 열 수 있어야 한다(규격 ①-3).
     if (wants && loaded.status !== "running") {
       const resumed: TourState = openedFrom(loaded);
       writeState(resumed);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(resumed);
       return;
     }
