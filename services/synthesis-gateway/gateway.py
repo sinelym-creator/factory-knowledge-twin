@@ -80,6 +80,13 @@ def health_payload() -> dict:
         "effort": EFFORT or "cli-default",
         "promptPath": str(SYSTEM_PROMPT_FILE),
         "promptSha256": prompt_sha256(),
+        # 🔴 기동 경로가 둘이면 「어느 인자 세트로 떴는가」를 **값으로** 봐야 한다(O-40).
+        #    promote 판은 `-Bind`·`-Token` 을 안 주고 떴고 autostart 판은 줬다 — 그 갈림이
+        #    무인증 200 과 401 로, 컨테이너 도달 가능과 루프백 한정으로 나뉘었는데
+        #    `/health` 본문만 봐서는 두 무대가 구별되지 않았다.
+        # 🔴 토큰은 **있다/없다만** 낸다. 값을 실으면 이 응답 자체가 유출 경로가 된다.
+        "bind": BIND,
+        "authRequired": bool(TOKEN),
     }
 
 # 재요청 1회에 실리는 가드 통지의 길이 상한(D-84). 통지는 우리 층이 만든 문장이고 안의 id 는

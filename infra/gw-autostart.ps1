@@ -51,7 +51,7 @@ if ($h -match '"ok"\s*:\s*true') {
 # 3) 기동 — 산출물의 run.ps1 · 프롬프트도 같은 디렉터리
 $p = Start-Process -FilePath 'pwsh' -ArgumentList @(
         '-NoProfile', '-File', (Join-Path $artifacts 'run.ps1'),
-        '-Bind', '0.0.0.0', '-Token', $tok, '-Model', 'opus', '-Effort', 'medium',
+        '-Bind', '0.0.0.0', '-Token', $tok, '-Model', 'opus', '-Effort', 'low',
         '-PromptFile', (Join-Path $artifacts 'system_prompt.txt')
      ) -WorkingDirectory $artifacts -RedirectStandardOutput $gwlog -RedirectStandardError "$gwlog.err" -PassThru -WindowStyle Hidden
 L "spawned gateway pid=$($p.Id)"
