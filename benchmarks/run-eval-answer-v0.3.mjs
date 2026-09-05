@@ -55,6 +55,43 @@ function assertWritable(files) {
     }
   }
 }
+/**
+ * 🔴 교정의 기준은 «상수»가 아니라 «그 기준선이 스스로 기록해 둔 값»이다.
+ *    앞판은 「before 지표 6 은 전부 1」을 박아 두었는데, 그 1 은 O-33 «전» 기준선의 사실이었다 —
+ *    기준선이 정당하게 움직인 순간 그 상수가 「drift」를 외쳤다(#783 회부).
+ *    양쪽에 «다 있는» 축만 센다. 옛 report 는 옛 채점기 산출이라 필드가 다를 수 있고,
+ *    한쪽에만 있는 축을 불일치로 세면 없는 drift 를 만든다. 센 축 수를 값으로 함께 낸다.
+ */
+function stabilityAxes(row) {
+  const out = {};
+  const put = (k, v) => { if (v !== undefined && v !== null) out[k] = v; };
+  put('m6ById', row && row.m6 && row.m6.byId);
+  put('m6ByAlias', row && row.m6 && row.m6.byAlias);
+  put('m5Unsupported', row && row.m5_unsupported);
+  put('m1NarrowAllHit', row && row.m1 && row.m1.narrowAllHit);
+  put('m1WideAllHit', row && row.m1 && row.m1.wideAllHit);
+  put('m7RequiredHitCount', row && row.m7 && Array.isArray(row.m7.requiredHit) ? row.m7.requiredHit.length : undefined);
+  put('runEvidenceCount', row && row.runEvidenceCount);
+  return out;
+}
+function baselineStabilityVerdict(recordedRows, rescoredRows) {
+  const rec = new Map((recordedRows || []).filter((r) => r && r.runId).map((r) => [r.runId, stabilityAxes(r)]));
+  let axesCompared = 0;
+  const mismatches = [];
+  for (const row of rescoredRows || []) {
+    const was = rec.get(row.runId);
+    if (!was) continue;
+    const now = stabilityAxes(row);
+    for (const k of Object.keys(was)) {
+      if (!(k in now)) continue;
+      axesCompared += 1;
+      if (was[k] !== now[k]) mismatches.push({ runId: row.runId, axis: k, recorded: was[k], now: now[k] });
+    }
+  }
+  // 🔴 「못 잼」은 「안정」이 아니다 — 0 축을 대조하고 초록을 내면 교정이 사라진다.
+  return { stable: axesCompared === 0 ? null : mismatches.length === 0, axesCompared, mismatches };
+}
+
 const GATE_ONLY = has('gate-only');
 const ANCHOR_QID = arg('anchor-question', 'Q-MULTIHOP-001'); // binding.py SCENARIO_ANCHORS['GS-01'].questionId
 const SCENARIO = arg('scenario', 'GS-01');
@@ -421,6 +458,19 @@ function runGate(gt, alias) {
       && outGuardVerdict({ sizeOf: 0, overwrite: false }) === 'ok'
       && outGuardVerdict({ sizeOf: 42, overwrite: true }) === 'ok');
 
+  // 🔴 교정 판정도 «양면»으로 시험한다. 한쪽만 보면 「전부 안정이라 부르는 눈」이나
+  //    「전부 drift 라 부르는 눈」이 초록이 된다. ⓒ 는 「못 잼」이 초록으로 새지 않는지.
+  rawCell('baseline_stability_both_sides', '교정 판정 — 움직인 기준선은 drift 아님 · 진짜 drift 는 잡음 · 대조할 기록이 없으면 미판정',
+    () => {
+      const now0 = [{ runId: 'R1', m6: { byId: 0, byAlias: 0 } }];
+      const moved = baselineStabilityVerdict([{ runId: 'R1', m6: { byId: 0, byAlias: 0 } }], now0);
+      const drift = baselineStabilityVerdict([{ runId: 'R1', m6: { byId: 1, byAlias: 1 } }], now0);
+      const blind = baselineStabilityVerdict([], now0);
+      return moved.stable === true && moved.axesCompared > 0
+        && drift.stable === false && drift.mismatches.length > 0
+        && blind.stable === null && blind.axesCompared === 0;
+    });
+
   return cells;
 }
 
@@ -581,12 +631,24 @@ if (BASELINE_RAW) {
     after_m5PerSentence: col(scored, (s) => s.m5_perSentence.count),
     before_totalMs: col(baseScored, (s) => s.m8.totalMs),
     after_totalMs: col(scored, (s) => s.m8.totalMs),
-    // 🔴 이 한 줄이 교정의 전부다: 옛 값이 흔들렸다면 계측기가 변한 것이고, after 를 대상의 답으로 읽을 수 없다.
-    baselineStable_expect_all_1: col(baseScored, (s) => s.m6.byId).every((x) => x === 1),
+    // 🔴 교정의 전부: 그 기준선이 «스스로 기록해 둔» 값이 지금 채점기로도 그대로 나오는가.
+    ...(() => {
+      const recPath = BASELINE_RAW.replace(/\.jsonl$/, '-report.json');
+      let recorded = null;
+      try { recorded = JSON.parse(fs.readFileSync(recPath, 'utf8')).perRun || null; } catch { recorded = null; }
+      const v = baselineStabilityVerdict(recorded, baseScored);
+      return {
+        baselineRecordedReport: recPath,
+        baselineStable: v.stable,
+        baselineAxesCompared: v.axesCompared,
+        baselineMismatches: v.mismatches.slice(0, 12),
+      };
+    })(),
   };
   console.error('[calibration] before m6.byId=' + JSON.stringify(report.calibration.before_m6ById)
     + ' after=' + JSON.stringify(report.calibration.after_m6ById)
-    + ' baselineStable=' + report.calibration.baselineStable_expect_all_1);
+    + ' baselineStable=' + report.calibration.baselineStable
+    + ' (axes ' + report.calibration.baselineAxesCompared + ' vs ' + report.calibration.baselineRecordedReport + ')');
 }
 fs.writeFileSync(OUT.replace(/\.jsonl$/, '-report.json'), JSON.stringify(report, null, 1), 'utf8');
 console.error('[done] usable=' + usable.length + '/' + RUNS + ' excluded=' + excluded.length + ' -> ' + OUT);
@@ -594,7 +656,10 @@ console.error('[done] usable=' + usable.length + '/' + RUNS + ' excluded=' + exc
 // 🔴 **보고서를 «쓴 뒤에» 판정을 거부한다.** raw 와 report 는 남겨야 다음 사람이 읽을 수 있고,
 //    exit 2 는 「이 after 값을 대상의 답으로 읽지 마라」는 뜻이다. 기준선이 지금 채점기 아래에서
 //    옛 값을 내지 못하면, 처방 뒤의 0 은 대상이 고쳐진 것인지 내 계측기가 무뎌진 것인지 모른다.
-if (report.calibration && !report.calibration.baselineStable_expect_all_1) {
-  console.error('EXIT2: baseline drifted under the current scorer - after-values are NOT attributable to the target');
+if (report.calibration && report.calibration.baselineStable !== true) {
+  const why = report.calibration.baselineStable === null
+    ? 'baseline has no recorded values to compare against (axesCompared=0) - cannot calibrate'
+    : 'baseline drifted under the current scorer (' + JSON.stringify(report.calibration.baselineMismatches) + ')';
+  console.error('EXIT2: ' + why + ' - after-values are NOT attributable to the target');
   process.exit(2);
 }
