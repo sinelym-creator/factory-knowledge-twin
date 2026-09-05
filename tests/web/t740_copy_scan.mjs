@@ -12,6 +12,7 @@
  *   node t740_copy_scan.mjs --base http://127.0.0.1:8130 --label target --out <json>
  */
 import fs from "node:fs";
+import path from "node:path";
 import { createRequire } from "node:module";
 const require_ = createRequire(import.meta.url);
 const { chromium } = require_("@playwright/test");
@@ -25,10 +26,39 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /* 발주문 그대로. 넓히지도 좁히지도 않는다. */
 const BANNED = "이다\.|한다\.|둔다\.|없다\.|아니다\.|«|»|계약 v0\.|원장|Q-\d|D-\d|T\d-";
-/* 문서 본문 = `data/**` 매뉴얼을 그대로 그리는 자리. 화면 문구가 아니라 «자료»다. */
-const EXCLUDE_SEL = '[data-testid="cited-body"]';
+/* 문서 본문 = `data/**` 매뉴얼을 그대로 그리는 자리. 화면 문구가 아니라 «자료»다.
+ *
+ * 🔴 **O-31 확장(50대)** — 앞판은 `cited-body` 하나였다. 그런데 같은 자료가 조사 화면에서는
+ *    `evidence-card`·`candidate-rationale` 로 그려져 제외에 안 걸렸다(#756 참고 열 6건).
+ *    그렇다고 그 조상을 통째 제외하면 **그 아래 사는 앱 문안까지 눈감는다** — 실측으로
+ *    `evidence-card` 아래 비히트 91노드(「근거 보기」 버튼 등) · `candidate-rationale` 아래 12노드.
+ *
+ * 🔴 그래서 제외는 **«자리 ∧ 출처»의 곱**이다:
+ *      (1) 자리 — 아래 조상 중 하나 안에 있다
+ *      (2) 출처 — 그 문면이 **자료 말뭉치에 실재한다**(`data/replay/**`)
+ *    자리에만 맞고 출처가 없으면 그것은 «앱이 쓴 문장»이라 계속 판정한다.
+ *    검출력을 파는 확장이 아님은 `t740_exclusion_probe.mjs` 의 4열이 같은 실행에서 증명한다
+ *    (앱 문안 주입 ≥1 울림 · 제외 자리+자료 문면 주입 0 · 제외 자리+앱 문안 주입 ≥1 울림). */
+const EXCLUDE_SEL = '[data-testid="cited-body"], [data-testid="evidence-card"], [data-testid="candidate-rationale"]';
+const REPO = arg("repo", "");
+/** 자료 말뭉치 — 비면 「전부 제외」가 되므로 그때는 판정을 거부한다. */
+let CORPUS = "";
+if (REPO) {
+  const dir = path.join(REPO, "data", "replay");
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const f = path.join(d, e.name);
+    if (e.isDirectory()) walk(f); else if (/\.(jsonl|json)$/.test(e.name)) files.push(f); } };
+  if (fs.existsSync(dir)) walk(dir);
+  CORPUS = files.map((f) => fs.readFileSync(f, "utf8")).join(String.fromCharCode(10))
 
-const scan = (page, screen) => page.evaluate(({ re, sel, screen }) => {
+    .replace(/\n/g, " ").replace(/\\"/g, '"')
+    .replace(/\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/\s+/g, " ").trim();
+  if (CORPUS.length < 1000) { console.error("EXIT2: 자료 말뭉치가 사실상 비었다 — 이 상태의 제외는 「전부 제외」다"); process.exit(2); }
+}
+
+const scan = (page, screen) => page.evaluate(({ re, sel, screen, corpus }) => {
   const rx = new RegExp(re, "g");
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const hits = []; let nodes = 0, excludedNodes = 0;
@@ -44,7 +74,10 @@ const scan = (page, screen) => page.evaluate(({ re, sel, screen }) => {
     const cs = getComputedStyle(el);
     if (cs.display === "none" || cs.visibility === "hidden") continue;
     nodes += 1;
-    const inExcluded = !!(el && el.closest(sel));
+    /* 🔴 자리 ∧ 출처 — 자리에만 맞고 말뭉치에 없으면 그것은 앱이 쓴 문장이다(계속 판정). */
+    const inPlace = !!(el && el.closest(sel));
+    const fromSource = corpus ? (t.length >= 24 && corpus.includes(t)) : true;
+    const inExcluded = inPlace && fromSource;
     if (inExcluded) excludedNodes += 1;
     rx.lastIndex = 0;
     const m = t.match(rx);
@@ -56,7 +89,7 @@ const scan = (page, screen) => page.evaluate(({ re, sel, screen }) => {
     mode: set("data-mode"), runcapUsed: set("data-runcap-used"),
     tourPlacement: set("data-tour-placement"), tourClear: set("data-tour-clear"),
   } };
-}, { re: BANNED, sel: EXCLUDE_SEL, screen });
+}, { re: BANNED, sel: EXCLUDE_SEL, screen, corpus: CORPUS });
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
