@@ -22,6 +22,13 @@ param(
     # 산출물 뿌리 — 리포·`_wt/` 밖 고정 경로(D-13). 절대경로를 박지 않는다.
     [string] $Dest = (Join-Path $HOME '.fkt/prod'),
 
+    # 🔴 로그온 예약 작업 `FKT-Gateway-On` 이 부르는 호스트 사본의 «자리»(D-86).
+    #    기본은 실제 경로이고, **시험은 여기에 임시 경로를 준다**. 예전엔 시험이 `$HOME` 을
+    #    임시로 바꿔 격리하려 했는데 `$HOME` 은 ReadOnly 자동 변수라 그 대입이 **조용히
+    #    거부**됐고, 스크립트는 그대로 돌아 production 기동 경로 파일을 갈아치웠다.
+    #    격리를 «호출자의 선의»에 맡기지 않고 인자로 만든다 — 닿을 수 있는 구조를 없앤다.
+    [string] $HostAutostartPath = (Join-Path $HOME '.fkt/gw-autostart.ps1'),
+
     # production 게이트웨이 재기동 = **배포 행위**다. 승격 허가 안에서만 준다.
     [switch] $Restart,
 
@@ -144,18 +151,68 @@ if ($MoveModels) {
     }
 }
 
-# --- ⑦ 재기동(배포 행위 · 승격 허가 안에서만) -------------------------------------------
+# --- ⑦ 호스트 자동 기동 사본 설치(O-40) ------------------------------------------------
+# 🔴 **왜 여기서 하는가.** 로그온 예약 작업 `FKT-Gateway-On` 이 부르는 것은 리포 파일이 아니라
+#    호스트 사본 `~/.fkt/gw-autostart.ps1` 이다. 그 사본을 사람이 손으로 갈아 왔기 때문에
+#    「리포의 인자 세트를 고쳤는데 예약 작업은 옛 사본을 탄다」가 성립했다 — 고친 자리를
+#    부르는 사람이 없는 형태다. 승격 도구가 산출물을 깔 때 이 사본도 같이 간다.
+# 🔴 워킹트리를 복사하지 않는다(이 스크립트의 규율 그대로). `git archive` 로 **승격 sha 의
+#    커밋된 바이트**를 낸다 — cmd 리다이렉트를 쓰는 이유도 위 Export-Tree 와 같다.
+$hostAuto = $HostAutostartPath
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $hostAuto) | Out-Null
+if (Test-Path -LiteralPath $hostAuto) {
+    $before = (Get-FileHash -Algorithm SHA256 -LiteralPath $hostAuto).Hash.ToLower().Substring(0, 12)
+    # 되돌릴 자리를 남긴다 — 사본 교체는 production 기동 경로를 바꾸는 일이다.
+    $backup = "$hostAuto.pre-$($full.Substring(0, 12))"
+    Copy-Item -LiteralPath $hostAuto -Destination $backup -Force
+    Write-Host "호스트 사본 백업 → $backup  (이전 sha256[:12] = $before)"
+} else {
+    Write-Host "호스트 사본이 없었다 — 새로 깐다: $hostAuto" -ForegroundColor DarkGray
+}
+cmd.exe /c "git -C `"$repo`" show `"${full}:infra/gw-autostart.ps1`" > `"$hostAuto`""
+if ($LASTEXITCODE -ne 0) { Write-Error "호스트 사본 설치 실패: $hostAuto"; exit 3 }
+# 🔴 「깔았다」가 아니라 **커밋된 blob 과 바이트로 같은가**로 확인한다.
+$autoProblem = Assert-SameBytes -RelPath 'infra/gw-autostart.ps1' -LocalFile $hostAuto
+if ($autoProblem) { Write-Error $autoProblem; exit 3 }
+$after = (Get-FileHash -Algorithm SHA256 -LiteralPath $hostAuto).Hash.ToLower().Substring(0, 12)
+Write-Host "호스트 사본 설치 = 커밋된 바이트와 일치  (sha256[:12] = $after)" -ForegroundColor Green
+
+# --- ⑧ 재기동(배포 행위 · 승격 허가 안에서만) -------------------------------------------
 if ($Restart) {
-    # 🔴 켜는 것은 **산출물의 run.ps1** 이다(리포의 것이 아니라). 리포 것으로 켜면 방금 끊은
-    #    결합이 그 자리에서 되살아난다 — 프롬프트도 리포에서 읽게 된다.
+    # 🔴 **기동 인자를 이 자리에서 짓지 않는다**(O-40). 예전엔 여기서 산출물 `run.ps1` 을
+    #    `-PromptFile` «만» 주고 켰다 — 그래서 `-Token` 0 · `-Bind` 기본(127.0.0.1) ·
+    #    `-Effort` 0(= gateway.py 기본) 으로 떴고, 같은 production 이 `gw-autostart.ps1` 로 뜰
+    #    때와 **다른 무대**가 됐다(무인증 200 vs 401 · effort 갈림 · 루프백 한정이라
+    #    컨테이너가 `host.docker.internal` 로 못 닿는다). 인자 세트의 정본은
+    #    `gw-autostart.ps1` **한 곳**이고, 여기는 그것을 «부르기만» 한다.
     $switch = Join-Path $repo 'services/synthesis-gateway/switch.ps1'
     Write-Host 'production 게이트웨이를 내린다…' -ForegroundColor Yellow
     pwsh -NoProfile -File $switch off
-    Start-Process -FilePath 'pwsh' -ArgumentList @(
-        '-NoProfile', '-File', (Join-Path $gatewayDir 'run.ps1'),
-        '-PromptFile', $promptFile
-    ) -WindowStyle Hidden
-    Write-Host "산출물 게이트웨이를 올렸다 — `:8787 /health` 의 promptPath 가 $gatewayDir 인지 확인하라" -ForegroundColor Green
+
+    # ⑦ 이 방금 승격 바이트로 깔았으니 예약 작업이든 직접 호출이든 **같은 파일**을 탄다.
+    # 그래도 조회는 한다 — 예약 작업이 없거나 꺼져 있으면 「걸었다」가 거짓이 되기 때문이다.
+    $task   = Get-ScheduledTask -TaskName 'FKT-Gateway-On' -ErrorAction SilentlyContinue
+    $reason = ''
+    if (-not $task) {
+        $reason = '예약 작업 FKT-Gateway-On 이 없다'
+    } elseif ($task.State -eq 'Disabled') {
+        $reason = '예약 작업 FKT-Gateway-On 이 Disabled 다'
+    }
+
+    if ($reason) {
+        Write-Host "기동 경로 = 호스트 사본 직접 호출(폴백) · 사유 = $reason" -ForegroundColor Yellow
+        pwsh -NoProfile -File $hostAuto
+        $rc = $LASTEXITCODE
+        # 🔴 종료코드를 «그대로» 적는다. 0 만 성공이고 3 은 「리포 프롬프트로 떠 있다」는
+        #    다른 사실이다 — 둘을 「올렸다」 한 문장으로 덮으면 승격 창에서 못 가른다.
+        Write-Host "gw-autostart 종료코드 = $rc" -ForegroundColor $(if ($rc -eq 0) { 'Green' } else { 'Red' })
+    } else {
+        Write-Host "기동 경로 = 예약 작업 FKT-Gateway-On(호스트 사본 = 승격 바이트 $after)" -ForegroundColor Green
+        # 🔴 `Start-ScheduledTask` 는 «걸었다»만 말한다 — 떴는지는 아래 안내대로 두드려 본다.
+        Start-ScheduledTask -TaskName 'FKT-Gateway-On'
+    }
+
+    Write-Host "기동을 걸었다 — `:8787 /health` 의 promptPath=$gatewayDir · bind=0.0.0.0 · authRequired=true 를 확인하라" -ForegroundColor Green
 }
 
 exit 0
