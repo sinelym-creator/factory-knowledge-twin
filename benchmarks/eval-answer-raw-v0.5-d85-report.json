@@ -1,0 +1,573 @@
+{
+ "measuredAt": "2026-09-05T13:03:37.892Z",
+ "base": "(score-raw · 발사 0)",
+ "scenario": "GS-01",
+ "anchorQuestionId": "Q-MULTIHOP-001",
+ "runsRequested": 3,
+ "runsUsable": 3,
+ "excluded": [],
+ "syntheses": [
+  {
+   "axis": "live",
+   "model": "claude-opus-5"
+  },
+  {
+   "axis": "live",
+   "model": "claude-opus-5"
+  },
+  {
+   "axis": "live",
+   "model": "claude-opus-5"
+  }
+ ],
+ "perRun": [
+  {
+   "runId": "RUN-9bf3ec2d1012",
+   "reused": null,
+   "answerChars": 436,
+   "sentenceCount": 5,
+   "m1": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": false,
+     "EQ-CNC-204": false,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": false,
+    "wideAllHit": false
+   },
+   "m1_withEvidence": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": true,
+     "EQ-CNC-204": true,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": true,
+    "wideAllHit": true
+   },
+   "m5_unsupported": 0,
+   "m5_perSentence": {
+    "measurable": true,
+    "sentences": 5,
+    "count": 0,
+    "citationsPerSentence": [
+     3,
+     2,
+     4,
+     1,
+     2
+    ]
+   },
+   "m6": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m6_withEvidence": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m7": {
+    "citedCount": 9,
+    "cited": [
+     "AL-20260826-0041",
+     "SN-204-VIB",
+     "GP-9bf3ec2d1012-01",
+     "MR-2025-0087",
+     "DOC-MAN-0021@r1#006",
+     "GP-9bf3ec2d1012-03",
+     "GP-9bf3ec2d1012-04",
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredHit": [
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredTotal": 2,
+    "outsideRunEvidence": 0
+   },
+   "m7_stimulusPresent": [
+    {
+     "evidenceId": "DOC-SOP-0014@r2#001",
+     "inRunEvidence": true
+    },
+    {
+     "evidenceId": "DOC-SAF-0029@r3#000",
+     "inRunEvidence": true
+    }
+   ],
+   "runEvidenceCount": 23,
+   "runEvidenceRawCount": 23,
+   "runEvidenceDuplicates": 0,
+   "m8": {
+    "totalMs": 13640,
+    "steps": {
+     "structured": 16,
+     "vector": 109,
+     "graph": 32,
+     "synthesize": 13438,
+     "draft_work_order": 18
+    },
+    "stepsSelfReported": {
+     "structured": 15,
+     "vector": 109,
+     "graph": 32,
+     "synthesize": 13438,
+     "draft_work_order": 18
+    }
+   }
+  },
+  {
+   "runId": "RUN-6bcc7c84c747",
+   "reused": null,
+   "answerChars": 424,
+   "sentenceCount": 5,
+   "m1": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": false,
+     "EQ-CNC-204": false,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": false,
+    "wideAllHit": false
+   },
+   "m1_withEvidence": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": true,
+     "EQ-CNC-204": true,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": true,
+    "wideAllHit": true
+   },
+   "m5_unsupported": 0,
+   "m5_perSentence": {
+    "measurable": true,
+    "sentences": 5,
+    "count": 0,
+    "citationsPerSentence": [
+     3,
+     2,
+     4,
+     2,
+     2
+    ]
+   },
+   "m6": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m6_withEvidence": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m7": {
+    "citedCount": 11,
+    "cited": [
+     "AL-20260826-0041",
+     "SN-204-VIB",
+     "GP-6bcc7c84c747-01",
+     "MR-2025-0087",
+     "DOC-MAN-0021@r1#006",
+     "GP-6bcc7c84c747-03",
+     "GP-6bcc7c84c747-04",
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000",
+     "MR-2025-0095",
+     "MR-2026-0006"
+    ],
+    "requiredHit": [
+     "DOC-SOP-0014@r2#001",
+     "DOC-SAF-0029@r3#000"
+    ],
+    "requiredTotal": 2,
+    "outsideRunEvidence": 0
+   },
+   "m7_stimulusPresent": [
+    {
+     "evidenceId": "DOC-SOP-0014@r2#001",
+     "inRunEvidence": true
+    },
+    {
+     "evidenceId": "DOC-SAF-0029@r3#000",
+     "inRunEvidence": true
+    }
+   ],
+   "runEvidenceCount": 23,
+   "runEvidenceRawCount": 23,
+   "runEvidenceDuplicates": 0,
+   "m8": {
+    "totalMs": 13753,
+    "steps": {
+     "structured": 10,
+     "vector": 71,
+     "graph": 54,
+     "synthesize": 13596,
+     "draft_work_order": 6
+    },
+    "stepsSelfReported": {
+     "structured": 9,
+     "vector": 70,
+     "graph": 54,
+     "synthesize": 13595,
+     "draft_work_order": 5
+    }
+   }
+  },
+  {
+   "runId": "RUN-f93a4169b5f8",
+   "reused": null,
+   "answerChars": 343,
+   "sentenceCount": 5,
+   "m1": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": false,
+     "EQ-CNC-204": false,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": false,
+    "wideAllHit": false
+   },
+   "m1_withEvidence": {
+    "ids": [
+     "AL-20260826-0041",
+     "EQ-CNC-204",
+     "SOP-BRG-INSP-014"
+    ],
+    "narrowIds": [
+     "EQ-CNC-204"
+    ],
+    "proseItems": [],
+    "perId": {
+     "AL-20260826-0041": true,
+     "EQ-CNC-204": true,
+     "SOP-BRG-INSP-014": true
+    },
+    "narrowAllHit": true,
+    "wideAllHit": true
+   },
+   "m5_unsupported": 0,
+   "m5_perSentence": {
+    "measurable": true,
+    "sentences": 5,
+    "count": 0,
+    "citationsPerSentence": [
+     3,
+     1,
+     3,
+     1,
+     1
+    ]
+   },
+   "m6": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m6_withEvidence": {
+    "byId": 0,
+    "byAlias": 0,
+    "detail": {
+     "SAF-LOTO-01": {
+      "idHit": true,
+      "aliasHit": true
+     }
+    }
+   },
+   "m7": {
+    "citedCount": 8,
+    "cited": [
+     "AL-20260826-0041",
+     "SN-204-VIB",
+     "GP-f93a4169b5f8-01",
+     "MR-2025-0087",
+     "DOC-SOP-0014@r2#001",
+     "GP-f93a4169b5f8-03",
+     "GP-f93a4169b5f8-04",
+     "DOC-MAN-0021@r1#006"
+    ],
+    "requiredHit": [
+     "DOC-SOP-0014@r2#001"
+    ],
+    "requiredTotal": 2,
+    "outsideRunEvidence": 0
+   },
+   "m7_stimulusPresent": [
+    {
+     "evidenceId": "DOC-SOP-0014@r2#001",
+     "inRunEvidence": true
+    },
+    {
+     "evidenceId": "DOC-SAF-0029@r3#000",
+     "inRunEvidence": true
+    }
+   ],
+   "runEvidenceCount": 23,
+   "runEvidenceRawCount": 23,
+   "runEvidenceDuplicates": 0,
+   "m8": {
+    "totalMs": 11945,
+    "steps": {
+     "structured": 7,
+     "vector": 50,
+     "graph": 23,
+     "synthesize": 11849,
+     "draft_work_order": 5
+    },
+    "stepsSelfReported": {
+     "structured": 6,
+     "vector": 49,
+     "graph": 22,
+     "synthesize": 11848,
+     "draft_work_order": 5
+    }
+   }
+  }
+ ],
+ "m8_totalSamples": [
+  13640,
+  13753,
+  11945
+ ],
+ "m8_totalMedian": 13640,
+ "m8_stepSamples": {
+  "structured": [
+   16,
+   10,
+   7
+  ],
+  "vector": [
+   109,
+   71,
+   50
+  ],
+  "graph": [
+   32,
+   54,
+   23
+  ],
+  "synthesize": [
+   13438,
+   13596,
+   11849
+  ],
+  "draft_work_order": [
+   18,
+   6,
+   5
+  ]
+ },
+ "crossRun": {
+  "identicalAnswerChars": false,
+  "identicalCitedSets": false,
+  "m5Samples": [
+   0,
+   0,
+   0
+  ],
+  "m5PerSentenceSamples": [
+   0,
+   0,
+   0
+  ],
+  "m6IdSamples": [
+   0,
+   0,
+   0
+  ]
+ },
+ "gateCells": [
+  {
+   "name": "truth",
+   "ok": true
+  },
+  {
+   "name": "planted_missing_sop",
+   "ok": true
+  },
+  {
+   "name": "planted_missing_safety",
+   "ok": true
+  },
+  {
+   "name": "control_citations_stripped",
+   "ok": true
+  },
+  {
+   "name": "boundary_korean_josa",
+   "ok": true
+  },
+  {
+   "name": "boundary_longer_id",
+   "ok": true
+  },
+  {
+   "name": "alias_splits_columns",
+   "ok": true
+  },
+  {
+   "name": "evidence_only_splits_faces",
+   "ok": true
+  },
+  {
+   "name": "named_with_evidence_scores_zero",
+   "ok": true
+  },
+  {
+   "name": "sentence_face_counts_uncited",
+   "ok": true
+  },
+  {
+   "name": "sentence_face_absent_is_null",
+   "ok": true
+  },
+  {
+   "name": "stimulus_absent_is_named",
+   "ok": true
+  },
+  {
+   "name": "public_surface_blocked",
+   "ok": true
+  },
+  {
+   "name": "evidence_duplicates_counted",
+   "ok": true
+  },
+  {
+   "name": "out_guard_both_sides",
+   "ok": true
+  }
+ ],
+ "calibration": {
+  "baselineFile": "benchmarks/eval-answer-raw-v0.3.jsonl",
+  "baselineRuns": [
+   "RUN-a4a1a4d83ac5",
+   "RUN-5d29b2e5d99e",
+   "RUN-885ab5887969"
+  ],
+  "before_m6ById": [
+   1,
+   1,
+   1
+  ],
+  "before_m6ByAlias": [
+   1,
+   1,
+   1
+  ],
+  "before_safetyNamedInAnswer": [
+   false,
+   false,
+   false
+  ],
+  "after_m6ById": [
+   0,
+   0,
+   0
+  ],
+  "after_m6ByAlias": [
+   0,
+   0,
+   0
+  ],
+  "after_safetyNamedInAnswer": [
+   true,
+   true,
+   true
+  ],
+  "before_m5PerSentence": [
+   0,
+   0,
+   0
+  ],
+  "after_m5PerSentence": [
+   0,
+   0,
+   0
+  ],
+  "before_totalMs": [
+   13156,
+   11802,
+   13225
+  ],
+  "after_totalMs": [
+   13640,
+   13753,
+   11945
+  ],
+  "baselineStable_expect_all_1": true
+ }
+}
