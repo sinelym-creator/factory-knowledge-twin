@@ -19,18 +19,35 @@ param(
     [string] $Action,
 
     # 🔴 박은 값은 **여기 한 곳**뿐이다. 아래 본문에는 포트·이름 리터럴이 없다.
-    [string] $Worktree     = (Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) '_wt/develop-stage'),
+    # 🔴 `$Worktree` 만 비워 두고 아래에서 푼다 — param 기본값은 **스크립트 위치**로 셈할 수밖에
+    #    없는데, 이 스크립트는 워크트리 안에서도 불린다. 위치로 셈하면 `_wt/senku2-x/infra` →
+    #    `_wt` → `_wt/_wt/develop-stage` 로 겹쳤다(실측 20:38 · 메인 체크아웃에서는 정상이라
+    #    호출자가 오케 한 명일 때만 참인 기본값이었다).
+    [string] $Worktree,
     [int]    $ApiPort      = 8020,
     [int]    $GatewayPort  = 8797,
     [string] $Container    = 'fkt-dev-ai-api',
     [string] $ImageRepo    = 'fkt-ai-api',
     # 검증 스택의 데이터 — `:8090`·`:8091` 이 보는 것과 같은 DB(읽기 공유).
     [int]    $PostgresPort = 5534,
-    [int]    $Neo4jBolt    = 7587
+    [int]    $Neo4jBolt    = 7587,
+    # 🔴 게이트웨이 로그는 **워크트리 밖** 고정 자리에 둔다 — 워크트리는 `refresh` 가 checkout 으로
+    #    갈아엎고 제거 대상이 되는 곳이라, 안에 로그를 두면 「셀 대상이 없다」가 된다($HOME 기준 · 절대경로 0).
+    [string] $LogDir       = (Join-Path $HOME '.fkt/dev')
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = (git -C (Split-Path -Parent $PSScriptRoot) rev-parse --show-toplevel)
+
+if (-not $Worktree) {
+    # 🔴 `--git-common-dir` 은 **메인 체크아웃의 `.git`** 을 가리킨다 — 워크트리 안에서 불러도
+    #    같은 곳이다(`--show-toplevel` 은 «부른 워크트리»를 답하므로 여기 쓸 수 없다).
+    #    무대는 언제나 «메인 체크아웃의 형제»인 `_wt/develop-stage` 하나다.
+    $common = (git -C $PSScriptRoot rev-parse --path-format=absolute --git-common-dir)
+    if (-not $common) { Write-Error '리포를 찾지 못했다'; exit 2 }
+    $mainCheckout = Split-Path -Parent $common
+    $Worktree = Join-Path (Split-Path -Parent $mainCheckout) '_wt/develop-stage'
+}
 
 # 🔴 production 3면과 «절대로» 겹치지 않는다. 인자로 덮어쓸 수 있는 값이라, 덮어쓴 값이
 #    production 을 가리키면 여기서 멈춘다 — 「검증하려다 production 을 만졌다」의 유일한 예방은
@@ -99,11 +116,29 @@ function Start-DevGateway {
         Write-Warning ":$GatewayPort 를 pid $existing 가 점유 중이다 — 게이트웨이가 아니다. 손대지 않는다."
         return $existing
     }
-    $p = Start-Process -FilePath 'pwsh' -ArgumentList @(
+    New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+    $outLog = Join-Path $LogDir 'gateway.log'
+    $errLog = Join-Path $LogDir 'gateway.log.err'
+    # 🔴 앞판은 출력을 아무 데도 안 보냈다 — 게이트웨이가 죽어도 **왜 죽었는지가 없었다**.
+    #    두 파일은 서로 달라야 한다(같은 경로를 주면 Start-Process 가 거부한다) · 기동마다
+    #    덮어쓴다(회전 없음 — 지난 회차가 필요하면 기동 «전»에 떠 두라).
+    $null = Start-Process -FilePath 'pwsh' -ArgumentList @(
             '-NoProfile', '-File', $runPs1, '-Port', "$GatewayPort", '-PromptFile', $promptFile
-         ) -WorkingDirectory (Split-Path -Parent $runPs1) -PassThru -WindowStyle Hidden
-    Start-Sleep -Seconds 3
-    return $p.Id
+         ) -WorkingDirectory (Split-Path -Parent $runPs1) `
+           -RedirectStandardOutput $outLog -RedirectStandardError $errLog `
+           -PassThru -WindowStyle Hidden
+
+    # 🔴 돌려주는 것은 **리스너 pid** 다. `Start-Process` 가 주는 것은 `pwsh` 껍데기이고 포트를
+    #    들고 있는 것은 그 자식 python 이다(실측 20:38 — 껍데기 25396 / 리스너 24192).
+    #    껍데기 pid 를 보고하면 운영자가 「그 pid 를 죽였는데 포트가 살아 있다」를 만난다.
+    #    못 찾으면 **0** 을 돌려준다 — 그럴듯한 pid 를 대신 내지 않는다.
+    for ($i = 0; $i -lt 10; $i++) {
+        $listener = Get-ListenerPid -OnPort $GatewayPort
+        if ($listener -ne 0) { return $listener }
+        Start-Sleep -Milliseconds 500
+    }
+    Write-Warning "게이트웨이가 :$GatewayPort 에 안 떴다 — 로그: $outLog · $errLog"
+    return 0
 }
 
 function Stop-DevGateway {
