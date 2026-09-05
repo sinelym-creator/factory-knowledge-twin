@@ -363,6 +363,14 @@ export function RunConsole({
    *    채우면, 화면이 「그 시점에 이미 답이 있었다」고 거짓말한다.
    */
   const showingPast = cursor !== null && cursor < events.length;
+
+  /**
+   * 🔴 «끝에 선 재생»은 되감기부터다 — 완주한 run(커서가 끝이거나 `null`)에서 재생을 누르면
+   *    재생 effect 가 첫 tick 에 `at >= events.length` 를 만나 자기를 끄기 때문에(위 「재생」
+   *    참조) 화면이 아무 반응도 하지 않는다. 「무반응」의 정체는 «멈춘 재생»이 아니라 «시작
+   *    위치가 이미 끝»이라는 것이므로, 처방은 effect 가 아니라 시작 위치에 건다.
+   */
+  const atEnd = events.length > 0 && (cursor === null || cursor >= events.length);
   const state: RunState =
     live.candidates.length === 0 && fallback && !showingPast
       ? { ...live, candidates: fallback.candidates, workOrderDraftId: fallback.workOrderDraftId ?? live.workOrderDraftId }
@@ -453,10 +461,19 @@ export function RunConsole({
                     className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[0.8125rem] text-muted hover:text-ink" data-testid="replay-back" title="한 이벤트 뒤로">
               <IconPrev /><span className="sr-only">한 이벤트 뒤로</span>
             </button>
-            <button type="button" onClick={() => setPlaying((p) => !p)} disabled={events.length === 0}
+            {/* 🔴 재생 중일 때는 «항상» 일시정지다 — 끝에 닿아 effect 가 자기를 끄는 한 프레임
+                동안 `atEnd` 와 `playing` 이 겹칠 수 있는데, 그 순간 눌린 클릭이 처음으로
+                되감기면 사용자가 본 라벨(일시정지)과 일어난 일이 어긋난다. */}
+            <button type="button"
+                    onClick={() => {
+                      if (!playing && atEnd) { setCursor(0); setPlaying(true); return; }
+                      setPlaying((p) => !p);
+                    }}
+                    disabled={events.length === 0}
+                    data-at-end={atEnd ? "true" : "false"}
                     className="fkt-btn fkt-btn-primary h-7 min-h-0 rounded-pill px-3 text-foot disabled:opacity-40" data-testid="replay-play">
               {playing ? <IconPause className="text-[0.75rem]" /> : <IconPlay className="text-[0.75rem]" />}
-              {playing ? "일시정지" : "재생"}
+              {playing ? "일시정지" : atEnd ? "처음부터 재생" : "재생"}
             </button>
             <button type="button" onClick={() => { setPlaying(false); setCursor((c) => Math.min(events.length, (c ?? events.length) + 1)); }}
                     className="fkt-hoverable flex h-7 w-7 items-center justify-center rounded-pill text-[0.8125rem] text-muted hover:text-ink" data-testid="replay-forward" title="한 이벤트 앞으로">
