@@ -105,6 +105,57 @@ jobs:
           fi
           echo "자기 검증 OK — 참에서 초록, 변조에서 빨강"
 
+      # ── 원장 마커 ↔ 머리글 (O-34 · 규칙 정본 `evidence/ledger-denominator-audit.md` §7) ──
+      #
+      # §7 검산이 마지막 줄에 남긴 이름이 이 칸이다 — 「이 검산은 «지금 값이 규칙과 맞는가»를
+      # 말할 뿐 «규칙이 앞으로 지켜지는가»는 말하지 않는다. 마커 없는 행이 다시 생기면
+      # 그때는 아무도 안 본다.」
+      #
+      # 🔴 **기대값은 어디에도 박혀 있지 않다.** 검사기는 한쪽을 원장 «머리글»에서 읽고 다른
+      #    쪽을 원장 «행»에서 세어 맞댄다. 그래서 분모가 늘어도(티켓 등재) 두 축이 같이
+      #    움직이면 그대로 초록이다 — 숫자를 여기 적으면 원장이 움직일 때마다 CI 를 고쳐야 하고,
+      #    그 순간 정본이 둘이 된다.
+      #
+      # 🔴 **자기 검증을 매 실행 «두 번» 돌린다.** 죽은 검사기는 언제나 통과시킨다.
+      #    ① 머리글 ✅ 수 +1 → 빨강이어야 한다.
+      #    ② 티켓 행 1건의 마커 제거 → 빨강 **+ 그 행 번호를 지목**해야 한다. §7.1 이
+      #       「둘째 칸이 핵심」이라 못박은 자리다 — 「마커 없는 행 0건」이 참인지 물으려면
+      #       마커 없는 행을 실제로 잡을 수 있어야 하고, 그 칸이 없으면 「0건」은 **검출력 0 인
+      #       초록**과 구별되지 않는다.
+      #    사본을 만들지 못하는 것도 실패다(문면이 바뀌어 치환이 안 먹었다는 뜻이고,
+      #    자극 없는 판정은 판정이 아니다).
+      - name: 원장 마커·머리글 ↔ 행 계수 대조 (O-34)
+        run: |
+          set -euo pipefail
+          node scripts/check-ledger-markers.mjs
+
+          # ① 머리글 변조 — 분자가 실물과 어긋나면 빨강인가
+          header="$RUNNER_TEMP/ledger-header.md"
+          node scripts/check-ledger-markers.mjs --tamper-header "$header"
+          if node scripts/check-ledger-markers.mjs --ledger "$header"; then
+            echo "::error::검사기 자기 검증 실패 — 머리글이 어긋난 사본이 통과했다(검사기가 죽어 있다)"
+            exit 1
+          fi
+
+          # ② 마커 제거 — 빨강만으로는 모자라다. «어느 행인가»를 지목해야 한다.
+          nomarker="$RUNNER_TEMP/ledger-nomarker.md"
+          node scripts/check-ledger-markers.mjs --tamper-marker "$nomarker" > "$RUNNER_TEMP/tamper.out"
+          line="$(sed -n 's/^TAMPERED_LINE=//p' "$RUNNER_TEMP/tamper.out")"
+          if [ -z "$line" ]; then
+            echo "::error::무마커 사본을 만들지 못했다 — 자극 없는 판정은 판정이 아니다"
+            exit 1
+          fi
+          if out="$(node scripts/check-ledger-markers.mjs --ledger "$nomarker" 2>&1)"; then
+            echo "::error::검사기 자기 검증 실패 — 마커 없는 티켓 행이 통과했다"
+            exit 1
+          fi
+          if ! printf '%s' "$out" | grep -q "L${line}"; then
+            echo "::error::빨강은 났으나 «어긋난 행»을 지목하지 못했다(L${line} 미출력)"
+            printf '%s\n' "$out"
+            exit 1
+          fi
+          echo "자기 검증 OK — 참에서 초록 · 머리글 변조에서 빨강 · 무마커에서 빨강 + L${line} 지목"
+
   # O-20(09-04): tests_unit 는 파일로만 있고 부르는 회로가 없었다 — 여기가 그 회로다.
   unit-ai-api:
     runs-on: ubuntu-latest
