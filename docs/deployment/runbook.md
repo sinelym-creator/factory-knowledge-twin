@@ -451,9 +451,9 @@ pwsh -File services/synthesis-gateway/run.ps1 -Bind 0.0.0.0 -Token <값> -Model 
 네트워크   fkt-senku2-t15_default
 재시작     unless-stopped
 Cmd        python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-proxy-headers
-바인드(2)  <repo>/data/replay             -> /srv/data/replay  (ro)
+바인드(2)  ~/.fkt/prod/data/replay        -> /srv/data/replay  (ro)   ← 🔴 §8-1 정본(T7-42 · 승격 산출물) · 「<repo>/data/replay」는 T7-42 이전 잔재 — 승격 22(09-06 01:34 센쿠2) 실측: 구 컨테이너가 리포 판(낡은 gs-01.events.jsonl 17045B)을 물고 있었고 산출물 판(17083B · promote 01:30)과 내용이 달랐다
            <repo>/.volumes-deploy/models -> /models
-env(9)     FKT_TRUST_FORWARDED_FOR · FKT_CORS_ORIGINS · FKT_POSTGRES_DSN · FKT_NEO4J_URI ·
+env(12 · 09-06 01:34 inspect 실측 정본 — 수는 낡는다 · 옮길 땐 구 컨테이너 `inspect` 의 FKT_ 키 전수)  FKT_TRUST_FORWARDED_FOR · FKT_CORS_ORIGINS · FKT_POSTGRES_DSN · FKT_NEO4J_URI ·
            FKT_NEO4J_USER · FKT_NEO4J_PASSWORD · FKT_WARMUP_EMBEDDING ·
            FKT_REPLAY_FIXTURE_DIR=/srv/data/replay · FKT_BUILD_SHA=<sha>
 ```
