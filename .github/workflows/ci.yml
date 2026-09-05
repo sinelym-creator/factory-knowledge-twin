@@ -124,3 +124,27 @@ jobs:
       - name: unit tests (services/ai-api/tests_unit)
         working-directory: services/ai-api
         run: python -m pytest tests_unit -q
+
+  # web-console 의 vitest 층(39건)은 파일로만 있고 부르는 회로가 없었다 — 여기가 그 회로다.
+  #
+  # 🔴 hygiene 이 아니라 «별 job» 으로 둔다. hygiene 은 공개 경계 위생 게이트(§34.6)이고
+  #    거기에 node 설치·의존 설치를 얹으면 경계 검사가 그만큼 늦어진다. 같은 이유로 이미
+  #    `unit-ai-api` 가 따로 서 있으므로 그 형태를 따른다 — 빨강이 났을 때 «무엇이 울었는지»가
+  #    job 이름으로 갈린다.
+  # 🔴 `npm ci` 는 lock 을 요구한다. 이 PR 이 `apps/web-console/package-lock.json` 을 함께
+  #    올리는 이유가 그것이다(그 전까지 이 자리는 «설치가 불가능해서» 비어 있었다).
+  unit-web-console:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/web-console/package-lock.json
+      - name: install (lockfile 그대로 — 재현성)
+        working-directory: apps/web-console
+        run: npm ci --no-audit --no-fund
+      - name: unit tests (apps/web-console)
+        working-directory: apps/web-console
+        run: npm run test:unit
