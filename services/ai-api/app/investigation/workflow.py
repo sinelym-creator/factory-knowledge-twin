@@ -38,6 +38,7 @@ from ..retrieval.embedding import MODEL_ID, embed_query, ensure_ready  # noqa: E
 from ..retrieval import vector as vector_mod  # noqa: E402
 from ..retrieval.vector import search as vector_search  # noqa: E402
 from ..retrieval.hybrid import search as hybrid_search  # noqa: E402 — T7-44 · 기존 함수를 그대로 부른다
+from ..retrieval.vector import TOP_K  # noqa: E402 — 근거집합 크기의 정본은 vector 쪽 상수 하나다
 from ..retrieval.vector import excerpt as make_excerpt  # noqa: E402 — 발췌 규칙은 한 벌이다
 from ..settings import get_settings  # noqa: E402
 from . import structured as structured_reader  # noqa: E402
@@ -161,14 +162,33 @@ def build_graph(ctx: Context):
         #    그래서 여기서 embed_query 를 미리 불러 두면 hybrid 경로에서 «쓰지도 않을»
         #    임베딩 비용을 한 벌 더 치른다. 갈래마다 그 갈래의 입력만 만든다.
         if strategy == "hybrid":
-            hits = await hybrid_search(ctx.pool, ctx.anchor.question)
+            # 🔴 **과수집한다**(T7-44b · E1 = 리바이2 live n=3 `evidence/t7-44-hybrid-verification.md`).
+            #    `hybrid._fuse(rankings, top_k)` 는 **한 벌의 top_k 칸을 세 축이 나눠 쓴다** —
+            #    구조화 축이 낸 record 가 칸을 먹으면, 아래에서 그것을 걸러도 그 자리는 «빈 채»
+            #    나간다. 실측: 인용 후보 5→4 로 `DOC-MAN-0021@r1#001` 이 소실됐다.
+            #
+            #    앞판의 나는 이 감소를 「결함이 아니라 기록」이라 적었는데, 그 문장이 틀렸다.
+            #    필터는 옳았고 **슬롯 예산을 안 본 것**이 결함이었다 — 거르는 층과 «몇 칸을
+            #    받아 오는가»는 다른 축이고, 뒤엣것을 안 건드리면 앞엣것이 조용히 손실을 만든다.
+            #
+            #    그래서 넉넉히 받아 거른 뒤 **상위 TOP_K 만** 쓴다. `hybrid.py`·`vector.py`·
+            #    `TOP_K` 상수는 무변이고, RRF 순서도 그대로다(재정렬하지 않는다).
+            hits = await hybrid_search(ctx.pool, ctx.anchor.question, top_k=TOP_K * 2)
         else:
             hits = await vector_search(ctx.pool, await embed_query(ctx.anchor.question))
+        # 과수집으로 «실제로 받은» 건수. 요청 상한(TOP_K*2)은 코드를 보면 아는 상수라
+        # 요약에 적을 값이 못 된다 — 실행마다 갈리는 것은 받아 온 수다.
+        overfetched = len(hits)
         citations: dict[str, str] = {}
         # hybrid 의 구조화 축이 낸 record 근거를 이 단계에서 «세어» 뺀 수. 0 이면 필터가
         # 아무것도 안 걸렀다는 뜻이고, 그 실행의 대조군은 검출력이 없다(요약에 그대로 낸다).
         dropped_records = 0
         for hit in hits:
+            # 🔴 절단은 **doc-chunk 를 TOP_K 개 채운 뒤**다 — 받아 온 순서(RRF 순)를 그대로
+            #    따라가다 상한에서 멈춘다. 「거른 뒤 다시 정렬」이 아니므로 순위 규칙은 hybrid
+            #    함수의 것 그대로이고, vector 경로는 애초에 TOP_K 만 받으므로 이 줄에 닿지 않는다.
+            if strategy == "hybrid" and len(citations) >= TOP_K:
+                break
             # 🔴 doc-chunk 는 스키마가 revision 3필드를 «요구»한다. 그 값의 정본은 T2-2
             #    `/evidence` 가 보는 것과 같은 자리여야 한다 — 여기서 따로 조회해 만들면
             #    같은 근거가 두 표면에서 다른 신뢰 배지를 달 수 있다.
@@ -202,9 +222,11 @@ def build_graph(ctx: Context):
             citations[hit.evidenceId] = detail.text
         # 🔴 제외 건수를 **요약 문면에** 남긴다 — 이벤트 payload 에는 `strategy` 1키만
         #    싣는 것이 이 티켓의 계약 범위이기 때문이다(계약 표면을 넓히지 않고 계수를 남긴다).
+        #    🔴 hybrid 면 제외 0건이어도 «0» 을 적는다 — 문면이 없으면 「안 걸렀다」와
+        #    「거를 층이 없다」가 같은 모양이 된다.
         summary = f"인용 후보 {len(citations)}건"
-        if dropped_records:
-            summary += f"(구조화 축 record {dropped_records}건 제외)"
+        if strategy == "hybrid":
+            summary += f"(구조화 축 record {dropped_records}건 제외 · 과수집 {overfetched})"
         return {"citations": citations}, summary
 
     @_step(ctx, "graph")
