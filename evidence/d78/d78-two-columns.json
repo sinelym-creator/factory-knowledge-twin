@@ -1,0 +1,1321 @@
+{
+ "wall": "2026-09-05T02:34:46.819Z",
+ "period": 220,
+ "columns": {
+  "target": {
+   "base": "http://127.0.0.1:8365",
+   "name": "target(fix landed)",
+   "stage": {
+    "applied": 38,
+    "total": 38,
+    "present": true,
+    "atEnd": "true",
+    "label": "처음부터 재생",
+    "staticSrc": 1,
+    "mode": "replay"
+   },
+   "stageRang": true,
+   "window": {
+    "period": 220,
+    "total": 38,
+    "budgetToOne": 5000,
+    "budgetToEnd": 14360
+   },
+   "axis1": {
+    "toOne": {
+     "hit": true,
+     "ms": 265,
+     "applied": 1,
+     "trail": [
+      {
+       "ms": 8,
+       "applied": 0
+      },
+      {
+       "ms": 61,
+       "applied": 0
+      },
+      {
+       "ms": 112,
+       "applied": 0
+      },
+      {
+       "ms": 162,
+       "applied": 0
+      },
+      {
+       "ms": 214,
+       "applied": 0
+      },
+      {
+       "ms": 265,
+       "applied": 1
+      }
+     ]
+    },
+    "clickToFirstMs": 265,
+    "rewound": true,
+    "toEnd": {
+     "hit": true,
+     "ms": 8316,
+     "applied": 38,
+     "trail": [
+      {
+       "ms": 7,
+       "applied": 1
+      },
+      {
+       "ms": 51,
+       "applied": 1
+      },
+      {
+       "ms": 101,
+       "applied": 1
+      },
+      {
+       "ms": 147,
+       "applied": 1
+      },
+      {
+       "ms": 192,
+       "applied": 1
+      },
+      {
+       "ms": 238,
+       "applied": 2
+      },
+      {
+       "ms": 288,
+       "applied": 2
+      },
+      {
+       "ms": 335,
+       "applied": 2
+      },
+      {
+       "ms": 383,
+       "applied": 2
+      },
+      {
+       "ms": 438,
+       "applied": 2
+      },
+      {
+       "ms": 484,
+       "applied": 3
+      },
+      {
+       "ms": 528,
+       "applied": 3
+      },
+      {
+       "ms": 574,
+       "applied": 3
+      },
+      {
+       "ms": 620,
+       "applied": 3
+      },
+      {
+       "ms": 665,
+       "applied": 3
+      },
+      {
+       "ms": 714,
+       "applied": 4
+      },
+      {
+       "ms": 761,
+       "applied": 4
+      },
+      {
+       "ms": 808,
+       "applied": 4
+      },
+      {
+       "ms": 853,
+       "applied": 4
+      },
+      {
+       "ms": 900,
+       "applied": 4
+      },
+      {
+       "ms": 948,
+       "applied": 5
+      },
+      {
+       "ms": 992,
+       "applied": 5
+      },
+      {
+       "ms": 1039,
+       "applied": 5
+      },
+      {
+       "ms": 1085,
+       "applied": 5
+      },
+      {
+       "ms": 1129,
+       "applied": 6
+      },
+      {
+       "ms": 1173,
+       "applied": 6
+      },
+      {
+       "ms": 1218,
+       "applied": 6
+      },
+      {
+       "ms": 1263,
+       "applied": 6
+      },
+      {
+       "ms": 1308,
+       "applied": 6
+      },
+      {
+       "ms": 1353,
+       "applied": 7
+      },
+      {
+       "ms": 1399,
+       "applied": 7
+      },
+      {
+       "ms": 1447,
+       "applied": 7
+      },
+      {
+       "ms": 1493,
+       "applied": 7
+      },
+      {
+       "ms": 1539,
+       "applied": 7
+      },
+      {
+       "ms": 1583,
+       "applied": 8
+      },
+      {
+       "ms": 1629,
+       "applied": 8
+      },
+      {
+       "ms": 1672,
+       "applied": 8
+      },
+      {
+       "ms": 1719,
+       "applied": 8
+      },
+      {
+       "ms": 1769,
+       "applied": 8
+      },
+      {
+       "ms": 1815,
+       "applied": 9
+      },
+      {
+       "ms": 1862,
+       "applied": 9
+      },
+      {
+       "ms": 1909,
+       "applied": 9
+      },
+      {
+       "ms": 1956,
+       "applied": 9
+      },
+      {
+       "ms": 2004,
+       "applied": 9
+      },
+      {
+       "ms": 2051,
+       "applied": 10
+      },
+      {
+       "ms": 2095,
+       "applied": 10
+      },
+      {
+       "ms": 2143,
+       "applied": 10
+      },
+      {
+       "ms": 2190,
+       "applied": 10
+      },
+      {
+       "ms": 2234,
+       "applied": 10
+      },
+      {
+       "ms": 2282,
+       "applied": 11
+      },
+      {
+       "ms": 2327,
+       "applied": 11
+      },
+      {
+       "ms": 2372,
+       "applied": 11
+      },
+      {
+       "ms": 2418,
+       "applied": 11
+      },
+      {
+       "ms": 2462,
+       "applied": 11
+      },
+      {
+       "ms": 2508,
+       "applied": 12
+      },
+      {
+       "ms": 2551,
+       "applied": 12
+      },
+      {
+       "ms": 2596,
+       "applied": 12
+      },
+      {
+       "ms": 2643,
+       "applied": 12
+      },
+      {
+       "ms": 2688,
+       "applied": 12
+      },
+      {
+       "ms": 2733,
+       "applied": 13
+      },
+      {
+       "ms": 2779,
+       "applied": 13
+      },
+      {
+       "ms": 2824,
+       "applied": 13
+      },
+      {
+       "ms": 2869,
+       "applied": 13
+      },
+      {
+       "ms": 2919,
+       "applied": 14
+      },
+      {
+       "ms": 2965,
+       "applied": 14
+      },
+      {
+       "ms": 3011,
+       "applied": 14
+      },
+      {
+       "ms": 3055,
+       "applied": 14
+      },
+      {
+       "ms": 3101,
+       "applied": 14
+      },
+      {
+       "ms": 3146,
+       "applied": 15
+      },
+      {
+       "ms": 3194,
+       "applied": 15
+      },
+      {
+       "ms": 3242,
+       "applied": 15
+      },
+      {
+       "ms": 3286,
+       "applied": 15
+      },
+      {
+       "ms": 3331,
+       "applied": 15
+      },
+      {
+       "ms": 3382,
+       "applied": 16
+      },
+      {
+       "ms": 3428,
+       "applied": 16
+      },
+      {
+       "ms": 3474,
+       "applied": 16
+      },
+      {
+       "ms": 3519,
+       "applied": 16
+      },
+      {
+       "ms": 3564,
+       "applied": 16
+      },
+      {
+       "ms": 3611,
+       "applied": 17
+      },
+      {
+       "ms": 3656,
+       "applied": 17
+      },
+      {
+       "ms": 3707,
+       "applied": 17
+      },
+      {
+       "ms": 3751,
+       "applied": 17
+      },
+      {
+       "ms": 3797,
+       "applied": 17
+      },
+      {
+       "ms": 3842,
+       "applied": 18
+      },
+      {
+       "ms": 3887,
+       "applied": 18
+      },
+      {
+       "ms": 3933,
+       "applied": 18
+      },
+      {
+       "ms": 3979,
+       "applied": 18
+      },
+      {
+       "ms": 4027,
+       "applied": 18
+      },
+      {
+       "ms": 4076,
+       "applied": 19
+      },
+      {
+       "ms": 4123,
+       "applied": 19
+      },
+      {
+       "ms": 4171,
+       "applied": 19
+      },
+      {
+       "ms": 4219,
+       "applied": 19
+      },
+      {
+       "ms": 4264,
+       "applied": 19
+      },
+      {
+       "ms": 4310,
+       "applied": 20
+      },
+      {
+       "ms": 4355,
+       "applied": 20
+      },
+      {
+       "ms": 4400,
+       "applied": 20
+      },
+      {
+       "ms": 4444,
+       "applied": 20
+      },
+      {
+       "ms": 4493,
+       "applied": 20
+      },
+      {
+       "ms": 4539,
+       "applied": 21
+      },
+      {
+       "ms": 4584,
+       "applied": 21
+      },
+      {
+       "ms": 4630,
+       "applied": 21
+      },
+      {
+       "ms": 4675,
+       "applied": 21
+      },
+      {
+       "ms": 4721,
+       "applied": 22
+      },
+      {
+       "ms": 4765,
+       "applied": 22
+      },
+      {
+       "ms": 4811,
+       "applied": 22
+      },
+      {
+       "ms": 4855,
+       "applied": 22
+      },
+      {
+       "ms": 4898,
+       "applied": 22
+      },
+      {
+       "ms": 4949,
+       "applied": 23
+      },
+      {
+       "ms": 4994,
+       "applied": 23
+      },
+      {
+       "ms": 5038,
+       "applied": 23
+      },
+      {
+       "ms": 5083,
+       "applied": 23
+      },
+      {
+       "ms": 5127,
+       "applied": 23
+      },
+      {
+       "ms": 5172,
+       "applied": 24
+      },
+      {
+       "ms": 5216,
+       "applied": 24
+      },
+      {
+       "ms": 5262,
+       "applied": 24
+      },
+      {
+       "ms": 5308,
+       "applied": 24
+      },
+      {
+       "ms": 5353,
+       "applied": 24
+      },
+      {
+       "ms": 5398,
+       "applied": 25
+      },
+      {
+       "ms": 5444,
+       "applied": 25
+      },
+      {
+       "ms": 5489,
+       "applied": 25
+      },
+      {
+       "ms": 5537,
+       "applied": 25
+      },
+      {
+       "ms": 5584,
+       "applied": 25
+      },
+      {
+       "ms": 5633,
+       "applied": 26
+      },
+      {
+       "ms": 5682,
+       "applied": 26
+      },
+      {
+       "ms": 5729,
+       "applied": 26
+      },
+      {
+       "ms": 5778,
+       "applied": 26
+      },
+      {
+       "ms": 5823,
+       "applied": 26
+      },
+      {
+       "ms": 5873,
+       "applied": 27
+      },
+      {
+       "ms": 5920,
+       "applied": 27
+      },
+      {
+       "ms": 5973,
+       "applied": 27
+      },
+      {
+       "ms": 6020,
+       "applied": 27
+      },
+      {
+       "ms": 6067,
+       "applied": 28
+      },
+      {
+       "ms": 6116,
+       "applied": 28
+      },
+      {
+       "ms": 6164,
+       "applied": 28
+      },
+      {
+       "ms": 6212,
+       "applied": 28
+      },
+      {
+       "ms": 6262,
+       "applied": 28
+      },
+      {
+       "ms": 6312,
+       "applied": 29
+      },
+      {
+       "ms": 6361,
+       "applied": 29
+      },
+      {
+       "ms": 6413,
+       "applied": 29
+      },
+      {
+       "ms": 6461,
+       "applied": 29
+      },
+      {
+       "ms": 6517,
+       "applied": 30
+      },
+      {
+       "ms": 6565,
+       "applied": 30
+      },
+      {
+       "ms": 6616,
+       "applied": 30
+      },
+      {
+       "ms": 6666,
+       "applied": 30
+      },
+      {
+       "ms": 6716,
+       "applied": 30
+      },
+      {
+       "ms": 6763,
+       "applied": 31
+      },
+      {
+       "ms": 6811,
+       "applied": 31
+      },
+      {
+       "ms": 6859,
+       "applied": 31
+      },
+      {
+       "ms": 6909,
+       "applied": 31
+      },
+      {
+       "ms": 6958,
+       "applied": 31
+      },
+      {
+       "ms": 7008,
+       "applied": 32
+      },
+      {
+       "ms": 7055,
+       "applied": 32
+      },
+      {
+       "ms": 7102,
+       "applied": 32
+      },
+      {
+       "ms": 7150,
+       "applied": 32
+      },
+      {
+       "ms": 7197,
+       "applied": 33
+      },
+      {
+       "ms": 7249,
+       "applied": 33
+      },
+      {
+       "ms": 7297,
+       "applied": 33
+      },
+      {
+       "ms": 7344,
+       "applied": 33
+      },
+      {
+       "ms": 7389,
+       "applied": 33
+      },
+      {
+       "ms": 7434,
+       "applied": 34
+      },
+      {
+       "ms": 7478,
+       "applied": 34
+      },
+      {
+       "ms": 7526,
+       "applied": 34
+      },
+      {
+       "ms": 7572,
+       "applied": 34
+      },
+      {
+       "ms": 7617,
+       "applied": 34
+      },
+      {
+       "ms": 7662,
+       "applied": 35
+      },
+      {
+       "ms": 7708,
+       "applied": 35
+      },
+      {
+       "ms": 7756,
+       "applied": 35
+      },
+      {
+       "ms": 7801,
+       "applied": 35
+      },
+      {
+       "ms": 7845,
+       "applied": 35
+      },
+      {
+       "ms": 7891,
+       "applied": 36
+      },
+      {
+       "ms": 7936,
+       "applied": 36
+      },
+      {
+       "ms": 7980,
+       "applied": 36
+      },
+      {
+       "ms": 8026,
+       "applied": 36
+      },
+      {
+       "ms": 8073,
+       "applied": 36
+      },
+      {
+       "ms": 8117,
+       "applied": 37
+      },
+      {
+       "ms": 8164,
+       "applied": 37
+      },
+      {
+       "ms": 8212,
+       "applied": 37
+      },
+      {
+       "ms": 8262,
+       "applied": 37
+      },
+      {
+       "ms": 8316,
+       "applied": 38
+      }
+     ]
+    },
+    "endLabel": {
+     "present": true,
+     "atEnd": "true",
+     "label": "일시정지"
+    },
+    "totalElapsedMs": 9380
+   },
+   "axis2": {
+    "mid": {
+     "present": true,
+     "atEnd": "false",
+     "label": "일시정지"
+    }
+   },
+   "axis4": {
+    "beforePause": 1,
+    "afterPause": 1,
+    "frozen": true,
+    "labelWhenPaused": "재생"
+   }
+  },
+  "control": {
+   "base": "http://127.0.0.1:8366",
+   "name": "control(pre-fix)",
+   "stage": {
+    "applied": 38,
+    "total": 38,
+    "present": true,
+    "atEnd": null,
+    "label": "재생",
+    "staticSrc": 1,
+    "mode": "replay"
+   },
+   "stageRang": true,
+   "window": {
+    "period": 220,
+    "total": 38,
+    "budgetToOne": 5000,
+    "budgetToEnd": 14360
+   },
+   "axis1": {
+    "toOne": {
+     "hit": false,
+     "ms": 5026,
+     "applied": 38,
+     "trail": [
+      {
+       "ms": 8,
+       "applied": 38
+      },
+      {
+       "ms": 54,
+       "applied": 38
+      },
+      {
+       "ms": 106,
+       "applied": 38
+      },
+      {
+       "ms": 153,
+       "applied": 38
+      },
+      {
+       "ms": 200,
+       "applied": 38
+      },
+      {
+       "ms": 250,
+       "applied": 38
+      },
+      {
+       "ms": 299,
+       "applied": 38
+      },
+      {
+       "ms": 346,
+       "applied": 38
+      },
+      {
+       "ms": 393,
+       "applied": 38
+      },
+      {
+       "ms": 437,
+       "applied": 38
+      },
+      {
+       "ms": 482,
+       "applied": 38
+      },
+      {
+       "ms": 527,
+       "applied": 38
+      },
+      {
+       "ms": 574,
+       "applied": 38
+      },
+      {
+       "ms": 618,
+       "applied": 38
+      },
+      {
+       "ms": 662,
+       "applied": 38
+      },
+      {
+       "ms": 706,
+       "applied": 38
+      },
+      {
+       "ms": 751,
+       "applied": 38
+      },
+      {
+       "ms": 796,
+       "applied": 38
+      },
+      {
+       "ms": 843,
+       "applied": 38
+      },
+      {
+       "ms": 888,
+       "applied": 38
+      },
+      {
+       "ms": 933,
+       "applied": 38
+      },
+      {
+       "ms": 976,
+       "applied": 38
+      },
+      {
+       "ms": 1022,
+       "applied": 38
+      },
+      {
+       "ms": 1066,
+       "applied": 38
+      },
+      {
+       "ms": 1112,
+       "applied": 38
+      },
+      {
+       "ms": 1156,
+       "applied": 38
+      },
+      {
+       "ms": 1200,
+       "applied": 38
+      },
+      {
+       "ms": 1246,
+       "applied": 38
+      },
+      {
+       "ms": 1290,
+       "applied": 38
+      },
+      {
+       "ms": 1334,
+       "applied": 38
+      },
+      {
+       "ms": 1380,
+       "applied": 38
+      },
+      {
+       "ms": 1426,
+       "applied": 38
+      },
+      {
+       "ms": 1470,
+       "applied": 38
+      },
+      {
+       "ms": 1517,
+       "applied": 38
+      },
+      {
+       "ms": 1563,
+       "applied": 38
+      },
+      {
+       "ms": 1608,
+       "applied": 38
+      },
+      {
+       "ms": 1654,
+       "applied": 38
+      },
+      {
+       "ms": 1697,
+       "applied": 38
+      },
+      {
+       "ms": 1742,
+       "applied": 38
+      },
+      {
+       "ms": 1787,
+       "applied": 38
+      },
+      {
+       "ms": 1836,
+       "applied": 38
+      },
+      {
+       "ms": 1885,
+       "applied": 38
+      },
+      {
+       "ms": 1930,
+       "applied": 38
+      },
+      {
+       "ms": 1978,
+       "applied": 38
+      },
+      {
+       "ms": 2025,
+       "applied": 38
+      },
+      {
+       "ms": 2070,
+       "applied": 38
+      },
+      {
+       "ms": 2118,
+       "applied": 38
+      },
+      {
+       "ms": 2163,
+       "applied": 38
+      },
+      {
+       "ms": 2208,
+       "applied": 38
+      },
+      {
+       "ms": 2254,
+       "applied": 38
+      },
+      {
+       "ms": 2303,
+       "applied": 38
+      },
+      {
+       "ms": 2348,
+       "applied": 38
+      },
+      {
+       "ms": 2396,
+       "applied": 38
+      },
+      {
+       "ms": 2441,
+       "applied": 38
+      },
+      {
+       "ms": 2490,
+       "applied": 38
+      },
+      {
+       "ms": 2536,
+       "applied": 38
+      },
+      {
+       "ms": 2581,
+       "applied": 38
+      },
+      {
+       "ms": 2627,
+       "applied": 38
+      },
+      {
+       "ms": 2674,
+       "applied": 38
+      },
+      {
+       "ms": 2720,
+       "applied": 38
+      },
+      {
+       "ms": 2767,
+       "applied": 38
+      },
+      {
+       "ms": 2814,
+       "applied": 38
+      },
+      {
+       "ms": 2860,
+       "applied": 38
+      },
+      {
+       "ms": 2905,
+       "applied": 38
+      },
+      {
+       "ms": 2953,
+       "applied": 38
+      },
+      {
+       "ms": 3001,
+       "applied": 38
+      },
+      {
+       "ms": 3047,
+       "applied": 38
+      },
+      {
+       "ms": 3092,
+       "applied": 38
+      },
+      {
+       "ms": 3137,
+       "applied": 38
+      },
+      {
+       "ms": 3183,
+       "applied": 38
+      },
+      {
+       "ms": 3228,
+       "applied": 38
+      },
+      {
+       "ms": 3278,
+       "applied": 38
+      },
+      {
+       "ms": 3324,
+       "applied": 38
+      },
+      {
+       "ms": 3369,
+       "applied": 38
+      },
+      {
+       "ms": 3416,
+       "applied": 38
+      },
+      {
+       "ms": 3461,
+       "applied": 38
+      },
+      {
+       "ms": 3505,
+       "applied": 38
+      },
+      {
+       "ms": 3552,
+       "applied": 38
+      },
+      {
+       "ms": 3597,
+       "applied": 38
+      },
+      {
+       "ms": 3641,
+       "applied": 38
+      },
+      {
+       "ms": 3684,
+       "applied": 38
+      },
+      {
+       "ms": 3728,
+       "applied": 38
+      },
+      {
+       "ms": 3771,
+       "applied": 38
+      },
+      {
+       "ms": 3816,
+       "applied": 38
+      },
+      {
+       "ms": 3859,
+       "applied": 38
+      },
+      {
+       "ms": 3906,
+       "applied": 38
+      },
+      {
+       "ms": 3949,
+       "applied": 38
+      },
+      {
+       "ms": 3994,
+       "applied": 38
+      },
+      {
+       "ms": 4038,
+       "applied": 38
+      },
+      {
+       "ms": 4083,
+       "applied": 38
+      },
+      {
+       "ms": 4127,
+       "applied": 38
+      },
+      {
+       "ms": 4173,
+       "applied": 38
+      },
+      {
+       "ms": 4218,
+       "applied": 38
+      },
+      {
+       "ms": 4262,
+       "applied": 38
+      },
+      {
+       "ms": 4308,
+       "applied": 38
+      },
+      {
+       "ms": 4354,
+       "applied": 38
+      },
+      {
+       "ms": 4398,
+       "applied": 38
+      },
+      {
+       "ms": 4442,
+       "applied": 38
+      },
+      {
+       "ms": 4487,
+       "applied": 38
+      },
+      {
+       "ms": 4533,
+       "applied": 38
+      },
+      {
+       "ms": 4577,
+       "applied": 38
+      },
+      {
+       "ms": 4621,
+       "applied": 38
+      },
+      {
+       "ms": 4668,
+       "applied": 38
+      },
+      {
+       "ms": 4713,
+       "applied": 38
+      },
+      {
+       "ms": 4757,
+       "applied": 38
+      },
+      {
+       "ms": 4802,
+       "applied": 38
+      },
+      {
+       "ms": 4847,
+       "applied": 38
+      },
+      {
+       "ms": 4891,
+       "applied": 38
+      },
+      {
+       "ms": 4938,
+       "applied": 38
+      },
+      {
+       "ms": 4983,
+       "applied": 38
+      }
+     ]
+    },
+    "clickToFirstMs": 5026,
+    "rewound": false,
+    "toEnd": {
+     "hit": true,
+     "ms": 2,
+     "applied": 38,
+     "trail": [
+      {
+       "ms": 2,
+       "applied": 38
+      }
+     ]
+    },
+    "endLabel": {
+     "present": true,
+     "atEnd": null,
+     "label": "일시정지"
+    },
+    "totalElapsedMs": 5786
+   },
+   "axis2": {
+    "mid": {
+     "present": true,
+     "atEnd": null,
+     "label": "재생"
+    }
+   },
+   "axis4": {
+    "beforePause": 38,
+    "afterPause": 38,
+    "frozen": true,
+    "labelWhenPaused": "재생"
+   }
+  }
+ },
+ "verdict": {
+  "bothStagesRang": true,
+  "target_rewound": true,
+  "target_reachedOne": true,
+  "target_clickToFirstMs": 265,
+  "target_reachedEnd": true,
+  "target_endMs": 8316,
+  "control_rewound": false,
+  "control_appliedUnchanged": true,
+  "atEnd_target": "true",
+  "atEnd_control": null,
+  "label_end_target": "처음부터 재생",
+  "label_end_control": "재생",
+  "label_mid_target": "일시정지",
+  "pauseFroze_target": true,
+  "pauseFroze_control": true
+ }
+}
