@@ -147,6 +147,11 @@ services:
       #    fixture 를 이미지에 «구워» 넣으면 그 축이 조용히 죽는다 — 탐침은 여전히 초록인데
       #    무엇을 맞췄는지가 달라진다. 자리를 옮길 일이 생기면 그 탐침부터 회부한다.
       FKT_REPLAY_FIXTURE_DIR: /srv/data/replay
+      # 🔴 D-87 — FastAPI 문서 표면 4종(/docs·/redoc·/openapi.json·/docs/oauth2-redirect)을 여는가.
+      #    기본은 «닫힘»이고, 이 줄이 없으면 셸 값이 컨테이너에 «닿지 않아» 여기에 1 을 적어도
+      #    아무 일도 일어나지 않는다(O-43). 줄이 생겼다는 것과 열렸다는 것은 다른 사실이다 —
+      #    `.env` 가 비면 기본값 그대로 닫힘이다.
+      FKT_EXPOSE_API_DOCS: ${FKT_EXPOSE_API_DOCS:-}
     ports:
       - "${AI_API_PORT:-8000}:8000"
     volumes:
