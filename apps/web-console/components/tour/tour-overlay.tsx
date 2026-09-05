@@ -46,6 +46,11 @@ type Props =
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/* 진입 스태거 최대 지연 280ms + `--fkt-dur-3` 400ms — 그 뒤면 주변이 제자리다.
+   🔴 모듈 자리에 둔다 — 컴포넌트 안에 두면 «선언보다 위»(초점 정착 타이머)에서 읽혀
+      `react-hooks/immutability` 가 운다. 값은 고정 상수라 자리를 옮겨도 같은 700 이다. */
+const SETTLE_MS = 700;
+
 /** 그 요소 자신이 받을 수 있으면 자신을, 아니면 «안»의 첫 번째를 준다(D-42 · ⓑ). */
 function focusableIn(root: HTMLElement): HTMLElement | null {
   if (root.matches(FOCUSABLE)) return root;
@@ -142,8 +147,12 @@ function TourStepView({
 
   /* 대상 위치를 «화면 좌표»로 따라간다 — 스크롤·리사이즈·레이아웃 변화 전부. 🔴 폴링이 아니라
      이벤트 + ResizeObserver 로 듣는다(초당 60번 도는 타이머는 이 화면의 다른 애니메이션을 굶긴다). */
+  /* 🔴 `set-state-in-effect` 를 이 효과에서만 끈다 — 여기서 재는 것은 «브라우저 레이아웃»
+     (getBoundingClientRect·ResizeObserver)이라 렌더 중에 알 수 없다. 규칙이 권하는 렌더 중
+     파생으로 옮기면 측정 자체가 불가능해진다. 아래 두 줄은 그 측정의 «초기화»다. */
   useLayoutEffect(() => {
     if (!step.target || !onRoute) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRect(null);
       setMissing(false);
       return;
@@ -383,8 +392,6 @@ function TourStepView({
   /* 콜아웃 배치 — 대상 아래에 공간이 있으면 아래, 없으면 위. <md 는 바텀 시트(규격 ⑤).
      🔴 좌표를 클램프한다: 화면 밖으로 나간 콜아웃은 「보이지만 읽을 수 없는」 상태가 된다. */
   const CALLOUT_W = 360;
-  /* 진입 스태거 최대 지연 280ms + `--fkt-dur-3` 400ms — 그 뒤면 주변이 제자리다. */
-  const SETTLE_MS = 700;
   const below = hole ? hole.top + hole.height + 12 : 0;
   const fitsBelow = hole ? below + calloutH + 12 < window.innerHeight : false;
   /* 🔴 <md 는 바텀 시트라 «항상 화면 아래»에 선다 — 그래서 대상이 아래쪽에 있으면 시트가
@@ -440,6 +447,28 @@ function TourStepView({
      여기 남는 것은 «DOM 이 있어야 아는 값»(덮은 넓이)을 구해 넘기는 일뿐이다. */
   const [placement, setPlacement] = useState<TourPlacement | null>(null);
   const holeKey = hole ? `${hole.top}:${hole.left}:${hole.width}:${hole.height}` : "";
+
+  /* 🔴 이 값은 «자리를 고르는 효과보다 위»에 있어야 한다 — 아래 `useLayoutEffect` 가
+     `--tour-top` 을 되읽는데, 선언이 그 뒤에 있으면 `react-hooks/immutability` 가 운다.
+     자리만 옮겼고 식은 그대로다: 효과 콜백은 렌더가 끝난 뒤 도므로 읽는 값도 그대로다. */
+  const style: React.CSSProperties = hole
+    ? ({
+        "--tour-top": `${
+          /* 🔴 데스크톱 좌표 경로에도 «대상이 화면을 채우면 위로 올리지 않는다»를 건다.
+             `max-md` 쪽에만 넣었더니 1440 은 그 경로를 안 타서 값이 한 자리도 안 움직였다
+             (리바이2 34대: 머리 덮임 49.9% → 49.9%). 대상이 크면 `fitsBelow` 가 거짓이 되어
+             `top` 이 12 로 떨어지는데, 그 대상은 화면 위쪽부터 시작하므로 «머리»를 덮는다.
+             아래에 두면 꼬리만 가린다 — 390 에서 이미 그 자리로 착지시킨 규칙이다. */
+          targetFillsViewport
+            ? Math.max(12, window.innerHeight - calloutH - 12)
+            : fitsBelow
+              ? below
+              : Math.max(12, hole.top - calloutH - 12)
+        }px`,
+        "--tour-left": `${placement?.left ?? clampLeft(hole.left)}px`,
+      } as React.CSSProperties)
+    : {};
+
   /* 🔴 **자리를 고를 때 주변이 아직 안 와 있었다.** 진입 애니메이션(스태거)이 끝나기 전에는
      주변 카드가 제자리에 없어 두 후보 다 «덮는 게 적다»로 나오고, 그러면 anchor 가 이긴다.
      step1 이 그 자리였다 — 검증 실측(PR #496): 정착 뒤 같은 산식은 `14414 < 18575×0.8` 로
@@ -453,12 +482,16 @@ function TourStepView({
      정착 = 스태거 최대 지연(280ms) + 진입 길이(`--fkt-dur-3` = 400ms) 뒤. */
   const [settled, setSettled] = useState(false);
   useEffect(() => {
+    /* 🔴 이 초기화는 «스텝이 바뀌었다»는 사실을 타이머와 맞추는 자리다 — 렌더 중 파생으로
+       옮기면 정착 시점(고정 두 시점)이 내용에 반응하게 되어 위 성문의 결정성이 깨진다. */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettled(false);
     const t = setTimeout(() => setSettled(true), SETTLE_MS);
     return () => clearTimeout(t);
   }, [index, step.id]);
   useLayoutEffect(() => {
     if (!hole) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlacement(null);
       return;
     }
@@ -492,24 +525,6 @@ function TourStepView({
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, step.id, calloutH, holeKey, settled]);
-
-  const style: React.CSSProperties = hole
-    ? ({
-        "--tour-top": `${
-          /* 🔴 데스크톱 좌표 경로에도 «대상이 화면을 채우면 위로 올리지 않는다»를 건다.
-             `max-md` 쪽에만 넣었더니 1440 은 그 경로를 안 타서 값이 한 자리도 안 움직였다
-             (리바이2 34대: 머리 덮임 49.9% → 49.9%). 대상이 크면 `fitsBelow` 가 거짓이 되어
-             `top` 이 12 로 떨어지는데, 그 대상은 화면 위쪽부터 시작하므로 «머리»를 덮는다.
-             아래에 두면 꼬리만 가린다 — 390 에서 이미 그 자리로 착지시킨 규칙이다. */
-          targetFillsViewport
-            ? Math.max(12, window.innerHeight - calloutH - 12)
-            : fitsBelow
-              ? below
-              : Math.max(12, hole.top - calloutH - 12)
-        }px`,
-        "--tour-left": `${placement?.left ?? clampLeft(hole.left)}px`,
-      } as React.CSSProperties)
-    : {};
 
   return (
     <>

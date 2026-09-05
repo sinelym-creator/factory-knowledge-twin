@@ -124,3 +124,39 @@ jobs:
       - name: unit tests (services/ai-api/tests_unit)
         working-directory: services/ai-api
         run: python -m pytest tests_unit -q
+
+  # web-console 의 vitest 층(39건)은 파일로만 있고 부르는 회로가 없었다 — 여기가 그 회로다.
+  #
+  # 🔴 hygiene 이 아니라 «별 job» 으로 둔다. hygiene 은 공개 경계 위생 게이트(§34.6)이고
+  #    거기에 node 설치·의존 설치를 얹으면 경계 검사가 그만큼 늦어진다. 같은 이유로 이미
+  #    `unit-ai-api` 가 따로 서 있으므로 그 형태를 따른다 — 빨강이 났을 때 «무엇이 울었는지»가
+  #    job 이름으로 갈린다.
+  # 🔴 **이 앱의 패키지 매니저는 pnpm 이다** — `package.json` 의 `packageManager: pnpm@…` 와
+  #    추적된 `pnpm-lock.yaml` 이 정본이다. npm 으로도 설치가 «되기는» 하지만(실측: `npm ci`
+  #    초록) 그 길은 `package-lock.json` 이라는 **두 번째 정본**을 만든다 — 두 lock 이 서로
+  #    다른 트리를 말하기 시작하면 CI 의 초록이 개발자의 트리를 증명하지 못한다.
+  # 🔴 `pnpm/action-setup` 이 `setup-node` «앞»에 온다 — `cache: pnpm` 은 store 경로를
+  #    물으려고 pnpm 을 먼저 찾는다. 버전은 적지 않는다: action 이 `packageManager` 필드를
+  #    읽으므로 그 필드가 유일한 출처로 남는다(여기 숫자를 박으면 출처가 둘이 된다).
+  # 🔴 **`package_json_file` 을 반드시 준다.** action 의 기본값은 워크스페이스 루트의
+  #    `package.json` 인데 이 리포의 루트에는 그 파일이 없다 — 실측: 기본값으로 두었더니
+  #    `Error: No pnpm version is specified.` 로 7초 만에 죽었다(run 33949513119). 「필드를
+  #    읽는다」는 사실만으로는 부족하고 «어느 파일의» 필드인지가 판정을 정한다.
+  unit-web-console:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/web-console/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: apps/web-console/pnpm-lock.yaml
+      - name: install (frozen lockfile — 재현성)
+        working-directory: apps/web-console
+        run: pnpm install --frozen-lockfile
+      - name: unit tests (apps/web-console)
+        working-directory: apps/web-console
+        run: pnpm test:unit

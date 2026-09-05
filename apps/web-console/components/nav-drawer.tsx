@@ -22,7 +22,14 @@ import { ShellNav } from "@/components/shell-nav";
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function NavDrawer({ shellRootId }: { shellRootId: string }) {
+export function NavDrawer({
+  shellRootId,
+  hasSession,
+}: {
+  shellRootId: string;
+  /** 그대로 `ShellNav` 로 흘려보낸다 — 드로어가 이 값을 «판단»하지 않는다(출처는 서버 하나). */
+  hasSession: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const drawerId = useId();
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -59,8 +66,12 @@ export function NavDrawer({ shellRootId }: { shellRootId: string }) {
         (e.shiftKey ? last : first).focus();
         return;
       }
-      if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
-      else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+      // 🔴 WebKit 기본 Tab 은 링크를 밟지 않는다 — 양 끝만 이어 붙이면 가운데에서 초점이 `body` 로
+      //    떨어지고 위 가지가 first 로 되돌려 첫 링크와 교대만 한다(#721). 패널 안에서는 직접 옮긴다.
+      const i = items.indexOf(active);
+      if (i < 0) return;
+      e.preventDefault();
+      items[(i + (e.shiftKey ? -1 : 1) + items.length) % items.length].focus();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -151,7 +162,7 @@ export function NavDrawer({ shellRootId }: { shellRootId: string }) {
                   <span className="text-body-c font-semibold">Factory Twin</span>
                 </div>
                 <p className="mb-1 px-3 text-cap font-semibold text-placeholder">화면</p>
-                <ShellNav variant="drawer" />
+                <ShellNav variant="drawer" hasSession={hasSession} />
                 <p className="mt-auto px-3 text-cap text-placeholder">
                   synthetic PoC · 실제 공장 데이터가 아닙니다
                 </p>

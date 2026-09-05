@@ -15,10 +15,14 @@ T2-5 가 같은 무세션 축에 «쓰기»(편집·승인)를 얹으면서 종�
 
 from __future__ import annotations
 
+import logging
+
 from starlette.requests import HTTPConnection
 
 from .errors import contract_error
 from .investigation.store import RunRecord, RunStore
+
+log = logging.getLogger(__name__)
 
 #: 부재와 타 세션이 «같은 문장»으로 나가야 한다 — 문장이 갈리면 은닉이 문장에서 깨진다.
 RUN_NOT_FOUND = "run {run_id} 를 찾을 수 없다"
@@ -40,10 +44,24 @@ def visible(record: RunRecord, session: str | None) -> bool:
 
 
 def find_run(conn: HTTPConnection, run_id: str) -> RunRecord | None:
-    """이 세션이 볼 수 있는 run 만 — 없는 것과 남의 것을 여기서 «합친다»."""
+    """이 세션이 볼 수 있는 run 만 — 없는 것과 남의 것을 여기서 «합친다».
+
+    🔴 합치는 것은 «응답»이다. 사유는 **로그에서만** 가른다 — 운영자는 「없어서」인지
+       「남의 것이라」인지 알아야 하고(D-80 류의 진단), 호출자는 그 차이를 알면 안 된다
+       (알면 남의 run 의 «존재»가 샌다). 그래서 문면은 하나(`RUN_NOT_FOUND`)로 남는다.
+    🔴 로그에도 «주인의 세션 id» 는 적지 않는다 — 사유만으로 진단은 선다.
+    """
     store: RunStore = conn.app.state.run_store
     record = store.get(run_id)
-    if record is None or not visible(record, current_session(conn)):
+    session = current_session(conn)
+    if record is None:
+        log.info("run %s 미가시 — 저장소에 없다", run_id)
+        return None
+    if session is None:
+        log.info("run %s 미가시 — 요청에 세션이 없다", run_id)
+        return None
+    if not visible(record, session):
+        log.info("run %s 미가시 — 다른 세션의 것", run_id)
         return None
     return record
 

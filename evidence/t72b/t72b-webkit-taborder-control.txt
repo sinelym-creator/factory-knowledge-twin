@@ -1,0 +1,7 @@
+{"engine":"webkit","drawerOpen":false,"bodyHits":1,"trail":["start-from-alarm","body","nav-menu-toggle","intro-reopen","reset-button","start-from-headline","button","button","button","button"]}
+{"engine":"webkit","drawerOpen":true,"bodyHits":5,"trail":["body","nav-overview","body","nav-overview","body","nav-overview","body","nav-overview","body","nav-overview"]}
+{"engine":"chromium","drawerOpen":false,"bodyHits":1,"trail":["start-from-alarm","body","nav-menu-toggle","intro-reopen","reset-button","start-from-headline","button","button","button","button"]}
+RC=0
+14:00:38
+
+[exited with code 0]

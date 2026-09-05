@@ -1,0 +1,815 @@
+{
+  "after": "http://127.0.0.1:8370",
+  "before": "http://127.0.0.1:8367",
+  "wall": "2026-09-05T05:40:15.231Z",
+  "cols": [
+    {
+      "engine": "webkit",
+      "stage": "after",
+      "base": "http://127.0.0.1:8370",
+      "injectTabindex": false,
+      "openCount": 1,
+      "links": 3,
+      "tab": [
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 0,
+      "tabDistinctInside": 3,
+      "shift": [
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "shiftEscapes": 0,
+      "shiftDistinctInside": 3,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    },
+    {
+      "engine": "webkit",
+      "stage": "before",
+      "base": "http://127.0.0.1:8367",
+      "injectTabindex": false,
+      "openCount": 1,
+      "links": 3,
+      "tab": [
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 5,
+      "tabDistinctInside": 1,
+      "shift": [
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "body",
+          "inside": false
+        }
+      ],
+      "shiftEscapes": 5,
+      "shiftDistinctInside": 1,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    },
+    {
+      "engine": "chromium",
+      "stage": "after",
+      "base": "http://127.0.0.1:8370",
+      "injectTabindex": false,
+      "openCount": 1,
+      "links": 3,
+      "tab": [
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 0,
+      "tabDistinctInside": 3,
+      "shift": [
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "shiftEscapes": 0,
+      "shiftDistinctInside": 3,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    },
+    {
+      "engine": "chromium",
+      "stage": "before",
+      "base": "http://127.0.0.1:8367",
+      "injectTabindex": false,
+      "openCount": 1,
+      "links": 3,
+      "tab": [
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 0,
+      "tabDistinctInside": 3,
+      "shift": [
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "shiftEscapes": 0,
+      "shiftDistinctInside": 3,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    },
+    {
+      "engine": "firefox",
+      "stage": "after",
+      "base": "http://127.0.0.1:8370",
+      "injectTabindex": false,
+      "openCount": 1,
+      "links": 3,
+      "tab": [
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 0,
+      "tabDistinctInside": 3,
+      "shift": [
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "shiftEscapes": 0,
+      "shiftDistinctInside": 3,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    },
+    {
+      "engine": "firefox",
+      "stage": "before",
+      "base": "http://127.0.0.1:8367",
+      "injectTabindex": false,
+      "openCount": 1,
+      "links": 3,
+      "tab": [
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 0,
+      "tabDistinctInside": 3,
+      "shift": [
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "shiftEscapes": 0,
+      "shiftDistinctInside": 3,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    },
+    {
+      "engine": "webkit",
+      "stage": "before+tabindex0",
+      "base": "http://127.0.0.1:8367",
+      "injectTabindex": true,
+      "openCount": 1,
+      "links": 3,
+      "injected": 3,
+      "tab": [
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        }
+      ],
+      "tabEscapes": 0,
+      "tabDistinctInside": 3,
+      "shift": [
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        },
+        {
+          "id": "nav-compare",
+          "inside": true
+        },
+        {
+          "id": "nav-incidents",
+          "inside": true
+        },
+        {
+          "id": "nav-overview",
+          "inside": true
+        }
+      ],
+      "shiftEscapes": 0,
+      "shiftDistinctInside": 3,
+      "closes": {
+        "esc": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "scrim": {
+          "left": 0,
+          "focus": "nav-menu-toggle"
+        },
+        "link": {
+          "left": 0,
+          "url": "/incidents/INC-2025-019"
+        }
+      },
+      "consoleReal": 0,
+      "consoleWs": 0
+    }
+  ],
+  "verdict": {
+    "a_webkitAfterNoEscape": true,
+    "a2_webkitAfterCycles": true,
+    "b_webkitShiftNoEscape": true,
+    "c_controlBeforeRed": true,
+    "d_chromiumUnchanged": true,
+    "e_firefoxUnchanged": true,
+    "f_closes3": true,
+    "g_console0": true,
+    "allPass": true,
+    "fails": []
+  },
+  "disproof": {
+    "beforeTabindex0": {
+      "escapes": 0,
+      "distinctInside": 3,
+      "injected": 3
+    },
+    "beforePlain": {
+      "escapes": 5,
+      "distinctInside": 1
+    }
+  }
+}

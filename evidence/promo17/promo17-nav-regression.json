@@ -1,0 +1,124 @@
+{
+  "base": "https://factory-knowledge-twin.vercel.app",
+  "settleMs": 3500,
+  "wall": "2026-09-05T04:40:35.254Z",
+  "cols": {
+    "w390": {
+      "w": 390,
+      "brandText": "Factory Twin",
+      "brand": {
+        "top": 16.8,
+        "bottom": 39.3,
+        "left": 74,
+        "w": 85.6
+      },
+      "statusRow": {
+        "top": 54,
+        "bottom": 69,
+        "left": 20,
+        "w": 350
+      },
+      "statusRowNewLine": true,
+      "buttons": {
+        "tour": 1,
+        "reset": 1
+      },
+      "toggleVisible": true,
+      "railLinksVisible": 0,
+      "overflowPx": 0
+    },
+    "w768": {
+      "w": 768,
+      "brandText": "Factory Knowledge Twin",
+      "brand": {
+        "top": 27.8,
+        "bottom": 50.3,
+        "left": 280,
+        "w": 165.9
+      },
+      "statusRow": {
+        "top": 0,
+        "bottom": 78,
+        "left": 564.3,
+        "w": 183.7
+      },
+      "statusRowNewLine": false,
+      "buttons": {
+        "tour": 1,
+        "reset": 1
+      },
+      "toggleVisible": false,
+      "railLinksVisible": 3,
+      "overflowPx": 0
+    },
+    "w1280": {
+      "w": 1280,
+      "brandText": "Factory Knowledge Twin",
+      "brand": {
+        "top": 14.3,
+        "bottom": 36.8,
+        "left": 280,
+        "w": 165.9
+      },
+      "statusRow": {
+        "top": 13.5,
+        "bottom": 37.5,
+        "left": 960.6,
+        "w": 299.4
+      },
+      "statusRowNewLine": false,
+      "buttons": {
+        "tour": 1,
+        "reset": 1
+      },
+      "toggleVisible": false,
+      "railLinksVisible": 3,
+      "overflowPx": 0
+    }
+  },
+  "drawer": {
+    "openings": [
+      {
+        "count": 1,
+        "role": "dialog",
+        "ariaModal": "true",
+        "links": 3
+      },
+      {
+        "count": 1,
+        "role": "dialog",
+        "ariaModal": "true",
+        "links": 3
+      },
+      {
+        "count": 1,
+        "role": "dialog",
+        "ariaModal": "true",
+        "links": 3
+      }
+    ],
+    "closes": {
+      "esc": 0,
+      "scrim": 0,
+      "link": 0
+    },
+    "scrimClickAt": {
+      "x": 300,
+      "panelRight": 260
+    },
+    "urlAfterLink": "/incidents/INC-2025-019"
+  },
+  "verdict": {
+    "a_bar390": true,
+    "b_statusRow": true,
+    "c_drawerShape": true,
+    "d_closes3": true,
+    "e_rail": true,
+    "f_noOverflow": true,
+    "drawerNavUrl": "/incidents/INC-2025-019",
+    "consoleReal": 0,
+    "consoleWs": 0,
+    "allPass": true,
+    "fails": []
+  }
+}

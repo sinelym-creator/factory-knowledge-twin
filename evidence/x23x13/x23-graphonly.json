@@ -1,0 +1,108 @@
+{
+  "wall": "2026-09-05T05:44:34.160Z",
+  "cols": {
+    "empty": {
+      "name": "자극(스키마만·행 0)",
+      "base": "http://127.0.0.1:8813",
+      "health": {
+        "status": "ok",
+        "postgres": "ok",
+        "neo4j": "ok",
+        "embedding": "ready"
+      },
+      "online": false,
+      "sessionId": "lca2Exl-QBWOm31ejUrlVB1Y",
+      "scenarioId": "GS-01",
+      "question": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과해 실제로 발생한 알람은 무엇이고 관측값은 얼마였는가?",
+      "compareStatus": 200,
+      "strategies": [
+        {
+          "strategy": "vector",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        },
+        {
+          "strategy": "hybrid",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        },
+        {
+          "strategy": "graphrag",
+          "hits": 0,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        }
+      ],
+      "totalHits": 10
+    },
+    "normal": {
+      "name": "대조군(정상 무대)",
+      "base": "http://127.0.0.1:8190",
+      "health": {
+        "status": "ok",
+        "postgres": "ok",
+        "neo4j": "ok",
+        "embedding": "ready"
+      },
+      "online": false,
+      "sessionId": "a0jCPHC5vI73-g_-Sz97psG7",
+      "scenarioId": "GS-01",
+      "question": "EQ-CNC-204의 진동 센서 경보 임계값은 얼마이며, 그 임계를 초과해 실제로 발생한 알람은 무엇이고 관측값은 얼마였는가?",
+      "compareStatus": 200,
+      "strategies": [
+        {
+          "strategy": "vector",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        },
+        {
+          "strategy": "hybrid",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        },
+        {
+          "strategy": "graphrag",
+          "hits": 5,
+          "keys": [
+            "strategy",
+            "hits",
+            "elapsedMs"
+          ]
+        }
+      ],
+      "totalHits": 15
+    }
+  },
+  "verdict": {
+    "a_emptyHealthOk": true,
+    "b_emptyOnline": false,
+    "c_emptyZeroHits": false,
+    "d_controlHasHits": true,
+    "e_sameQuestion": true,
+    "f_compareOk": true,
+    "stimulusStands": false,
+    "fails": [
+      "b_emptyOnline",
+      "c_emptyZeroHits"
+    ]
+  }
+}
