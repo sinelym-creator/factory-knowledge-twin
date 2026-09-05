@@ -26,8 +26,35 @@ const has = (n) => argv.includes('--' + n);
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const GT_PATH = arg('ground-truth', path.join(HERE, 'datasets/ground-truth.v0.3.jsonl'));
-const OUT = arg('out', path.join(HERE, 'eval-answer-raw-v0.3.jsonl'));
+// 🔴 기본 산출 경로는 «정본이 아니다». 앞판의 기본값은 정본 raw 를 가리켰고, 본문의
+//    `writeFileSync(OUT, '')` 가 인자 없이 한 번 도는 것만으로 기준선을 비웠다 — 대조군이
+//    사라지면 되돌릴 수 없는 자원으로 산 run 들이 통째로 판정력을 잃는다.
+const STAMP = new Date().toISOString().replace(/[-:]/g, '').replace(/[.].+$/, '').replace('T', '-');
+const OUT_ARG = arg('out', null);
+const OUT = OUT_ARG || path.join(HERE, 'eval-answer-raw-' + STAMP + '.jsonl');
+const OVERWRITE = has('overwrite');
 const RUNS = Number(arg('runs', '3'));
+
+/**
+ * 🔴 산출 경로 문 — «이미 있고 비어 있지 않은 것»을 말없이 덮지 않는다.
+ *    이름 목록(예: `v0.3`)으로 막지 않는다: 목록은 대상보다 먼저 늙고 «다음» 정본을 빠뜨린다.
+ *    규칙은 하나다 — 내용이 있는 파일을 지우려면 사람이 그렇게 말해야 한다.
+ *    순수 함수라 게이트에서 «양면»(막아야 할 것 / 통과시켜야 할 것)으로 시험할 수 있다.
+ */
+function outGuardVerdict({ sizeOf, overwrite }) {
+  if (overwrite) return 'ok';
+  return (typeof sizeOf === 'number' && sizeOf > 0) ? 'refuse' : 'ok';
+}
+const sizeOfOrNull = (f) => { try { return fs.statSync(f).size; } catch { return null; } };
+function assertWritable(files) {
+  for (const f of files) {
+    if (outGuardVerdict({ sizeOf: sizeOfOrNull(f), overwrite: OVERWRITE }) === 'refuse') {
+      console.error('EXIT2: refuse to overwrite a non-empty artifact - ' + path.basename(f)
+        + ' (pass --out <new path>, or --overwrite if you really mean it)');
+      process.exit(2);
+    }
+  }
+}
 const GATE_ONLY = has('gate-only');
 const ANCHOR_QID = arg('anchor-question', 'Q-MULTIHOP-001'); // binding.py SCENARIO_ANCHORS['GS-01'].questionId
 const SCENARIO = arg('scenario', 'GS-01');
@@ -216,7 +243,9 @@ function scoreRun(sample, gt, alias) {
   // 🔴 실물 형상: `step.evidence.payload.evidence` 는 **객체 하나**다(배열이 아니다).
   //    앞판은 배열로 가정해 채점이 통째로 죽었다 — raw 를 먼저 읽고 적었어야 할 자리.
   //    배열도 받아 두는 것은 관용이 아니라 계약이 늘어날 자리를 비워 두는 것이다.
-  const runEvidenceIds = new Set(
+  // 🔴 두 수를 «따로» 낸다. `Set` 하나만 내면 중복은 채점 «전»에 사라져,
+  //    「중복 0」이 대상의 사실인지 자료구조의 성질인지 구별할 수 없다.
+  const runEvidenceIdList = (
     events.filter((e) => e.type === 'step.evidence')
       .flatMap((e) => {
         const ev = e.payload && e.payload.evidence;
@@ -224,6 +253,7 @@ function scoreRun(sample, gt, alias) {
         return list.map((x) => (x && x.evidenceId) || x);
       })
       .filter((x) => typeof x === 'string'));
+  const runEvidenceIds = new Set(runEvidenceIdList);
   // 🔴 **판정 면을 두 열로 가른다.** plan §2 의 정본은 「답변 본문」이지만, 화면은 답변 옆에
   //    근거 발췌를 함께 보여 준다. 한 열만 내면 「답변이 말하지 않았다」와 「run 이 찾지도
   //    못했다」가 같은 숫자로 접힌다 — 그 둘은 처방이 다른 곳에 붙는 서로 다른 사실이다.
@@ -252,6 +282,8 @@ function scoreRun(sample, gt, alias) {
     //    apply_guard 는 근거집합 밖 인용을 응답째 버린다). 그 0 의 주어는 검색 단계다.
     m7_stimulusPresent: gt.required_evidence.map((e) => ({ evidenceId: e, inRunEvidence: runEvidenceIds.has(e) })),
     runEvidenceCount: runEvidenceIds.size,
+    runEvidenceRawCount: runEvidenceIdList.length,
+    runEvidenceDuplicates: runEvidenceIdList.length - runEvidenceIds.size,
     m8: latencyOf(events),
   };
 }
@@ -296,7 +328,8 @@ function runGate(gt, alias) {
     fixture(full),
     (s) => s.m1.narrowAllHit && s.m1.wideAllHit && s.m6.byId === 0 && s.m6.byAlias === 0
       && s.m5_unsupported === 0 && s.m7.requiredHit.length === 2
-      && s.m8.totalMs === 5000 && s.m8.steps.vector === 2000);
+      && s.m8.totalMs === 5000 && s.m8.steps.vector === 2000
+      && s.runEvidenceRawCount === 2 && s.runEvidenceCount === 2 && s.runEvidenceDuplicates === 0);
 
   cell('planted_missing_sop', '심은 빨강 — SOP id 를 지웠다 → wide 축이 «떨어져야» 한다',
     fixture([full[0], '대응 절차는 문서에 없다. 필수 안전 규정은 SAF-LOTO-01 이다.']),
@@ -370,6 +403,24 @@ function runGate(gt, alias) {
   }
   cells.push({ name: 'public_surface_blocked', meaning: '공개면 차단 = 다짐이 아니라 코드', ok: baseOk, got: baseDetail });
 
+  // 🔴 심은 중복 — 같은 근거 id 가 두 번 나오면 축이 «올라야» 한다. 이 칸이 없으면
+  //    「중복 0」은 대상의 사실이 아니라 `Set` 의 성질일 수 있다(52대 O-33 검증 회부 ②).
+  cell('evidence_duplicates_counted', '심은 빨강 — 같은 근거 id 를 두 번 내면 중복 축이 올라야 한다',
+    fixture(full, undefined, [{ evidenceId: CIT[0] }]),
+    (s) => s.runEvidenceRawCount === 3 && s.runEvidenceCount === 2 && s.runEvidenceDuplicates === 1);
+
+  // 🔴 문은 «양면»으로 시험한다 — 막는 쪽만 보면 «전부 거절하는 문»도 초록이 된다.
+  const rawCell = (name, meaning, fn) => {
+    let ok = false, err = null;
+    try { ok = fn() === true; } catch (e) { err = String((e && e.message) || e); }
+    cells.push({ name, meaning, ok, err, got: null });
+  };
+  rawCell('out_guard_both_sides', '산출 경로 문 — 내용 있는 파일은 거절 · 새 파일·빈 파일·명시 덮어쓰기는 통과',
+    () => outGuardVerdict({ sizeOf: 42, overwrite: false }) === 'refuse'
+      && outGuardVerdict({ sizeOf: null, overwrite: false }) === 'ok'
+      && outGuardVerdict({ sizeOf: 0, overwrite: false }) === 'ok'
+      && outGuardVerdict({ sizeOf: 42, overwrite: true }) === 'ok');
+
   return cells;
 }
 
@@ -388,7 +439,12 @@ const alias = buildAliases(gtRows);
 const gate = runGate(gt, alias);
 const gateFailed = gate.filter((c) => !c.ok);
 for (const c of gate) console.error('[gate] ' + (c.ok ? 'PASS' : 'FAIL') + '  ' + c.name + (c.err ? '  err=' + c.err : ''));
-fs.writeFileSync(OUT.replace(/\.jsonl$/, '-gate.json'),
+// 🔴 `--gate-only` 는 raw 를 안 남기므로, 인자가 없으면 고정된 «정본 아닌» 자리에 쓴다.
+const GATE_JSON = (GATE_ONLY && !OUT_ARG)
+  ? path.join(HERE, 'eval-answer-gate-latest.json')
+  : OUT.replace(/\.jsonl$/, '-gate.json');
+assertWritable(GATE_ONLY ? [GATE_JSON] : [GATE_JSON, OUT.replace(/\.jsonl$/, '-report.json')]);
+fs.writeFileSync(GATE_JSON,
   JSON.stringify({ measuredAt: new Date().toISOString(), anchorQuestionId: ANCHOR_QID, gate }, null, 1), 'utf8');
 if (gateFailed.length) {
   console.error('EXIT2: gate ' + gateFailed.length + '/' + gate.length + ' FAILED - refuse to fire (subscription untouched)');
