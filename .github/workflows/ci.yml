@@ -124,6 +124,13 @@ jobs:
       - name: unit tests (services/ai-api/tests_unit)
         working-directory: services/ai-api
         run: python -m pytest tests_unit -q
+      # T7-42: 게이트웨이 단위도 파일로만 있고 부르는 회로가 없었다 — 여기가 그 회로다(O-20 과 같은 형태).
+      # 🔴 같은 job 안에 두는 이유: 이 층은 **표준 라이브러리 + pytest 만** 연다(gateway.py 의 의존이
+      #    urllib·hashlib 뿐이라 위 목록에 더 깔 것이 없다). 빨강이 났을 때 무엇이 울었는지는 **step
+      #    이름**으로 갈린다 — job 을 하나 더 세우면 checkout·python 설치를 한 벌 더 치른다.
+      - name: unit tests (services/synthesis-gateway/tests_unit)
+        working-directory: services/synthesis-gateway
+        run: python -m pytest tests_unit -q
 
   # web-console 의 vitest 층(39건)은 파일로만 있고 부르는 회로가 없었다 — 여기가 그 회로다.
   #
