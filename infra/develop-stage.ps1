@@ -33,7 +33,15 @@ param(
     [int]    $Neo4jBolt    = 7587,
     # 🔴 게이트웨이 로그는 **워크트리 밖** 고정 자리에 둔다 — 워크트리는 `refresh` 가 checkout 으로
     #    갈아엎고 제거 대상이 되는 곳이라, 안에 로그를 두면 「셀 대상이 없다」가 된다($HOME 기준 · 절대경로 0).
-    [string] $LogDir       = (Join-Path $HOME '.fkt/dev')
+    [string] $LogDir       = (Join-Path $HOME '.fkt/dev'),
+    # 🔴 replay fixture 를 컨테이너에 넣는 자리(O-42). production 과 **같은 형상**이다 —
+    #    `docker inspect fkt-deploy-ai-api` 실측: `~/.fkt/prod/data/replay -> /srv/data/replay` ro
+    #    + `FKT_REPLAY_FIXTURE_DIR=/srv/data/replay`. develop 은 `prod` 자리에 `dev` 를 넣는다.
+    # 🔴 **워크트리 안 경로를 쓰지 않는다**(CLAUDE.md §5 D-13). 워크트리는 `refresh` 가
+    #    갈아엎고 제거 대상이 되는 곳이라, 바인드 원본을 그 안에 두면 워크트리 정리가 배포 볼륨을
+    #    지운다(09-01 15:49 사고 · `git worktree remove` 는 ignored 파일까지 디렉토리째 지운다).
+    #    `$LogDir` 이 같은 이유로 이미 `$HOME` 아래에 있다 — 같은 뿌리를 쓴다.
+    [string] $ReplayDir    = (Join-Path $HOME '.fkt/dev/data/replay')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -188,8 +196,49 @@ function Stop-DevGateway {
     }
 }
 
+function Sync-ReplayFixtures {
+    # 🔴 fixture 의 정본은 «리포»이고 무대는 그 파생물을 읽는다. 그래서 매 up 마다 워크트리의
+    #    `data/replay` 를 고정 자리에 맞춘다 — 안 맞추면 무대가 «어느 세대의» fixture 를 답하는지
+    #    아무도 말할 수 없다(무대의 값은 「지금 develop 이 무엇을 답하는가」다).
+    # 🔴 **지우지 않는다.** 이 자리를 비우고 채우면 `-ReplayDir` 로 다른 경로가 들어온 날
+    #    스크립트가 남의 디렉터리를 지운다(destructive action = 사람의 결정 영역). 덮어쓰고,
+    #    원본에 없는 잉여는 «경고»로만 알린다 — 조용히 지우는 것보다 조용히 남는 편이 되돌릴 수 있다.
+    # 🔴 **빈 결과는 통과가 아니다.** 원본이 0건이면 여기서 멈춘다. 빈 디렉터리를 바인드하면
+    #    컨테이너는 replay 501 을 내는데, 그때 원인이 「스크립트가 아무것도 안 옮겼다」인지
+    #    「replay 가 고장났다」인지 구별할 수 없다.
+    $src = Join-Path $Worktree 'data/replay'
+    if (-not (Test-Path -LiteralPath $src)) { Write-Error "replay 원본이 없다: $src"; exit 3 }
+    $found = @(Get-ChildItem -LiteralPath $src -Filter '*.events.jsonl' -File -ErrorAction SilentlyContinue)
+    if ($found.Count -eq 0) { Write-Error "replay 원본에 fixture 가 0건이다: $src"; exit 3 }
+
+    New-Item -ItemType Directory -Force -Path $ReplayDir | Out-Null
+    Copy-Item -Path (Join-Path $src '*') -Destination $ReplayDir -Recurse -Force
+
+    # 🔴 복사했다(rc 0)와 같은 것이 놓였다는 다른 사실이다 — 해시로 확인한다.
+    $mismatch = @()
+    foreach ($f in $found) {
+        $dst = Join-Path $ReplayDir $f.Name
+        if (-not (Test-Path -LiteralPath $dst)) { $mismatch += "$($f.Name): 착지 없음"; continue }
+        $a = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
+        $b = (Get-FileHash -LiteralPath $dst -Algorithm SHA256).Hash
+        if ($a -ne $b) { $mismatch += "$($f.Name): 내용 다름" }
+    }
+    if ($mismatch.Count -gt 0) { Write-Error ("replay 복사 대조 실패 — " + ($mismatch -join ' · ')); exit 3 }
+
+    $extra = @(Get-ChildItem -LiteralPath $ReplayDir -Filter '*.events.jsonl' -File |
+               Where-Object { $found.Name -notcontains $_.Name })
+    if ($extra.Count -gt 0) {
+        Write-Warning ("replay 자리에 원본 밖 fixture $($extra.Count)본 잔존(지우지 않는다): " + ($extra.Name -join ', '))
+    }
+    Write-Host "replay fixture $($found.Count)본 대조 일치 → $ReplayDir"
+}
+
 function Ensure-Container {
     param([string] $Sha)
+    # 🔴 여기서 부른다 — `up` 과 `refresh` 가 둘 다 이 함수를 지나므로 «부르는 것을 잊을
+    #    수 있는 자리»가 없다. 컨테이너를 재사용하는 갈래에서도 맞춘다: 바인드는 읽기 전용이라
+    #    호스트 쪽 갱신이 그대로 보이고, 그렇지 않으면 무대가 옛 fixture 를 답한다.
+    Sync-ReplayFixtures
     $tag  = "${ImageRepo}:dev-$Sha"
     $have = (docker images -q $tag 2>$null)
     if (-not $have) {
@@ -202,9 +251,19 @@ function Ensure-Container {
 
     $running = (docker ps -q --filter "name=^$Container$" 2>$null)
     $runningImage = if ($running) { (docker inspect $Container --format '{{.Config.Image}}' 2>$null) } else { '' }
-    if ($running -and $runningImage -eq $tag) {
-        Write-Host "컨테이너 그대로 $Container ($tag)"
+    # 🔴 **같은 이미지라도 «형상»이 다르면 재사용하지 않는다**(O-42). 바인드·env 는 이미지가
+    #    아니라 `docker run` 이 정하므로, 이 스크립트가 replay 를 붙이도록 바뀐 뒤에도 예전에 뜬
+    #    컨테이너는 같은 tag 로 «그대로» 남는다 — 그러면 무대는 새 스크립트를 돌린 뒤에도 여전히
+    #    replay 501 을 답하고, 아무도 그 이유를 스크립트에서 찾지 못한다.
+    #    목적지(`/srv/data/replay`)로만 본다 — 원본 경로 문자열은 구분자가 형상마다 갈린다.
+    $mountDests = if ($running) { (docker inspect $Container --format '{{range .Mounts}}{{.Destination}} {{end}}' 2>$null) } else { '' }
+    $hasReplay = ($mountDests -match '/srv/data/replay')
+    if ($running -and $runningImage -eq $tag -and $hasReplay) {
+        Write-Host "컨테이너 그대로 $Container ($tag · replay 바인드 있음)"
         return
+    }
+    if ($running -and $runningImage -eq $tag -and -not $hasReplay) {
+        Write-Host "컨테이너 재생성 $Container — 이미지는 같으나 replay 바인드가 없다(O-42)"
     }
     docker rm -f $Container 2>$null | Out-Null
     # 🔴 재시작 정책 없음 · 컨테이너에서 호스트로 나가는 주소는 `host.docker.internal`.
@@ -216,6 +275,8 @@ function Ensure-Container {
         -e 'FKT_NEO4J_PASSWORD=fkt_local_dev' `
         -e "FKT_LOCAL_SYNTHESIS_GATEWAY=http://host.docker.internal:$GatewayPort" `
         -e "FKT_BUILD_SHA=$Sha" `
+        -e 'FKT_REPLAY_FIXTURE_DIR=/srv/data/replay' `
+        -v "${ReplayDir}:/srv/data/replay:ro" `
         $tag | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Error '컨테이너 기동 실패'; exit 3 }
     Write-Host "컨테이너 기동 $Container ($tag) → :$ApiPort"
@@ -241,6 +302,12 @@ function Show-Status {
         promptPath    = $ppath
         gatewayPid    = Get-ListenerPid -OnPort $GatewayPort
         container     = (docker ps --filter "name=^$Container$" --format '{{.Names}} {{.Image}} {{.Status}}' 2>$null)
+        # 🔴 「replay 를 답할 수 있는 형상인가」를 status 가 직접 말한다(O-42). 이게 없으면
+        #    무대에서 501 이 났을 때 「바인드가 없다」와 「fixture 가 깨졌다」를 구별하려고
+        #    매번 `docker inspect` 를 손으로 친다.
+        replaySource  = $ReplayDir
+        replayFixtures = @(Get-ChildItem -LiteralPath $ReplayDir -Filter '*.events.jsonl' -File -ErrorAction SilentlyContinue).Count
+        replayMounted = ((docker inspect $Container --format '{{range .Mounts}}{{.Destination}} {{end}}' 2>$null) -match '/srv/data/replay')
     } | Format-List
 }
 
