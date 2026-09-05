@@ -49,6 +49,7 @@
 ## 5. Git
 
 - 브랜치: `develop` 작업 · `main` 승격(운영자 게이트) · Conventional Commits(영어).
+- 🔴 **배포·승격 절차(운영자 하명 09-05 20:03~20:06 · 영구 규칙)**: 🔴 **develop 환경 ≠ production 환경(분리 · 운영자 20:07 「디벌롭과 프로덕션은 구분해」)** — ① develop 병합 → ② **develop 배포 환경에서 독립 검증**(develop 브랜치 Vercel preview + develop 용 ai-api·게이트웨이 스택 · 무대 재검·E2E · 이상 없음 실측 · **production = `:8010`·`:8787`·공개 도메인은 검증 무대가 아니다 · 무접촉**) → ③ **승격 청구**(운영자 DM · 근거 = ② 결과) → ④ **운영자 허가** → ⑤ production 배포(main 병합 · Vercel production · 컨테이너 재생성). 🔴 허가 없는 production 변경 0 — 「production 라이브 경로에 닿는 변경」(게이트웨이 프롬프트 파일 등 실행 중 프로세스가 읽는 것 포함)도 배포다: production 이 읽지 않는 자리(develop 스택)에서 검증한 뒤 ③으로 간다. 결정 위임(09-05 19:13)은 이 절차를 덮지 않는다.
 - GitHub Public 개설·push는 운영자 확인 후(공개 행위). 그 전까지 로컬 git만.
 - lane 브랜치는 병합 즉시 원격에서 삭제한다(`gh pr merge --merge --delete-branch`) — 원격 = `develop`·`main` 만(운영자 하명 09-01 12:16 「정리 가능한 것은 정리」 · lane 99본 정리). 병합된 lane 재push 금지 · 새 작업 = 새 lane.
 - 🔴 **좌석(구현·검증) 작업 = worktree 에서만**: `git worktree add ../_wt/{slug}-{ticket} -b lane/{slug}-{ticket} origin/develop`(리포 **형제** 디렉토리 `../_wt/` · 리포 안에 만들면 `?? _wt/` 로 메인 트리를 더럽힌다). **메인 체크아웃(`factory-knowledge-twin/`)은 오케 전용** — 좌석의 편집·브랜치 생성·stash 금지. 좌석 파일 이전은 **경로 지정** stash(`git stash push -u -- <내 파일>`)만 — 경로 무지정은 타 좌석 파일을 삼킨다(09-01 12:42~12:56 3건 재발 성문).
