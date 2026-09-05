@@ -35,7 +35,7 @@ from ..errors import (
     SessionRunCapExceeded,
     dependency_guard,
 )
-from ..investigation import binding, replay, runner
+from ..investigation import binding, replay
 from ..investigation.store import RunRecord, RunStore
 from ..reading import factory as factory_reader
 from ..reading import scenarios as scenario_reader
@@ -68,6 +68,21 @@ def _error(status: int, code: str, message: str) -> HTTPException:
 
 def _store(request: Request) -> RunStore:
     return request.app.state.run_store
+
+
+def _runner() -> Any:
+    """live 실행기를 «쓸 때» 들여온다 — 이 모듈의 import 에 걸지 않는다.
+
+    🔴 `investigation.runner` 는 `workflow` 를 거쳐 langgraph·torch·psycopg·neo4j 를 연다.
+       그 체인을 모듈 import 에 걸어 두면 **단위 층이 이 라우트를 시험할 수 없다**: CI 의
+       설치 목록(4종)으로는 import 자체가 죽어 등록 축 테스트가 통째로 건너뛰어졌고,
+       건너뛴 그물은 처방을 되돌려도 초록이었다(O-28 · 리바이2 2×2 실측).
+    🔴 «기동 시 체인 실재 확인»은 사라지지 않았다 — `main.create_app` 이 같은 import 를
+       들고 있어 서버는 여전히 그 자리에서 먼저 죽는다. 여기서 옮긴 것은 «시점»뿐이다.
+    """
+    from ..investigation import runner
+
+    return runner
 
 
 # 🔴 재사용을 «말하는» 헤더. 조용히 같은 run 을 돌려주면 호출자는 자기가 만든 줄 안다 —
@@ -309,7 +324,7 @@ async def start_run(
 
     try:
         async with dependency_guard("postgres"):
-            record = await runner.start(
+            record = await _runner().start(
                 _store(request),
                 pool=resources.pg_pool,
                 driver=resources.neo4j_driver,
@@ -371,7 +386,7 @@ async def stop_run(runId: str, request: Request) -> RunStopped:
     """
     record = _run_or_404(request, runId)
     if not record.terminal:
-        runner.request_stop(record)
+        _runner().request_stop(record)
     return RunStopped()
 
 
