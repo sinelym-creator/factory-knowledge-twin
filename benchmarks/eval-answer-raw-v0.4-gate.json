@@ -1,0 +1,1291 @@
+{
+ "measuredAt": "2026-09-05T11:04:56.771Z",
+ "anchorQuestionId": "Q-MULTIHOP-001",
+ "gate": [
+  {
+   "name": "truth",
+   "meaning": "참값 — 기대 전부 충족",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 104,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "planted_missing_sop",
+   "meaning": "심은 빨강 — SOP id 를 지웠다 → wide 축이 «떨어져야» 한다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 92,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": false
+     },
+     "narrowAllHit": true,
+     "wideAllHit": false
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": false
+     },
+     "narrowAllHit": true,
+     "wideAllHit": false
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "planted_missing_safety",
+   "meaning": "심은 빨강 — 안전 규정을 지웠다 → 지표 6 이 «올라야» 한다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 79,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 1,
+     "byAlias": 1,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": false,
+       "aliasHit": false
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 1,
+     "byAlias": 1,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": false,
+       "aliasHit": false
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "control_citations_stripped",
+   "meaning": "🔴 대조군(b) — 인용을 지웠다 → 지표 5 가 «올라야» 한다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 104,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 2,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 0,
+     "cited": [],
+     "requiredHit": [],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "boundary_korean_josa",
+   "meaning": "경계 — 한글 조사가 붙어도 잡는다(`EQ-CNC-204의`)",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 81,
+    "sentenceCount": 1,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "boundary_longer_id",
+   "meaning": "경계 — 더 긴 id 를 잘라 읽지 않는다(`EQ-CNC-2041`)",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 72,
+    "sentenceCount": 1,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": false,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": false,
+     "wideAllHit": false
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": false,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": false,
+     "wideAllHit": false
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "alias_splits_columns",
+   "meaning": "두 열이 갈린다 — id 없이 「LOTO」만 말하면 id 열은 누락·별칭 열은 아니다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 96,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 1,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": false,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 1,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": false,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "evidence_only_splits_faces",
+   "meaning": "판정 면 A/B — 규정이 근거에만 있으면 A 는 누락 · B 는 아니다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 79,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 1,
+     "byAlias": 1,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": false,
+       "aliasHit": false
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 3,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000,
+      "graph": null
+     },
+     "stepsSelfReported": {
+      "vector": null,
+      "graph": null
+     }
+    }
+   }
+  },
+  {
+   "name": "named_with_evidence_scores_zero",
+   "meaning": "D-84 방향 — 근거에 SAF 가 있고 답변이 id 로 호명하면 지표 6 = 0",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 103,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 3,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000,
+      "graph": null
+     },
+     "stepsSelfReported": {
+      "vector": null,
+      "graph": null
+     }
+    }
+   }
+  },
+  {
+   "name": "sentence_face_counts_uncited",
+   "meaning": "문장 면 — 인용 0건 문장이 있으면 지표 5 가 오른다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 104,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": true,
+     "sentences": 2,
+     "count": 1,
+     "citationsPerSentence": [
+      2,
+      0
+     ]
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000,
+      "synthesize": null
+     },
+     "stepsSelfReported": {
+      "vector": null,
+      "synthesize": null
+     }
+    }
+   }
+  },
+  {
+   "name": "sentence_face_absent_is_null",
+   "meaning": "문장 면 — 스트림이 없으면 0 이 아니라 «못 잼»(null)",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 104,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 0,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 2,
+     "cited": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredHit": [
+      "DOC-SOP-0014@r2#001",
+      "DOC-SAF-0029@r3#000"
+     ],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "stimulus_absent_is_named",
+   "meaning": "자극 부재 — 기대 근거가 run 근거집합에 없으면 이름으로 드러난다",
+   "ok": true,
+   "err": null,
+   "got": {
+    "answerChars": 104,
+    "sentenceCount": 2,
+    "m1": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m1_withEvidence": {
+     "ids": [
+      "AL-20260826-0041",
+      "EQ-CNC-204",
+      "SOP-BRG-INSP-014"
+     ],
+     "narrowIds": [
+      "EQ-CNC-204"
+     ],
+     "proseItems": [],
+     "perId": {
+      "AL-20260826-0041": true,
+      "EQ-CNC-204": true,
+      "SOP-BRG-INSP-014": true
+     },
+     "narrowAllHit": true,
+     "wideAllHit": true
+    },
+    "m5_unsupported": 2,
+    "m5_perSentence": {
+     "measurable": false,
+     "count": null,
+     "sentences": 0
+    },
+    "m6": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m6_withEvidence": {
+     "byId": 0,
+     "byAlias": 0,
+     "detail": {
+      "SAF-LOTO-01": {
+       "idHit": true,
+       "aliasHit": true
+      }
+     }
+    },
+    "m7": {
+     "citedCount": 0,
+     "cited": [],
+     "requiredHit": [],
+     "requiredTotal": 2,
+     "outsideRunEvidence": 0
+    },
+    "m7_stimulusPresent": [
+     {
+      "evidenceId": "DOC-SOP-0014@r2#001",
+      "inRunEvidence": true
+     },
+     {
+      "evidenceId": "DOC-SAF-0029@r3#000",
+      "inRunEvidence": true
+     }
+    ],
+    "runEvidenceCount": 2,
+    "m8": {
+     "totalMs": 5000,
+     "steps": {
+      "vector": 2000
+     },
+     "stepsSelfReported": {
+      "vector": null
+     }
+    }
+   }
+  },
+  {
+   "name": "public_surface_blocked",
+   "meaning": "공개면 차단 = 다짐이 아니라 코드",
+   "ok": true,
+   "got": [
+    {
+     "base": "https://factory-knowledge-twin.vercel.app",
+     "expected": false,
+     "actual": false
+    },
+    {
+     "base": "http://127.0.0.1:8010",
+     "expected": false,
+     "actual": false
+    },
+    {
+     "base": "http://10.0.0.5:8090",
+     "expected": false,
+     "actual": false
+    },
+    {
+     "base": "http://127.0.0.1:8090",
+     "expected": true,
+     "actual": true
+    }
+   ]
+  }
+ ]
+}

@@ -82,6 +82,31 @@ function unsupportedClaims(cands) {
   return n;
 }
 
+/**
+ * 지표 5 — **문장 면**. 🔴 앞판의 「문장별 인용 대응이 계약에 없다」는 **틀렸다.**
+ * 없는 것은 `runCompleted.candidates[].rationale` **스냅샷 형상**뿐이고,
+ * 이벤트 스트림에는 `step.progress{kind:"sentence"}.sentence.citedEvidenceIds` 로 **문장마다** 있다.
+ * (스냅샷은 이벤트 정본이 아니다 — 같은 함정을 한 번 더 밟았다.)
+ *
+ * 이 열이 entry 면보다 중요한 이유: `apply_guard` 는 **entry 단위** 인용만 검사한다.
+ * 그래서 entry 면의 0 은 «문이 만든 0»이지만, **문장 면의 0 은 그 문이 만들지 않는다** —
+ * 인용 0건 문장이 와도 entry 목록만 차 있으면 guard 를 통과한다. 즉 이 열에는 판정력이 있다.
+ */
+function unsupportedClaimsPerSentence(events) {
+  const sents = events
+    .filter((e) => e.type === 'step.progress' && e.payload && e.payload.kind === 'sentence')
+    .map((e) => e.payload.sentence)
+    .filter(Boolean);
+  // 🔴 스트림이 없으면 «0» 이 아니라 «못 잼»이다 — null 로 낸다
+  if (sents.length === 0) return { measurable: false, count: null, sentences: 0 };
+  return {
+    measurable: true,
+    sentences: sents.length,
+    count: sents.filter((s) => !((s.citedEvidenceIds || []).length)).length,
+    citationsPerSentence: sents.map((s) => (s.citedEvidenceIds || []).length),
+  };
+}
+
 /** 지표 1 — 두 열. narrow = 정본 문면(「설비·부품 id」) · wide = must_include 의 id 전부. */
 const ASSET_PREFIX = /^(EQ|CP)-/; // 설비·부품 (plan §2 「설비·부품 id」)
 const ID_TOKEN = /(EQ|CP|SN|AL|SOP|SAF|FM|INC|WO|DOC)-[A-Z0-9][A-Z0-9@#r.-]*/;
@@ -215,7 +240,10 @@ function scoreRun(sample, gt, alias) {
     sentenceCount: candidates.reduce((n, c) => n + (((c.rationale && c.rationale.sentences) || []).length), 0),
     m1: assetAccuracy(text, gt.must_include),
     m1_withEvidence: assetAccuracy(withEvidence, gt.must_include),
+    // entry 면 — 🔴 `apply_guard` 가 만드는 구조적 0(모델 성능 아님)
     m5_unsupported: unsupportedClaims(candidates),
+    // 문장 면 — guard 가 검사하지 않는 축이라 이 0 에는 판정력이 있다
+    m5_perSentence: unsupportedClaimsPerSentence(events),
     m6: safetyOmission(text, gt.required_safety_rules, alias),
     m6_withEvidence: safetyOmission(withEvidence, gt.required_safety_rules, alias),
     m7: citationAxes(candidates, gt.required_evidence, runEvidenceIds),
@@ -232,13 +260,18 @@ function scoreRun(sample, gt, alias) {
  * 2. 교정 게이트 — 참값 칸 + «심은 빨강» 칸. 네트워크 0 · 구독 0.
  * ------------------------------------------------------------------ */
 const CIT = ['DOC-SOP-0014@r2#001', 'DOC-SAF-0029@r3#000'];
-const fixture = (sentences, cited, extraEvidence) => ({
+// sentenceCitations: 문장 면 픽스처(각 문장의 인용 목록). 안 주면 스트림 이벤트 0 = 「못 잼」.
+const fixture = (sentences, cited, extraEvidence, sentenceCitations) => ({
   events: [
     { type: 'run.started', ts: '2026-09-05T00:00:00.000Z' },
     { type: 'step.started', ts: '2026-09-05T00:00:00.000Z', payload: { step: 'vector' } },
     // 실물과 같게 «객체 하나»로 낸다 — 배열로 가정했다가 채점기가 통째로 죽은 자리다
     ...CIT.map((e) => ({ type: 'step.evidence', ts: '2026-09-05T00:00:01.000Z', payload: { step: 'vector', evidence: { evidenceId: e } } })),
     ...(extraEvidence || []).map((x) => ({ type: 'step.evidence', ts: '2026-09-05T00:00:01.000Z', payload: { step: 'graph', evidence: x } })),
+    ...(sentenceCitations || []).map((c, i) => ({
+      type: 'step.progress', ts: '2026-09-05T00:00:03.000Z',
+      payload: { step: 'synthesize', kind: 'sentence', sentence: { text: sentences[i] || '', citedEvidenceIds: c } },
+    })),
     { type: 'step.completed', ts: '2026-09-05T00:00:02.000Z', payload: { step: 'vector' } },
     { type: 'run.completed', ts: '2026-09-05T00:00:05.000Z' },
   ],
@@ -304,6 +337,17 @@ function runGate(gt, alias) {
     fixture([full[0], '대응 절차는 SOP-BRG-INSP-014 이고 작업 전 SAF-LOTO-01 을 적용한다.'], undefined,
       [{ evidenceId: 'GP-x-03', sourceId: 'SAF-LOTO-01', excerpt: '[SOP · 3-hop] ... → SAF-LOTO-01' }]),
     (s) => s.m6.byId === 0 && s.m6_withEvidence.byId === 0);
+
+  // 🔴 문장 면(지표 5)의 대조군. entry 면은 guard 가 0 을 만들지만 이 면은 아니다 —
+  //    그러니 이 열에는 «오르는» 것을 보여 주는 칸이 반드시 있어야 한다.
+  cell('sentence_face_counts_uncited', '문장 면 — 인용 0건 문장이 있으면 지표 5 가 오른다',
+    fixture(full, undefined, undefined, [CIT, []]),
+    (s) => s.m5_perSentence.measurable === true && s.m5_perSentence.count === 1
+        && s.m5_unsupported === 0);   // entry 면은 그대로 0 — 두 면이 갈린다
+
+  cell('sentence_face_absent_is_null', '문장 면 — 스트림이 없으면 0 이 아니라 «못 잼»(null)',
+    fixture(full),
+    (s) => s.m5_perSentence.measurable === false && s.m5_perSentence.count === null);
 
   cell('stimulus_absent_is_named', '자극 부재 — 기대 근거가 run 근거집합에 없으면 이름으로 드러난다',
     fixture(full, [], []),
@@ -449,6 +493,7 @@ const report = {
     identicalAnswerChars: new Set(scored.map((s) => s.answerChars)).size === 1,
     identicalCitedSets: new Set(scored.map((s) => JSON.stringify([...s.m7.cited].sort()))).size === 1,
     m5Samples: scored.map((s) => s.m5_unsupported),
+    m5PerSentenceSamples: scored.map((s) => s.m5_perSentence.count),
     m6IdSamples: scored.map((s) => s.m6.byId),
   },
   gateCells: gate.map((c) => ({ name: c.name, ok: c.ok })),
@@ -475,6 +520,11 @@ if (BASELINE_RAW) {
     after_m6ById: col(scored, (s) => s.m6.byId),
     after_m6ByAlias: col(scored, (s) => s.m6.byAlias),
     after_safetyNamedInAnswer: col(scored, (s) => Object.values(s.m6.detail).every((d) => d.idHit)),
+    // 처방의 «부작용» 축 — 안전 규정을 말하게 한 대가로 인용이 무너지지 않았는가
+    before_m5PerSentence: col(baseScored, (s) => s.m5_perSentence.count),
+    after_m5PerSentence: col(scored, (s) => s.m5_perSentence.count),
+    before_totalMs: col(baseScored, (s) => s.m8.totalMs),
+    after_totalMs: col(scored, (s) => s.m8.totalMs),
     // 🔴 이 한 줄이 교정의 전부다: 옛 값이 흔들렸다면 계측기가 변한 것이고, after 를 대상의 답으로 읽을 수 없다.
     baselineStable_expect_all_1: col(baseScored, (s) => s.m6.byId).every((x) => x === 1),
   };
