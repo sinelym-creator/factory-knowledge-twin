@@ -29,16 +29,16 @@
 | ② | Cypher injection | 🆕 `tests/api/cypher_surface_drill.py` | **exit 0** · 층 A 15건(400/404·내부 노출 0) · 층 B 5건(추출 = ID 토큰·**구조 문자 0**) · 대조군 2 | **PASS** | `[N]`§2 |
 | ③ | 문서 내부 Prompt Injection | 🆕 `tests/api/prompt_injection_authority_drill.py` | **exit 0** · 표지 ② 1건(자극 실재) · A-3·A-4·A-6 PASS · A-1·A-2 **측정 불가** · 원복 md5 일치 | **PASS(조건부)** — 🔴 기전이 «무결성 배제»라 권한 축 2행은 측정 불가 · **재색인 경유 주입은 미측** | `[N]`§3·§3-1 |
 | ④ | 임의 tool 호출 | `tests/api/scenario_allowlist_drill.py` | **exit 0** · 허용 10건 200 · 목록 밖 6종 전건 400 | **PASS** | `[V]`§1-7 ④ |
-| ⑤ | 관리자 endpoint 접근 | **없음** | — | 🔴 **미충족** — 「문이 계약에 없다」 ≠ 「접근이 막힌다」 | `[V]`§1-7 ⑤ |
+| ⑤ | 관리자 endpoint 접근 | 🆕 `tests/security/gate7_admin_surface.py` | **exit 1** · 표면 14 · Q-35 4종 **전부 200** · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존)** | 🔴 **FAIL(D-n 회부)** — 가드 고장이 아니라 **가드가 닿지 않는 표면** | `[S]`§1 |
 | ⑥ | 다른 session 접근 | `tests/api/session_guard_drill.py` | **exit 0** · 6축(은닉 4·상충 422·reset 3) | **PASS** | `[V]`§1-7 ⑥ |
 | ⑦ | oversized request | `tests/api/t42b_limits_drill.py` | **exit 2** | 🔴 **측정 불가** — 세션 축 대조군 서버(`FKT_T42B_SESSION_BASE`) 미지정 · 그물이 기본값을 **거부**한다(Q-62) | `[V]`§1-7 ⑦ |
 | ⑧ | 반복 요청·rate limit | `t42b_xff_axes_drill.py` · `t42b_capacity_drill.py` | **exit 2**(xff) · capacity 미실행 | 🔴 **측정 불가** — BEFORE 서버·`FKT_T42B_TIMEOUT_BASE` 필요 | `[V]`§1-7 ⑧ |
-| ⑨ | 잘못된 WebSocket message | **없음** | — | 🔴 **미충족** | `[V]`§1-7 ⑨ |
+| ⑨ | 잘못된 WebSocket message | 🆕 `tests/security/gate7_ws_malformed.py` | **exit 0** · 대조군 38 이벤트 · 자극 5종 **전건 서버 생존** · 없는 runId **close 4404** | **부분** — 생존 축 PASS · 🔴 (a)~(d) 「닫힘/오류」는 **불성립**(핸들러가 클라이언트 프레임을 읽지 않는다) | `[S]`§2 |
 | ⑩ | path traversal | `tests/api/injection_surface_drill.py` | **exit 0** · HL-05·06·07 400 · 대상 생존 1376자 | **PASS** | `[V]`§1-7 ⑩ |
 | ⑪ | CORS 우회 | `tests/web/t41_cors_browser_drill.mjs` | — | 🔴 **측정 불가** — 맨 페이지 서버 2본 + allowlist 주입 서버 필요 | `[V]`§1-7 ⑪ |
 | ⑫ | stack trace·secret 노출 | `error_shape_drill.py` · `credential_leak_drill.py` | **exit 0** · 형상 9/9 · 3면 누출 0(응답 23·이벤트 32·로그) | **PASS** — 🔴 Q-49·Q-23 미결 존속 | `[V]`§1-7 ⑫ |
 | ⑬ | 승인 우회 | `r12_enforcement_drill.py` · `approval_transition_drill.py` | **exit 0** · 형제 6+대조군 2 · 전이 12칸 | **PASS** | `[V]`§1-7 ⑬ |
-| 〔유지〕 | git «이력» secret scan | `tests/api/ci_hygiene_drill.py` | **exit 0** · 추적 461파일 · G-1·G-2·G-3 히트 0 | **부분** — 🔴 «작업 트리» 축이다. **«이력» 축은 판정문 없음** | `[V]`§1-7 〔유지〕 |
+| 〔유지〕 | git «이력» secret scan | `ci_hygiene_drill.py`(트리) + 🆕 `tests/security/gate7_history_secret_scan.py`(이력) | **이력 축 GREEN** · 커밋 1880 · 패치 21.6MB · 패턴 12종(**교정 12/12 물림**) · 히트 14 **전건 합성물** · 진짜 시크릿 **0** · GH secret-scanning `[]` | **PASS** — 🔴 전용 스캐너 0개(대체 그물) | `[S]`§3 |
 
 ---
 
@@ -46,18 +46,23 @@
 
 | 구분 | 항 | 수 |
 |---|---|---|
-| **PASS** | ②④⑥⑩⑫⑬ | **6** |
+| **PASS** | ②④⑥⑩⑫⑬ · 〔유지〕 | **7** |
 | **PASS(조건부)** | ③ | **1** |
-| **부분** | ① · 〔유지〕 | **2** |
+| **부분** | ① · ⑨ | **2** |
 | 🔴 **측정 불가** | ⑦⑧⑪ | **3** |
-| 🔴 **미충족** | ⑤⑨ | **2** |
+| 🔴 **FAIL(회부)** | ⑤ | **1** |
+| 🔴 **미충족** | — | **0** |
 | **합**(13항 + 유지 1) | | **14** |
 
 **축소 안 §3 대비**: 재실행 8(④⑥⑦⑧⑩⑪⑫⑬) 중 **5항 초록**(④⑥⑩⑫⑬) · **3항 측정 불가**(⑦⑧⑪) ·
 신설 3(①질의·②·③) **전건 착지** · 미충족 2(⑤⑨) **무변**.
 
-🔴 **Gate 7 은 서 있지 않다.** 미충족 2 + 측정 불가 3 = **5항이 비어 있다**. ①과 〔유지〕는
-부분이다. 「신설 3 완료」를 「Gate 7 완료」로 읽지 않는다.
+🔴 **Gate 7 은 여전히 서 있지 않다.** 조각 A(53대 `06:24~06:31`)로 **미충족 2 → 0** 이 됐지만,
+그 자리를 **FAIL 1(⑤) + 부분 1(⑨)** 이 대신한다. 측정 불가 3(⑦⑧⑪)은 **무변**이다.
+⇒ 비어 있거나 붉은 항 = **⑤(FAIL) · ⑦⑧⑪(측정 불가) = 4항**. ①·⑨ 는 부분이다.
+🔴 **「그물이 생겼다」를 「게이트가 섰다」로 읽지 않는다** — ⑤ 는 그물이 생겨서 **빨강이 보이게 된 것**이다.
+
+출처 약칭 `[S]` = `evidence/t5-2-gate7-security-verification.md`(조각 A 판정문).
 
 ---
 
