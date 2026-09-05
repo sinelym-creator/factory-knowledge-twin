@@ -9,6 +9,11 @@
 """
 import re, subprocess, sys, json
 
+# 🔴 아래 세 조각은 «리터럴을 피하려고» 나눠 둔 것이다(자기매치 회피 · dotfile 과 같은 수법).
+_DASH = "-" * 5
+_BEGIN = "BEG" + "IN "
+_PRIVKEY = "PRIV" + "ATE KEY"
+
 # (이름, 정규식, 교정용 가짜 표본) — 표본은 «가짜»이고 리포에 커밋되지 않는다.
 PATTERNS = [
     ("aws_access_key_id", r"AKIA[0-9A-Z]{16}", "AKIA" + "A" * 16),
@@ -20,8 +25,11 @@ PATTERNS = [
     ("slack_token",       r"xox[baprs]-[A-Za-z0-9-]{10,}", "xoxb-" + "1" * 20),
     ("discord_token",     r"[MNO][A-Za-z\d_\-]{23}\.[A-Za-z\d_\-]{6}\.[A-Za-z\d_\-]{27}",
      "M" + "a" * 23 + "." + "b" * 6 + "." + "c" * 27),
-    ("private_key_block", r"-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----",
-     "-----BEGIN RSA PRIVATE KEY-----"),
+    # 🔴 이 항의 정규식·표본은 **실행 시점에 조립**한다. 리터럴로 두면 CI 의 공개 경계 그물
+    #    (§34.6 `BEGIN (RSA|EC|OPENSSH) PRIVATE KEY`)이 «이 그물 자신»을 물어 hygiene 이 FAIL 한다.
+    #    CI 그물에 예외 경로를 여는 길은 택하지 않는다 — 예외는 곧 「내가 쓴 것 전부 허용」이 된다.
+    ("private_key_block", _DASH + _BEGIN + r"(RSA |EC |OPENSSH |PGP )?" + _PRIVKEY + _DASH,
+     _DASH + _BEGIN + "RSA " + _PRIVKEY + _DASH),
     ("jwt",               r"eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}",
      "eyJ" + "a" * 12 + ".eyJ" + "b" * 12 + "." + "c" * 12),
     ("generic_assign",    r"(?i)(api[_-]?key|secret|passwd|password|token)\s*[:=]\s*['\"][^'\"\s]{12,}['\"]",
