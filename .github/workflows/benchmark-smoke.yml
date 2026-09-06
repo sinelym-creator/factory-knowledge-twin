@@ -153,31 +153,36 @@ jobs:
           cat /tmp/health.json || true; echo
 
       # ============================ 대조군 (색인 «전») ============================
-      # 🔴 여기서 재는 값이 골격 시절 델타표의 「색인 없는 DB = exit 5」를 **E1 로 승격**한다.
-      #    bash -e 아래서 실패 rc 를 값으로 받으려면 `|| rc=$?` 여야 한다(09-06 실측).
-      - name: 대조군 — 색인 0 에서 스모크 (실패해야 정상)
+      # 🔴 O-54 반영(#868): 색인 0 은 이제 **exit 7**(「색인 없음」)이다 — 서버가 503
+      #    `index_unavailable` 로 «부재를 이름으로» 말하고, 러너가 그 일관성을 보고 5(검색이
+      #    죽었다)와 갈라 준다. 앞판은 둘을 한 코드로 덮어 빨강을 보고도 어디를 고칠지 알 수 없었다.
+      # 🔴 러너가 **가드 «앞»에서 `--out` 을 쓰므로**(#868) 빨강에서도 봉투가 파일로 남는다.
+      #    그래서 두 번째 계측기(control_status_probe.py)는 이 커밋에서 **제거**했다 —
+      #    원 호출의 봉투를 러너가 직접 내주는데 옆에서 같은 질문을 또 사는 것은 비용만 두 배다.
+      #    (그 계측기가 낸 값 = evidence/t5-3-g1c-verification.md 에 이미 남아 있다.)
+      - name: 대조군 — 색인 0 에서 스모크 (exit 7 = 「색인 없음」이어야 정상)
         run: |
           set -uo pipefail
           chunks=$(psql -tAc "SELECT count(*) FROM document_chunk")
           echo "document_chunk = ${chunks} (색인 전이라 0 이어야 한다)"
           [ "$chunks" = "0" ] || { echo "::error::색인 전인데 chunk ${chunks}행 — 대조군이 성립하지 않는다"; exit 1; }
           rc=0
-          node benchmarks/run-benchmark-smoke.mjs --base "http://127.0.0.1:${API_PORT}" --k 5 > /tmp/ctrl.txt 2>&1 || rc=$?
-          tail -5 /tmp/ctrl.txt
-          echo "대조군 rc=${rc} (0 이 아니어야 정상 · 델타표 기대 = 5)"
+          node benchmarks/run-benchmark-smoke.mjs --base "http://127.0.0.1:${API_PORT}" --k 5             --out /tmp/ctrl.json > /tmp/ctrl.txt 2>&1 || rc=$?
+          tail -6 /tmp/ctrl.txt
+          echo "대조군 rc=${rc} (기대 7 = 색인 없음)"
           [ "$rc" -ne 0 ] || { echo "::error::색인이 0인데 스모크가 통과했다 — 이 지표는 색인을 안 보고 있다"; exit 1; }
-          [ "$rc" -eq 5 ] || echo "::warning::rc ${rc} ≠ 5 — 구조 가드가 다른 자리에서 울었다(델타표 갱신 대상)"
+          [ "$rc" -eq 7 ] || { echo "::error::rc ${rc} ≠ 7 — 색인 0 이 「색인 없음」으로 분류되지 않았다"; exit 1; }
+          # 🔴 `if-no-files-found: warn` 을 믿지 않는다 — 부재가 초록으로 지나간다. 여기서 «실재»를 센다.
+          [ -s /tmp/ctrl.json ] || { echo "::error::빨강에서 --out 이 안 써졌다 /tmp/ctrl.json — O-54 ⓐ 가 성립하지 않는다"; exit 1; }
+          python - <<'PY'
+          import json
+          d = json.load(open('/tmp/ctrl.json', encoding='utf-8'))
+          rows = d.get('rows') or []
+          st = sorted({r['strategies'][s]['status'] for r in rows for s in r.get('strategies', {})})
+          cd = sorted({r['strategies'][s].get('code') for r in rows for s in r.get('strategies', {})} - {None})
+          print(f"--out 실재 · rows {len(rows)} · status {st} · code {cd}")
+          PY
 
-      # 🔴 러너의 `--out` 은 이 국면에서 «파일을 안 만든다» — 구조 가드 exit 5 가 쓰기보다 앞줄이다
-      #    (현 develop 판 118행 exit 5 · 172행 writeFileSync). 그래서 前 열의 요청별 상태코드는
-      #    두 번째 계측기로 남긴다. 표본은 러너와 «같은 정본·같은 필터»에서 읽는다.
-      #    답하는 것 하나: 이 hit 0 이 «200 응답 위에서» 났는가 — 4xx/5xx 위의 0 은 색인 부재의
-      #    증거가 아니라 도달 실패일 수 있고, 둘은 같은 0 으로 보인다.
-      - name: 대조군 前 열 — 요청별 상태코드(두 번째 계측기)
-        env:
-          BENCH_BASE: http://127.0.0.1:${{ env.API_PORT }}
-          CONTROL_PROBE_OUT: /tmp/ctrl-status.json
-        run: python .github/scripts/control_status_probe.py
 
       # ============================ 색인 (변수는 이것 하나) ============================
       - name: build index (계수 stdout)
@@ -218,7 +223,7 @@ jobs:
           path: |
             benchmark-smoke.json
             /tmp/ctrl.txt
-            /tmp/ctrl-status.json
+            /tmp/ctrl.json
           if-no-files-found: warn
 
       - name: container log
