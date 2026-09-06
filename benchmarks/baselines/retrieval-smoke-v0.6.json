@@ -1,0 +1,19 @@
+{
+  "version": "v0.6",
+  "provisional": true,
+  "note": "잠정 목표 — 첫 retrieval hit@k 기준선 자기 자신(baseline §0.2 실측 전 수치). 회귀 판정 단위 = doc_hit@5. chunk 바인딩은 보고 전용(O-51).",
+  "k": 5,
+  "sampleIds": ["Q-DIRECT-002","Q-GOLD-004","Q-MULTIHOP-001","Q-MULTIHOP-002","Q-DIRECT-003","Q-REV-001","Q-REV-002","Q-REV-003","Q-REV-004","Q-SAFETY-001"],
+  "thresholds": {
+    "vector": { "docHitAtK_min": 8, "n": 10 },
+    "hybrid": { "docHitAtK_min": 9, "n": 10 }
+  },
+  "measured": {
+    "sha": "279b1d084753e2ff4e940dc66daa6cc6707f73b4",
+    "at": "2026-09-06T00:00:29Z",
+    "model": "claude-opus-4-8",
+    "image": "fkt-ai-api:dev-dd1a2e1",
+    "vector_docHitAtK": "8/10",
+    "hybrid_docHitAtK": "9/10"
+  }
+}
