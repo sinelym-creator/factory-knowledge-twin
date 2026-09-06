@@ -168,6 +168,17 @@ jobs:
           [ "$rc" -ne 0 ] || { echo "::error::색인이 0인데 스모크가 통과했다 — 이 지표는 색인을 안 보고 있다"; exit 1; }
           [ "$rc" -eq 5 ] || echo "::warning::rc ${rc} ≠ 5 — 구조 가드가 다른 자리에서 울었다(델타표 갱신 대상)"
 
+      # 🔴 러너의 `--out` 은 이 국면에서 «파일을 안 만든다» — 구조 가드 exit 5 가 쓰기보다 앞줄이다
+      #    (현 develop 판 118행 exit 5 · 172행 writeFileSync). 그래서 前 열의 요청별 상태코드는
+      #    두 번째 계측기로 남긴다. 표본은 러너와 «같은 정본·같은 필터»에서 읽는다.
+      #    답하는 것 하나: 이 hit 0 이 «200 응답 위에서» 났는가 — 4xx/5xx 위의 0 은 색인 부재의
+      #    증거가 아니라 도달 실패일 수 있고, 둘은 같은 0 으로 보인다.
+      - name: 대조군 前 열 — 요청별 상태코드(두 번째 계측기)
+        env:
+          BENCH_BASE: http://127.0.0.1:${{ env.API_PORT }}
+          CONTROL_PROBE_OUT: /tmp/ctrl-status.json
+        run: python .github/scripts/control_status_probe.py
+
       # ============================ 색인 (변수는 이것 하나) ============================
       - name: build index (계수 stdout)
         run: |
@@ -207,6 +218,7 @@ jobs:
           path: |
             benchmark-smoke.json
             /tmp/ctrl.txt
+            /tmp/ctrl-status.json
           if-no-files-found: warn
 
       - name: container log
