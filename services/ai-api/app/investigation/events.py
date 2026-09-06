@@ -133,6 +133,19 @@ class Emitter:
     def step_evidence(self, step: str, evidence: dict[str, Any]) -> dict[str, Any]:
         return self._emit("step.evidence", {"step": step, "evidence": evidence})
 
+    def evidence_flagged(self, items: list[dict[str, Any]]) -> dict[str, Any]:
+        """지시문형 표지가 붙은 발췌 — 조립 시점에 **1회**(O-48 ⓐ · 계약 v0.2.3).
+
+        🔴 **표지가 0건이면 부르지 않는다.** 스키마가 `items` 에 `minItems: 1` 을 걸었으므로
+           빈 배열은 FAIL 이고, 「표지 없음」은 **이벤트의 부재**로 말한다. 빈 이벤트를 내면
+           소비자가 「표지 층이 돌았는가」와 「표지가 0건인가」를 구별하려 애쓰게 되는데,
+           그 구별은 이 축이 아니라 요청 본문의 `evidenceFlags`(빈 객체 = 돌았고 0건)가 한다.
+
+        🔴 **근거를 지우지 않는다** — 이 이벤트는 표지일 뿐이고 발췌는 `step.evidence` 로
+           이미 나갔다. 화면은 그 카드에 배지를 얹을 뿐 내용을 바꾸지 않는다.
+        """
+        return self._emit("evidence.flagged", {"items": items})
+
     def step_progress(
         self,
         step: str,

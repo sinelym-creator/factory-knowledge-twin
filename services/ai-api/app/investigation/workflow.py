@@ -367,9 +367,13 @@ def build_graph(ctx: Context):
                     )
                 )
 
+            # 🔴 표지 콜백은 **루프 스레드에서 온다**(합성 호출 «전» · `to_thread` 밖)이라
+            #    `_on_sentence` 와 달리 `call_soon_threadsafe` 가 필요 없다. 자리가 다르면
+            #    규율도 다르다 — 여기서 굳이 되돌려 보내면 순서만 늦어진다.
             outcome = await live_synthesis.synthesize(
                 candidates,
                 on_sentence=_on_sentence,
+                on_flagged=ctx.emitter.evidence_flagged,
                 anchor=ctx.anchor,
                 state=state,
                 evidence_ids=list(dict.fromkeys(ctx.evidence_ids)),
