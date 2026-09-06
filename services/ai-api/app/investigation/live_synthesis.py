@@ -174,6 +174,98 @@ def build_evidence_text(state: dict[str, Any]) -> dict[str, str]:
     return excerpts
 
 
+# 🔴 **지시문형 표지**(O-48 ⓐ · 설계 `docs/design/o48-prompt-assembly-isolation.md` §2 ⓐ).
+#    검색 층은 승인 문서를 «내용»으로 거르지 않고(설계 §3 — 승인 = 신뢰 SSOT 를 깨지 않기 위해),
+#    게이트웨이 프롬프트는 이미 「`evidenceText` 는 DATA」를 선언한다(§1 ③). 그래서 이 층이
+#    더하는 것은 하나뿐이다 — **조립 층이 지시문형 발췌를 «알고» 표지하는 것**.
+# 🔴 **발췌를 지우지 않는다.** 근거를 지우면 채점기(T7-44)의 hit 칸이 바뀌고, 「무엇이
+#    걸러졌는지 말할 수 없는」 자리가 된다(§2 ⓐ). 여기서 하는 일은 표지뿐이다.
+# 🔴 **넓히면 평범한 낱말이 들어온다.** 각 패턴은 «시키는 문맥»을 함께 요구한다 — 「승인 절차를
+#    따른다」·「담당자는 교대조장으로 한다」 같은 정상 SOP 문장이 걸리면 표지는 소음이 되고,
+#    소음이 된 배지는 화면에서 «안 보는» 배지가 된다. 음성 사례는 케이스로 고정한다
+#    (`tests_unit/test_directive_flags.py`).
+FLAG_DIRECTIVE_OVERRIDE = "directive_override"
+FLAG_ROLE_TOKEN = "role_token"
+FLAG_STATE_FORCING = "state_forcing"
+FLAG_ASSIGNEE_FORCING = "assignee_forcing"
+FLAG_EMBEDDED_QUERY = "embedded_query"
+
+# 🔴 순서 = 선언 순서 그대로 돌려준다. 표지 목록이 회차마다 뒤바뀌면 같은 입력의 요청 본문이
+#    바이트로 달라져, 「무엇이 바뀌었나」를 본문 비교로 물을 수 없게 된다.
+_DIRECTIVE_PATTERNS: tuple[tuple[str, "re.Pattern[str]"], ...] = (
+    (
+        FLAG_DIRECTIVE_OVERRIDE,
+        re.compile(
+            r"(?:이전|앞선|위)\s*(?:의\s*)?(?:지시|명령|지침)[^\n]{0,12}?무시"
+            r"|(?:ignore|disregard|forget)\s+(?:all\s+|any\s+)?(?:the\s+)?"
+            r"(?:previous|prior|above|earlier)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        # 🔴 발췌는 JSON 으로 덤프된 것도 있어 **줄바꿈이 문자 두 개(`\n`)로 살아 있다** —
+        #    `^` 만 걸면 그 갈래에서 영영 0건이 된다. 두 모양을 함께 본다.
+        FLAG_ROLE_TOKEN,
+        re.compile(
+            r"(?:^|\\n)[ \t]*(?:system|assistant|user)[ \t]*:"
+            r"|<\|im_(?:start|end)\|>",
+            re.IGNORECASE | re.MULTILINE,
+        ),
+    ),
+    (
+        FLAG_STATE_FORCING,
+        re.compile(
+            r"approved\s*(?:로|으로)"
+            r"|승인[^\n]{0,6}건너뛰"
+            r"|skip\s+(?:the\s+)?approvals?"
+            r"|(?:mark|set)\s+[^\n]{0,32}?\bapproved\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        # 🔴 「담당자 …로」만으로는 정상 문장(「담당자는 교대조장으로 한다」)이 걸린다 —
+        #    바꾸라는 **동사**를 함께 요구한다. 영어는 명령형 `assign … to` 만 본다
+        #    (`assigned to …` 는 서술이라 걸리지 않는다).
+        FLAG_ASSIGNEE_FORCING,
+        re.compile(
+            r"담당자[^\n]{0,24}?(?:로|으로)\s*(?:변경|지정|설정|배정|할당|바꾸)"
+            r"|\bassign\s+[^\n]{0,32}?\bto\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        # 🔴 대문자만 본다 — 소문자 `select the valve` 는 평범한 작업 지시문이다.
+        FLAG_EMBEDDED_QUERY,
+        re.compile(
+            r"```"
+            r"|\bSELECT\b[\s\S]{0,200}?\bFROM\b"
+            r"|\bMATCH\s*\(",
+        ),
+    ),
+)
+
+
+def flag_directive_like(text: str) -> list[str]:
+    """발췌 한 건이 모델에게 «무언가를 시키려» 드는 모양이면 표지 코드 목록을 돌려준다.
+
+    빈 리스트 = 표지 없음. 🔴 **순수 함수**다 — 발췌를 바꾸지도 지우지도 않고, 밖의 상태를
+    보지도 않는다. 판정은 오직 넘겨받은 문자열에서 나온다.
+    """
+    if not isinstance(text, str) or not text:
+        return []
+    return [code for code, pattern in _DIRECTIVE_PATTERNS if pattern.search(text)]
+
+
+def flag_evidence_text(evidence_text: dict[str, str]) -> dict[str, list[str]]:
+    """발췌 지도 → 표지 지도. **표지가 붙은 id 만** 담는다(0건이면 빈 객체)."""
+    flags: dict[str, list[str]] = {}
+    for evidence_id, text in evidence_text.items():
+        codes = flag_directive_like(text)
+        if codes:
+            flags[evidence_id] = codes
+    return flags
+
+
 def safety_rules_in_evidence(evidence_text: dict[str, str]) -> set[str]:
     """발췌 **본문**에서 안전 규정 id 를 거둔다 — 키가 아니라 값을 훑는다(위 주석의 이유)."""
     found: set[str] = set()
@@ -239,6 +331,17 @@ def _request_body(
             for c in candidates
         ],
         "evidenceText": evidence_text,
+        # 🔴 **보내는 그 발췌에서 «다시» 잰다.** 호출자가 만든 표지를 받아 싣는 길도 있지만,
+        #    그러면 「표지한 문자열」과 「보낸 문자열」이 갈릴 수 있다(절단·재조립이 그 사이에
+        #    들어온다). 같은 값에서 재는 한 두 축은 구조적으로 어긋날 수 없다.
+        # 🔴 **키를 «항상» 싣는다 — `guardNotice` 의 옵트인 관례와 일부러 다르다.** 표지 0건일 때
+        #    키까지 사라지면 「표지가 없다」와 「이 빌드에 표지 층이 없다」가 **같은 모양**이 되고,
+        #    ⓒ′ 재측(설계 §2 ⓒ′)이 그 둘을 못 가른다. 빈 객체는 「돌았고 0건」이라는 말이다.
+        # 🔴 게이트웨이는 **지금 이 필드를 프롬프트로 나르지 않는다**(`gateway.py` 가 payload 를
+        #    anchor·candidates·evidenceText(+guardNotice)로 다시 조립한다 · 실측: 모르는 필드는
+        #    거부하지 않고 «버린다»). 나르는 한 줄과 `system_prompt.txt` 한 줄은 배포 경로라
+        #    별 PR 이다(설계 §2 ⓐ 1).
+        "evidenceFlags": flag_evidence_text(evidence_text),
     }
     # 🔴 통지가 없으면 **키 자체를 넣지 않는다** — 평시 본문은 앞판과 바이트로 같다(옵트인).
     if guard_notice:
