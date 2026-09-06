@@ -1,6 +1,6 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
-> **09-06 08:01 스자쿠 50대 진행** — **승격 23 완결**(main `2cd75f4` #834 · D-87 production 반영 · 무대 검증 #833 · 재생성 07:53:38 센쿠2 · 외부 재검 PASS #835 · 공개면 종결선 = `/api/docs` 4종 404 + 401) · docs #832(CLAUDE.md cwd 축 보강 2 · runbook §7-3 env 문면 · O-44/45/46) · 진행 중 = Gate 7 ⑪ CORS(리바이2) · T5-3 조각 C fixture schema CI(센쿠2).
+> **09-06 09:30 스자쿠 50대 마감** — 승격 23 완결(main `2cd75f4` · D-87 production 종결 · 🔴 폐하 09:00 「메인 배포만 허가」 = 위임 오독 자수 · §5 정정 #851) · Gate 7 종결(PASS 11 · FAIL 0 · ⑪ 브라우저 축 #857) · T5-3 CI 착지 12 PR(#837~#859 · fixture-schema·db · replay-e2e · scan·license · endpoint policy · benchmark 러너·게이트·골격 · O-52 정본 핀) · O-43~O-52 등재 · O-46(22.89GB)·O-47·O-50 종결 · 교대 4(오살 0) · PR 29건 병합 · 진행 중 = 센쿠2 I 최종 보고(재트리거 run) · 리바이2 #859 독검 → 51대 접수 · 잔여 = G1b seed 직결 · 승격 24(허가 필수 · 배포 delta 0) · O-48 설계.
 
 > **09-06 07:23 스자쿠 49대 마감** — 폐하 06:21 「미완인데 왜 멈추는가 · 위임」 → T5-2·T5-3 재개. 착지: #819 ci.yml lint+docker-build · #822 release-evidence.yml · #820 Gate 7 그물 3종(D-87 검출) · #826 D-87 픽스 · #830 D-87 재검 RESOLVED · #828 Gate 7 ⑦⑧ PASS · #829 O-42 develop 무대 replay 바인드 · develop 무대 `:8020` = `dd1a2e1`(4종 404 · B 401 · replay 바인드) · **승격 23 대기**(50대 1착). 원장 66/68 유지(T5-2·T5-3 부분 착지 · 완결 아님). 교대 3건(levi2 54 · senku2 51 · 자비스 97 = 내 집행).
 
