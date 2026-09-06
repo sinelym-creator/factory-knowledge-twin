@@ -65,9 +65,12 @@ jobs:
       # 받아들인다는 뜻이고, 그러면 다음에 켤 때 어디를 쟀는지 알 수 없게 된다.
       - name: 인자 계약 (--base 필수 = exit 2)
         run: |
+          # 🔴 GitHub 의 기본 셸은 `bash -e {0}` 다 — `set -uo pipefail` 은 «더하는» 것이라
+          #    -e 를 끄지 못한다. 앞판은 그래서 node 가 기대대로 2 로 죽는 자리에서 step 이 통째로
+          #    죽었다(develop 첫 run 실측 · I1). 실패를 «값으로 받으려면» || 로 받아야 한다.
           set -uo pipefail
-          node benchmarks/run-benchmark-smoke.mjs > /dev/null 2>&1
-          rc=$?
+          rc=0
+          node benchmarks/run-benchmark-smoke.mjs > /dev/null 2>&1 || rc=$?
           echo "rc=$rc (기대 2)"
           [ "$rc" -eq 2 ] || { echo "::error::--base 없이 rc $rc — 인자 계약이 깨졌다"; exit 1; }
 
@@ -76,8 +79,8 @@ jobs:
       - name: 표본 계수 (평가셋이 읽히는가 · ≥8)
         run: |
           set -uo pipefail
-          out=$(node benchmarks/run-benchmark-smoke.mjs --base http://127.0.0.1:9 2>&1)
-          rc=$?
+          rc=0
+          out=$(node benchmarks/run-benchmark-smoke.mjs --base http://127.0.0.1:9 2>&1) || rc=$?
           echo "$out"
           echo "rc=$rc (기대 4 = 서버 미도달)"
           [ "$rc" -eq 4 ] || { echo "::error::죽은 무대에 rc $rc — 구조 가드가 기대와 다르다"; exit 1; }
