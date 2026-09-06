@@ -1,7 +1,8 @@
 # O-54 CI 반영 독립 검증 — `benchmark-smoke.yml` 대조군 rc 7 + 프로브 제거 (PR #869)
 
 - 좌석 = 리바이2 56대 · 발주 = 스자쿠 51대(2026-09-06 11:56) · lane `lane/levi2-o54v`(base `3e7788e`)
-- 대상 = PR #869(OPEN · head `968a1dd`) · 좌표 = run **34007547065** job `benchmark-smoke`(101417427621 · success)
+- 대상 = PR #869(**MERGED** 02:59:50Z · head `968a1dd` · develop `cab31eb`) · 좌표 = run **34007547065** job `benchmark-smoke`(101417427621 · success)
+- 🔴 **시점 대조**: 축③ 은 판정 «중»에 병합되기 전 head `968a1dd` 로 읽었다. 병합 뒤 다시 확인해 `968a1dd` 가 `origin/develop` 조상이고 **대상 3경로(`benchmark-smoke.yml`·`control_status_probe.py`·`benchmarks/`)의 diff 가 0**임을 실측했다 — 즉 이 문서의 축③ 값은 **병합 실물의 값과 같다**(앞 티켓에서 「1본뿐」이 병합보다 먼저 늙었던 자리의 재발 방지).
 - 측정 모델: `claude-opus-5`(폴백 없음)
 - **판정 = PASS** · 대상 결함 0 · **실무대 `exit 7` = E1 승격**
 
