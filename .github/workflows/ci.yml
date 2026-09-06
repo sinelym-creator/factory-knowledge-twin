@@ -459,3 +459,112 @@ jobs:
           echo "  · data/seed.ps1 적재 — 직결 미지원(compose cp 전제 · load.sql 의 \copy 경로가 container_dir 로 구워짐)"
           echo "  · tests/data/run-seed-integrity.ps1 — 위 적재가 선행이라 함께 미실행"
           echo "  즉 이 초록은 «스키마 제약»의 것이지 «적재된 데이터»의 것이 아니다."
+
+  # T5-3 G1b(09-06): seed 적재를 «실제 DB»에 libpq 직결로 태운다. fixture-schema-db 가 스키마
+  # 축을 세웠고, 여기가 그 위에 «데이터 축»을 얹는다 — 그 job 이 매 실행 「안 본 축」으로 이름을
+  # 부르던 자리다.
+  #
+  # 🔴 **load.sql 은 한 글자도 안 고친다.** 그 안의 \copy 경로는 생성 시점에 '/tmp/fkt-seed' 로
+  #    구워지고(generate.py:33 CONTAINER_DIR) 그것이 정본이다. 직결용 «치환본»을 만들면 정본이
+  #    둘이 되어 compose 경로와 조용히 갈라진다 — 대신 러너에 그 경로를 «실재하게» 만든다.
+  #    \copy 는 클라이언트가 읽으므로 compose 에서는 컨테이너 안, 직결에서는 러너 로컬이다.
+  seed-db:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: fkt
+          POSTGRES_PASSWORD: fkt_local_dev
+          POSTGRES_DB: fkt
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fkt -d fkt"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: fkt
+      PGPASSWORD: fkt_local_dev
+      PGDATABASE: fkt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: runner tools exist (pwsh · psql · pg_isready)
+        run: |
+          set -euo pipefail
+          command -v pwsh       >/dev/null || { echo "::error::pwsh 없음"; exit 1; }
+          command -v psql       >/dev/null || { echo "::error::psql 없음 — 직결 경로가 성립하지 않는다"; exit 1; }
+          command -v pg_isready >/dev/null || { echo "::error::pg_isready 없음"; exit 1; }
+          echo "pwsh $(pwsh --version) · $(psql --version)"
+          pg_isready -d "$PGDATABASE" -U "$PGUSER"
+
+      # 🔴 생성기는 표준 라이브러리만 연다(실측) — 그래서 여기엔 pip install 이 없다. 그 전제가
+      #    깨지는 날 이 step 이 ModuleNotFoundError 로 죽는다: 목록을 늘리기 전에 왜 열렸는지 본다.
+      - name: generate seed (stdlib only)
+        run: python -m data.generators.generate
+
+      - name: migrate (libpq direct)
+        run: pwsh -NoProfile -File services/ai-api/db/migrate.ps1 -Direct
+
+      - name: seed (libpq direct)
+        run: pwsh -NoProfile -File data/seed.ps1 -SkipGenerate -Direct
+
+      # 🔴 「돌았다」가 아니라 «몇 행이 들어갔는가»를 DB 에 묻고, 기대값을 **생성물 CSV 에서 다시
+      #    센다**. 숫자를 이 파일에 적으면 정본이 둘이 된다.
+      # 🔴 그리고 그 계수는 «줄수»가 아니라 **CSV 파서**로 센다 — document_revision 은 인용부호
+      #    안에 개행이 있어 줄수와 행수가 다르다(실측: 행 60 · 줄 1967). 줄수로 세면 조용히 틀린다.
+      - name: row counts (DB ↔ 생성물 CSV · 파서로 센다)
+        run: |
+          set -euo pipefail
+          python - > /tmp/expected.txt <<'PY'
+          import csv, io
+          for t in ['sensor_reading','equipment','document_revision','alarm','maintenance_record']:
+              with io.open(f'data/generated/{t}.csv', encoding='utf-8', newline='') as f:
+                  rows = sum(1 for _ in csv.reader(f)) - 1
+              with io.open(f'data/generated/{t}.csv', encoding='utf-8', newline='') as f:
+                  lines = sum(1 for _ in f) - 1
+              print(f"{t} {rows} {lines}")
+          PY
+          fail=0
+          while read -r t want lines; do
+            got=$(psql -tAc "SELECT count(*) FROM ${t}")
+            note=""
+            [ "$want" != "$lines" ] && note="  (줄수 ${lines} ≠ 행수 — 줄수로 셌으면 틀렸다)"
+            echo "${t}: DB ${got} · CSV ${want}${note}"
+            [ "$got" = "$want" ] || { echo "::error::${t} DB ${got} ≠ CSV ${want}"; fail=1; }
+            [ "$got" -gt 0 ] || { echo "::error::${t} 0행 — 「적재했다」가 아니라 아무것도 안 들어갔다"; fail=1; }
+          done < /tmp/expected.txt
+          [ "$fail" -eq 0 ]
+
+      # 🔴 대조군 — staging 경로를 «옮겨» 같은 load.sql 을 다시 돌린다. CSV 는 그대로 있고 «경로만»
+      #    사라지므로, 실패하면 그 실패는 경로 축의 것이다(파일 유무 축이 아니라). 실패하지 않으면
+      #    위 초록은 「경로가 맞아서」가 아니라 「무엇이든 통과해서」 난 것이다.
+      #    load.sql 은 BEGIN…COMMIT 안이라 실패는 롤백된다 — 그 사실도 계수로 확인한다.
+      #    🔴 bash -e 아래서 실패 rc 를 «값으로» 받으려면 || 로 받아야 한다(09-06 실측 · set 은 더한다).
+      - name: 대조군 — 구운 경로를 옮기고 같은 load.sql (실패해야 정상)
+        run: |
+          set -uo pipefail
+          before=$(psql -tAc "SELECT count(*) FROM document_revision")
+          mv /tmp/fkt-seed /tmp/fkt-seed-moved
+          rc=0
+          psql -v ON_ERROR_STOP=1 -q -f data/generated/load.sql > /dev/null 2>&1 || rc=$?
+          echo "경로 이동 후 rc=$rc (0 이 아니어야 정상)"
+          [ "$rc" -ne 0 ] || { echo "::error::구운 경로가 없는데 적재가 성공했다 — 이 검사는 아무것도 안 막는다"; exit 1; }
+          after=$(psql -tAc "SELECT count(*) FROM document_revision")
+          echo "document_revision 前 ${before} → 後 ${after} (롤백되어 같아야 한다)"
+          [ "$before" = "$after" ] || { echo "::error::대조군이 데이터를 깼다 ${before} → ${after}"; exit 1; }
+
+      - name: axes this job does not cover
+        if: always()
+        run: |
+          echo "🔴 이 job 이 안 본 축:"
+          echo "  · Windows 에서의 -Direct — '/tmp/fkt-seed' 해석이 다르다(러너는 ubuntu 뿐)"
+          echo "  · 색인(build_index.py · e5-small) · ai-api 기동 · retrieval 품질 — 전부 미실행"
+          echo "  즉 이 초록은 «행이 들어갔다»의 것이지 «검색이 된다»의 것이 아니다."
