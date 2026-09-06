@@ -32,3 +32,11 @@ several open-source projects and to W3C standards (WAI-ARIA Authoring
 Practices, WCAG 2.2). No third-party code, assets or style values were
 copied; every implementation is original. The list of what was read, and
 what was deliberately not read, is in THIRD_PARTY_NOTICES.md.
+
+LGPL component (operator decision 2026-09-06 08:57, ticket O-50):
+The web console depends transitively on sharp, whose prebuilt libvips
+binaries (@img/sharp-libvips-*) are licensed LGPL-3.0-or-later. They are
+consumed as separately packaged, dynamically linked binaries and are not
+modified by this project. Their license text and source location are
+carried in THIRD_PARTY_NOTICES.md (copyleft section). This does not change
+the Apache-2.0 license of this project's own code.

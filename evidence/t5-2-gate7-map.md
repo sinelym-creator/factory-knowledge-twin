@@ -27,7 +27,7 @@
 |---|---|---|---|---|---|
 | ① | SQL injection | `tests/api/injection_surface_drill.py` + 🆕 `tests/api/query_surface_sql_drill.py` | **exit 0** · 경로 축 HL-01~04 400 / 질의 축 5종 전건 400 `question_not_approved` · 대조군 200·hits 15 | **부분** — 경로 축 PASS · 🔴 질의 축은 **「도달 불가」**이지 SQL 계층 내성이 아니다(allowlist 가 앞문) | `[V]`§1-7 ① · `[N]`§1 |
 | ② | Cypher injection | 🆕 `tests/api/cypher_surface_drill.py` | **exit 0** · 층 A 15건(400/404·내부 노출 0) · 층 B 5건(추출 = ID 토큰·**구조 문자 0**) · 대조군 2 | **PASS** | `[N]`§2 |
-| ③ | 문서 내부 Prompt Injection | 🆕 `tests/api/prompt_injection_authority_drill.py` | **exit 0** · 표지 ② 1건(자극 실재) · A-3·A-4·A-6 PASS · A-1·A-2 **측정 불가** · 원복 md5 일치 | **PASS(조건부)** — 🔴 기전이 «무결성 배제»라 권한 축 2행은 측정 불가 · **재색인 경유 주입은 미측** | `[N]`§3·§3-1 |
+| ③ | 문서 내부 Prompt Injection | 🆕 `tests/api/prompt_injection_authority_drill.py` | **exit 0** · 표지 ② 1건(자극 실재) · A-3·A-4·A-6 PASS · A-1·A-2 **측정 불가** · 원복 md5 일치 | **PASS(조건부)** — 🔴 기전이 «무결성 배제»라 권한 축 2행은 측정 불가 · **재색인 경유 주입 = 55대 부분 측정**(`evidence/t5-2-gate7-reindex.md` · 드릴 rc=0): 도달축 REACHED(정상경로 주입→검색 hit•marker excerpt 반환) · replay 권한축 0(구조적 면역) · 원복 md5 일치 · 🔴 **live 순종 축은 여전히 미측(구독)** · 검색층 내용필터 부재는 우려 소견(E3) | `[N]`§3·§3-1 |
 | ④ | 임의 tool 호출 | `tests/api/scenario_allowlist_drill.py` | **exit 0** · 허용 10건 200 · 목록 밖 6종 전건 400 | **PASS** | `[V]`§1-7 ④ |
 | ⑤ | 관리자 endpoint 접근 | `tests/security/gate7_admin_surface.py` | **exit 0**(D-87 재검 · `:8090` `build=96ae199`) · Q-35 4종 **200→404**(전건 뒤집힘) · 그 밖 10종 404 · 대조군 A 200 / **B 401(가드 생존 · 같은 실행)** | **PASS** — D-87 해소(54대 · 처방 #826 `96ae199`) | `[d]`§2 |
 | ⑥ | 다른 session 접근 | `tests/api/session_guard_drill.py` | **exit 0** · 6축(은닉 4·상충 422·reset 3) | **PASS** | `[V]`§1-7 ⑥ |
@@ -35,7 +35,8 @@
 | ⑧ | 반복 요청·rate limit | `tests/api/t42b_limits_drill.py`(R-01~09) | **exit 0** · 세션축 통과3·429 3 · IP축 통과5·429 3 · RA 60 · 축분리 200 · 제외 4종 429 아님 | **PASS** — T5-2c 조각 a(54대) | `[a]`§2 |
 | ⑨ | 잘못된 WebSocket message | 🆕 `tests/security/gate7_ws_malformed.py` | **exit 0** · 대조군 38 이벤트 · 자극 5종 **전건 서버 생존** · 없는 runId **close 4404** | **부분** — 생존 축 PASS · 🔴 (a)~(d) 「닫힘/오류」는 **불성립**(핸들러가 클라이언트 프레임을 읽지 않는다) | `[S]`§2 |
 | ⑩ | path traversal | `tests/api/injection_surface_drill.py` | **exit 0** · HL-05·06·07 400 · 대상 생존 1376자 | **PASS** | `[V]`§1-7 ⑩ |
-| ⑪ | CORS 우회 | `tests/web/t41_cors_browser_drill.mjs` | — | 🔴 **측정 불가** — 맨 페이지 서버 2본 + allowlist 주입 서버 필요 | `[V]`§1-7 ⑪ |
+| ⑪ | CORS 우회 | `tests/web/t41_cors_browser_drill.mjs`(브라우저 강제 축 · **여전히 미측**) · 서버 축 = 55대 2열 실측 | 허용 origin→ACAO 반영+`vary: Origin` · evil→ACAO 부재 · preflight 200 / 400 `Disallowed CORS method` / 400 `Disallowed CORS origin` · ACAC `true` | 🟢 **PASS(서버 축)** — 「측정 불가」 사유 = 무대 env 에 `FKT_CORS_ORIGINS` 부재 → 미들웨어 미부착(설계대로) · 손잡이 1개만 다른 열로 값화 · 🟢 **무대 실측(55대 O-47 종결)**: refresh 후 build `6fa0d2e` · env `FKT_CORS_ORIGINS` 적재(inspect 실물) → 허용 origin ACAO 반영 · evil 부재 · preflight 200/400/400 · 우회측정과 동일 | `evidence/t5-2-gate7-cors.md` · `evidence/o47-stage-cors.md` |
+| ⑪-b | CORS 브라우저 강제 축 | `tests/web/t41_cors_browser_drill.mjs`(확장 · #857) | 🟢 **브라우저 강제 축(55대 · 09-06 09:21)**: playwright chromium — 허용 origin 읽힘 200 · 비허용 origin `Failed to fetch` 차단 · preflight 게이트 = 허용 POST 통과 vs 허용 DELETE 차단 · 서버 로그 OPTIONS 3건(200/400/400) · playwright request 이벤트 OPTIONS 0 = 계측기 한계(대상 사실 아님) | **PASS** — ⑪ 서버 축(#838·#853) + 브라우저 축 둘 다 PASS = 이름 잔여 종결 · 근거 `evidence/t5-2-gate7-cors-browser.md` | 오케 병합(리바이2 문구안 · #853 과 같은 행 충돌 회피분) |
 | ⑫ | stack trace·secret 노출 | `error_shape_drill.py` · `credential_leak_drill.py` | **exit 0** · 형상 9/9 · 3면 누출 0(응답 23·이벤트 32·로그) | **PASS** — 🔴 Q-49·Q-23 미결 존속 | `[V]`§1-7 ⑫ |
 | ⑬ | 승인 우회 | `r12_enforcement_drill.py` · `approval_transition_drill.py` | **exit 0** · 형제 6+대조군 2 · 전이 12칸 | **PASS** | `[V]`§1-7 ⑬ |
 | 〔유지〕 | git «이력» secret scan | `ci_hygiene_drill.py`(트리) + 🆕 `tests/security/gate7_history_secret_scan.py`(이력) | **이력 축 GREEN** · 커밋 1880 · 패치 21.6MB · 패턴 12종(**교정 12/12 물림**) · 히트 14 **전건 합성물** · 진짜 시크릿 **0** · GH secret-scanning `[]` | **PASS** — 🔴 전용 스캐너 0개(대체 그물) | `[S]`§3 |
@@ -46,10 +47,10 @@
 
 | 구분 | 항 | 수 |
 |---|---|---|
-| **PASS** | ②④⑤⑥⑦⑧⑩⑫⑬ · 〔유지〕 | **10** |
+| **PASS** | ②④⑤⑥⑦⑧⑩⑪⑫⑬ · 〔유지〕 | **11** |  ← ⑪ 서버 축 PASS(55대 · #838 · 브라우저 강제 축은 이름으로 잔여)
 | **PASS(조건부)** | ③ | **1** |
 | **부분** | ① · ⑨ | **2** |
-| 🔴 **측정 불가** | ⑪ | **1** |
+| 🔴 **측정 불가** | — | **0** |  ← ⑪ 해소(조각 b · O-47 = 무대 CORS env 부재가 원인)
 | 🔴 **FAIL(회부)** | — | **0** |  ← ⑤ D-87 해소(54대 · `[d]`)
 | 🔴 **미충족** | — | **0** |
 | **합**(13항 + 유지 1) | | **14** |
@@ -60,6 +61,8 @@
 🔴 **Gate 7 — FAIL 0 도달(54대).** 조각 A(53대)로 미충족 2→0 · 조각 a(#828)로 ⑦⑧ 측정불가→PASS(`[a]`) · D-87 재검(#830)으로 ⑤ FAIL→PASS(`[d]`).
 ⇒ 붉은 항(FAIL) = **0** · 측정 불가 = **1(⑪ · 조각 b)** · 부분 = **2(①·⑨)**. ①은 allowlist 앞문 조건부 · ⑨는 (a)~(d) 불성립.
 🔴 **「FAIL 0」을 「게이트가 섰다」로 읽지 않는다** — 측정 불가 ⑪ · 부분 ①⑨ · 재색인 주입(미측)이 남는다. Gate 7 종결 선언은 오케 몫이다.
+
+🔴 **오케 종결 판정(스자쿠 50대 · 09-06 08:25 · #838 ⑪ · #840 (c) 병합 후)**: **PASS 11 · PASS(조건부) 1(③) · 부분 2(①⑨) · 측정 불가 0 · FAIL 0**. **Gate 7 = 종결(범위 = replay·서버 헤더 축)** — 범위 밖으로 남는 것은 이름으로: ③ live 순종 축(구독) · ⑪ 브라우저 강제 축 · ① allowlist 앞문 조건 · ⑨ (a)~(d) 불성립 · O-48(검색 층 내용필터 부재 · E3). 이 문장의 초록은 잰 범위까지만이다.
 
 🔴 **집계 확정(54대 · 두 lane 직렬 병합 후)**: #828(⑦⑧ 측정불가→PASS)와 이 lane #830(⑤ FAIL→PASS)이 병합됐다. ⑤⑦⑧ 세 항 이동 = **PASS 7→10 · 측정 불가 3→1(⑪) · FAIL 1→0**(오케 확정).
 

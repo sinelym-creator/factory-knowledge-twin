@@ -164,14 +164,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      # 🔴 이 목록은 `services/ai-api/tests_unit` 이 여는 import 체인의 «실측치»다
-      #    (센쿠2 45대 O-20 예비 실측 09-04 23:32 · pytest+pydantic+fastapi+pydantic-settings 4개로
-      #    18 passed · torch·sentence-transformers·psycopg·neo4j·numpy 부재). requirements.txt 는
-      #    torch 를 실으므로 일부러 안 깐다. 체인 어딘가에 top-level `import psycopg`/torch 계열이
-      #    들어오는 날 이 job 은 «테스트가 틀려서»가 아니라 «목록이 모자라서» 빨강이 된다 —
-      #    그때는 목록을 늘리기 전에 체인(왜 unit 이 그 의존을 여는가)을 먼저 본다.
-      - name: install (measured import chain only)
-        run: python -m pip install --disable-pip-version-check --quiet pytest==9.1.1 pydantic==2.13.5 fastapi==0.141.1 pydantic-settings==2.15.0
+      # 🔴 여는 import 체인은 «실측치»다(센쿠2 45대 O-20 09-04 · pytest+pydantic+fastapi+
+      #    pydantic-settings 로 선 층 · torch·sentence-transformers·psycopg·neo4j·numpy 부재).
+      #    requirements.txt 전량은 torch 를 실으므로 일부러 안 깐다. 체인 어딘가에 top-level
+      #    `import psycopg`/torch 계열이 들어오는 날 이 job 은 «테스트가 틀려서»가 아니라
+      #    «목록이 모자라서» 빨강이 된다 — 그때는 목록을 늘리기 전에 체인부터 본다.
+      #
+      # 🔴 **버전은 여기에 적지 않는다**(O-52 · 09-06). 앞판은 핀을 손으로 적었고, 그래서 이 job 은
+      #    앱이 싣지 않는 FastAPI(0.141.1 · 정본은 0.133.0)로 단위 층을 돌리고 있었다. 그 갈림이
+      #    보이지 않았던 이유는 이 층이 `create_app()` 을 부르지 않기 때문이다 — 같은 0.141.1 에서
+      #    `include_router` 가 자식 라우트를 app.routes 로 펴지 않아 `create_app()` 은 실제로
+      #    죽는다(H1 실측). 「목록을 고치자」가 아니라 «정본을 읽자»가 처방이다: 아래는 이름만
+      #    정하고 핀은 requirements.txt 에서 읽어 온다. 핀이 사라지면 그 자리에서 실패한다.
+      - name: pin source is requirements.txt (not this file)
+        run: |
+          set -euo pipefail
+          : > /tmp/req-unit.txt
+          for p in fastapi starlette pydantic-settings; do
+            line=$(grep -E "^${p}==" services/ai-api/requirements.txt || true)
+            [ -n "$line" ] || { echo "::error::requirements.txt 에 ${p} 핀이 없다 — 정본이 바뀌었으니 체인을 다시 재라"; exit 1; }
+            echo "$line" >> /tmp/req-unit.txt
+          done
+          echo "정본에서 읽은 핀:"; cat /tmp/req-unit.txt
+          # 🔴 pytest 는 «시험 도구»라 앱 의존이 아니다 — requirements.txt·requirements-dev.txt
+          #    어디에도 핀이 없다(실측). 그래서 이것만은 여기서 못박는다. 정본이 생기면 위 목록으로 옮긴다.
+          python -m pip install --disable-pip-version-check --quiet -r /tmp/req-unit.txt pytest==9.1.1
+          # pydantic 은 정본이 직접 핀하지 않는다(pydantic-settings 가 끌어온다) — 손으로 적으면
+          # 정본에 없는 숫자가 하나 더 생긴다. 해결기가 고른 값을 그대로 쓰고, 무엇이 깔렸는지만 남긴다.
+          python -m pip list --format=freeze | grep -E '^(fastapi|starlette|pydantic|pydantic-settings|pytest)=' || true
       - name: unit tests (services/ai-api/tests_unit)
         working-directory: services/ai-api
         run: python -m pytest tests_unit -q
@@ -289,3 +309,153 @@ jobs:
           set -euo pipefail
           docker image inspect fkt-ai-api:ci-${{ github.sha }} \
             --format 'image id={{.Id}} · size={{.Size}} bytes · created={{.Created}}'
+
+  # T5-3 C1(09-06): replay fixture 가 계약 이벤트 스키마를 만족하는지 매 push/PR 에 확인한다.
+  #
+  # 🔴 **이 job 의 값은 「초록」이 아니라 「무엇을 봤는가」다.** 검사기가 fixture 파일 수와
+  #    이벤트 수를 매 실행 찍고, 둘 중 하나라도 0이면 실패한다 — 경로가 바뀌거나 fixture 가
+  #    사라진 날 «아무것도 안 보고 통과»하는 검사가 되지 않게 하는 자리다(같은 규율:
+  #    session_guard.audit_guard_coverage 의 「빈 결과는 통과가 아니다」).
+  # 🔴 별 job 으로 둔다. hygiene 은 공개 경계 위생 게이트라 거기에 python·의존 설치를 얹으면
+  #    경계 검사가 그만큼 늦어진다 — 이미 unit-ai-api 가 같은 이유로 따로 서 있고 그 형태를 따른다.
+  fixture-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 🔴 검사기가 여는 import 체인은 jsonschema 하나다(로컬 실측 09-06 08:0x).
+      #    requirements.txt 를 깔지 않는 이유는 unit-ai-api 와 같다 — torch 계열이 딸려 온다.
+      - name: install (jsonschema only)
+        run: python -m pip install --disable-pip-version-check --quiet jsonschema==4.26.0
+      - name: validate replay fixtures against the contract event schema
+        run: python .github/scripts/validate_replay_fixtures.py
+
+  # T5-3 D(09-06): replay 축을 «실제로 기동한 컨테이너»에 자극을 넣어 확인한다.
+  #
+  # 🔴 `services:` 를 쓰지 않는다. 이 축은 DB 를 필요로 하지 않는다 — 재생 경로는 pool·conn·
+  #    driver 를 참조하지 않고(`investigation/replay.py`), 좌석 로컬 실측(09-06 08:1x · DB 0본)에서
+  #    health 200(status=degraded) · sessions 200 · replay 200 · events 38건이 그대로 섰다.
+  #    그래서 DB 를 붙이는 대신, 스크립트가 **「이 job 이 안 본 축」을 매 실행 찍는다**(의존성
+  #    상태 unconfigured). 「replay 가 초록」과 「DB 의존 축이 초록」은 다른 문장이다.
+  # 🔴 이미지는 이 job 이 «스스로» 빌드한다. `docker-build` 가 만든 이미지는 다른 러너에 없다 —
+  #    job 사이로 이미지를 넘기려면 저장/적재 단계가 필요하고, 그것은 이 조각의 범위가 아니다.
+  #    기존 job 은 무접촉이다.
+  replay-e2e-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: build image
+        run: docker build -t fkt-ai-api:smoke-${{ github.sha }} services/ai-api
+
+      # 🔴 「빌드가 rc 0 을 냈다」와 「이미지가 있다」는 다른 사실이다. 부재면 여기서 멈춘다.
+      - name: image exists
+        run: |
+          docker image inspect fkt-ai-api:smoke-${{ github.sha }} \
+            --format 'image id={{.Id}} · size={{.Size}} bytes'
+
+      - name: run container (replay bind, no database)
+        run: |
+          docker run -d --name fkt-smoke -p 8000:8000 \
+            -e FKT_REPLAY_FIXTURE_DIR=/srv/data/replay \
+            -e FKT_BUILD_SHA=${{ github.sha }} \
+            -v "$PWD/data/replay:/srv/data/replay:ro" \
+            fkt-ai-api:smoke-${{ github.sha }}
+
+      - name: replay e2e smoke (counts on stdout)
+        run: python .github/scripts/replay_e2e_smoke.py
+
+      # 🔴 빨강일 때 «왜»를 볼 수 있어야 한다 — 실패해도 로그를 남긴다.
+      - name: container log
+        if: always()
+        run: docker logs --tail 300 fkt-smoke > smoke-container.log 2>&1 || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: replay-smoke-container-log
+          path: smoke-container.log
+          if-no-files-found: warn
+
+      - name: cleanup
+        if: always()
+        run: docker rm -f fkt-smoke || true
+
+  # T5-3 G2(09-06): 스키마 축을 «실제 DB»에 대고 돌린다 — 그리고 이 job 의 첫 임무는
+  # 「libpq 직결이 러너에서 서는가」를 처음으로 재는 것이다(G1a 는 그것을 못 쟀다:
+  # 좌석 호스트에 psql·pg_isready 가 없어 직결 분기를 한 번도 실행할 수 없었다).
+  #
+  # 🔴 `services:` 의 postgres 는 compose 스택이 아니라 러너 네트워크의 컨테이너다. 그래서
+  #    compose 경로 스크립트는 여기서 「서비스를 찾지 못했습니다」로 rc 2 가 된다 — 직결
+  #    경로(#844 규약)가 있어야 비로소 돈다. 이미지는 리포 compose 의 실물과 같은 것을 쓴다.
+  fixture-schema-db:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: fkt
+          POSTGRES_PASSWORD: fkt_local_dev
+          POSTGRES_DB: fkt
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fkt -d fkt"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: fkt
+      PGPASSWORD: fkt_local_dev
+      PGDATABASE: fkt
+    steps:
+      - uses: actions/checkout@v4
+
+      # 🔴 도구가 «없어서» 건너뛴 것이 초록으로 보이는 갈래를 여기서 끊는다. pwsh 도 psql 도
+      #    러너 기본 이미지에 있다고 «알려져» 있을 뿐이고, 그 전제가 깨지는 날 조용히 통과하면
+      #    이 job 은 「직결이 선다」를 거짓으로 계속 말한다.
+      - name: runner tools exist (pwsh · psql · pg_isready)
+        run: |
+          set -euo pipefail
+          command -v pwsh        >/dev/null || { echo "::error::pwsh 없음 — 스크립트를 돌릴 수 없다"; exit 1; }
+          command -v psql        >/dev/null || { echo "::error::psql 없음 — 직결 경로가 성립하지 않는다"; exit 1; }
+          command -v pg_isready  >/dev/null || { echo "::error::pg_isready 없음 — 도달 판정 수단이 없다"; exit 1; }
+          echo "pwsh $(pwsh --version) · $(psql --version) · $(pg_isready --version)"
+          pg_isready -d "$PGDATABASE" -U "$PGUSER"
+
+      # 🔴 여기서 -Direct 가 «처음으로» 실행된다. PGHOST 가 있으므로 스위치 없이도 직결이지만,
+      #    명시해 두면 로그만 보고도 어느 경로였는지 안다.
+      - name: migrate (libpq direct)
+        run: pwsh -NoProfile -File services/ai-api/db/migrate.ps1 -Direct
+
+      # 🔴 「돌았다」가 아니라 «몇 개가 실제로 적용됐는가»를 DB 에 직접 묻는다. 스크립트 출력을
+      #    믿지 않는 이유는 그것이 skip 도 성공으로 찍기 때문이다 — 새 DB 이므로 전건 적용이 기대다.
+      - name: applied migrations count
+        run: |
+          set -euo pipefail
+          FILES=$(ls services/ai-api/db/migrations/*.sql | wc -l)
+          APPLIED=$(psql -tAc "SELECT count(*) FROM schema_migration")
+          echo "마이그레이션 파일 ${FILES}개 · 적용됨 ${APPLIED}개"
+          [ "$APPLIED" -gt 0 ] || { echo "::error::적용 0건 — 「돌았다」가 아니라 아무것도 안 들어갔다"; exit 1; }
+          [ "$APPLIED" = "$FILES" ] || { echo "::error::적용 ${APPLIED} ≠ 파일 ${FILES} — 부분 적용"; exit 1; }
+
+      - name: schema probes (libpq direct)
+        run: pwsh -NoProfile -File tests/schema/run-probes.ps1 -Direct
+
+      # 🔴 이 job 이 «안 본» 축을 스스로 말한다. seed 는 G1b 미착지라 여기서 돌지 않는다 —
+      #    적으라고 적는 것이 아니라, 「스키마 축이 초록」과 「데이터 축이 초록」이 표에서
+      #    같은 칸으로 보이는 것을 막기 위해서다.
+      - name: axes this job does not cover
+        if: always()
+        run: |
+          echo "🔴 이 job 이 안 본 축:"
+          echo "  · data/seed.ps1 적재 — 직결 미지원(compose cp 전제 · load.sql 의 \copy 경로가 container_dir 로 구워짐)"
+          echo "  · tests/data/run-seed-integrity.ps1 — 위 적재가 선행이라 함께 미실행"
+          echo "  즉 이 초록은 «스키마 제약»의 것이지 «적재된 데이터»의 것이 아니다."

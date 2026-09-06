@@ -41,7 +41,17 @@ param(
     #    갈아엎고 제거 대상이 되는 곳이라, 바인드 원본을 그 안에 두면 워크트리 정리가 배포 볼륨을
     #    지운다(09-01 15:49 사고 · `git worktree remove` 는 ignored 파일까지 디렉토리째 지운다).
     #    `$LogDir` 이 같은 이유로 이미 `$HOME` 아래에 있다 — 같은 뿌리를 쓴다.
-    [string] $ReplayDir    = (Join-Path $HOME '.fkt/dev/data/replay')
+    [string] $ReplayDir    = (Join-Path $HOME '.fkt/dev/data/replay'),
+    # 🔴 무대 ai-api 가 브라우저에게 허용할 origin(O-47). compose 는 이미 `FKT_CORS_ORIGINS` 를
+    #    넘기지만 이 스크립트는 `docker run` 이라 아무것도 주지 않았다 — 그래서 무대에서 셸을
+    #    붙이면 CORS 가 «꺼진 채» 돌고, 브라우저는 그것을 네트워크 오류로만 보여준다.
+    # 🔴 기본값에 넷을 담는 이유는 이 리포에 화면 포트가 «두 축»으로 있기 때문이다:
+    #    `.env.example:49` 이 dev 포트를 **3100**(3000 점유 회피)으로 성문했고, 로컬 «빌드»
+    #    축(`next start`)은 3000 이다. 그리고 브라우저는 `localhost` 와 `127.0.0.1` 을 **다른
+    #    origin** 으로 센다 — 하나만 넣으면 나머지에서 조용히 막힌다.
+    #    🔴 이것은 «무대»의 값이지 기본 정책이 아니다. production 은 compose/`docker run` 의
+    #       자기 값을 쓰고, 여기 넓힌 것이 그쪽으로 따라가지 않는다.
+    [string] $CorsOrigins  = 'http://localhost:3100,http://127.0.0.1:3100,http://localhost:3000,http://127.0.0.1:3000'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -276,6 +286,7 @@ function Ensure-Container {
         -e "FKT_LOCAL_SYNTHESIS_GATEWAY=http://host.docker.internal:$GatewayPort" `
         -e "FKT_BUILD_SHA=$Sha" `
         -e 'FKT_REPLAY_FIXTURE_DIR=/srv/data/replay' `
+        -e "FKT_CORS_ORIGINS=$CorsOrigins" `
         -v "${ReplayDir}:/srv/data/replay:ro" `
         $tag | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Error '컨테이너 기동 실패'; exit 3 }
