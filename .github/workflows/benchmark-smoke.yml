@@ -64,6 +64,10 @@ jobs:
       PGPASSWORD: fkt_local_dev
       PGDATABASE: fkt
       FKT_POSTGRES_DSN: postgresql://fkt:fkt_local_dev@127.0.0.1:5432/fkt
+      # 🔴 이 회로에는 LLM 이 없다 — 그래서 «측정 모델» 칸에 모델명을 넣지 않는다.
+      #    그 칸이 답하는 질문은 「누가 재나」이고, 여기서 잰 것은 무인 러너다. 실행 주체를
+      #    그대로 적으면 산출물을 나중에 집어든 사람이 그 run 으로 돌아갈 수도 있다.
+      FKT_MEASURE_MODEL: ci:github-actions run ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
