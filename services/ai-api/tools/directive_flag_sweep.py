@@ -36,9 +36,23 @@ POISON = (
 )
 
 
-def _documents() -> list[tuple[str, str]]:
-    docs = sorted(p for p in (DATA_DIR / "documents").glob("*.md") if p.name != "README.md")
-    return [(p.name, p.read_text(encoding="utf-8")) for p in docs]
+# 🔴 코퍼스가 아닌 파일 — 문서가 아니라 «디렉토리 설명»이라 인구에서 뺀다.
+#    이름으로 뺀다는 사실 자체가 출력에 실려야 한다(아래 `excluded=`).
+_NOT_CORPUS = ("README.md",)
+
+
+def _documents() -> tuple[list[tuple[str, str]], list[str]]:
+    """(인구, **뺀 이름**) 두 값을 함께 돌려준다.
+
+    🔴 **제외는 삭제가 아니라 표시다.** 앞판은 `README.md` 를 조용히 걸렀다 — 그러면 읽는 쪽은
+       `population=7` 만 보고 「문서가 7본이구나」로 읽는다. 무엇이 왜 빠졌는지 말하지 않는 계수는
+       다음 사람이 대조할 수 없고, 코퍼스가 자라 뺀 이름이 늘어도 표는 조용하다.
+       그래서 인구는 그대로 두고(뺀 것은 여전히 빼고) **뺀 목록을 값으로 함께 낸다**.
+    """
+    everything = sorted((DATA_DIR / "documents").glob("*.md"))
+    docs = [p for p in everything if p.name not in _NOT_CORPUS]
+    excluded = [p.name for p in everything if p.name in _NOT_CORPUS]
+    return [(p.name, p.read_text(encoding="utf-8")) for p in docs], excluded
 
 
 def _fixtures() -> list[tuple[str, str]]:
@@ -61,7 +75,10 @@ def _sweep(units: list[tuple[str, str]], label: str) -> int:
 
 
 def main() -> int:
-    docs = _documents()
+    docs, excluded = _documents()
+    # 🔴 인구를 세기 «전»에 무엇을 뺐는지부터 말한다 — 계수만 남으면 뺀 사실이 사라진다.
+    #    뺀 것이 없으면 빈 목록을 그대로 낸다(「안 뺐다」와 「이 줄이 없는 빌드」를 가른다).
+    print(f"[corpus] documents excluded={excluded} (표시만 · 인구 밖 · 규칙 = 이름 {list(_NOT_CORPUS)})")
     if not docs:
         # 🔴 빈 무대는 초록을 지어낸다 — 「안 걸렸다」와 「볼 것이 없었다」를 가른다.
         print("::error::문서 코퍼스가 0건이다 — 인구가 없으면 위양성 0 은 값이 아니다")
