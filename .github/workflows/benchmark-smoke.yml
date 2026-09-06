@@ -1,0 +1,107 @@
+# =============================================================================
+# benchmark-smoke — retrieval 스모크(§34.3)의 CI 회로
+#
+# 🔴 **오늘 이 워크플로는 «측정하지 않는다».** 골격만 세우고, 왜 못 재는지를 매 실행 stdout 에
+#    남긴다. 그 이유는 아래 「왜 골격인가」에 계수와 함께 적혀 있다 — 「초록인데 아무것도 안 한다」가
+#    아니라 「무엇을 못 하는지 말하는 초록」이다.
+#
+# ## 왜 골격인가 (센쿠2 52대 09-06 · 델타표)
+#
+# 러너(`benchmarks/run-benchmark-smoke.mjs` · #847)는 무대 상태별로 이렇게 답한다:
+#
+#   | 무대 | 러너 | 근거 |
+#   |---|---|---|
+#   | 인자 없음        | exit 2 | E1 실측(로컬) |
+#   | 무대 없음        | exit 4 「서버 미도달」 | E1 실측(로컬 :8099) |
+#   | 표본 < 8         | exit 3 | 미발동(표본 10) |
+#   | **색인 없는 DB** | **exit 5 「answerable 전체 hit 0 — 검색이 죽었다」** | E2 코드 축(러너 113행) |
+#   | 정상 무대        | exit 0 | #847 실측(vector 8/10 · hybrid 9/10) |
+#
+# 즉 러너는 색인 없는 DB 에서 «초록을 지어내지 않는다» — 정직하게 빨강을 낸다. 그런데 그 빨강을
+# CI 에 걸면 두 가지가 동시에 참이 된다:
+#   ① **영구 적색** — seed 직결이 막혀 있는 한(G1b) 고칠 수 없다. 못 고치는 축의 상시 빨강은
+#      곧 «안 보는 신호»가 되고, 그때 진짜 회귀가 섞여 들어와도 아무도 세지 않는다.
+#   ② **원인 오지칭** — exit 5 의 문면은 「검색이 죽었다」인데 실제 상태는 「색인할 것이 없다」다.
+#      같은 코드가 두 원인을 덮으면 빨강을 보고도 어디를 고칠지 알 수 없다.
+# 그래서 «재는 회로»가 아니라 «골격 + 명시 skip» 으로 착지시킨다.
+#
+# ## 무엇이 풀리면 활성인가
+#
+# G1b(= `data/seed.ps1` 의 libpq 직결). 지금 벽은 `load.sql` 의 클라이언트측 복사 경로가
+# `container_dir` 로 구워져 있어서 컨테이너 없는 러너에서 성립하지 않는다는 것이다.
+# 풀리면 아래 「활성 시 실행할 것」의 명령을 그대로 켜면 된다(`--gate` 는 그때도 off —
+# 회귀 판정선은 별건이다 · #852).
+# =============================================================================
+name: benchmark-smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark-smoke:
+    name: benchmark smoke (골격 · G1b 대기)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 🔴 골격도 «무언가를 확인»해야 한다. 아래 세 step 은 측정은 못 해도 이것들은 잡는다:
+      #    러너 파일 소실·문법 오류·평가셋 경로 변경·표본이 8 미만으로 줄어드는 것.
+      - name: 러너 실재
+        run: |
+          set -euo pipefail
+          test -f benchmarks/run-benchmark-smoke.mjs \
+            || { echo "::error::러너가 없다 — 이 워크플로가 가리키는 대상이 사라졌다"; exit 1; }
+          echo "러너 $(wc -l < benchmarks/run-benchmark-smoke.mjs)줄"
+
+      # 인자 계약: --base 없이 부르면 exit 2 여야 한다. rc 가 0 이면 러너가 «아무 무대나»
+      # 받아들인다는 뜻이고, 그러면 다음에 켤 때 어디를 쟀는지 알 수 없게 된다.
+      - name: 인자 계약 (--base 필수 = exit 2)
+        run: |
+          set -uo pipefail
+          node benchmarks/run-benchmark-smoke.mjs > /dev/null 2>&1
+          rc=$?
+          echo "rc=$rc (기대 2)"
+          [ "$rc" -eq 2 ] || { echo "::error::--base 없이 rc $rc — 인자 계약이 깨졌다"; exit 1; }
+
+      # 🔴 여기서 평가셋이 «실제로 읽힌다». 죽은 무대를 주면 러너는 표본을 먼저 찍고 exit 4 로
+      #    죽는다 — 그 출력의 표본 계수가 이 골격이 세는 유일한 실수(實數)다.
+      - name: 표본 계수 (평가셋이 읽히는가 · ≥8)
+        run: |
+          set -uo pipefail
+          out=$(node benchmarks/run-benchmark-smoke.mjs --base http://127.0.0.1:9 2>&1)
+          rc=$?
+          echo "$out"
+          echo "rc=$rc (기대 4 = 서버 미도달)"
+          [ "$rc" -eq 4 ] || { echo "::error::죽은 무대에 rc $rc — 구조 가드가 기대와 다르다"; exit 1; }
+          n=$(echo "$out" | grep -oE '표본 [0-9]+문' | grep -oE '[0-9]+' | head -1)
+          [ -n "$n" ] || { echo "::error::표본 계수를 출력에서 못 읽었다 — 평가셋이 안 읽혔거나 서식이 바뀌었다"; exit 1; }
+          echo "표본 $n문"
+          [ "$n" -ge 8 ] || { echo "::error::표본 $n < 8 — 스모크가 성립하지 않는다"; exit 1; }
+
+      # 🔴 「안 본 축」을 이름으로 남긴다. 이 job 의 초록은 «골격»의 것이지 «검색 품질»의 것이 아니다.
+      - name: SKIP 사유 · 활성 시 실행할 것
+        run: |
+          echo "🔴 이 워크플로는 오늘 retrieval 을 «재지 않는다» — 측정 불성립(G1b)."
+          echo "   막는 것: data/seed.ps1 이 컨테이너 cp 전제라 러너에서 적재가 성립하지 않는다"
+          echo "            (load.sql 의 클라이언트측 복사 경로가 container_dir 로 구워짐)."
+          echo "   색인 없는 DB 에 러너를 걸면 exit 5(=「검색이 죽었다」)가 상시로 난다 —"
+          echo "   고칠 수 없는 영구 적색이 되고, 문면은 실제 원인(색인 없음)을 가리키지도 않는다."
+          echo ""
+          echo "   G1b 착지 뒤 켤 것(그대로):"
+          echo "     services: postgres(pgvector/pgvector:pg16) + PG* env"
+          echo "     pwsh services/ai-api/db/migrate.ps1 -Direct"
+          echo "     pwsh data/seed.ps1 -Direct            # ← G1b"
+          echo "     ai-api 기동(replay-e2e-smoke 와 같은 이미지 경로)"
+          echo "     node benchmarks/run-benchmark-smoke.mjs --base http://127.0.0.1:<port> --k 5"
+          echo "   --gate 는 그때도 off — 회귀 판정선 도입은 별건(#852)."
+          echo ""
+          echo "   이 job 이 오늘 실제로 확인한 것: 러너 실재 · 인자 계약(exit 2) · 구조 가드(exit 4)"
+          echo "                                  · 평가셋 표본 ≥8. 그 밖은 «안 봤다»."
