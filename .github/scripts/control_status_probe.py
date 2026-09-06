@@ -104,11 +104,14 @@ def main() -> int:
             if first_raw is None and st != 200:
                 first_raw = raw
             n = len(jb[0].get("hits", [])) if (st == 200 and isinstance(jb, list) and jb) else None
-            # 오류 봉투는 계약상 top-level {code,message} 다 — 다만 FastAPI 기본꼴(detail 중첩)이
-            # 되돌아오는 날에도 이 프로브가 「코드 없음」으로 조용히 틀리지 않게 둘 다 본다.
             code = None
             if isinstance(jb, dict):
-                code = jb.get("code") or (jb.get("detail") or {}).get("code") if isinstance(jb.get("detail"), dict) else jb.get("code")
+                # 🔴 정본 봉투는 {"error":{"code","message"}} 다(계약 rest-api-v0.1 :11 · errors.py 의
+                #    ErrorResponse). 앞판은 top-level 과 detail 만 봐서 둘 다 빗나갔고, 그래서 code 가
+                #    20건 전부 None 이었다 — 「없다」가 아니라 «안 본 것»이었다(리바이2 진단).
+                code = ((jb.get("error") or {}).get("code")
+                        or jb.get("code")
+                        or (jb.get("detail") or {}).get("code"))
             codes.add(st)
             if code:
                 named.add(str(code))
@@ -124,6 +127,11 @@ def main() -> int:
         print("JSON →", out)
 
     print(f"\nstatus 집합 {sorted(codes)} · code 집합 {sorted(named) or '-'} · 요청 {len(rows)}건 · hit 총합 {hits_total}")
+
+    if first_raw is not None:
+        # 🔴 원문을 로그에도 남긴다. artifact 에만 두면 빨간 때 내려받아야 보이고,
+        #    그 한 단계가 「봉투가 무엇이었나」를 다음 대까지 미루게 했다(09-06 실측).
+        print(chr(10) + f"첫 비-200 응답 «원문»: {first_raw[:400]!r}")
 
     if len(codes) != 1:
         print(f"::error::상태코드가 섞였다 {sorted(codes)} — 응답이 일관되지 않으면 hit 0 의 원인을 한 가지로 말할 수 없다",
