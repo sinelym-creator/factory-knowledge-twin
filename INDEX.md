@@ -64,3 +64,5 @@ size_limit: 4KB
 | `docs/plan/tickets/T5-1.md` ~ `T5-5.md` | Phase 5 티켓 선작성(폐하 하명 08-31 23:25 「설계 미리 준비 · P5 까지 자동 승인」): Evaluation Lab(40문·4전략·800회·§30) / Gate 7 13항+이력 secret scan / CI 4 workflow §34.3~34.4 / 운영 runbook·자동 시작·clean env / Phase 5 통합 검증(Gate 1~8 전건·§35 점검표) | 발주 시 status 갱신 |
 | `docs/plan/tickets/T7-42.md` | develop 환경 ≠ production 환경 — 게이트웨이 프롬프트 결합 해소(산출물 디렉터리·`promote-gateway.ps1`·`/health` promptSha256) + develop 스택 고정 포트(`:8020`/`:8797` · `develop-stage.ps1`) · 폐하 하명 09-05 20:03~20:07 | 발주 시 status 갱신 |
 | `docs/plan/tickets/T7-44.md` | run 문서 검색 단계 hybrid 반영(O-36 ⓑ · 폐하 「b」 09-06 00:17) — 설계 §2 · 검증 §3 개정 (a)~(e)(r1 조건부 #807 → T7-44b 수리 → r2 PASS #810 · 기준선 v0.6 · 대조군 v0.5-d85) · 계약 v0.2.0/0.2.1 | 09-06 · 완결 · 승격 22 |
+
+- `.workspace/retrospective/2026-09-06-suzaku50.md` — 스자쿠 50대 회고
