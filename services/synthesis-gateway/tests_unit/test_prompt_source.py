@@ -10,7 +10,9 @@
    불변」)이 **언제나 참**이 되어, 검사가 대상이 아니라 자기 자신을 증명한다.
 
 실행: `pytest tests_unit -q`(cwd = `services/synthesis-gateway`)
-🔴 이 파일은 **CI 회로에 없다** — CI 는 `services/ai-api/tests_unit` 만 부른다(ci.yml). 회부함.
+🔴 **회부 해소(09-06 실측)** — 이 층은 이제 CI 회로에 있다: `ci.yml` job `unit-ai-api` 의 step
+   「unit tests (services/synthesis-gateway/tests_unit)」가 `working-directory` 를 여기로 두고 부른다.
+   앞의 「CI 회로에 없다」는 문면은 그 회로가 생기기 «전»의 것이라, 읽는 사람을 잘못 안심시킨다.
 """
 
 from __future__ import annotations

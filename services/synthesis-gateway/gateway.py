@@ -93,6 +93,11 @@ def health_payload() -> dict:
 # `SAF-[A-Za-z0-9-]+` 로 제한돼 있다 — 그래도 프롬프트에 실리는 값이므로 자른다.
 MAX_GUARD_NOTICE = 300
 
+# 지시문형 표지(O-48 ⓐ)의 크기 상한. 🔴 **숫자는 하나다** — id 개수와 한 id 의 코드 개수를 같은
+# 값으로 자른다. 두 개를 두면 어느 쪽이 잘랐는지 산출물에서 갈리지 않고, 표지는 그 자체가
+# 「소음이 되면 안 보게 되는」 값이라 상한을 크게 잡을 이유도 없다(코드는 지금 5종이다).
+MAX_EVIDENCE_FLAGS = 32
+
 # 박은 값 0 — 포트·타임아웃·CLI 경로·모델은 여기 한 곳에서만 읽는다.
 # 기본은 루프백이다 — 배포 컨테이너에서 닿게 하려면 «명시적으로» 0.0.0.0 을 준다.
 BIND = os.environ.get("SYNTHESIS_GATEWAY_BIND", "127.0.0.1").strip() or "127.0.0.1"
@@ -316,6 +321,60 @@ def _validate_response(parsed: object, wanted_ids: set[str], evidence_ids: set[s
     return {"ranking": ranking, "rationale": rationale, "insufficient": insufficient}
 
 
+def _evidence_flags(req: dict, evidence_text: dict) -> dict:
+    """요청의 `evidenceFlags` 를 프롬프트에 실을 모양으로 «걸러» 돌려준다(O-48 ⓐ-2).
+
+    🔴 **id 는 `evidenceText` 의 키여야 한다.** 프롬프트의 첫 하드 룰이 「`evidenceText` 의 키만
+       인용하라」인데, 표지 지도가 그 밖의 id 를 데려오면 모델 눈앞에 «인용해선 안 되는 id»가
+       놓인다 — 그걸 인용하면 마지막 가드가 답 **전체**를 버린다. 표지를 지우는 것은 근거를
+       지우는 것이 아니다(발췌는 그대로 간다).
+    🔴 **상한은 하나**(`MAX_EVIDENCE_FLAGS`) — id 수와 한 id 의 코드 수에 같은 값을 쓴다.
+    🔴 모양이 아니면 **조용히 버린다**. 이 값은 거들 뿐이고, 여기서 400 을 내면 표지 하나 때문에
+       합성 전체가 죽는다 — 표지가 없을 때의 거동(= 앞판)이 안전한 기본값이다.
+    """
+    flags = req.get("evidenceFlags")
+    if not isinstance(flags, dict):
+        return {}
+    kept: dict = {}
+    for evidence_id, codes in flags.items():
+        if not isinstance(evidence_id, str) or evidence_id not in evidence_text:
+            continue
+        if not isinstance(codes, list):
+            continue
+        clean = [c for c in codes if isinstance(c, str) and c][:MAX_EVIDENCE_FLAGS]
+        if clean:
+            kept[evidence_id] = clean
+        if len(kept) >= MAX_EVIDENCE_FLAGS:
+            break
+    return kept
+
+
+def _prompt_payload(request: dict, evidence_text: dict) -> dict:
+    """CLI 에 넘길 프롬프트 입력 JSON. 🔴 **여기가 「무엇이 모델에게 가는가」의 단일 자리**다.
+
+    🔴 `guardNotice`·`evidenceFlags` 는 **옵트인 · 앞뒤 호환**이다(스트리밍 Accept 와 같은 관례).
+       앞판 클라이언트는 이 키를 안 보내고, 그때 프롬프트는 이전과 «바이트로» 같다 — 없는 키를
+       `null` 로라도 실으면 모든 회차의 입력이 달라져 앞 회차와 비교할 수 없게 된다.
+       🔴 ai-api 쪽 `evidenceFlags` 는 «항상» 실리지만(빈 객체 = 「돌았고 0건」) 그 구별은 그 층의
+       것이다 — 프롬프트에는 **실을 것이 있을 때만** 넣는다. 빈 객체를 넣으면 위 바이트 동일성이
+       깨지고, 모델에게는 아무 말도 더하지 못한다.
+    🔴 `guardNotice` 는 문자열만 · 길이 상한. 이 값은 호출자(ai-api)의 가드가 만든 문장이지
+       발췌에서 온 말이 아니다 — 그래도 안에 담기는 id 는 발췌에서 뽑은 것이라 상한을 두고 자른다.
+    """
+    payload: dict = {
+        "anchor": request.get("anchor"),
+        "candidates": request["candidates"],
+        "evidenceText": evidence_text,
+    }
+    notice = request.get("guardNotice")
+    if isinstance(notice, str) and notice.strip():
+        payload["guardNotice"] = notice.strip()[:MAX_GUARD_NOTICE]
+    flags = _evidence_flags(request, evidence_text)
+    if flags:
+        payload["evidenceFlags"] = flags
+    return payload
+
+
 def synthesize(req: dict, on_sentence=None) -> dict:
     """합성 1회. `on_sentence` 를 주면 **완성된 문장 줄이 나올 때마다** 먼저 부른다.
 
@@ -348,20 +407,7 @@ def synthesize(req: dict, on_sentence=None) -> dict:
     if EFFORT:
         argv += ["--effort", EFFORT]
 
-    # 🔴 `guardNotice` 는 **옵트인 · 앞뒤 호환**이다(스트리밍 Accept 와 같은 관례). 앞판 클라이언트는
-    #    이 키를 안 보내고, 그때 프롬프트는 이전과 «바이트로» 같다 — 없는 키를 `null` 로라도 실으면
-    #    모든 회차의 입력이 달라져 앞 회차와 비교할 수 없게 된다.
-    # 🔴 문자열만 · 길이 상한. 이 값은 호출자(ai-api)의 가드가 만든 문장이지 발췌에서 온 말이 아니다 —
-    #    그래도 안에 담기는 id 는 발췌에서 뽑은 것이라 상한을 두고 자른다.
-    payload: dict = {
-        "anchor": request.get("anchor"),
-        "candidates": request["candidates"],
-        "evidenceText": evidence_text,
-    }
-    notice = request.get("guardNotice")
-    if isinstance(notice, str) and notice.strip():
-        payload["guardNotice"] = notice.strip()[:MAX_GUARD_NOTICE]
-    prompt = json.dumps(payload, ensure_ascii=False)
+    prompt = json.dumps(_prompt_payload(request, evidence_text), ensure_ascii=False)
 
     started = time.perf_counter()
     sentences: list[dict] = []
