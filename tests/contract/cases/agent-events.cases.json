@@ -1474,6 +1474,25 @@
           ]
         }
       }
+    },
+    {
+      "group": "⓫ v0.2.3 evidence.flagged(O-48 ⓐ-2 이월)",
+      "label": "미지 필드 note 를 payload 루트에 실음(items 밖의 자리도 닫혀 있다)",
+      "expect": "reject",
+      "event": {
+        "type": "evidence.flagged",
+        "payload": {
+          "items": [
+            {
+              "evidenceId": "E-DOC-SOP-0099-001",
+              "flags": [
+                "role_token"
+              ]
+            }
+          ],
+          "note": "x"
+        }
+      }
     }
   ]
 }
