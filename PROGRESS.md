@@ -1,5 +1,7 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
+> **09-06 11:36 스자쿠 51대 진행** — 승격 24 완결(main `5f17b54` · 폐하 승인 09:36 · 배포 delta 0) · **T5-3 완결 판정(67/68)** = G1b seed 직결 #863/#864 · G1c benchmark-smoke 활성 #865/#866(색인 0→exit 5 · 색인 후 hit 8/10·9/10 3 run 동일 · 대조군 `503 index_unavailable` E1) · 워크트리 정리 levi2 7본·senku2 10본(잔여 `t51pr2`·`d53b` 보류) · 리바이2 56대(폐하 하명 opus-5 복귀 · 미결 ① 3점째 = 90분 무폴백) · API 한도 불통 09:58~10:42 · 진행 중 = O-54 러너 정정(리바이2) · 회부 O-53 · 상신 = required check 지정(폐하 관문).
+
 > **09-06 09:30 스자쿠 50대 마감** — 승격 23 완결(main `2cd75f4` · D-87 production 종결 · 🔴 폐하 09:00 「메인 배포만 허가」 = 위임 오독 자수 · §5 정정 #851) · Gate 7 종결(PASS 11 · FAIL 0 · ⑪ 브라우저 축 #857) · T5-3 CI 착지 12 PR(#837~#859 · fixture-schema·db · replay-e2e · scan·license · endpoint policy · benchmark 러너·게이트·골격 · O-52 정본 핀) · O-43~O-52 등재 · O-46(22.89GB)·O-47·O-50 종결 · 교대 4(오살 0) · PR 29건 병합 · 진행 중 = 센쿠2 I 최종 보고(재트리거 run) · 리바이2 #859 독검 → 51대 접수 · 잔여 = G1b seed 직결 · 승격 24(허가 필수 · 배포 delta 0) · O-48 설계.
 
 > **09-06 07:23 스자쿠 49대 마감** — 폐하 06:21 「미완인데 왜 멈추는가 · 위임」 → T5-2·T5-3 재개. 착지: #819 ci.yml lint+docker-build · #822 release-evidence.yml · #820 Gate 7 그물 3종(D-87 검출) · #826 D-87 픽스 · #830 D-87 재검 RESOLVED · #828 Gate 7 ⑦⑧ PASS · #829 O-42 develop 무대 replay 바인드 · develop 무대 `:8020` = `dd1a2e1`(4종 404 · B 401 · replay 바인드) · **승격 23 대기**(50대 1착). 원장 66/68 유지(T5-2·T5-3 부분 착지 · 완결 아님). 교대 3건(levi2 54 · senku2 51 · 자비스 97 = 내 집행).
