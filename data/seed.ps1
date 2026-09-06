@@ -130,7 +130,7 @@ if ($Direct) {
   # 🔴 「복사했다」가 아니라 «몇 개가 거기 있는가»를 센다. 0개여도 복사 명령은 조용히 성공하고,
   #    그러면 다음 \copy 가 「파일 없음」으로 죽어 원인이 한 칸 옆으로 옮겨 보인다.
   $staged = @(Get-ChildItem -Path $containerDir -Filter '*.csv' -ErrorAction SilentlyContinue).Count
-  Write-Host "-- staging $containerDir · csv $staged개" -ForegroundColor DarkGray
+  Write-Host "-- staging $containerDir · csv ${staged}개" -ForegroundColor DarkGray
   if ($staged -eq 0) { throw "staging 에 CSV 가 0개입니다: $containerDir (생성물 $generatedDir)" }
 } else {
   # 소스 끝의 '/.' = 「디렉터리 내용을」 복사. 대상이 이미 있어도 그 안에 중첩되지 않는다.
