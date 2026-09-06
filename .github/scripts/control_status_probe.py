@@ -42,7 +42,7 @@ def _read(name: str) -> list[dict]:
         return [json.loads(l) for l in f if l.strip()]
 
 
-def _post(path: str, body: dict, cookie: str | None) -> tuple[int, object, str]:
+def _post(path: str, body: dict, cookie: str | None) -> tuple[int, object, str, str]:
     req = urllib.request.Request(
         BASE + path,
         data=json.dumps(body).encode("utf-8"),
@@ -52,17 +52,22 @@ def _post(path: str, body: dict, cookie: str | None) -> tuple[int, object, str]:
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
             raw = r.read().decode("utf-8", "replace")
-            return r.status, (json.loads(raw) if raw else None), (r.headers.get("set-cookie") or "").split(";")[0]
+            return r.status, (json.loads(raw) if raw else None), (r.headers.get("set-cookie") or "").split(";")[0], raw
     except urllib.error.HTTPError as e:
         # 🔴 오류 «본문»을 버리지 않는다. 버리면 「거절당했다」만 남고 «무엇으로 거절했는가»가
         #    사라지는데, 이 국면에서는 바로 그 code 가 판정의 근거다.
+        raw = ""
         try:
-            return e.code, json.loads(e.read().decode("utf-8", "replace") or "null"), ""
+            raw = e.read().decode("utf-8", "replace")
         except Exception:  # noqa: BLE001
-            return e.code, None, ""
+            raw = ""
+        try:
+            return e.code, json.loads(raw) if raw else None, "", raw
+        except Exception:  # noqa: BLE001
+            return e.code, None, "", raw
     except Exception as e:  # noqa: BLE001 — 도달 실패는 상태코드가 «없다»(0 으로 구분한다)
         print(f"  도달 실패: {e}", file=sys.stderr)
-        return 0, None, ""
+        return 0, None, "", ""
 
 
 def main() -> int:
@@ -77,7 +82,7 @@ def main() -> int:
         print(f"::error::표본 {len(sample)} < 8 — 러너와 같은 필터인데 표본이 다르다", file=sys.stderr)
         return 3
 
-    status, body, cookie = _post("/api/sessions", {}, None)
+    status, body, cookie, _raw = _post("/api/sessions", {}, None)
     if status != 200 or not isinstance(body, dict):
         print(f"::error::/api/sessions {status} — 세션을 못 열어 상태코드 열 자체가 성립하지 않는다", file=sys.stderr)
         return 4
@@ -89,12 +94,17 @@ def main() -> int:
     codes: set[int] = set()
     named: set[str] = set()
     hits_total = 0
+    first_raw: str | None = None
     for q in sample:
         for strat in ("vector", "hybrid"):
-            st, jb, _ = _post("/api/retrieval/compare",
-                              {"sessionId": sid, "question": q["question"], "strategies": [strat]}, cookie)
+            st, jb, _, raw = _post("/api/retrieval/compare",
+                                   {"sessionId": sid, "question": q["question"], "strategies": [strat]}, cookie)
+            # 🔴 원문을 한 번은 «그대로» 남긴다. 파싱에 실패했든 봉투가 예상과 다르든, 원문이
+            #    없으면 다음 대가 같은 자극을 다시 사야 한다(비싼 자극일수록 더 그렇다).
+            if first_raw is None and st != 200:
+                first_raw = raw
             n = len(jb[0].get("hits", [])) if (st == 200 and isinstance(jb, list) and jb) else None
-            # 오류 봉투는 계약상 top-level {code,message} 다 — 다만 FastAPI 기본꿄(detail 중첩)이
+            # 오류 봉투는 계약상 top-level {code,message} 다 — 다만 FastAPI 기본꼴(detail 중첩)이
             # 되돌아오는 날에도 이 프로브가 「코드 없음」으로 조용히 틀리지 않게 둘 다 본다.
             code = None
             if isinstance(jb, dict):
@@ -110,7 +120,7 @@ def main() -> int:
     if out:
         with open(out, "w", encoding="utf-8") as f:
             json.dump({"base": BASE, "n": len(rows), "statuses": sorted(codes), "codes": sorted(named),
-                       "hitsTotal": hits_total, "rows": rows}, f, ensure_ascii=False, indent=2)
+                       "hitsTotal": hits_total, "firstNon200Raw": first_raw, "rows": rows}, f, ensure_ascii=False, indent=2)
         print("JSON →", out)
 
     print(f"\nstatus 집합 {sorted(codes)} · code 집합 {sorted(named) or '-'} · 요청 {len(rows)}건 · hit 총합 {hits_total}")
