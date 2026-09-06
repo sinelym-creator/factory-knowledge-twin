@@ -22,7 +22,8 @@
         "run.stopped",
         "run.failed",
         "run.queued",
-        "step.progress"
+        "step.progress",
+        "evidence.flagged"
       ]
     },
     "payload": { "type": "object" }
@@ -37,7 +38,8 @@
     { "if": { "properties": { "type": { "const": "run.stopped" } } },   "then": { "properties": { "payload": { "$ref": "#/$defs/runStopped" } } } },
     { "if": { "properties": { "type": { "const": "run.failed" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runFailed" } } } },
     { "if": { "properties": { "type": { "const": "run.queued" } } },    "then": { "properties": { "payload": { "$ref": "#/$defs/runQueued" } } } },
-    { "if": { "properties": { "type": { "const": "step.progress" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/stepProgress" } } } }
+    { "if": { "properties": { "type": { "const": "step.progress" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/stepProgress" } } } },
+    { "if": { "properties": { "type": { "const": "evidence.flagged" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/evidenceFlagged" } } } }
   ],
   "$defs": {
     "stepId": {
@@ -98,6 +100,28 @@
       "properties": {
         "step": { "$ref": "#/$defs/stepId" },
         "evidence": { "$ref": "#/$defs/evidenceRef" }
+      }
+    },
+    "evidenceFlagged": {
+      "type": "object",
+      "description": "v0.2.3 · O-48 ⓐ-2 — 조립 층이 지시문형 발췌에 붙인 «표지»를 화면 축으로 한 번 더 나른다. 발행 = 조립 층이 evidenceFlags 를 계산한 직후 run 당 1회. 🔴 표지 0건인 run 은 이벤트를 발행하지 않는다 — 빈 items 는 여기서 FAIL 이고, 「이벤트 부재 = 표지 없음」이다(게이트웨이 요청 필드 evidenceFlags 의 «키 부재 vs 빈 객체» 규약(v0.2.2)은 이 이벤트에 해당하지 않는다). 단일 진실 = 조립 층 계산값 — 요청 본문과 이 이벤트가 갈리면 결함이다. 발췌 본문은 싣지 않는다(v0.2.2 「발췌 삭제·수정 0」과 무접촉).",
+      "required": ["items"],
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "description": "표지된 근거 1건 이상 — 0건이면 이벤트 자체가 오지 않는다",
+          "items": {
+            "type": "object",
+            "required": ["evidenceId", "flags"],
+            "additionalProperties": false,
+            "properties": {
+              "evidenceId": { "type": "string", "description": "run 근거집합 안의 id — 화면 배지가 붙는 자리" },
+              "flags": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "표지 코드 — 문면 정본 = 코드 상수(v0.2.2 표지 코드 5). 빈 배열은 «표지된 근거»가 아니므로 여기서 FAIL 이다" }
+            }
+          }
+        }
       }
     },
     "stepProgress": {
