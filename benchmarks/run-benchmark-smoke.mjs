@@ -40,6 +40,11 @@ const args = Object.fromEntries(
 const BASE = (args.base || process.env.FKT_API_BASE || "").replace(/\/$/, "");
 const K = Number(args.k || 5);
 const OUT = args.out || null;
+// 🔴 --gate: 기본 off. on 이면 잠정 회귀 판정선(doc_hit@5 ≥ 기준선)을 rc 로 만든다.
+//    구조 가드(exit 3~6 = 「측정 성립」)와 «분리»된 exit 10(회귀)로 둔다 — 둘이 섞이면
+//    「검색이 죽었다」와 「기준선 아래로 떨어졌다」가 한 코드가 되어 원인이 흐려진다.
+const GATE = process.argv.includes("--gate");
+const BASELINE = args.baseline || join(HERE, "baselines", "retrieval-smoke-v0.6.json");
 const FAKE_NEEDLE = "DOC-ZZZ-9999#000";
 const NONSENSE = "qx zork frobnicate 87 asdf 무의미한 질의 " + Math.random().toString(36).slice(2);
 
@@ -136,10 +141,36 @@ async function main() {
   console.log("대조군 A(무의미 질의):", ctrlA.status, ctrlA.status === 400 ? "거부됨(정상)" : "🔴 거부되지 않음");
   console.log("대조군 B(허구 needle):", fakeAnywhere ? "🔴 hit 됨" : "hit 0(정상)");
 
+  // --- 회귀 판정선(--gate · 잠정) ---
+  // 🔴 판정 단위 = doc_hit@5(정수). 잠정 목표 = 기준선 자기 자신(하락 = FAIL). chunk 바인딩은
+  //    보고 전용(O-51). baseline §0.2 「실측 전 수치 = 잠정 목표」 표기를 유지한다.
+  let gateVerdict = null;
+  if (GATE) {
+    let base;
+    try { base = JSON.parse(readFileSync(BASELINE, "utf-8")); }
+    catch (e) { console.error(`게이트 오류: 기준선 파일을 못 읽었다 ${BASELINE} — ${e}`); process.exit(2); }
+    const dhCount = (strat) => rows.map((r) => r.strategies[strat]).filter((x) => x && x.status === 200 && x.docHitAtK).length;
+    const sameSample = JSON.stringify(base.sampleIds) === JSON.stringify(sample.map((q) => q.id));
+    const checks = [];
+    if (!sameSample) checks.push({ axis: "sampleIds", ok: false, note: "표본이 기준선과 다르다 — 비교 불가" });
+    for (const strat of ["vector", "hybrid"]) {
+      const got = dhCount(strat);
+      const min = base.thresholds?.[strat]?.docHitAtK_min ?? 0;
+      checks.push({ axis: `${strat}.docHit@${K}`, got, min, ok: got >= min });
+    }
+    const pass = sameSample && checks.every((c) => c.ok);
+    gateVerdict = { provisional: base.provisional !== false, baselineVersion: base.version, checks, pass };
+    console.log(`\n== 회귀 게이트(잠정 · 판정 단위 doc_hit@${K}) ==`);
+    for (const c of checks) console.log(`  ${c.ok ? "PASS" : "🔴 FAIL"} ${c.axis}` + (c.min !== undefined ? ` (got ${c.got} ≥ min ${c.min})` : ` (${c.note})`));
+    console.log(`  게이트: ${pass ? "PASS" : "FAIL"} · 잠정 목표(baseline §0.2 실측 전 수치)`);
+  }
+
   const out = { model: process.env.FKT_MEASURE_MODEL || null, base: BASE, k: K, sampleIds: sample.map((q) => q.id), rows, summary,
-    controlA: { status: ctrlA.status }, generatedAt: new Date().toISOString() };
+    controlA: { status: ctrlA.status }, gate: gateVerdict, generatedAt: new Date().toISOString() };
   if (OUT) { const { writeFileSync } = await import("node:fs"); writeFileSync(OUT, JSON.stringify(out, null, 2)); console.log("JSON →", OUT); }
   else console.log("\nJSON:\n" + JSON.stringify(out));
+  // 🔴 게이트 회귀는 구조 가드(3~6)와 «분리»된 exit 10.
+  if (GATE && gateVerdict && !gateVerdict.pass) { console.error("회귀 게이트 FAIL: doc_hit@k 가 잠정 기준선 아래"); process.exit(10); }
   process.exit(0);
 }
 main().catch((e) => { console.error("실행 오류:", e); process.exit(4); });
