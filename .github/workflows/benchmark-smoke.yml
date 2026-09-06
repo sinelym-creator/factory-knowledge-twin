@@ -1,36 +1,27 @@
 # =============================================================================
-# benchmark-smoke — retrieval 스모크(§34.3)의 CI 회로
+# benchmark-smoke — retrieval 스모크(§34.3)의 CI 회로 **활성판**(T5-3 G1c · 09-06)
 #
-# 🔴 **오늘 이 워크플로는 «측정하지 않는다».** 골격만 세우고, 왜 못 재는지를 매 실행 stdout 에
-#    남긴다. 그 이유는 아래 「왜 골격인가」에 계수와 함께 적혀 있다 — 「초록인데 아무것도 안 한다」가
-#    아니라 「무엇을 못 하는지 말하는 초록」이다.
+# 골격이었던 이유(G1b 전)는 seed 가 컨테이너 cp 를 전제해 러너에서 적재가 성립하지 않는
+# 것이었다. #863 이 그 벽을 없앴다 — `\copy` 가 구워진 경로를 러너에 «실재하게» 만드는
+# 방식이라 load.sql 은 그대로다. 그래서 이제 실제로 잰다.
 #
-# ## 왜 골격인가 (센쿠2 52대 09-06 · 델타표)
+# ## 이 회로가 한 무대에서 «두 번» 재는 이유
 #
-# 러너(`benchmarks/run-benchmark-smoke.mjs` · #847)는 무대 상태별로 이렇게 답한다:
+# 색인 «전»과 «후»를 **같은 컨테이너·같은 DB·같은 모델·같은 러너**에서 연달아 잰다.
+# 그러면 두 실행 사이의 변수는 **색인 하나뿐**이다 — 초록이 「무대가 좋아서」가 아니라
+# 「색인이 있어서」임을 그 대비가 증명한다. 순서를 뒤집으면(색인 먼저) 대조군을 만들려고
+# 색인을 지워야 하고, 그건 다른 상태를 만든 것이지 대조가 아니다.
 #
-#   | 무대 | 러너 | 근거 |
-#   |---|---|---|
-#   | 인자 없음        | exit 2 | E1 실측(로컬) |
-#   | 무대 없음        | exit 4 「서버 미도달」 | E1 실측(로컬 :8099) |
-#   | 표본 < 8         | exit 3 | 미발동(표본 10) |
-#   | **색인 없는 DB** | **exit 5 「answerable 전체 hit 0 — 검색이 죽었다」** | E2 코드 축(러너 113행) |
-#   | 정상 무대        | exit 0 | #847 실측(vector 8/10 · hybrid 9/10) |
+#   1) 색인 0 → 러너 **exit 5**(「answerable 전체 hit 0」) 기대  ← 골격 시절 델타표의
+#      «E2 코드축» 행을 여기서 **E1 로 승격**한다.
+#   2) 색인 후 → 러너 **exit 0** + hit 계수
 #
-# 즉 러너는 색인 없는 DB 에서 «초록을 지어내지 않는다» — 정직하게 빨강을 낸다. 그런데 그 빨강을
-# CI 에 걸면 두 가지가 동시에 참이 된다:
-#   ① **영구 적색** — seed 직결이 막혀 있는 한(G1b) 고칠 수 없다. 못 고치는 축의 상시 빨강은
-#      곧 «안 보는 신호»가 되고, 그때 진짜 회귀가 섞여 들어와도 아무도 세지 않는다.
-#   ② **원인 오지칭** — exit 5 의 문면은 「검색이 죽었다」인데 실제 상태는 「색인할 것이 없다」다.
-#      같은 코드가 두 원인을 덮으면 빨강을 보고도 어디를 고칠지 알 수 없다.
-# 그래서 «재는 회로»가 아니라 «골격 + 명시 skip» 으로 착지시킨다.
+# 🔴 `/health` 는 판정선이 아니다. neo4j 를 안 띄우므로 그 축은 항상 not-ok 이고,
+#    그래도 앱은 선다(lifespan: 「여는 데 실패해도 부팅은 성립한다」). vector·hybrid 는
+#    postgres 만 쓴다(`retrieval/service.py:47` — neo4j 는 graphrag 전용). 판정은
+#    **러너 rc + hit 계수**로 한다. health 본문은 로그에 참고로만 남긴다.
 #
-# ## 무엇이 풀리면 활성인가
-#
-# G1b(= `data/seed.ps1` 의 libpq 직결). 지금 벽은 `load.sql` 의 클라이언트측 복사 경로가
-# `container_dir` 로 구워져 있어서 컨테이너 없는 러너에서 성립하지 않는다는 것이다.
-# 풀리면 아래 「활성 시 실행할 것」의 명령을 그대로 켜면 된다(`--gate` 는 그때도 off —
-# 회귀 판정선은 별건이다 · #852).
+# 🔴 `--gate` 는 주지 않는다(#852 별건). 이 job 은 «보고»이지 회귀 판정선이 아니다.
 # =============================================================================
 name: benchmark-smoke
 
@@ -42,69 +33,214 @@ on:
 permissions:
   contents: read
 
+env:
+  # 러너와 컨테이너가 **같은 HF 캐시**를 본다 — 안 묶으면 e5-small 을 두 번 받는다
+  # (indexer 가 한 번, ai-api warm-up 이 또 한 번).
+  HF_HOME: ${{ github.workspace }}/.hf
+  API_PORT: '8000'
+
 jobs:
   benchmark-smoke:
-    name: benchmark smoke (골격 · G1b 대기)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: fkt
+          POSTGRES_PASSWORD: fkt_local_dev
+          POSTGRES_DB: fkt
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fkt -d fkt"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: fkt
+      PGPASSWORD: fkt_local_dev
+      PGDATABASE: fkt
+      FKT_POSTGRES_DSN: postgresql://fkt:fkt_local_dev@127.0.0.1:5432/fkt
+      # 🔴 이 회로에는 LLM 이 없다 — 그래서 «측정 모델» 칸에 모델명을 넣지 않는다.
+      #    그 칸이 답하는 질문은 「누가 재나」이고, 여기서 잰 것은 무인 러너다. 실행 주체를
+      #    그대로 적으면 산출물을 나중에 집어든 사람이 그 run 으로 돌아갈 수도 있다.
+      FKT_MEASURE_MODEL: ci:github-actions run ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      # 🔴 골격도 «무언가를 확인»해야 한다. 아래 세 step 은 측정은 못 해도 이것들은 잡는다:
-      #    러너 파일 소실·문법 오류·평가셋 경로 변경·표본이 8 미만으로 줄어드는 것.
-      - name: 러너 실재
+      - name: runner tools exist (pwsh · psql · pg_isready · docker · node)
         run: |
           set -euo pipefail
-          test -f benchmarks/run-benchmark-smoke.mjs \
-            || { echo "::error::러너가 없다 — 이 워크플로가 가리키는 대상이 사라졌다"; exit 1; }
-          echo "러너 $(wc -l < benchmarks/run-benchmark-smoke.mjs)줄"
+          for t in pwsh psql pg_isready docker node; do
+            command -v "$t" >/dev/null || { echo "::error::${t} 없음 — 이 회로가 성립하지 않는다"; exit 1; }
+          done
+          echo "pwsh $(pwsh --version) · $(psql --version) · node $(node --version) · docker $(docker --version)"
+          pg_isready -d "$PGDATABASE" -U "$PGUSER"
 
-      # 인자 계약: --base 없이 부르면 exit 2 여야 한다. rc 가 0 이면 러너가 «아무 무대나»
-      # 받아들인다는 뜻이고, 그러면 다음에 켤 때 어디를 쟀는지 알 수 없게 된다.
-      - name: 인자 계약 (--base 필수 = exit 2)
+      - name: cache pip (indexer)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-indexer-${{ runner.os }}-${{ hashFiles('services/indexer/requirements.txt') }}
+
+      # 🔴 **CPU 전용 인덱스**를 반드시 준다. 기본 PyPI 의 리눅스 torch 휠은 CUDA 런타임을
+      #    함께 끌고 와 수 GB 가 늘어난다 — ai-api Dockerfile 이 같은 이유로 같은 플래그를 쓴다.
+      # 🔴 시간·용량을 «잰다». 이 회로에서 가장 비싼 자리가 어디인지 모르면 다음 대가
+      #    엉뚱한 곳을 줄인다.
+      - name: install indexer deps (CPU wheels · 시간·용량 실측)
         run: |
-          # 🔴 GitHub 의 기본 셸은 `bash -e {0}` 다 — `set -uo pipefail` 은 «더하는» 것이라
-          #    -e 를 끄지 못한다. 앞판은 그래서 node 가 기대대로 2 로 죽는 자리에서 step 이 통째로
-          #    죽었다(develop 첫 run 실측 · I1). 실패를 «값으로 받으려면» || 로 받아야 한다.
+          set -euo pipefail
+          t0=$(date +%s)
+          python -m pip install --disable-pip-version-check --quiet \
+            --extra-index-url https://download.pytorch.org/whl/cpu \
+            -r services/indexer/requirements.txt
+          t1=$(date +%s)
+          echo "설치 $((t1 - t0))s"
+          python -c "import torch, sentence_transformers; print('torch', torch.__version__, '· st', sentence_transformers.__version__)"
+          du -sh "$(python -c 'import site; print(site.getsitepackages()[0])')" || true
+
+      - name: cache HF model (e5-small)
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.hf
+          key: hf-intfloat-multilingual-e5-small-v1
+
+      - name: generate seed (stdlib only)
+        run: python -m data.generators.generate
+
+      - name: migrate (libpq direct)
+        run: pwsh -NoProfile -File services/ai-api/db/migrate.ps1 -Direct
+
+      - name: seed (libpq direct)
+        run: pwsh -NoProfile -File data/seed.ps1 -SkipGenerate -Direct
+
+      - name: build ai-api image
+        run: docker build -t fkt-ai-api:bench-${{ github.sha }} services/ai-api
+
+      # 🔴 「빌드가 rc 0 을 냈다」와 「이미지가 있다」는 다른 사실이다(replay-e2e-smoke 와 같은 규율).
+      - name: image exists
+        run: docker image inspect fkt-ai-api:bench-${{ github.sha }} --format 'image id={{.Id}} · size={{.Size}} bytes'
+
+      # --network host = 서비스 컨테이너가 러너 호스트에 매단 5432 로 그대로 간다.
+      # /models 마운트 = 러너가 받은(또는 캐시에서 복원한) 모델을 컨테이너가 다시 안 받는다.
+      # 이미지의 사용자는 uid 10001 이라 호스트 디렉터리에 쓰기 권한을 열어 준다.
+      - name: run ai-api (network host · shared HF cache)
+        run: |
+          set -euo pipefail
+          mkdir -p "$HF_HOME"
+          chmod -R 777 "$HF_HOME"
+          docker run -d --name fkt-bench --network host \
+            -e FKT_POSTGRES_DSN="$FKT_POSTGRES_DSN" \
+            -e FKT_BUILD_SHA=${{ github.sha }} \
+            -e HF_HOME=/models \
+            -v "$HF_HOME:/models" \
+            fkt-ai-api:bench-${{ github.sha }}
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' "http://127.0.0.1:${API_PORT}/api/health" || true)
+            [ "$code" != "000" ] && { echo "응답 시작 ${i}회차 · http ${code}"; break; }
+            sleep 2
+          done
+          echo "--- /api/health (참고 · 판정선 아님 · neo4j 는 안 띄웠다) ---"
+          cat /tmp/health.json || true; echo
+
+      # ============================ 대조군 (색인 «전») ============================
+      # 🔴 여기서 재는 값이 골격 시절 델타표의 「색인 없는 DB = exit 5」를 **E1 로 승격**한다.
+      #    bash -e 아래서 실패 rc 를 값으로 받으려면 `|| rc=$?` 여야 한다(09-06 실측).
+      - name: 대조군 — 색인 0 에서 스모크 (실패해야 정상)
+        run: |
           set -uo pipefail
+          chunks=$(psql -tAc "SELECT count(*) FROM document_chunk")
+          echo "document_chunk = ${chunks} (색인 전이라 0 이어야 한다)"
+          [ "$chunks" = "0" ] || { echo "::error::색인 전인데 chunk ${chunks}행 — 대조군이 성립하지 않는다"; exit 1; }
           rc=0
-          node benchmarks/run-benchmark-smoke.mjs > /dev/null 2>&1 || rc=$?
-          echo "rc=$rc (기대 2)"
-          [ "$rc" -eq 2 ] || { echo "::error::--base 없이 rc $rc — 인자 계약이 깨졌다"; exit 1; }
+          node benchmarks/run-benchmark-smoke.mjs --base "http://127.0.0.1:${API_PORT}" --k 5 > /tmp/ctrl.txt 2>&1 || rc=$?
+          tail -5 /tmp/ctrl.txt
+          echo "대조군 rc=${rc} (0 이 아니어야 정상 · 델타표 기대 = 5)"
+          [ "$rc" -ne 0 ] || { echo "::error::색인이 0인데 스모크가 통과했다 — 이 지표는 색인을 안 보고 있다"; exit 1; }
+          [ "$rc" -eq 5 ] || echo "::warning::rc ${rc} ≠ 5 — 구조 가드가 다른 자리에서 울었다(델타표 갱신 대상)"
 
-      # 🔴 여기서 평가셋이 «실제로 읽힌다». 죽은 무대를 주면 러너는 표본을 먼저 찍고 exit 4 로
-      #    죽는다 — 그 출력의 표본 계수가 이 골격이 세는 유일한 실수(實數)다.
-      - name: 표본 계수 (평가셋이 읽히는가 · ≥8)
-        run: |
-          set -uo pipefail
-          rc=0
-          out=$(node benchmarks/run-benchmark-smoke.mjs --base http://127.0.0.1:9 2>&1) || rc=$?
-          echo "$out"
-          echo "rc=$rc (기대 4 = 서버 미도달)"
-          [ "$rc" -eq 4 ] || { echo "::error::죽은 무대에 rc $rc — 구조 가드가 기대와 다르다"; exit 1; }
-          n=$(echo "$out" | grep -oE '표본 [0-9]+문' | grep -oE '[0-9]+' | head -1)
-          [ -n "$n" ] || { echo "::error::표본 계수를 출력에서 못 읽었다 — 평가셋이 안 읽혔거나 서식이 바뀌었다"; exit 1; }
-          echo "표본 $n문"
-          [ "$n" -ge 8 ] || { echo "::error::표본 $n < 8 — 스모크가 성립하지 않는다"; exit 1; }
+      # 🔴 러너의 `--out` 은 이 국면에서 «파일을 안 만든다» — 구조 가드 exit 5 가 쓰기보다 앞줄이다
+      #    (현 develop 판 118행 exit 5 · 172행 writeFileSync). 그래서 前 열의 요청별 상태코드는
+      #    두 번째 계측기로 남긴다. 표본은 러너와 «같은 정본·같은 필터»에서 읽는다.
+      #    답하는 것 하나: 이 hit 0 이 «200 응답 위에서» 났는가 — 4xx/5xx 위의 0 은 색인 부재의
+      #    증거가 아니라 도달 실패일 수 있고, 둘은 같은 0 으로 보인다.
+      - name: 대조군 前 열 — 요청별 상태코드(두 번째 계측기)
+        env:
+          BENCH_BASE: http://127.0.0.1:${{ env.API_PORT }}
+          CONTROL_PROBE_OUT: /tmp/ctrl-status.json
+        run: python .github/scripts/control_status_probe.py
 
-      # 🔴 「안 본 축」을 이름으로 남긴다. 이 job 의 초록은 «골격»의 것이지 «검색 품질»의 것이 아니다.
-      - name: SKIP 사유 · 활성 시 실행할 것
+      # ============================ 색인 (변수는 이것 하나) ============================
+      - name: build index (계수 stdout)
         run: |
-          echo "🔴 이 워크플로는 오늘 retrieval 을 «재지 않는다» — 측정 불성립(G1b)."
-          echo "   막는 것: data/seed.ps1 이 컨테이너 cp 전제라 러너에서 적재가 성립하지 않는다"
-          echo "            (load.sql 의 클라이언트측 복사 경로가 container_dir 로 구워짐)."
-          echo "   색인 없는 DB 에 러너를 걸면 exit 5(=「검색이 죽었다」)가 상시로 난다 —"
-          echo "   고칠 수 없는 영구 적색이 되고, 문면은 실제 원인(색인 없음)을 가리키지도 않는다."
-          echo ""
-          echo "   G1b 착지 뒤 켤 것(그대로):"
-          echo "     services: postgres(pgvector/pgvector:pg16) + PG* env"
-          echo "     pwsh services/ai-api/db/migrate.ps1 -Direct"
-          echo "     pwsh data/seed.ps1 -Direct            # ← G1b"
-          echo "     ai-api 기동(replay-e2e-smoke 와 같은 이미지 경로)"
-          echo "     node benchmarks/run-benchmark-smoke.mjs --base http://127.0.0.1:<port> --k 5"
-          echo "   --gate 는 그때도 off — 회귀 판정선 도입은 별건(#852)."
-          echo ""
-          echo "   이 job 이 오늘 실제로 확인한 것: 러너 실재 · 인자 계약(exit 2) · 구조 가드(exit 4)"
-          echo "                                  · 평가셋 표본 ≥8. 그 밖은 «안 봤다»."
+          set -euo pipefail
+          t0=$(date +%s)
+          python services/indexer/build_index.py
+          echo "색인 $(( $(date +%s) - t0 ))s"
+
+      - name: index counts (DB 직접 질의)
+        run: |
+          set -euo pipefail
+          approved=$(psql -tAc "SELECT count(*) FROM document_revision WHERE approval_state = 'approved'")
+          chunks=$(psql -tAc "SELECT count(*) FROM document_chunk")
+          embedded=$(psql -tAc "SELECT count(*) FROM document_chunk WHERE embedding IS NOT NULL")
+          echo "approved revision ${approved} · chunk ${chunks} · embedding 있음 ${embedded}"
+          [ "$chunks" -gt 0 ] || { echo "::error::chunk 0행 — 색인이 아무것도 안 넣었다"; exit 1; }
+          [ "$embedded" = "$chunks" ] || { echo "::error::embedding 없는 chunk ${chunks}-${embedded} 건"; exit 1; }
+
+      # ============================ 본 측정 (색인 «후») ============================
+      - name: benchmark smoke (색인 후 · 계수 stdout)
+        run: |
+          set -euo pipefail
+          node benchmarks/run-benchmark-smoke.mjs \
+            --base "http://127.0.0.1:${API_PORT}" --k 5 --out benchmark-smoke.json
+          echo "--- 요약 ---"
+          python - <<'PY'
+          import json
+          d = json.load(open('benchmark-smoke.json', encoding='utf-8'))
+          s = d.get('summary', d)
+          print(json.dumps(s, ensure_ascii=False, indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-smoke-result
+          path: |
+            benchmark-smoke.json
+            /tmp/ctrl.txt
+            /tmp/ctrl-status.json
+          if-no-files-found: warn
+
+      - name: container log
+        if: always()
+        run: docker logs --tail 300 fkt-bench > bench-container.log 2>&1 || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-smoke-container-log
+          path: bench-container.log
+          if-no-files-found: warn
+
+      - name: axes this job does not cover
+        if: always()
+        run: |
+          echo "🔴 이 job 이 안 본 축:"
+          echo "  · --gate(회귀 판정선 · #852) — 주지 않는다. 이 job 은 «보고»다."
+          echo "  · graphrag 전략 — neo4j 를 안 띄웠다(vector·hybrid 만)."
+          echo "  · Windows — 러너는 ubuntu 뿐이다."
+          echo "  · live 합성·구독 — 이 회로는 retrieval 만 부른다(합성 0 · 구독 0)."
+
+      - name: cleanup
+        if: always()
+        run: docker rm -f fkt-bench || true
