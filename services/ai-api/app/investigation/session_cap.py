@@ -18,6 +18,12 @@ import time
 from collections import OrderedDict, deque
 
 
+#: 🔴 전역 시간당 상한이 쓰는 **하나뿐인 키**(계약 v0.2.4 ① ⓑ). 같은 계수기를 세션 축과
+#: 공유하므로, 실제 세션 id 와 겹치지 않는 모양이어야 한다 — 세션 id 는 URL-safe 난수라
+#: 콜론이 들어가지 않는다. 문자열을 라우터가 각자 적으면 오타 하나가 «두 개의 전역»을 만든다.
+GLOBAL_RUN_CAP_KEY = "global:live-hourly"
+
+
 class SessionRunCap:
     """세션별 실행 시각을 슬라이딩 창으로 센다. 프로세스 안 · 재기동 시 리셋(로컬 PoC 형상).
 
@@ -33,14 +39,40 @@ class SessionRunCap:
         # 리셋되지만, 그것은 8h TTL 세션 저장소와 같은 성질의 «프로세스 안» 한계다.
         self._hits: OrderedDict[str, deque[float]] = OrderedDict()
 
-    def admit(self, session_id: str, now: float | None = None) -> int | None:
-        """상한 안이면 이번 실행을 기록하고 `None`. 넘으면 `Retry-After`(정수 초)를 돌려준다.
+    def check(self, session_id: str, now: float | None = None) -> int | None:
+        """**판정만** 한다 — 기록 0. 통과면 `None`, 넘으면 `Retry-After`(정수 초).
 
-        🔴 **판정과 기록이 한 호출이다.** 「물어보고 나중에 센다」로 나누면 그 사이에 들어온
-           요청이 같은 마지막 자리를 함께 받는다(`capacity.admit` 과 같은 규율).
+        🔴 예약-확정 2단의 «1단»이다. 축이 **둘 이상**일 때 쓴다: 세션 축이 통과했는데 전역
+           축이 거절하면, `admit` 으로 이미 센 세션 1회는 되돌릴 자리가 없다 — 거절인데
+           소모된다(계약 v0.2.4 ① 「어느 하나라도 거절이면 계수하지 않는다」 위반).
+           그래서 **모든 축을 먼저 `check` 로 통과시킨 뒤 모든 축을 `commit`** 한다.
+        🔴 `peek` 과 달리 여기서는 «남은 자리»가 아니라 **거절 여부**를 답한다. 화면용 숫자와
+           게이트 판정을 한 함수로 겸하면, 숫자 표기를 고치다가 게이트가 함께 움직인다.
+        🔴 `peek` 과 같은 이유로 `_prune` 을 부르지 않는다 — 읽기 경로는 상태를 바꾸지 않는다.
         """
         if self.limit <= 0:
             return None
+        now = time.monotonic() if now is None else now
+        hits = self._hits.get(session_id)
+        cutoff = now - self.window_sec
+        live = [t for t in hits if t > cutoff] if hits else []
+        if len(live) >= self.limit:
+            # 창 잔여 = 가장 오래된 «살아 있는» 기록이 창 밖으로 나갈 때까지. 올림 + 최소 1 —
+            # `Retry-After: 0` 은 「지금 다시 두드리라」가 되어 거절의 뜻을 지운다.
+            return max(1, math.ceil(live[0] + self.window_sec - now))
+        return None
+
+    def commit(self, session_id: str, now: float | None = None) -> None:
+        """이번 실행을 **기록**한다 — 예약-확정 2단의 «2단».
+
+        🔴 `check` 가 통과한 «바로 뒤»에만 부른다. 그 사이에 `await` 를 끼우면 두 요청이 같은
+           마지막 자리를 함께 받는다(`capacity.admit` 과 같은 규율) — 2단으로 나눈 대가는
+           호출부가 그 구간을 동기로 유지하는 것이다.
+        🔴 통과를 다시 확인하지 않는다. 여기서 또 세면 「확정이 거절할 수 있는」 모양이 되어
+           호출부가 어느 답을 믿어야 할지 모르게 된다.
+        """
+        if self.limit <= 0:
+            return
         now = time.monotonic() if now is None else now
         hits = self._hits.get(session_id)
         if hits is None:
@@ -52,14 +84,22 @@ class SessionRunCap:
         while hits and hits[0] <= cutoff:
             hits.popleft()
 
-        if len(hits) >= self.limit:
-            # 창 잔여 = 가장 오래된 기록이 창 밖으로 나갈 때까지. 올림 + 최소 1 —
-            # `Retry-After: 0` 은 「지금 다시 두드리라」가 되어 거절의 뜻을 지운다.
-            remaining = hits[0] + self.window_sec - now
-            return max(1, math.ceil(remaining))
-
         hits.append(now)
         self._prune(now)
+
+    def admit(self, session_id: str, now: float | None = None) -> int | None:
+        """상한 안이면 이번 실행을 기록하고 `None`. 넘으면 `Retry-After`(정수 초)를 돌려준다.
+
+        🔴 **판정과 기록이 한 호출이다.** 「물어보고 나중에 센다」로 나누면 그 사이에 들어온
+           요청이 같은 마지막 자리를 함께 받는다(`capacity.admit` 과 같은 규율).
+        🔴 그래서 이것은 **축이 하나뿐인** 호출부의 함수다. 세션·전역처럼 축이 둘이면
+           `check` 둘 → `commit` 둘 로 간다(위 `check` 머리말).
+        """
+        now = time.monotonic() if now is None else now
+        retry_after = self.check(session_id, now)
+        if retry_after is not None:
+            return retry_after
+        self.commit(session_id, now)
         return None
 
     def peek(self, session_id: str, now: float | None = None) -> dict[str, object]:

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import { type RunCap, liveStatus, subscribeCongestion, subscribeRunCap } from "@/lib/contract";
+import { type LiveStatus, type RunCap, liveStatus, subscribeCongestion, subscribeRunCap } from "@/lib/contract";
 import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 
 /**
@@ -28,6 +28,44 @@ type Mode = "checking" | "live" | "replay" | "unavailable";
  * 두고 별도 축으로 든다(배지의 `data-mode` 계약도 그대로 산다).
  */
 type Congestion = { since: number; retryAfterSec?: number };
+
+/**
+ * 🔴 **`online:false` 의 사유 문장을 만드는 자리는 여기 하나다**(계약 v0.2.4 «화면 문면 개정»).
+ *
+ * 🔴 **금칙어**(「LLM」「게이트웨이」「429」「토큰」「걸쇠」)는 사용자 문장에 쓰지 않는다 —
+ *    방문자는 우리 내부 구조의 이름을 배울 이유가 없고, 그 낱말들은 「내가 뭘 잘못했나」를
+ *    묻게 만든다. 코드·evidence 에는 그대로 쓴다(여기 주석이 그 예다).
+ * 🔴 **시각은 «받는다»**. `until` 은 서버가 계산해 준 iso 이고 셸은 **표기만** 한다 —
+ *    초를 시각으로 바꾸는 계산을 여기서 하면 두 층이 서로 다른 시계를 갖는다.
+ * 🔴 `until` 이 없으면 그 절을 **뺀다**. 없는 시각을 「곧」 같은 말로 메우면, 화면이 모르는
+ *    것을 아는 척한다.
+ */
+function whyFromReason(
+  reason: LiveStatus["reason"],
+  until: string | undefined,
+  hourlyLimit: number | null,
+): string | null {
+  const at = until ? hhmm(until) : null;
+  if (reason === "synthesis_failing") {
+    return at ? `실시간 분석은 잠시 쉬는 중 · ${at} 에 다시 시도` : "실시간 분석은 잠시 쉬는 중";
+  }
+  if (reason === "hourly_cap_exhausted") {
+    /* 🔴 횟수는 **응답에서 읽는다**(`hourlyCap.limit`). 화면에 3 을 박으면 운영자가 상한을
+       바꾼 날 화면만 옛 숫자를 말한다. 모르면 그 절을 빼고 시각만 말한다. */
+    const used = hourlyLimit !== null ? `이 시간 실시간 분석 ${hourlyLimit}회 사용` : "이 시간 실시간 분석 상한 소진";
+    return at ? `${used} · ${at} 에 다시 열림` : used;
+  }
+  if (reason === "gateway_unreachable") return "녹화 재생 모드";
+  /* 사유가 없는 `online:false`(구 서버)는 앞판과 같은 침묵이다 — 지어내지 않는다. */
+  return null;
+}
+
+/** iso → 로컬 「HH:MM」. 못 읽으면 null(그 절이 통째로 빠진다). */
+function hhmm(iso: string): string | null {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return null;
+  return at.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
 type State = {
   mode: Mode;
   checkedAt: string | null;
@@ -39,6 +77,8 @@ type State = {
    *    (입장 전·pending) 서버가 아직 답하지 않은 회차. 「0회 남았다」와 섞지 않는다.
    */
   runCap: RunCap | null;
+  /** 🔴 계약 v0.2.4 — 전역 시간당 상한. `null` = 「모른다」(세션 쿼리 없는 회차·구 서버). */
+  hourlyCap: RunCap | null;
   /**
    * 🔴 **D-55 — 「세션이 사라졌다」는 `online` 과 다른 축이다**(오케 보강 16:56 · 폐하 실물 16:54).
    *
@@ -65,12 +105,16 @@ export function announceSessionExpired(): void {
   for (const fn of sessionExpiredListeners) fn();
 }
 
-const LiveContext = createContext<State>({
+/* 🔴 **export 하는 이유는 단위 측정 하나뿐이다.** 배지 문면은 상태(`why`·`mode`)가 정하는데,
+   Provider 는 fetch·폴링을 함께 들고 와서 문면만 재려면 무대를 세워야 한다. 소비 경로는
+   `useLiveStatus()` 그대로다 — 앱 코드에서 이 상수를 직접 읽지 않는다. */
+export const LiveContext = createContext<State>({
   mode: "checking",
   checkedAt: null,
   why: null,
   congested: {},
   runCap: null,
+  hourlyCap: null,
   sessionExpired: false,
 });
 
@@ -102,6 +146,7 @@ export function LiveStatusProvider({
     why: null,
     congested: {},
     runCap: null,
+  hourlyCap: null,
     sessionExpired: false,
   });
 
@@ -173,11 +218,20 @@ export function LiveStatusProvider({
               ...prev,
               mode: reply.data.online ? "live" : "replay",
               checkedAt: reply.data.checkedAt,
-              why: null,
+              /* 🔴 `online:false` 면 «왜»를 함께 말한다(계약 v0.2.4). true 면 null 로 되돌려
+                 앞 회차의 사유가 남지 않게 한다 — 낡은 사유는 거짓말이 된다. */
+              why: reply.data.online
+                ? null
+                : whyFromReason(
+                    reply.data.reason,
+                    reply.data.until,
+                    reply.data.hourlyCap?.limit ?? null,
+                  ),
               /* 🔴 서버가 방금 답한 것이 정본이다 — 조사 시작 헤더로 앞질러 갱신한 값도
                  여기서 덮인다(창 만료로 «줄어드는» 축은 폴링만 볼 수 있다). 쿼리를 안 실은
                  회차는 `runCap` 이 없고, 그때는 `null` = 「모른다」로 돌아간다. */
               runCap: reply.data.runCap ?? null,
+              hourlyCap: reply.data.hourlyCap ?? null,
             }
           : settled
             ? { ...prev, mode: "unavailable", checkedAt: new Date().toISOString(), why: reply.why }
@@ -290,6 +344,10 @@ export function ModeBadge() {
       className={`flex items-center gap-1.5 fkt-pill bg-fill text-foot ${face.cls}`}
       title={`마지막 확인 ${seen}${why ? ` · ${why}` : ""}${congestion ? " · 서버가 요청을 거절했습니다(503)" : ""}`}
       data-testid="mode-badge"
+      /* 🔴 사유 문장을 **속성으로도** 낸다(계약 v0.2.4 검증 축). `title` 은 hover 가 있어야
+         보이는데 폐하 기기는 터치라 그 표면만으로는 「문장이 섰는가」를 아무도 못 잰다.
+         레이아웃을 건드리지 않으면서 측정 가능하게 만드는 자리다. */
+      data-why={why ?? undefined}
       /* 🔴 `data-mode` 는 «Live 축»의 값 그대로 둔다 — 혼잡은 다른 축이고, 이 속성을 읽는
          기존 스펙이 혼잡 때문에 다른 답을 받으면 안 된다. 혼잡은 자기 속성으로 말한다. */
       data-mode={mode}
@@ -298,6 +356,15 @@ export function ModeBadge() {
     >
       <span aria-hidden>{face.icon}</span>
       <span>{text}</span>
+      {/* 🔴 **O-2 — 사유는 «본문»이다.** `title` 은 hover 가 있어야 보이는데 폐하 기기는
+          터치라 그 표면만으로는 사유가 없는 것과 같다(`run-panels.tsx` SynthesisBadge 규약
+          「사유를 툴팁에만 넣으면 숨긴 것과 같다」). 배지 안 한 줄로 세우되, 혼잡 문장이
+          이미 자기 사유를 말하는 회차에는 같은 말을 두 번 하지 않는다. */}
+      {why && !congestion && (
+        <span className="text-muted" data-testid="mode-badge-why">
+          · {why}
+        </span>
+      )}
     </span>
   );
 }
@@ -314,7 +381,7 @@ export function ModeBadge() {
  * 🔴 **화면 신규 요소는 이것 하나다.** 배지의 `data-mode` 계약은 한 글자도 건드리지 않는다.
  */
 export function RunCapCounter() {
-  const { mode, runCap } = useContext(LiveContext);
+  const { mode, runCap, hourlyCap } = useContext(LiveContext);
   if (mode !== "live" || !runCap || runCap.remaining === null) return null;
 
   const exhausted = runCap.remaining === 0;
@@ -325,6 +392,10 @@ export function RunCapCounter() {
   const text = exhausted
     ? `상한 도달${minutes === null ? "" : ` · ${minutes}분 뒤 1회 회복`} · 재생은 계속`
     : `조사 ${runCap.used}/${runCap.limit} · 남은 ${runCap.remaining}회`;
+  /* 🔴 **시간당 잔여는 «있을 때만» 덧붙인다**(계약 v0.2.4). 없는 회차(구 서버·쿼리 없는 응답)에
+     0 이나 「모름」을 적으면, 화면이 모르는 것을 말하게 된다. 상한 없음(`remaining: null`)도
+     같은 이유로 침묵한다 — 세션 축이 이미 성문한 규율을 그대로 쓴다. */
+  const hourlyLeft = hourlyCap && hourlyCap.remaining !== null ? hourlyCap.remaining : null;
 
   return (
     <span
@@ -334,8 +405,14 @@ export function RunCapCounter() {
       data-runcap-limit={runCap.limit}
       data-runcap-used={runCap.used}
       data-runcap-remaining={runCap.remaining}
+      data-hourly-remaining={hourlyLeft ?? undefined}
     >
       {text}
+      {hourlyLeft !== null && (
+        <span className="ml-1.5 text-muted" data-testid="hourly-cap-left">
+          · 이 시간 {hourlyLeft}회
+        </span>
+      )}
     </span>
   );
 }

@@ -272,3 +272,30 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - **발췌·요청 본문 무변** — v0.2.2 의 「발췌 삭제·수정 0」과 게이트웨이 요청 `evidenceFlags` 는 그대로다. 이 이벤트는 같은 값을 **화면 축**으로 한 번 더 나르는 것뿐이다(단일 진실 = 조립 층 계산값 · 두 곳이 갈리면 결함).
 - **화면** — 근거 카드에서 해당 `evidenceId` 에 배지 「표지」 + 코드 목록(title). 이벤트가 없으면 화면 무변(옵트인 렌더 · 구 이벤트 스트림과 호환).
 - **검증 축** — 스키마 케이스 = 양성 1 · 음성 3(빈 `items` · 빈 `flags` · 미지 필드) · hygiene strict coverage · 단위 = 발행 1 · 표지 0 → 미발행 1 · 배지 렌더 1. live 순종 축(ⓒ)과는 무관 — 이 append 는 구독 0.
+
+## v0.2.4 append (09-11 16:3x · 운영자 하명 16:28 — ① Live 조사 상한 세션당 3 + **시간당 전역 3** ② 배지 「LLM 호출 불가 = live 아님」 · 오케 스자쿠 57대 성문 · 구현 = 센쿠2 · 독립 검증 = 리바이2 · 화면 `data-mode` 집합 불변)
+
+- **① 상한 두 축(둘 다 live 만 계수 · replay 0 · v0.1.14 재사용 0 · 거절된 요청 0 · 읽기 호출 0)** — ⓐ **세션당** `FKT_RUN_CAP_PER_SESSION` 기본값 **5 → 3**(창 `FKT_RUN_CAP_WINDOW_SEC` 3600 그대로 · v0.1.12 `429 session_run_cap_exceeded` 형상 불변) ⓑ **전역 시간당** 신설 `FKT_RUN_CAP_GLOBAL_PER_HOUR` 기본 **3**(창 3600 고정 슬라이딩 · 프로세스 단위 · 세션 무관 · 0 이하 = 끄기) → 초과 시 **`429 live_hourly_cap_exceeded`** `detail { limit, used, remaining: 0, retryAfterSec }` + `Retry-After` 헤더 · `message` 에 Replay 안내. **판정 순서** = 세션 상한 → 전역 상한 → 동시 실행 상한(503 `live_capacity_exhausted`) · 어느 하나라도 거절이면 계수하지 않는다(거절은 소모가 아니다). 🔴 기본값이 문서와 같아야 한다(v0.1.15 「3→5」 사유의 역방향 · README·runbook·ai-api README 의 「5회」 전건 3 으로 · docs = 오케).
+- **② `GET /live/status` 의 `online` 뜻을 조인다 — «지금 Live 조사가 LLM 합성으로 성립하는가»** = 게이트웨이 실도달(v0.1.12) **AND** 최근 합성 실패 걸쇠 없음 **AND** 전역 시간당 잔여 > 0. 응답에 **`reason`**(선택 · `online:false` 일 때만 실림 · enum `gateway_unreachable` | `synthesis_failing` | `hourly_cap_exhausted` · 우선순위 그 순서) 추가 · `online:true` 응답은 v0.1.2 형상 그대로(필드 추가 0 · 기존 소비자 무영향). `?sessionId` 가 있으면 `runCap` 옆에 **`hourlyCap { limit, used, remaining, nextFreeInSec }`**(형상 = `runCap` 과 같은 규칙 · `limit ≤ 0` 이면 `remaining: null`) 추가.
+- **② 걸쇠(게이트웨이 → ai-api)** — 게이트웨이 `GET /health` 본문에 **`synth { lastOutcome: "ok"|"failed"|null, lastAt: iso|null, consecutiveFailures: int, latchedUntil: iso|null }`** 추가(기동 시 `null/0`) · 합성 1회의 결과를 **CLI 종료·봉투 `is_error`·타임아웃·CLI 부재** 축에서 기록(🔴 `evidence_binding` 거부는 «모델 답의 품질»이지 «호출 불가»가 아니다 — 실패로 세지 않는다) · 실패 1회 = 걸쇠 `latchedUntil = now + FKT_SYNTH_FAIL_LATCH_SEC`(기본 **900**) · 성공 1회 = 즉시 해제 · 걸쇠 창이 지나면 해제(다음 실패에 다시 건다 — 자기 프로브로 구독을 쓰지 않는다). ai-api `probe_reachable` 은 200 + 본문을 읽어 `synth.latchedUntil > now` 면 `online:false · reason:"synthesis_failing"`(본문에 `synth` 가 없는 구 게이트웨이 = 도달만으로 판정 · 하위 호환). 🔴 값·문구는 공개면에 그대로 흘리지 않는다 — `reason` 코드만 나가고 사유 문장은 셸이 만든다(baseline §15.2 · D-84 형태).
+- **② 화면** — `data-mode` 집합(`checking|live|replay|unavailable`) **불변**. `online:false` = `replay` 배지(기존) + `why` 를 `reason` 별 셸 문장으로: `gateway_unreachable` → 「소유자 게이트웨이 OFF · 녹화 재생」(기존) · `synthesis_failing` → 「LLM 호출 실패 · 녹화 재생(복구까지 최대 15분)」 · `hourly_cap_exhausted` → 「이 시간 Live 상한 소진 · 녹화 재생(n분 뒤)」. 🔴 배지가 `replay` 인 동안 셸은 `mode:"live"` 를 «요청하지 않는다»(강등 요청 = 기존 fallback 경로).
+- **검증 축(리바이2)** — ① 세션 4발째 429 `session_run_cap_exceeded`(3/3 뒤) · 세션 3개 × 1발 뒤 4발째 429 `live_hourly_cap_exceeded` · `Retry-After` · 거절 미계수(peek used 불변) · replay 무영향 ② 게이트웨이 실패 주입(CLI 부재 `FKT_SYNTH_CLI` 오경로 · 스텁 무대 · 구독 0) → `/health.synth.consecutiveFailures 1` · `latchedUntil` · `/live/status {online:false, reason:"synthesis_failing"}` · 배지 `replay` + 문장 · 걸쇠 만료 후 `online` 복귀 · 성공 1회 즉시 해제(스텁 200) ③ `online:true` 응답 바이트 형상 前後 동일(대조군) ④ `?sessionId` 응답에 `hourlyCap` · 없으면 없음.
+- 잰 것/안 잰 것 — 실제 구독 한도(Claude 사용량 초과)로 인한 실패는 «CLI 종료코드/`is_error`» 축으로만 관측된다(그 축이 참인지 = 운영자 실기기 회차 E3 · 스텁으로는 형태만 잰다).
+
+### v0.2.4 화면 문면 개정(09-11 16:38 · 운영자 승인 ⓒ 「막다른 길 없음」 — 위 ② 「화면」 항의 문장 3종을 이 표로 «대체» · `data-mode` 집합·`reason` enum·걸쇠 900s·구독 소모 0 은 그대로)
+
+| 상황(`/live/status`) | 배지 | 문장(셸이 만든다 · `reason`·시각 값만 서버) | 방문자 경험 |
+|---|---|---|---|
+| `online:true` | **LIVE** | (없음) | 지금과 같음 |
+| Live run 도중 합성 실패(게이트웨이 거부·타임아웃·CLI 오류) | 배지 즉시 전환 없음 → 다음 폴링에서 REPLAY | run 화면에 안내 1줄 **「녹화 재생으로 이어서 보여드립니다」** · 조사는 결정적 집계로 **그대로 완주**(`workflow.py` 기존 경로 · 후보 카드 문구 「live 응답 거부」 → 「실시간 분석 대신 기록 기반 집계」로 순화) | 오류 화면 0 · 다시 누를 필요 0 |
+| `reason:"synthesis_failing"`(걸쇠 중) | **REPLAY** | 「실시간 분석은 잠시 쉬는 중 · **HH:MM** 에 다시 시도」(HH:MM = `latchedUntil` 로컬 시각) | 기다릴지 재생으로 볼지 스스로 정함 |
+| `reason:"hourly_cap_exhausted"` | **REPLAY** | 「이 시간 실시간 분석 **3회** 사용 · **HH:MM** 에 다시 열림」(HH:MM = now+`nextFreeInSec`) | 왜·언제가 한 줄 |
+| `reason:"gateway_unreachable"` | **REPLAY** | 「녹화 재생 모드」(기존 문구 유지) | 변화 없음 |
+
+- 🔴 **화면 금칙어** = 「LLM」「게이트웨이」「429」「토큰」「걸쇠」— 사용자 문장에 쓰지 않는다(코드·evidence 에는 쓴다).
+- 🔴 **깜빡임 0** — 배지 전환은 «실패 직후 다음 폴링 1회» 와 «시각 도달 뒤 다음 폴링 1회» 두 지점뿐 · 폴링 주기 30s 그대로 · 걸쇠 중 `online:true` 로 되돌리는 경로는 「성공 1회」뿐(자기 프로브 없음).
+- `reason` 을 실을 때 **`until`(iso · 선택)** 을 함께 싣는다(`synthesis_failing` = `latchedUntil` · `hourly_cap_exhausted` = now+`nextFreeInSec` · `gateway_unreachable` = 없음) — 셸이 시각을 계산하지 않고 «받는다».
+- 검증 축 추가(리바이2) — 문장 3종 렌더(reason 별) · `until` 표기 = 로컬 시각 · 금칙어 grep 0(`apps/web-console` 사용자 문장) · 실패 run 완주 前後(스텁 5xx 주입 → 후보 카드 결정적 축 + 안내 1줄 · 오류 화면 0).
+
+### v0.2.4 정정(09-11 17:1x · 리바이2 CAP3-V #967 O-1 회부 — `429 live_hourly_cap_exceeded` 본문 형상)
+- 본문은 **평탄**하다: `{ "error": { "code": "live_hourly_cap_exceeded", "message": "…", "limit": 3, "used": 3, "remaining": 0, "retryAfterSec": n } }` — 위 ①의 「`detail { … }`」 문면은 오케 초안 오기(실물 = v0.1.12 `session_run_cap_exceeded` 와 같은 평탄 형상 · 두 429 가 한 형상). 코드 무변 · 문면만 정정.
