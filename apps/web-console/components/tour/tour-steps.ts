@@ -17,6 +17,23 @@ import { STATIC_RUN_ID } from "@/lib/static-replay/run-id";
 export const TOUR_INCIDENT_ID = "INC-2026-014";
 export const TOUR_REPLAY_HREF = `/incidents/${TOUR_INCIDENT_ID}?run=${encodeURIComponent(STATIC_RUN_ID)}&tour=1`;
 
+/**
+ * 🔴 **E-2 — `route` 는 «목적지»가 아니라 «접두사»다.** `onRoute`(지금 화면이 이 걸음의
+ *    화면인가)를 판정하려고 둔 값이라 `"/incidents/"` 처럼 끝이 열려 있다. 그 문자열로
+ *    `router.push` 하면 `/incidents`(목록)에 떨어지고, 걸음은 여전히 제 화면 밖이다
+ *    (브라우저 실측 1440·390 둘 다 `startsWith("/incidents/")` = false).
+ *
+ *    그래서 «갈 수 있는 문»을 따로 적는다. 정적 목적지는 재생본 하나뿐이고, `/evidence/` 는
+ *    근거 칩을 눌러야 열리므로 **정적 주소가 없다** — 그때는 가장 가까운 문(조사 화면)으로
+ *    보낸다. 없는 화면으로 보내는 버튼을 두는 것보다 도달 가능한 문이 낫다.
+ */
+export function entryHrefFor(step: TourStep): { href: string; label: string } {
+  if (step.route.startsWith("/overview")) return { href: "/overview", label: "그 화면으로 이동" };
+  if (step.route.startsWith("/incidents")) return { href: TOUR_REPLAY_HREF, label: "그 화면으로 이동" };
+  // `/evidence/` — 근거 칩에서만 열린다. 조사 화면까지 데려다 주고 거기서 누르게 한다.
+  return { href: TOUR_REPLAY_HREF, label: "조사 화면으로 이동" };
+}
+
 /** 셀렉터 = `data-testid` 값(규격 ⑧-3 의 `Selector`). */
 export type Selector = string;
 

@@ -6,6 +6,8 @@ import { useModalInert } from "@/lib/use-modal-inert";
 
 import { resetSession } from "@/lib/contract";
 import { useEscapeToClose } from "@/lib/use-escape-to-close";
+import { clearIntroSeen } from "@/components/overview/intro-seen";
+import { clearTour } from "@/components/tour/tour-reset";
 
 /**
  * ⟲ 리셋 (wireframes §0) — 확인 모달 → `POST /api/sessions/{sid}/reset` → 초기 상태 복귀.
@@ -42,6 +44,16 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
     const reply = await resetSession(sessionId);
     setBusy(false);
     setAsking(false);
+    /* 🔴 **E-1·E-3 — 「처음 상태」에는 안내와 투어도 든다.** 앞판은 서버 세션만 되돌리고
+       브라우저에 적힌 「안내 봤음」(`sessionStorage`)·「투어 진행」(`localStorage`)은 그대로
+       두었다 — 그래서 리셋한 사람의 화면에 안내 카드가 다시 뜨지 않고, 초대 카드는 계속
+       「이어서 보기」였다. 화면이 「처음으로 되돌렸다」고 말하면서 처음이 아닌 상태를 보였다.
+       🔴 **서버가 성공한 회차에만 지운다**(오케 승인 09-11). 실패했는데 지우면 화면만 처음이
+          되고 서버는 그대로라 둘이 갈린다 — 실패 갈래는 키를 보존한다. */
+    if (reply.state === "ok") {
+      clearIntroSeen(sessionId);
+      clearTour();
+    }
     setResult(
       reply.state === "ok"
         ? "세션을 초기 상태로 되돌렸습니다."

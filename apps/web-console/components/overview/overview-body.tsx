@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
+import { introSeen, markIntroSeen, subscribeIntro } from "@/components/overview/intro-seen";
+
 import { Sparkline } from "@/components/overview/sparkline";
 import { useTourAllowed } from "@/components/tour/tour-allowed";
 import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
@@ -55,41 +57,6 @@ const SEVERITY_MARK: Record<string, { icon: string; tone: string; label: string 
 
 function severityMark(severity: string) {
   return SEVERITY_MARK[severity] ?? { ...UNKNOWN_MARK, label: `알 수 없음(${severity})` };
-}
-
-/** 안내 카드 «세션 상태» 기록 자리 — wireframes §0.1 ①.
- *
- * 🔴 `localStorage` 가 아니다(정본 명문). 브라우저 수명 내내 남는 저장소에 적으면 「세션의
- *    첫 진입」이 「이 브라우저의 첫 진입」이 되어 세션 격리와 어긋난다. `sessionStorage` 는
- *    탭 수명이고, 키에 sessionId 를 넣어 «다른 세션이면 다시 본다»를 만든다.
- * 🔴 저장소 접근은 전부 try/catch 다 — 사생활 모드·차단 설정에서 던지는데, 안내 카드 하나
- *    때문에 화면 전체가 죽는 것은 실패 방향이 틀렸다.
- */
-const INTRO_KEY = (sessionId: string | null) => `fkt.intro.seen:${sessionId ?? "anon"}`;
-
-function introSeen(sessionId: string | null): boolean {
-  try {
-    return window.sessionStorage.getItem(INTRO_KEY(sessionId)) === "1";
-  } catch {
-    // 읽지 못하면 «안 봤다»로 친다 — 처음 온 사람에게 안내가 안 뜨는 쪽보다 낫다.
-    return false;
-  }
-}
-
-function markIntroSeen(sessionId: string | null): void {
-  try {
-    window.sessionStorage.setItem(INTRO_KEY(sessionId), "1");
-  } catch {
-    // 못 적으면 다음 진입에 다시 뜬다 — 조용히 실패하되 화면은 살아 있다.
-  }
-  for (const l of introListeners) l();
-}
-
-/** `useSyncExternalStore` 구독자 — 저장소에 적은 사실을 화면이 «즉시» 알게 한다. */
-const introListeners = new Set<() => void>();
-function subscribeIntro(onChange: () => void): () => void {
-  introListeners.add(onChange);
-  return () => introListeners.delete(onChange);
 }
 
 export function OverviewBody({
