@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useModalInert } from "@/lib/use-modal-inert";
@@ -27,6 +28,8 @@ import { clearTour } from "@/components/tour/tour-reset";
  *       좌표를 손보면 앱바 높이가 바뀌는 폭(390 = 103px)마다 다시 어긋난다.
  */
 export function ResetButton({ sessionId }: { sessionId: string }) {
+  const router = useRouter();
+  const pathname = usePathname() ?? "";
   const [asking, setAsking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,6 +56,16 @@ export function ResetButton({ sessionId }: { sessionId: string }) {
     if (reply.state === "ok") {
       clearIntroSeen(sessionId);
       clearTour();
+      /* 🔴 **E-5 — 「처음 상태로 되돌렸다」고 말하려면 «보이는 것»도 처음이어야 한다.**
+         앞판은 서버 세션과 브라우저 키만 되돌리고 «지금 화면»은 그대로 두었다. 그래서 조사
+         화면(`/incidents/<id>?run=…`)에서 리셋하면 토스트만 뜨고 재생본이 그대로 남았다 —
+         화면이 한 말과 화면이 보여 주는 것이 어긋난다(폐하 실기기 실측 09-11).
+         🔴 **주소에 상태가 실려 있다**(`?run=…`)는 것이 핵심이다. 그 화면에 머무는 한
+            다시 그리든 말든 같은 재생본을 가리킨다 — 그래서 «첫 화면으로 데려간다».
+         🔴 이미 overview 면 `push` 가 같은 주소라 아무 일도 일어나지 않는다(라우터가 접는다).
+            그때는 서버 컴포넌트를 다시 받아야 비워진 세션이 화면에 온다 — `refresh` 가 그 자리다. */
+      if (pathname.startsWith("/overview")) router.refresh();
+      else router.push("/overview");
     }
     setResult(
       reply.state === "ok"
