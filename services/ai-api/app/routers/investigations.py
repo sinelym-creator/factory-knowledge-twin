@@ -32,10 +32,12 @@ from ..errors import (
     DependencyUnavailable,
     LiveCapacityExhausted,
     NotImplementedRoute,
+    LiveHourlyCapExceeded,
     SessionRunCapExceeded,
     dependency_guard,
 )
 from ..investigation import binding, replay
+from ..investigation.session_cap import GLOBAL_RUN_CAP_KEY
 from ..investigation.store import RunRecord, RunStore
 from ..reading import factory as factory_reader
 from ..reading import scenarios as scenario_reader
@@ -312,6 +314,22 @@ async def start_run(
         #    기록이 남아 `used > limit` 이 참이 된다. 그때 limit 을 베낀 응답은 사실을 지운다.
         used = int(request.app.state.session_run_cap.peek(session)["used"])
         raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session, used)
+
+    # --- 전역 시간당 상한 (계약 v0.2.4 ① ⓑ) -------------------------------------
+    #
+    # 🔴 **세션 «뒤», 자리 잡기 «앞»**이다(계약의 판정 순서 그대로). 세션 축이 먼저인 이유는
+    #    방문자에게 더 정확한 말을 해 주기 때문이다 — 자기 3회를 다 쓴 사람에게 「서비스 전체가
+    #    소진」이라고 말하면 언제 다시 되는지를 틀리게 안내한다.
+    # 🔴 세션 축이 **거절한 회차는 여기 오지 않는다** — 거절은 소모가 아니므로 전역 계수도
+    #    올리면 안 된다(계약 「어느 하나라도 거절이면 계수하지 않는다」). 순서가 그 규율을 집행한다.
+    global_cap = request.app.state.global_run_cap
+    global_retry = global_cap.admit(GLOBAL_RUN_CAP_KEY)
+    if global_retry is not None:
+        log.info("전역 시간당 Live 상한 초과 — 재생으로 안내한다(Retry-After %ds)", global_retry)
+        global_used = int(global_cap.peek(GLOBAL_RUN_CAP_KEY)["used"])
+        raise LiveHourlyCapExceeded(
+            global_retry, settings.run_cap_global_per_hour, global_used
+        )
 
     # --- ⓐ 자리 잡기 --------------------------------------------------------
     #

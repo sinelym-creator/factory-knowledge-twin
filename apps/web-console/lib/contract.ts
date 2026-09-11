@@ -118,7 +118,17 @@ export type RunCap = {
   nextFreeInSec: number | null;
 };
 /** 🔴 `runCap` 은 `sessionId` 쿼리를 «준 회차에만» 온다(v0.1.15 · 안 주면 v0.1.2 형상 그대로). */
-export type LiveStatus = { online: boolean; checkedAt: string; runCap?: RunCap };
+export type LiveStatus = {
+  online: boolean;
+  checkedAt: string;
+  runCap?: RunCap;
+  /** 🔴 계약 v0.2.4 ② — `online:false` 회차에만 온다. 셸은 이 코드로 «문장»을 고른다. */
+  reason?: "gateway_unreachable" | "synthesis_failing" | "hourly_cap_exhausted";
+  /** 🔴 iso. **서버가 계산해 준다** — 셸이 초를 시각으로 바꾸면 두 층의 시계가 갈린다. */
+  until?: string;
+  /** 🔴 전역 시간당 상한. `sessionId` 를 준 회차에만 온다(`runCap` 과 같은 규칙). */
+  hourlyCap?: RunCap;
+};
 
 export type Kpi = {
   lineActive: number;

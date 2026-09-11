@@ -23,6 +23,7 @@ import sys
 import tempfile
 import threading
 import time
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
@@ -71,6 +72,63 @@ def prompt_sha256(path: Path | None = None) -> str | None:
         return None
 
 
+# ── 합성 걸쇠 (계약 v0.2.4 ②) ─────────────────────────────────────────────────
+#
+# 🔴 **무엇을 «실패»로 세는가가 이 장치의 전부다.** 세는 축은 「호출이 성립하지 않았다」
+#    넷뿐이다: CLI 부재 · 타임아웃 · 종료코드 != 0 · 봉투 `is_error`.
+#    🔴 `evidence_binding` 거부는 **세지 않는다** — 그것은 모델이 답을 «했는데» 우리 근거에
+#       묶이지 않은 것이라 「호출 불가」가 아니다. 그것까지 세면 품질 문제로 Live 가 닫힌다.
+# 🔴 실패 1회로 건다(연속 N 회를 기다리지 않는다). 구독 소진·CLI 고장은 다음 호출도
+#    거의 확실히 실패하고, 그 사이 방문자는 진행 표시 뒤에서 거부를 만난다 — 빨리 재생으로
+#    보내는 쪽이 덜 나쁘다. 성공 1회면 **즉시** 해제한다(자기 프로브로 확인하지 않는다:
+#    그러면 이 게이트웨이가 스스로 구독을 쓴다).
+SYNTH_FAIL_LATCH_SEC = int(os.environ.get("FKT_SYNTH_FAIL_LATCH_SEC", "900"))
+
+_synth_lock = threading.Lock()
+_synth_state: dict = {
+    "lastOutcome": None,      # "ok" | "failed" | None(기동 직후 — 아직 아무 호출도 없었다)
+    "lastAt": None,
+    "consecutiveFailures": 0,
+    "latchedUntil": None,
+}
+
+
+def _utc_iso(when: float) -> str:
+    return datetime.fromtimestamp(when, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def record_synth_outcome(ok: bool) -> None:
+    """합성 «1회»의 결과를 적는다. 🔴 값·문구는 적지 않는다 — 코드가 아니라 사실만 남긴다."""
+    now = time.time()
+    with _synth_lock:
+        if ok:
+            _synth_state.update(
+                lastOutcome="ok", lastAt=_utc_iso(now), consecutiveFailures=0, latchedUntil=None
+            )
+        else:
+            _synth_state.update(
+                lastOutcome="failed",
+                lastAt=_utc_iso(now),
+                consecutiveFailures=int(_synth_state["consecutiveFailures"]) + 1,
+                latchedUntil=_utc_iso(now + SYNTH_FAIL_LATCH_SEC),
+            )
+
+
+def synth_snapshot() -> dict:
+    """🔴 만료된 걸쇠는 **읽는 자리에서** 없는 것으로 낸다 — 주기 태스크를 두지 않는다.
+    상태 자체는 그대로 두고(다음 실패가 다시 건다) 표면만 정직하게 만든다."""
+    with _synth_lock:
+        snap = dict(_synth_state)
+    until = snap.get("latchedUntil")
+    if until:
+        try:
+            if datetime.fromisoformat(until.replace("Z", "+00:00")) <= datetime.now(timezone.utc):
+                snap["latchedUntil"] = None
+        except ValueError:
+            snap["latchedUntil"] = None
+    return snap
+
+
 def health_payload() -> dict:
     """`/health` 본문. 무대가 **자기 입으로** 어느 프롬프트로 도는지 말하는 자리."""
     return {
@@ -87,6 +145,9 @@ def health_payload() -> dict:
         # 🔴 토큰은 **있다/없다만** 낸다. 값을 실으면 이 응답 자체가 유출 경로가 된다.
         "bind": BIND,
         "authRequired": bool(TOKEN),
+        # 🔴 계약 v0.2.4 ② — ai-api 가 이 한 값을 읽어 배지를 정한다. 사유 «문장»은
+        #    여기서 만들지 않는다(공개면에 우리 층 문구를 흘리지 않는다 · baseline §15.2).
+        "synth": synth_snapshot(),
     }
 
 # 재요청 1회에 실리는 가드 통지의 길이 상한(D-84). 통지는 우리 층이 만든 문장이고 안의 id 는
@@ -493,12 +554,15 @@ def synthesize(req: dict, on_sentence=None) -> dict:
                 finally:
                     watchdog.cancel()
         except FileNotFoundError:
+            record_synth_outcome(False)            # 축① CLI 부재
             raise SynthesisError(f"CLI 를 찾지 못했다({CLI_BIN})", status=503) from None
     elapsed_ms = int((time.perf_counter() - started) * 1000)
 
     if killed.is_set():
+        record_synth_outcome(False)                # 축② 타임아웃
         raise SynthesisError(f"CLI 타임아웃({TIMEOUT_MS}ms)", status=504)
     if proc.returncode != 0:
+        record_synth_outcome(False)                # 축③ 종료코드
         raise SynthesisError(f"CLI 종료코드 {proc.returncode}", status=502)
 
     # 🔴 마지막 줄은 개행으로 끝나지 않을 수 있다 — 남은 버퍼를 한 번 더 흘린다.
@@ -507,6 +571,7 @@ def synthesize(req: dict, on_sentence=None) -> dict:
         _consume(buffer)
 
     if envelope.get("is_error"):
+        record_synth_outcome(False)                # 축④ 봉투 is_error
         raise SynthesisError(f"CLI 가 오류를 보고했다(subtype={envelope.get('subtype')})")
 
     # 🔴 대조 경로: 델타를 한 건도 못 읽었으면 봉투의 완성본으로 다시 읽는다. 스트리밍이
@@ -530,6 +595,10 @@ def synthesize(req: dict, on_sentence=None) -> dict:
         raise
     out["model"] = _pick_model(envelope)
     out["elapsedMs"] = elapsed_ms
+    # 🔴 여기까지 왔으면 «호출은 성립했다» — 성공 1회로 걸쇠를 즉시 푼다.
+    #    `evidence_binding` 거부는 위에서 이미 raise 되어 여기 오지 않으므로,
+    #    「품질 실패를 성공으로 센다」는 반대 오류도 생기지 않는다.
+    record_synth_outcome(True)
     out["_log"] = {
         "cliDurationMs": envelope.get("duration_ms"),
         "cliApiDurationMs": envelope.get("duration_api_ms"),

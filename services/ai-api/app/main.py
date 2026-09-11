@@ -71,6 +71,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         limit=settings.run_cap_per_session,
         window_sec=settings.run_cap_window_sec,
     )
+    # 🔴 전역 시간당 상한(계약 v0.2.4 ① ⓑ)도 **같은 계수기**를 쓴다 — 키를 하나로 고정해
+    #    「세션 무관 한 줄」로 센다. 새 자료구조를 쓰지 않는 이유: 창 만료·`admit`/`peek` 분리·
+    #    `limit <= 0` = 끄기 같은 규율이 이미 저기 성문돼 있고, 베끼면 두 곳이 언젠가 갈린다.
+    #    창은 계약이 **3600 고정**이라 세션 창(`run_cap_window_sec`)을 따라가지 않는다.
+    app.state.global_run_cap = SessionRunCap(
+        limit=settings.run_cap_global_per_hour,
+        window_sec=3600.0,
+    )
     app.state.live_capacity = LiveCapacity(
         concurrency=settings.live_concurrency,
         queue_max=settings.live_queue_max,

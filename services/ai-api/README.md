@@ -442,7 +442,8 @@ docker compose up -d          # postgres · neo4j · ai-api (healthcheck = /api/
 
 | 값 | 기본 | 어디 |
 |---|---|---|
-| `run_cap_per_session` | **5** | `app/settings.py`(env 접두사 `FKT_` = `FKT_RUN_CAP_PER_SESSION`) |
+| `run_cap_per_session` | **3** | `app/settings.py`(env 접두사 `FKT_` = `FKT_RUN_CAP_PER_SESSION`) |
+| `run_cap_global_per_hour` | **3** | 같은 파일(`FKT_RUN_CAP_GLOBAL_PER_HOUR` · 창 3600 고정 · 0 이하 = 끄기 · 🔴 **프로세스 단위** — 재기동하면 창이 리셋되고 워커가 여럿이면 워커별로 센다) |
 | `run_cap_window_sec` | **3600.0** | 같은 곳 |
 | `run_timeout_sec` | **300.0** | run 하나가 붙잡을 수 있는 최대 시간 · 넘기면 `run.stopped reason=timeout` + 안전 종료 |
 

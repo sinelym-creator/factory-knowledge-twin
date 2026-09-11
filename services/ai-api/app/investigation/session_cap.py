@@ -18,6 +18,12 @@ import time
 from collections import OrderedDict, deque
 
 
+#: 🔴 전역 시간당 상한이 쓰는 **하나뿐인 키**(계약 v0.2.4 ① ⓑ). 같은 계수기를 세션 축과
+#: 공유하므로, 실제 세션 id 와 겹치지 않는 모양이어야 한다 — 세션 id 는 URL-safe 난수라
+#: 콜론이 들어가지 않는다. 문자열을 라우터가 각자 적으면 오타 하나가 «두 개의 전역»을 만든다.
+GLOBAL_RUN_CAP_KEY = "global:live-hourly"
+
+
 class SessionRunCap:
     """세션별 실행 시각을 슬라이딩 창으로 센다. 프로세스 안 · 재기동 시 리셋(로컬 PoC 형상).
 
