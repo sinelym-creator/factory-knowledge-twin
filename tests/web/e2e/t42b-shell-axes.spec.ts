@@ -209,24 +209,59 @@ test.describe("T4-2b 셸 축 — ⓕ WS 절단 · ⓖ 큐와 용량", () => {
     test.setTimeout(240_000);
     await enter(page);
     const s = await sid(page);
+    /**
+     * 🔴 **포화를 그물 «안»에서 만든다**(O-55). 앞판은 5발을 «동시»에 쏘고 503 이 나기를
+     *    바랐는데, 그 색은 **직전 실행이 슬롯을 쥐고 있었는가**가 정했다(실측: 슬롯을 비우면
+     *    FAIL, 앞 실행이 쥐고 있으면 PASS 1.1s). 남이 만들어 둔 조건 위에서 난 초록은
+     *    이 그물이 번 것이 아니다.
+     *
+     *    그래서 **거절이 날 때까지 순서대로** 쏘고, 몇 발째에 났는지를 값으로 남긴다.
+     *    상한 안에서 거절이 안 나면 그건 「무대가 없다」이지 초록이 아니다.
+     *    🔴 이 자리가 결정적이려면 앞선 조사가 «끝나지 않아야» 한다 — 합성을 붙잡는
+     *    hold 스텁(`FKT_SYNTH_HOLD`)이 선 무대에서만 성립한다.
+     */
+    const MAX_SHOTS = 8;
     const fired = await page.evaluate(
-      async ({ scenario, s }) => {
-        const one = () =>
-          fetch(`/api/scenarios/${scenario}/runs`, {
+      async ({ scenario, max }) => {
+        /**
+         * 🔴 **한 세션으로는 포화가 안 된다** — 같은 세션·같은 시나리오로 다시 쏘면 서버가
+         *    **같은 `runId` 를 돌려준다**(실측: 5발 전부 `RUN-2385c6207b73`). 앞판이 5발을
+         *    동시에 쏘고도 503 을 못 본 이유가 이것이다. 슬롯을 채우는 것은 발사 수가 아니라
+         *    **서로 다른 세션의 수**다(`live_concurrency` 1 + `live_queue_max` 2).
+         */
+        const out = [];
+        for (let i = 0; i < max; i += 1) {
+          const mine = await fetch("/api/sessions", { method: "POST" }).then((r) => r.json());
+          const sid = (mine as { sessionId?: string }).sessionId;
+          const r = await fetch(`/api/scenarios/${scenario}/runs`, {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ sessionId: s, mode: "live" }),
-          }).then(async (r) => ({
-            status: r.status,
-            retryAfter: r.headers.get("retry-after"),
-            body: await r.json(),
+            body: JSON.stringify({ sessionId: sid, mode: "live" }),
+          }).then(async (resp) => ({
+            status: resp.status,
+            retryAfter: resp.headers.get("retry-after"),
+            body: await resp.json(),
           }));
-        return Promise.all([one(), one(), one(), one(), one()]);
+          out.push(r);
+          if (r.status === 503) break; // 거절이 났다 — 더 쏘지 않는다
+        }
+        return out;
       },
-      { scenario: SCENARIO, s },
+      { scenario: SCENARIO, max: MAX_SHOTS },
     );
+    console.log(`   ⓖ-2 포화 자취 — ${fired.length}발째에 멈춤 · 상태 ${fired.map((r) => r.status).join(",")}`);
+    test.info().annotations.push({
+      type: "포화 자취",
+      description:
+        `${fired.length}발째에 멈춤 · 상태 ${fired.map((r) => r.status).join(",")}` +
+        ` · hold 스텁 ${process.env.FKT_SYNTH_HOLD ?? "(없음)"}`,
+    });
     const refused = fired.filter((r) => r.status === 503);
-    expect(refused.length, "503 이 안 났다 — 용량 거절을 잴 무대가 없다").toBeGreaterThan(0);
+    expect(
+      refused.length,
+      `503 이 안 났다 — ${fired.length}발(상한 ${MAX_SHOTS})까지 쐈는데 용량이 차지 않았다. ` +
+        "합성을 붙잡는 무대(FKT_SYNTH_HOLD)가 없으면 조사가 즉시 끝나 슬롯이 비므로 이 축은 서지 않는다.",
+    ).toBeGreaterThan(0);
     for (const r of refused) {
       const code = ((r.body as { error?: { code?: string } }).error ?? {}).code;
       expect(code, "503 인데 code 가 live_capacity_exhausted 가 아니다 — 셸이 code 로 분기할 수 없다").toBe(

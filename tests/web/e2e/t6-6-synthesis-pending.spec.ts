@@ -119,6 +119,42 @@ async function sample(page: Page): Promise<Sample> {
   });
 }
 
+/**
+ * 🔴 **cold 열(선표시 «전»)을 세우는 손잡이** — `FKT_DROP_PRELIMINARY=1` 일 때만 켠다(O-55).
+ *
+ * 왜 hold 스텁으로는 못 세우는가: 선표시를 내는 자리는 게이트웨이가 «아니다».
+ * `services/ai-api/app/investigation/workflow.py:341` 이 게이트웨이를 부르기 **전에** 스스로
+ * `emitter.step_progress("synthesize", "preliminary", …)` 를 낸다(주석: 「지연 0 이어야 선표시다」).
+ * 스텁은 `POST /synthesize` 자리에 서므로 그 이벤트를 **쥐고 있지 않다** — 스텁에 손잡이를
+ * 달아 봐야 붙잡을 것이 지나가지 않는다. 그래서 붙잡는 자리를 **관측자 쪽 경계**로 옮긴다:
+ * 브라우저가 받는 run WS(`/api/ws/runs/{id}`)에서 그 프레임만 떨어뜨린다.
+ *
+ * 🔴 이것은 **그물의 무대 장치**이지 화면의 사실이 아니다. 그래서 기본은 꺼져 있고,
+ *    켠 실행에서는 **떨어뜨린 프레임 수**를 자극 실재 칸으로 함께 판정한다(0 이면 무대가 없다).
+ */
+async function maybeDropPreliminary(page: Page) {
+  const state = { dropped: 0, on: process.env.FKT_DROP_PRELIMINARY === "1" };
+  if (!state.on) return state;
+  await page.routeWebSocket(/\/api\/ws\/runs\//, (ws) => {
+    const server = ws.connectToServer();
+    server.onMessage((msg) => {
+      const text = typeof msg === "string" ? msg : msg.toString();
+      try {
+        const e = JSON.parse(text) as { type?: string; payload?: { kind?: string } };
+        if (e?.type === "step.progress" && e?.payload?.kind === "preliminary") {
+          state.dropped += 1;
+          return; // 🔴 화면에 닿지 않게 «떨어뜨린다» — 선표시가 서지 않는 창을 만든다
+        }
+      } catch {
+        /* JSON 이 아니면 그대로 흘린다 — 내가 모르는 프레임을 삼키지 않는다 */
+      }
+      ws.send(msg);
+    });
+    ws.onMessage((msg) => server.send(msg));
+  });
+  return state;
+}
+
 /** run 이 끝날 때까지 «지켜보며» 표를 남긴다. 한 방 assert 로는 짧은 창을 놓쳤는지 없는지 못 가른다. */
 async function watchUntilDone(page: Page, budgetMs: number): Promise<Sample[]> {
   const samples: Sample[] = [];
@@ -236,6 +272,7 @@ test.describe("T6-6 ③ — 합성 대기 표시", () => {
   test("① live·꼬리: synthesize 가 도는 창에서 보인다 · ② 완주 뒤 0", async ({ page }) => {
     test.slow();
     const ws = watchSockets(page);
+    const drop = await maybeDropPreliminary(page);
     await enter(page);
 
     await page.getByTestId("start-from-headline").click();
@@ -281,7 +318,22 @@ test.describe("T6-6 ③ — 합성 대기 표시", () => {
      */
     const cold = shown.filter((s) => s.provisional === 0); // 선표시 «전»
     const warm = shown.filter((s) => s.provisional >= 1); // 선표시 «후»
-    console.log(`   ⓢ 스켈레톤 규칙 표본 — 선표시 0: ${cold.length}개 · 선표시 ≥1: ${warm.length}개`);
+    console.log(
+      `   ⓢ 스켈레톤 규칙 표본 — 선표시 0: ${cold.length}개 · 선표시 ≥1: ${warm.length}개` +
+        (drop.on ? ` · 선표시 프레임 떨어뜨림 ${drop.dropped}건` : ""),
+    );
+    if (drop.on) {
+      /* 🔴 자극 실재 칸 — 떨어뜨린 프레임이 0 이면 무대가 없는 것이고, 그때의 cold 0 은
+         「규칙이 지켜졌다」가 아니라 「묻지 못했다」다. FAIL 이 아니라 무대 부재로 세운다. */
+      expect(
+        drop.dropped,
+        "선표시 프레임을 한 건도 떨어뜨리지 못했다 — 이 실행에 cold 무대는 서지 않았다",
+      ).toBeGreaterThan(0);
+      expect(
+        cold.length,
+        `선표시를 떨어뜨렸는데도 cold 표본이 0 이다(떨어뜨림 ${drop.dropped}건) — 손잡이가 화면에 닿지 않았다`,
+      ).toBeGreaterThan(0);
+    }
     test.info().annotations.push({
       type: "스켈레톤 규칙 표본",
       description:
