@@ -172,7 +172,7 @@ export default async function EvidencePage({
           </nav>
 
           {activeTab === "doc" ? (
-            <DocumentTab evidence={ev} docId={docId} doc={doc} />
+            <DocumentTab evidence={ev} docId={docId} doc={doc} runId={run} />
           ) : (
             <GraphTab hasSession={hasSession} runId={run} />
           )}
@@ -209,10 +209,13 @@ function DocumentTab({
   evidence,
   docId,
   doc,
+  runId,
 }: {
   evidence: Evidence;
   docId: string | null;
   doc: Reply<DocumentPreview> | null;
+  /** 🔴 D-91 — 문서 화면으로 «조사 맥락»을 넘긴다. 이걸 떨어뜨리면 그 화면에서 돌아갈 길이 없다. */
+  runId?: string;
 }) {
   if (!docId) {
     // chunk id 조성(T0-6 §3.1)에 맞지 않는 doc-chunk — 서버·화면의 조성 인식이 갈렸다는 뜻이다.
@@ -251,7 +254,13 @@ function DocumentTab({
         <span className="id text-body-c text-ai">{d.documentId}</span>
         <span className="text-body-c">{d.title}</span>
         <Link
-          href={`/documents/${encodeURIComponent(d.documentId)}?highlight=${encodeURIComponent(evidence.evidenceId)}`}
+          /* 🔴 **D-91 — `?run=` 을 승계한다.** 앞판은 `highlight` 만 싣고 조사 맥락을 떨어뜨렸다.
+             문서 화면은 그 값으로만 「어느 조사에서 왔는지」를 알 수 있어서, 없으면 「이 조사로
+             돌아가기」가 **항상** 서지 않았다(폐하 실측: 돌아갈 길이 본문 크기 링크 하나뿐).
+             🔴 run 이 없을 때는 붙이지 않는다 — 빈 값을 실으면 문서 화면이 없는 조사를 찾는다. */
+          href={`/documents/${encodeURIComponent(d.documentId)}?highlight=${encodeURIComponent(evidence.evidenceId)}${
+            runId ? `&run=${encodeURIComponent(runId)}` : ""
+          }`}
           className="ml-auto fkt-pill bg-fill text-foot text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
         >
           이 문서 전체 열기 →
