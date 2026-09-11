@@ -100,7 +100,18 @@ bootstrap이 돌리는 여섯 단계의 정본 명령입니다. 5·6단은 venv�
 
 구현 좌석의 초록은 완료가 아닙니다. 검증 좌석이 독립 무대에서 다시 잰 뒤에만 완료로 칩니다.
 
-**성능 수치는 아직 없습니다.** 지연(P50/P95)과 벤치마크는 측정 전이라 빈 칸으로 둡니다. Live 합성은 2026-09-05 production 재검에서 1건 15.6초, develop에서 3건 11.9~13.8초(D-85 재검)가 나왔고, 잠정 목표 10초에는 못 미칩니다.
+**벤치마크 · 지연** — 정본 = [benchmarks/eval-report-final.md](benchmarks/eval-report-final.md)(raw 재집계 · Target 은 계획서에 수치가 없어 「첫 기준선」 · LLM judge 0 · 전부 합성 데이터 위의 PoC 관측치).
+
+| 축 | Actual | 분모 |
+|---|---|---|
+| 검색 Recall@5(any) | vector 4 · hybrid 18 · graphrag 6 | 기대 근거가 있는 26문 |
+| SOP 검색 정확도 | vector 0 · hybrid 5 · graphrag 6 | 11문 |
+| 답변 본문의 설비 id 호명 | 0/25(근거 발췌에는 25/25) | 같은 앵커 1문 · 25 run |
+| 안전 규정 누락(D-84 뒤) | 0/22 | v0.4 이후 22 run |
+| 합성 지연 중앙값 | 14.1초(잠정 목표 10초 미달) | wallMs 있는 24 run |
+| 실 CLI 안전 규정 재요청 발생률 | 1/7 | 전용 무대 · 7 run · 원인 미측 |
+
+못 잰 축은 0 으로 적지 않고 이름으로 남겼습니다(Hold Precision · Cross-consistency · Work Order Completeness 분모 0 · 39문 답변 불성립 · 지표 4·7 실재 재현). 40문 일반화가 아니라 앵커 1문의 반복 측정입니다.
 
 ## 알려진 제약
 
