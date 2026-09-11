@@ -115,10 +115,18 @@ class LiveResult:
 class _Rejected(Exception):
     """가드가 응답을 물렸다 — 이 메시지가 «그대로» 이벤트에 실린다.
 
+    🔴 `reached` = **이 회차가 게이트웨이 200 을 받았는가**(D-97-M2). 이 예외 하나가 성질이
+       다른 둘을 덮기 때문에 필요하다: 4xx·5xx 거부(소모 0)와 200 뒤 중단(소모 1). 호출부가
+       예외 «종류»로 세려 하면 반드시 한쪽이 틀린다.
+
     🔴 그래서 여기 담는 것은 **이미 방문자가 읽을 문장**이어야 한다. 남의 층(게이트웨이·CLI)이
        준 문자열을 그대로 넣으면 그 층의 내부 문면이 공개 화면까지 간다(D-23 · D-24 · D-24b 가
        전부 그 형태였다). 남의 말은 `_refusal_wording` 을 태우고, 원문은 로그에 남긴다.
     """
+
+    def __init__(self, message: str, *, reached: bool = False) -> None:
+        super().__init__(message)
+        self.reached = reached
 
 
 class _GatewayStreamError(RuntimeError):
@@ -456,12 +464,23 @@ def _post(
         headers=_headers(headers),
         method="POST",
     )
+    # 🔴 **소모가 확정되는 자리는 «200 을 받은 시점»이다**(D-97-M2 · 리바이2 회부).
+    #    게이트웨이가 200 을 냈다는 것은 CLI 를 부른 뒤라는 뜻이고, 그 뒤 본문이 어떻게
+    #    끝나든(스트림 중간 `kind:error` · result 줄 없음 · JSON 파싱 실패) **호출은 이미 갔다**.
+    #    이 사실을 예외에 실어 보낸다 — 호출부는 예외 «종류»로 셀 수 없다(`_Rejected` 하나가
+    #    「200 전 거부」와 「200 뒤 중단」을 함께 덮는다).
+    received = False
     try:
         with urllib.request.urlopen(request, timeout=timeout_sec) as response:  # noqa: S310
+            received = True
             ctype = (response.headers.get("Content-Type") or "").lower()
             if on_sentence is None or NDJSON_MIME not in ctype:
                 return json.loads(response.read().decode("utf-8"))
             return _read_ndjson(response, on_sentence)
+    except _Rejected as exc:
+        # 🔴 `_read_ndjson` 이 올린 거부다 — 본문 «안»에서 끊겼으니 호출은 갔다.
+        exc.reached = received
+        raise
     except urllib.error.HTTPError as exc:
         # 🔴 **본문 사유는 «로그에만» 남긴다**(D-24 · 리바이2 #444 회부 2). 게이트웨이가 401 에
         #    실어 보내는 사유는 **내부 인증 헤더 이름**을 그대로 담고 있고, 앞판은 그것을 그대로
@@ -473,18 +492,24 @@ def _post(
         except Exception:                                    # noqa: BLE001 — 사유를 못 읽어도 상태는 남긴다
             detail = ""
         log.warning("게이트웨이가 거부 — HTTP %s: %s", exc.code, detail or "(본문 사유 없음)")
-        raise _Rejected(_refusal_wording(exc)) from None
+        # 🔴 4xx·5xx 는 **소모가 아니다** — 게이트웨이가 우리 요청을 거부한 회차라 CLI 를
+        #    부르지 않았다. `received` 는 여기서 False 다(`urlopen` 이 반환 «전»에 던진다).
+        raise _Rejected(_refusal_wording(exc), reached=received) from None
     except TimeoutError:
-        raise _Rejected(f"게이트웨이 타임아웃({int(timeout_sec * 1000)}ms)") from None
+        # 🔴 200 «뒤» 본문을 읽다 난 타임아웃이면 `received` 가 True 다 — 그때는 소모다.
+        raise _Rejected(
+            f"게이트웨이 타임아웃({int(timeout_sec * 1000)}ms)", reached=received
+        ) from None
     except urllib.error.URLError as exc:
         # 🔴 **여기가 방문자가 실제로 읽는 자리다**(33대 브라우저 실측: 화면 문면 =
         #    「게이트웨이 미도달(ConnectionRefusedError)」). D-23 수리를 아래 `except
         #    Exception` 에만 걸었더니 이 `_Rejected` 경로는 세 줄 위에서 그대로 샜다 —
         #    가드가 «전량 거부»로 승격시키는 경로라 예외 그물에 닿지 않는다.
         log.warning("게이트웨이 미도달 — %s: %s", type(exc.reason).__name__, exc.reason)
-        raise _Rejected(_refusal_wording(exc)) from None
+        raise _Rejected(_refusal_wording(exc), reached=received) from None
     except json.JSONDecodeError:
-        raise _Rejected("게이트웨이 응답을 JSON 으로 읽지 못했다") from None
+        # 200 을 받고 본문을 읽다 깨진 것이다 — 호출은 갔다.
+        raise _Rejected("게이트웨이 응답을 JSON 으로 읽지 못했다", reached=received) from None
 
 
 def _read_ndjson(response: Any, on_sentence: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
@@ -663,8 +688,11 @@ async def synthesize(
     safety_omitted = False
     # 🔴 «부른 횟수»는 루프 변수(`attempt`)가 아니라 따로 센다. `attempt` 는 «시도 번호»라
     #    1회차에서 예외가 나면 1 이지만, 그때 호출이 실제로 갔는지(=구독을 썼는지)는 다른 사실이다.
-    #    그래서 `_post` 가 «돌아온 뒤» 올린다 — 도달하지 못한 호출을 소모로 세지 않는다.
-    calls = 0
+    # 🔴 **기준은 「200 을 받았는가」다**(D-97-M2). 성공 갈래는 반환 뒤에 올리고, 실패 갈래는
+    #    예외가 들고 온 `reached` 로 올린다 — 앞판은 반환 뒤에만 셌고, 그래서 200 후 스트림
+    #    오류 갈래가 「도달 못 함」과 같은 0 이 됐다(리바이2 회부 · 결함). 페이로드에도 로그에도
+    #    남지 않는 소모였다.
+    call_count = [0]
     safety_retried = False
     # 🔴 **최대 두 회차 · 그 이상 없다**(D-84). 규정 누락은 「답이 틀렸다」가 아니라 「덜 말했다」라
     #    거부로 승격시키지 않는다 — 거부하면 결정적 순위로 내려앉아 방문자가 보는 것이 더 나빠진다.
@@ -678,18 +706,26 @@ async def synthesize(
             response = await asyncio.to_thread(
                 _post, url, body, budget_sec, on_sentence if attempt == 1 else None
             )
-            calls += 1
+            # 여기 왔다 = 200 을 받고 본문까지 읽었다. 실패 갈래의 계수는 아래 except 가 한다.
+            call_count[0] += 1
             model = response.get("model") if isinstance(response.get("model"), str) else UNKNOWN_MODEL
             reordered, rationale = apply_guard(response, candidates, set(evidence_ids))
         except _Rejected as exc:
-            # 🔴 가드가 물린 회차도 **호출은 갔다**(200 을 받고 그 내용을 물린 것) — `_post` 뒤에서
-            #    올린 `calls` 를 그대로 싣는다. 거절이라고 0 으로 적으면 소모가 표에서 사라진다.
+            # 🔴 **예외가 스스로 말한다** — 200 을 받았으면 소모 1, 그 전에 거부당했으면 0.
+            #    호출부가 「거절이니 0」으로 뭉치면 200 뒤 중단이 표에서 사라진다(그것이 결함이었다).
+            if getattr(exc, "reached", False):
+                call_count[0] += 1
+            # 🔴 `_Rejected` 는 **세 종류를 한 예외로 덮는다**: ⓐ 게이트웨이가 4xx/5xx 로 거부
+            #    (200 «전» — 소모 0) ⓑ 200 뒤 스트림 안 `kind:error`·result 줄 없음(소모 1)
+            #    ⓒ 200 뒤 가드가 내용을 물림(소모 1). 그래서 여기서 수를 «정하지 않는다» —
+            #    200 을 받은 시점에 오른 `call_count` 를 그대로 싣는다. 예외 종류로 세려 하면
+            #    ⓐ와 ⓑ가 같은 클래스라 반드시 한쪽이 틀린다.
             return LiveResult(
                 axis="live-rejected",
                 candidates=candidates,
                 model=model,
                 rejected_reason=str(exc),
-                calls=calls,
+                calls=call_count[0],
                 safety_retried=safety_retried,
             )
         except Exception as exc:                              # noqa: BLE001 — 축 하나가 run 을 죽이지 않는다
@@ -700,7 +736,7 @@ async def synthesize(
                 candidates=candidates,
                 model=model,
                 rejected_reason=_refusal_wording(exc),
-                calls=calls,
+                calls=call_count[0],
                 safety_retried=safety_retried,
             )
 
@@ -724,14 +760,14 @@ async def synthesize(
     # 🔴 계수 1줄을 **ASCII 마커**로 남긴다(로그 문면 grep 이 깨진 한글에서 거짓 0 을 낸 선례).
     #    `warning` 이 아니라 `info` 다 — 재요청은 사고가 아니라 설계된 갈래이고, 경고로 적으면
     #    「매 run 이 경고를 낸다」가 되어 진짜 경고가 묻힌다.
-    log.info("synthesize calls=%d safetyRetried=%s", calls, str(safety_retried).lower())
+    log.info("synthesize calls=%d safetyRetried=%s", call_count[0], str(safety_retried).lower())
     return LiveResult(
         axis="live",
         candidates=reordered,
         model=model,
         rationale=rationale,
         safety_omitted=safety_omitted,
-        calls=calls,
+        calls=call_count[0],
         safety_retried=safety_retried,
     )
 

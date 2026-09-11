@@ -131,3 +131,67 @@ def test_unreached_gateway_counts_zero(gate) -> None:
     payload = result.synthesis_payload()
     assert result.axis == "live-rejected"
     assert payload["calls"] == 0 and payload["safetyRetried"] is False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# D-97-M2 — 「200 을 받았는가」가 기준이다 (리바이2 독검 회부 · 결함 수리)
+#
+# 🔴 앞판은 `_post` 가 **돌아온 뒤** 셌다. 그래서 200 을 받고 본문 «안»에서 끊긴 회차가
+#    「도달 못 함」과 같은 0 이 됐다 — 페이로드에도 로그에도 남지 않는 소모였다.
+# 🔴 아래 세 케이스는 **한 방향으로만 몰면 안 된다**: 200 뒤 실패는 1, 200 «전» 거부는 0.
+#    둘 중 하나만 재면 「전부 1」이나 「전부 0」인 계측기가 통과한다.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _raise(exc: BaseException):
+    def _stub(url, body, timeout_sec, on_sentence=None):  # noqa: ANN001
+        raise exc
+
+    return _stub
+
+
+def test_stream_error_after_200_counts_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    """🔴 판정선 — 200 뒤 스트림 안에서 끊긴 회차는 **소모 1**이다."""
+    monkeypatch.setenv(ls.LIVE_GATE_ENV, "http://stub.invalid")
+    monkeypatch.setattr(ls, "_post", _raise(ls._Rejected("합성 결과가 근거 검증을 통과하지 못했습니다", reached=True)))
+    result = _run(
+        ls.synthesize(_candidates(), anchor=None, state=_state("배선 과열"), evidence_ids=["E1"])
+    )
+    payload = result.synthesis_payload()
+    assert result.axis == "live-rejected"
+    assert payload["calls"] == 1
+    assert payload["safetyRetried"] is False
+
+
+def test_refused_before_200_counts_zero(monkeypatch: pytest.MonkeyPatch) -> None:
+    """🔴 대조군 — 4xx·5xx 거부는 CLI 를 부르기 «전»이라 소모 0이다."""
+    monkeypatch.setenv(ls.LIVE_GATE_ENV, "http://stub.invalid")
+    monkeypatch.setattr(ls, "_post", _raise(ls._Rejected("게이트웨이가 요청을 거부했습니다(HTTP 401)")))
+    result = _run(
+        ls.synthesize(_candidates(), anchor=None, state=_state("배선 과열"), evidence_ids=["E1"])
+    )
+    assert result.synthesis_payload()["calls"] == 0
+
+
+def test_guard_refusal_counts_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    """가드가 «내용»을 물린 회차 — 200 을 받았으므로 소모 1.
+
+    🔴 패치는 **fixture 로** 건다. 직접 만든 `MonkeyPatch()` 는 되돌려지지 않아 뒤 테스트까지
+       스텁을 물고 가고, 그러면 그 초록은 자기 것이 아니다.
+    """
+    monkeypatch.setenv(ls.LIVE_GATE_ENV, "http://stub.invalid")
+    hits = {"n": 0}
+
+    def _bad(url, body, timeout_sec, on_sentence=None):  # noqa: ANN001
+        hits["n"] += 1
+        # ranking 이 후보 집합과 다르다 → `apply_guard` 가 전량 거부한다(200 은 이미 받았다).
+        return {"model": "stub", "ranking": ["FM-NOPE"], "rationale": {}}
+
+    monkeypatch.setattr(ls, "_post", _bad)
+    result = _run(
+        ls.synthesize(_candidates(), anchor=None, state=_state("배선 과열"), evidence_ids=["E1"])
+    )
+    payload = result.synthesis_payload()
+    assert result.axis == "live-rejected"
+    assert hits["n"] == 1
+    assert payload["calls"] == 1
