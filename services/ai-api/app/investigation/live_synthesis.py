@@ -590,6 +590,7 @@ async def synthesize(
     candidates: list[Candidate],
     *,
     on_sentence: Callable[[dict[str, Any]], None] | None = None,
+    on_flagged: Callable[[list[dict[str, Any]]], None] | None = None,
     anchor: Any,
     state: dict[str, Any],
     evidence_ids: list[str],
@@ -602,6 +603,18 @@ async def synthesize(
     evidence_text = build_evidence_text(state)
     if not evidence_text:
         return LiveResult(axis="live-rejected", candidates=candidates, rejected_reason="보낼 근거 발췌가 0건이다")
+
+    # 🔴 **지시문형 표지는 여기서 «한 번» 낸다**(O-48 ⓐ · 계약 v0.2.3). 자리가 아래 재요청
+    #    루프 «밖»인 것이 규격이다 — `_request_body` 안에서 내면 규정 미호명 재요청 갈래에서
+    #    **두 번** 울린다(D-84 최대 2회차). 그 갈래는 같은 발췌를 다시 보내는 것이지 표지가
+    #    새로 생기는 것이 아니다.
+    # 🔴 요청 본문은 자기가 «다시» 잰다(#876) — 여기서 만든 값을 넘기지 않는다. 같은 순수
+    #    함수에 같은 입력이라 두 값은 어긋날 수 없고, 그래서 「표지한 것 = 보낸 것」이 유지된다.
+    # 🔴 표지 0건이면 **부르지 않는다** — 스키마가 `items` 에 `minItems: 1` 을 건다.
+    if on_flagged is not None:
+        flagged = flag_evidence_text(evidence_text)
+        if flagged:
+            on_flagged([{"evidenceId": eid, "flags": codes} for eid, codes in flagged.items()])
 
     budget_sec = (timeout_ms() + CLIENT_MARGIN_MS) / 1000.0
     safety_rules = safety_rules_in_evidence(evidence_text)

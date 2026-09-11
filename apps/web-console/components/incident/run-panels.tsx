@@ -393,9 +393,25 @@ export function EvidenceStrip({
               data-kind={e.kind}
               data-step={e.step}
             >
-              <p className="id truncate text-foot font-semibold text-ai" title={e.evidenceId}>
-                {e.evidenceId}
-              </p>
+              <div className="flex items-start gap-1.5">
+                <p className="id min-w-0 flex-1 truncate text-foot font-semibold text-ai" title={e.evidenceId}>
+                  {e.evidenceId}
+                </p>
+                {/* 🔴 표지는 «있을 때만» 그린다(O-48 ⓐ) — 이벤트가 없는 run 의 화면은 앞판과 같다.
+                    발췌를 가리거나 지우지 않는다: 근거는 그대로 두고 옆에 한 칸을 붙일 뿐이다.
+                    코드 목록은 `title` 로 준다 — 카드 폭이 264px 라 본문에 풀어 쓰면 발췌를 밀어낸다. */}
+                {(state.evidenceFlags[e.evidenceId]?.length ?? 0) > 0 && (
+                  <span
+                    className="fkt-pill shrink-0 text-warn"
+                    data-testid="evidence-flag-badge"
+                    data-evidence-id={e.evidenceId}
+                    data-flags={state.evidenceFlags[e.evidenceId].join(",")}
+                    title={`지시문형 표현 포함 · ${state.evidenceFlags[e.evidenceId].join(" · ")}`}
+                  >
+                    표지
+                  </span>
+                )}
+              </div>
               <p className="mt-1.5 line-clamp-3 text-foot leading-relaxed text-muted">{e.excerpt}</p>
               <p className="mt-2 text-cap text-placeholder">
                 {e.kind}

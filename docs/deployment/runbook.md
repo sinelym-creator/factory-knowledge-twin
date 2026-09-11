@@ -465,6 +465,7 @@ env(12 · 09-06 01:34 inspect 실측 정본 — 수는 낡는다 · 옮길 땐 �
 
 1. **실행 전 1줄 보고** + D-13 볼륨 대조 → 오케 「가」.
 2. `docker build -t fkt-deploy-ai-api:<새sha> services/ai-api`
+   - 🔴 **빌드 소스 = 그 sha 의 워크트리에서**(`git worktree add ../_wt/<slug>-promoNN <main sha>` · 메인 체크아웃은 develop 이라 거기서 빌드하면 develop 코드가 main sha 이름표를 단다 · 승격 25 센쿠2 실측 16:02) · 빌드 전 `git rev-parse <sha>:services/ai-api` 트리 sha ↔ 워크트리 `git rev-parse HEAD:services/ai-api` 일치 확인.
 3. 🔴 **구 컨테이너를 지우지 않고 «세대 이름»으로 보존**:
    `docker rename fkt-deploy-ai-api fkt-deploy-ai-api-<구sha>` → `docker stop fkt-deploy-ai-api-<구sha>`
    🔴 **`-prev` 를 쓰지 않는다.** 「직전」은 상대 표현이라 두 번째 교체에서 반드시 이름이 충돌하고,

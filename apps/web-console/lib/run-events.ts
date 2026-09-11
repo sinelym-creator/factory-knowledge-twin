@@ -91,6 +91,15 @@ export type RunEvent = Envelope &
       }
     | { type: "step.started"; payload: { step: string } }
     | { type: "step.evidence"; payload: { step: string; evidence: RunEvidence } }
+    /**
+     * 🔴 **표지일 뿐 근거가 아니다**(O-48 ⓐ · 계약 v0.2.3). 발췌는 `step.evidence` 로 이미
+     *    왔고, 이 이벤트는 그 중 어느 id 가 «시키려 드는 문면»을 품었는지만 말한다.
+     *    표지가 0건인 run 에서는 **이 이벤트가 오지 않는다**(스키마 `items` minItems 1).
+     */
+    | {
+        type: "evidence.flagged";
+        payload: { items: { evidenceId: string; flags: string[] }[] };
+      }
     | {
         type: "step.completed";
         payload: { step: string; elapsedMs: number; summary: string; synthesis?: RunSynthesis };
@@ -164,6 +173,11 @@ export type RunState = {
   stopNote: string | null;
   /** 마지막으로 반영한 seq — 「어디까지 본 상태인가」를 화면이 말할 수 있게. */
   lastSeq: number | null;
+  /**
+   * evidenceId → 표지 코드 목록(O-48 ⓐ). 🔴 **없으면 빈 객체**이고, 그때 화면은 앞판과
+   *    같다 — 배지는 「있는 것」만 그리지 「없다」를 그리지 않는다.
+   */
+  evidenceFlags: Record<string, string[]>;
   /** 🔴 마지막 `run.queued` 의 값. 실행이 시작되면 null 로 «지운다» — 지나간 순위를 남겨 두면
    *     화면이 이미 도는 조사를 「3번째로 대기 중」이라고 말한다. */
   queue: RunQueue | null;
@@ -185,6 +199,7 @@ const EMPTY: RunState = {
   stopNote: null,
   lastSeq: null,
   queue: null,
+  evidenceFlags: {},
 };
 
 /**
@@ -205,7 +220,16 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
     return v;
   };
 
-  const s: RunState = { ...EMPTY, steps: [], evidence: [], candidates: [], progress: null };
+  // 🔴 `evidenceFlags` 도 «새 객체»로 연다 — `...EMPTY` 는 얕은 복사라 그대로 두면 모든
+  //    reduce 가 같은 지도를 공유하고, 한 run 의 표지가 다음 run 화면에 남는다.
+  const s: RunState = {
+    ...EMPTY,
+    steps: [],
+    evidence: [],
+    candidates: [],
+    progress: null,
+    evidenceFlags: {},
+  };
 
   for (const e of events) {
     s.mode = e.mode ?? s.mode;
@@ -236,6 +260,15 @@ export function reduceEvents(events: readonly RunEvent[]): RunState {
         s.evidence.push({ ...e.payload.evidence, step: e.payload.step });
         break;
       }
+      case "evidence.flagged":
+        // 🔴 근거 목록을 건드리지 않는다 — 표지는 «옆에» 붙는 지도다. 같은 id 가 다시
+        //    오면 마지막 것이 이긴다(조립은 run 당 1회라 실제로는 겹치지 않는다).
+        for (const it of e.payload.items ?? []) {
+          if (it && typeof it.evidenceId === "string" && Array.isArray(it.flags)) {
+            s.evidenceFlags[it.evidenceId] = it.flags;
+          }
+        }
+        break;
       case "step.progress": {
         // 🔴 지금 이 이벤트를 내는 단계는 `synthesize` 하나다. 그래도 단계를 확인하고 지나간다 —
         //    다른 단계가 나중에 같은 type 을 쓰기 시작하면, 이 화면은 그것을 «합성 진행»으로

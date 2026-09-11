@@ -3,9 +3,10 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { TOUR_STEPS, TOUR_TOTAL, readAdvance, type TourStep } from "@/components/tour/tour-steps";
+import { TOUR_STEPS, TOUR_TOTAL, entryHrefFor, readAdvance, type TourStep } from "@/components/tour/tour-steps";
 import { TourOverlay } from "@/components/tour/tour-overlay";
 import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
+import { TOUR_KEY, TOUR_RESET_EVENT } from "@/components/tour/tour-reset";
 import {
   INITIAL_TOUR_STATE,
   openedFrom,
@@ -34,7 +35,9 @@ import {
 /* 🔴 5상태·이관·재개 «규칙»은 `tour-state.ts` 로 옮겼다 — 저장소 없이 재기 위해서다(U-04).
    여기 남는 것은 «브라우저가 있어야 하는 일»(localStorage 읽기/쓰기·주소·이벤트)뿐이다. */
 
-const KEY = "fkt.tour.v1";
+/* 🔴 키는 `tour-reset.ts` 한 곳에만 적는다 — 리셋이 지우는 키와 여기서 읽는 키가 갈리면
+   「지웠는데 그대로」가 된다. */
+const KEY = TOUR_KEY;
 function readState(): TourState {
   try {
     return parseTourState(window.localStorage.getItem(KEY), TOUR_TOTAL);
@@ -109,14 +112,40 @@ export function TourProvider() {
      직접 이동은 4/4 열렸다 = 이동만 안 일어난다). 열기를 이동에만 매달아 두면 «사람이 가장
      자연스럽게 누르는 자리»가 아무 반응이 없다. 그래서 두 경로를 둔다: 이동이 되면 URL 이
      열고, 안 되면 이 리스너가 연다. 둘 다 같은 자리에 착지한다(끝냈으면 처음부터·아니면 이어서). */
+  /* 🔴 **E-2 — 열 때 그 걸음의 «화면»까지 데려간다.** 앞판은 step 만 복원하고 주소는 그대로
+     두었다. 그래서 `/incidents/...` 에서 끊은 사람이 overview 에서 「이어서 보기」를 누르면
+     말풍선은 「다른 화면에서 이어집니다」만 띄우고, 그 화면으로 갈 버튼은 `plan.ui==="link"`
+     인 걸음에만 있었다 — 나머지 걸음에서는 **출구가 없었다**. 진행을 저장한 «뒤» 민다:
+     이동이 이 컴포넌트를 새 화면에서 다시 마운트시키면 남는 것은 저장소뿐이다. */
+  const openAt = useCallback(
+    (next: TourState) => {
+      commit(next);
+      if (next.status !== "running") return;
+      const at = TOUR_STEPS[next.step];
+      if (at && !pathname.startsWith(at.route)) router.push(entryHrefFor(at).href);
+    },
+    [commit, pathname, router],
+  );
+
   useEffect(() => {
     const onOpen = () => {
       const loaded = readState();
-      commit(openedFrom(loaded));
+      openAt(openedFrom(loaded));
     };
     window.addEventListener(TOUR_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(TOUR_OPEN_EVENT, onOpen);
-  }, [commit]);
+  }, [openAt]);
+
+  /* 🔴 **E-3 — 리셋이 지운 사실을 «이 화면»이 알아야 한다.** 저장소만 지우면 이미 떠 있는
+     provider 는 React 상태로 살아 있어 다음 새로고침까지 옛 상태를 보인다. */
+  useEffect(() => {
+    const onReset = () => {
+      setState(INITIAL_TOUR_STATE);
+      setLaterHidden(false);
+    };
+    window.addEventListener(TOUR_RESET_EVENT, onReset);
+    return () => window.removeEventListener(TOUR_RESET_EVENT, onReset);
+  }, []);
 
   const step: TourStep | null =
     state?.status === "running" ? (TOUR_STEPS[state.step] ?? null) : null;
@@ -217,7 +246,9 @@ export function TourProvider() {
       <TourOverlay
         mode="invite"
         resume={resume}
-        onStart={() => commit({ v: 1, status: "running", step: resume ? state.step : 0 })}
+        onStart={() => openAt({ v: 1, status: "running", step: resume ? state.step : 0 })}
+        /* 🔴 E-3 — 「이어서 보기」만 있으면 «처음부터 다시»가 막힌다. 끊었던 사람에게만 보조로 둔다. */
+        onRestart={resume ? () => openAt({ v: 1, status: "running", step: 0 }) : undefined}
         /* 「나중에」는 «이 탭에서만» 접는다 — 저장을 건드리면 그게 곧 영구가 된다. */
         onLater={() => setLaterHidden(true)}
         onNever={() => commit({ v: 1, status: "suppressed", step: 0 })}
@@ -237,6 +268,10 @@ export function TourProvider() {
       onNext={advance}
       onSkip={() => stop("dismissed")}
       onGoto={goto}
+      /* 🔴 E-2 — «이동만» 한다. `onGoto` 는 링크 걸음의 진행을 함께 올리므로 여기 쓸 수 없다:
+         화면을 못 찾아 옮겨 가는 사람이 걸음 하나를 건너뛰게 된다. */
+      onRouteGo={() => router.push(entryHrefFor(step).href)}
+      routeGoLabel={entryHrefFor(step).label}
     />
   );
 }

@@ -12,7 +12,7 @@
 # 「색인이 있어서」임을 그 대비가 증명한다. 순서를 뒤집으면(색인 먼저) 대조군을 만들려고
 # 색인을 지워야 하고, 그건 다른 상태를 만든 것이지 대조가 아니다.
 #
-#   1) 색인 0 → 러너 **exit 5**(「answerable 전체 hit 0」) 기대  ← 골격 시절 델타표의
+#   1) 색인 0 → 러너 **exit 7**(「색인 없음」) 기대  ← 골격 시절 델타표의
 #      «E2 코드축» 행을 여기서 **E1 로 승격**한다.
 #   2) 색인 후 → 러너 **exit 0** + hit 계수
 #
@@ -85,6 +85,24 @@ jobs:
           done
           echo "pwsh $(pwsh --version) · $(psql --version) · node $(node --version) · docker $(docker --version)"
           pg_isready -d "$PGDATABASE" -U "$PGUSER"
+
+      # 🔴 구조 가드 갈래 드릴 — 실무대(색인 0)로는 exit 5·8·9 를 손잡이 하나로 갈라 세울 수
+      #    없다(색인을 비우면 두 축이 함께 움직인다). 반쪽 스텁으로 «한 번에 한 칸»만 바꿔
+      #    러너의 판정식이 실제로 갈리는지 «매 run» 센다. 이게 없으면 exit 8·9 는 이 회로에서
+      #    자극 0건이라 「넣었다」만 남고 동작 증명이 없다. postgres·모델·색인 전부 불필요.
+      - name: 구조 가드 갈래 드릴 (exit 0·2·5·6·7·8·9 가 실제로 갈리는가)
+        run: |
+          set -euo pipefail
+          rc=0
+          node benchmarks/tools/smoke-runner-branch-drill.mjs > /tmp/drill.txt 2>&1 || rc=$?
+          cat /tmp/drill.txt
+          [ "$rc" -eq 0 ] || { echo "::error::갈래 드릴 rc ${rc} — 구조 가드가 기대대로 갈리지 않는다"; exit 1; }
+          # 🔴 「초록 ≠ 훑음」 — 열 수를 세어 드릴이 «실제로 돌았는지» 확인한다. 0칸 PASS 는 PASS 가 아니다.
+          # 🔴 계수 단위 = «판정이 찍힌 행»(구조 가드 8열 + 쓰기 실패 2열 = 10). 행 끝 앵커를 쓰면
+          #    쓰기 실패 2열이 뒤에 사유를 달고 있어 8 이 나온다 — 앵커 없이 센다(실측 확인).
+          cols=$(grep -cE '\| (PASS|🔴 FAIL)' /tmp/drill.txt || true)
+          [ "$cols" -eq 10 ] || { echo "::error::드릴 판정 행 ${cols} ≠ 10 — 드릴이 안 돌았거나 열이 바뀌었다"; exit 1; }
+          echo "드릴 열 ${cols}칸 전건 PASS"
 
       - name: cache pip (indexer)
         uses: actions/cache@v4
