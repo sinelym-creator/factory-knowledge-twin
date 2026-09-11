@@ -458,8 +458,15 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
 
     // 이후 화면 잠금 + 새로고침하면 이력이 사라진다(화면이 말한 그대로인가)
     await expect(page.getByTestId("wo-title")).toBeDisabled();
-    await expect(page.getByTestId("wo-approve")).toBeDisabled();
-    await expect(page.getByTestId("wo-reject")).toBeDisabled();
+    // 🔴 종단에는 «누를 것»을 두지 않는다(E-7 · D-70 과 같은 규칙) — 잠긴 버튼이 아니라 부재다.
+    //    `toBeDisabled()` 는 요소가 없을 때 「안 잠겼다」가 아니라 «못 찾음»으로 죽으므로,
+    //    판정선을 부재로 옮긴다. 독검 실측(리바이2 60대 · 수리 lane `6eafdc7`):
+    //    승인 후 approve/reject count 0 · `wo-final` 1 · `wo-exit` 1 → `/incidents/{id}` 착지.
+    await expect(page.getByTestId("wo-approve")).toHaveCount(0);
+    await expect(page.getByTestId("wo-reject")).toHaveCount(0);
+    // 🔴 「없다」만 확인하면 «빈 화면»도 통과한다 — 그 자리에 결과와 출구가 선 것까지 본다.
+    await expect(page.getByTestId("wo-final")).toBeVisible();
+    await expect(page.getByTestId("wo-exit")).toHaveAttribute("href", /\/incidents\//);
     await page.reload();
     await expect(page.getByTestId("wo-history")).toHaveCount(0);
     /* 🔴 **「종단」은 계약이 «전이 규칙»을 서술하는 낱말이지 화면 문장을 정하는 줄이 아니다**
@@ -501,8 +508,15 @@ test.describe("T3-5 — 작업지시서 편집·승인 «최소 형상»", () =>
     await expect(page.getByTestId("wo-history")).toContainText(/AUD-/);
 
     await expect(page.getByTestId("wo-title")).toBeDisabled();
-    await expect(page.getByTestId("wo-approve")).toBeDisabled();
-    await expect(page.getByTestId("wo-reject")).toBeDisabled();
+    // 🔴 종단에는 «누를 것»을 두지 않는다(E-7 · D-70 과 같은 규칙) — 잠긴 버튼이 아니라 부재다.
+    //    `toBeDisabled()` 는 요소가 없을 때 「안 잠겼다」가 아니라 «못 찾음»으로 죽으므로,
+    //    판정선을 부재로 옮긴다. 독검 실측(리바이2 60대 · 수리 lane `6eafdc7`):
+    //    승인 후 approve/reject count 0 · `wo-final` 1 · `wo-exit` 1 → `/incidents/{id}` 착지.
+    await expect(page.getByTestId("wo-approve")).toHaveCount(0);
+    await expect(page.getByTestId("wo-reject")).toHaveCount(0);
+    // 🔴 「없다」만 확인하면 «빈 화면»도 통과한다 — 그 자리에 결과와 출구가 선 것까지 본다.
+    await expect(page.getByTestId("wo-final")).toBeVisible();
+    await expect(page.getByTestId("wo-exit")).toHaveAttribute("href", /\/incidents\//);
     /* 🔴 **계약이 바뀌었다(D-70)** — 잠긴 초안에는 편집 UI 를 «그리지 않는다».
        예전 형상은 `disabled` + `opacity-40` 이었고, 그것이 「눌러도 되는데 안 눌리는 것」처럼
        보이는 데다 좁은 폭에서 «비어 보이는 긴 카드»의 절반이었다(폐하 360 실기기 · D-70).
