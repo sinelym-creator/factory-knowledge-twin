@@ -66,4 +66,5 @@ size_limit: 4KB
 | `docs/plan/tickets/T7-44.md` | run 문서 검색 단계 hybrid 반영(O-36 ⓑ · 폐하 「b」 09-06 00:17) — 설계 §2 · 검증 §3 개정 (a)~(e)(r1 조건부 #807 → T7-44b 수리 → r2 PASS #810 · 기준선 v0.6 · 대조군 v0.5-d85) · 계약 v0.2.0/0.2.1 | 09-06 · 완결 · 승격 22 |
 
 - `.workspace/retrospective/2026-09-06-suzaku50.md` — 스자쿠 50대 회고
+- `.workspace/retrospective/2026-09-12-suzaku61.md` — 스자쿠 61대 회고(순찰 6h · Gate-A 오독→정정 · 센쿠2 57대 · 폐하 마감 승인 07:31)
 - `.workspace/retrospective/2026-09-06-suzaku53.md` — 스자쿠 53대 회고(기본값 ⓒ · 승격 25 청구 · O-48 ⓐ-2 이월 착지 · 주간 99% 마감)
