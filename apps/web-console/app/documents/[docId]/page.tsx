@@ -12,6 +12,7 @@ import {
   decodeRouteParam,
 } from "@/lib/contract";
 import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { fetchSessionRuns } from "@/lib/session-runs";
 import { isStaticRun, loadStaticReplay, staticLookup } from "@/lib/static-replay";
 
 /**
@@ -45,8 +46,43 @@ export default async function DocumentPage({
     ? staticLookup<DocumentPreview>(bundle, CONTRACT.document(docId, highlight))
     : await apiGetServer<DocumentPreview>(CONTRACT.document(docId, highlight), cookieHeader);
 
+  /* 🔴 **D-91 — run→incident 를 여기서도 구한다.** 근거 화면은 이미 이렇게 답을 얻고 있었는데
+     (`evidence/[evidenceId]/page.tsx` 같은 자리) 문서 화면만 `runId` 만 들고 `incidentId` 를
+     비워 둬서, `DeepLinkNotice` 의 「이 조사로 돌아가기」 조건(`runId && incidentId`)이 이
+     화면에서는 **항상 거짓**이었다. 정적 재생본 경로는 사본의 anchors 가 그 값을 들고 있다 —
+     서버에 다시 묻지 않는다(근거 화면과 같은 짝). 🔴 못 구하면 `null` 이고 링크는 서지 않는다. */
+  const runIncidentId = run
+    ? (bundle?.manifest.anchors.incidentId ??
+        (await fetchSessionRuns()).find((r) => r.runId === run)?.incidentId ??
+        null)
+    : null;
+
+  /* 🔴 **ⓒ 돌아가기 — 링크를 «지어내지» 않는다**(D-63 규율). 아는 자리만 차례로 시도하고,
+     못 구한 단계는 건너뛴다. `/overview` 는 언제나 서므로 무세션 열람에도 출구가 남는다.
+       ① 조사 — run 과 incident 를 «둘 다» 아는 회차만
+       ② 근거 — `?highlight=` 가 그 근거 id 다(문서로 온 문이 바로 그 화면이었다)
+       ③ 개요 — 폴백 */
+  const backHref = run && runIncidentId
+    ? `/incidents/${encodeURIComponent(runIncidentId)}?run=${encodeURIComponent(run)}`
+    : highlight
+      ? `/evidence/${encodeURIComponent(highlight)}${run ? `?run=${encodeURIComponent(run)}` : ""}`
+      : "/overview";
+  const backLabel = run && runIncidentId ? "조사로 돌아가기" : highlight ? "근거로 돌아가기" : "개요로 돌아가기";
+
   const heading = (
     <header className="fkt-card p-5">
+      {/* 🔴 **ⓒ 머리줄의 「돌아가기」는 «항상» 선다**(D-91 · 폐하 실측 「이 화면에서 이전으로
+          어떻게 돌아갑니까?」). 앞판에서 되돌아갈 길은 본문 크기 링크 하나뿐이었고, 그것도
+          개요로만 갔다. 폰에서 누를 수 있어야 하므로 `fkt-hit`(≥44px)로 둔다. */}
+      <p className="mb-2">
+        <a
+          href={backHref}
+          className="fkt-hit fkt-pill bg-fill text-foot text-ai hover:bg-bg focus:outline-2 focus:outline-ai"
+          data-testid="document-back"
+        >
+          ← {backLabel}
+        </a>
+      </p>
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-body-c font-semibold">문서 열람</h1>
         <span className="id text-body-c text-ai">{docId}</span>
@@ -99,7 +135,7 @@ export default async function DocumentPage({
             kind={missing ? "not-found" : "unavailable"}
           />
         )}
-        <DeepLinkNotice hasSession={hasSession} runId={run} />
+        <DeepLinkNotice hasSession={hasSession} runId={run} incidentId={runIncidentId} />
       </div>
     );
   }
@@ -108,7 +144,7 @@ export default async function DocumentPage({
   return (
     <div className="flex min-w-0 max-w-4xl flex-col gap-3">
       {heading}
-      <DeepLinkNotice hasSession={hasSession} runId={run} />
+      <DeepLinkNotice hasSession={hasSession} runId={run} incidentId={runIncidentId} />
       {/* 🔴 열람 이력 — 정적 경로에서만 남긴다(ⓒ). 그리는 것이 없는 부수효과 컴포넌트다. */}
       <MarkVisited id={d.documentId} run={run} />
 
