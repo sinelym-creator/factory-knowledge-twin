@@ -1,0 +1,14 @@
+const _pw = await import("file:///C:/Users/sinel/repos/_wt/senku2-m1/tests/web/node_modules/@playwright/test/index.js");
+const chromium = _pw.chromium ?? _pw.default.chromium;
+const B = "http://127.0.0.1:8802", WO = process.argv[2];
+const br = await chromium.launch();
+const ctx = await br.newContext({ viewport: { width: 412, height: 600 } });
+const page = await ctx.newPage();
+await page.goto(`${B}/`, { waitUntil: "domcontentloaded" });
+await page.waitForURL(/\/overview/, { timeout: 20000 }).catch(()=>{});
+await page.waitForTimeout(1000);
+const r = await page.goto(`${B}/work-orders/${WO}`, { waitUntil: "domcontentloaded" });
+console.log("status", r.status(), "url", page.url());
+await page.waitForTimeout(2500);
+console.log((await page.evaluate(() => document.body.innerText)).slice(0, 600));
+await br.close();
