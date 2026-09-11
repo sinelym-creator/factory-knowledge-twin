@@ -104,15 +104,28 @@ def find_key(node, key: str, path: str = ""):
     return hits
 
 
-def start_and_wait(api: str, scenario: str, sid: str, deadline_sec: int = 300) -> dict:
-    status, created, _ = call(api, "POST", f"/api/scenarios/{scenario}/runs", {"sessionId": sid, "mode": "live"})
+def open_session(api: str):
+    """🔴 **실발급 세션**이 있어야 API 문이 열린다 — 쿠키를 손으로 지어내면 401 이다."""
+    status, body, headers = call(api, "POST", "/api/sessions", {})
+    if status not in (200, 201):
+        raise StageMissing(f"세션 발급 실패 — {status} {body}")
+    # 🔴 uvicorn 은 헤더를 **소문자**로 낸다 — `Set-Cookie` 로만 찾으면 «있는 헤더» 가 안 보인다.
+    raw = next((v for k, v in headers.items() if k.lower() == "set-cookie"), "") or ""
+    cookie = raw.split(";")[0] if raw else ""
+    if not cookie:
+        raise StageMissing("Set-Cookie 가 없다 — 세션을 들고 다닐 수 없다")
+    return cookie, (body or {}).get("sessionId")
+
+
+def start_and_wait(api: str, scenario: str, sid: str, cookie: str, deadline_sec: int = 300) -> dict:
+    status, created, _ = call(api, "POST", f"/api/scenarios/{scenario}/runs", {"sessionId": sid, "mode": "live"}, cookie)
     if status != 200 or not (created or {}).get("runId"):
         raise StageMissing(f"run 을 시작하지 못했다 — {status} {created}")
     run_id = created["runId"]
     end = time.time() + deadline_sec
     snap: dict = {}
     while time.time() < end:
-        _, snap, _ = call(api, "GET", f"/api/runs/{run_id}")
+        _, snap, _ = call(api, "GET", f"/api/runs/{run_id}", None, cookie)
         if isinstance(snap, dict) and snap.get("status") != "running":
             break
         time.sleep(0.5)
@@ -130,11 +143,14 @@ def column(api: str, stub: str, scenario: str, sid: str, mode: str) -> dict:
     if status != 200:
         raise StageMissing("스텁 /_stub/reset 이 서지 않는다 — 계수를 0 으로 못 만든다")
 
-    _, cap_before, _ = call(api, "GET", "/api/live/status")
-    snap = start_and_wait(api, scenario, sid)
-    _, cap_after, _ = call(api, "GET", "/api/live/status")
+    # 🔴 sessionId 는 서버가 발급한 것을 그대로 쓴다 — 내가 지은 이름을 본문에 실으면
+    #    쿠키와 갈려 422 다(서버가 일부러 고르지 않는 자리).
+    cookie, sid = open_session(api)
+    _, cap_before, _ = call(api, "GET", "/api/live/status", None, cookie)
+    snap = start_and_wait(api, scenario, sid, cookie)
+    _, cap_after, _ = call(api, "GET", "/api/live/status", None, cookie)
     _, stub_calls, _ = call(stub, "GET", "/_stub/calls")
-    _, events, _ = call(api, "GET", f"/api/runs/{snap['_runId']}/events")
+    _, events, _ = call(api, "GET", f"/api/runs/{snap['_runId']}/events", None, cookie)
 
     calls_hits = find_key(snap, "calls") + find_key(events, "calls")
     retried_hits = find_key(snap, "safetyRetried") + find_key(events, "safetyRetried")

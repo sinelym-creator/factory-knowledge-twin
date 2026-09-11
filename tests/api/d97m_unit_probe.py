@@ -114,6 +114,20 @@ def run_column(mode: str) -> dict:
        이 열의 참값은 «서버가 없었다»라는 구성이지 스턴 계수가 아니다.
     """
     port = free_port()
+    if mode == "noaddr":
+        # 🔴 게이트웨이 주소가 비었다 — 루프 전에 return 하는 갈래(README 가 0 으로 적은 자리).
+        os.environ[ls.LIVE_GATE_ENV] = ""
+        result = asyncio.run(ls.synthesize(
+            CANDIDATES, anchor=Anchor(), state=STATE, evidence_ids=list(EVIDENCE),
+        ))
+        payload = result.synthesis_payload()
+        return {
+            "mode": mode,
+            "stub": {"total": 0, "byNotice": {"first": 0, "retry": 0}, "note": "호출 자체가 없다(구성)"},
+            "target": {"axis": result.axis, "rejectedReason": result.rejected_reason,
+                       "safety_omitted": result.safety_omitted, "payloadKeys": sorted(payload),
+                       "payload": payload, "rationaleCited": {}},
+        }
     if mode == "unreachable":
         os.environ[ls.LIVE_GATE_ENV] = f"http://127.0.0.1:{port}"   # 아무도 안 듣는 포트
         result = asyncio.run(ls.synthesize(
@@ -156,13 +170,13 @@ def run_column(mode: str) -> dict:
             anchor=Anchor(),
             state=STATE,
             evidence_ids=list(EVIDENCE),
-            on_sentence=(seen.append if mode == "streamerr" else None),
+            on_sentence=(seen.append if mode in ("streamerr", "noresult") else None),
         ))
         calls = get(base + "/_stub/calls")
         payload = result.synthesis_payload()
         return {
             "mode": mode,
-            "stub": {"total": calls["total"], "byNotice": calls["byNotice"]},
+            "stub": {"total": calls["total"], "rawRequests": calls.get("rawRequests"), "byNotice": calls["byNotice"]},
             "target": {
                 "axis": result.axis,
                 "rejectedReason": result.rejected_reason,
@@ -178,7 +192,7 @@ def run_column(mode: str) -> dict:
 
 
 def main() -> int:
-    rows = [run_column(m) for m in ("named", "retry", "omitted", "guardfail", "streamerr", "unreachable")]
+    rows = [run_column(m) for m in ("named", "retry", "omitted", "guardfail", "streamerr", "noresult", "http4xx", "unreachable", "noaddr")]
     by = {r["mode"]: r for r in rows}
     totals = {m: by[m]["stub"]["total"] for m in by}
 
@@ -217,6 +231,13 @@ def main() -> int:
             "target": by["guardfail"]["target"]["payload"].get("calls"),
             "axis": by["guardfail"]["target"]["axis"],
             "rejectedReason": by["guardfail"]["target"]["rejectedReason"],
+        },
+        "http4xx": {
+            "stubConsumed": by["http4xx"]["stub"]["total"],
+            "stubRawRequests": by["http4xx"]["stub"].get("rawRequests"),
+            "target": by["http4xx"]["target"]["payload"].get("calls"),
+            "axis": by["http4xx"]["target"]["axis"],
+            "rejectedReason": by["http4xx"]["target"]["rejectedReason"],
         },
         "streamerr": {
             "stub": by["streamerr"]["stub"]["total"],
