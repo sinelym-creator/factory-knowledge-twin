@@ -7,7 +7,7 @@ import { introSeen, markIntroSeen, subscribeIntro } from "@/components/overview/
 
 import { Sparkline } from "@/components/overview/sparkline";
 import { useTourAllowed } from "@/components/tour/tour-allowed";
-import { TOUR_OPEN_EVENT } from "@/components/tour/tour-reopen";
+import { clearTourOpenRequest, subscribeTourOpenRequest, tourOpenRequested } from "@/components/tour/tour-reopen";
 import Link from "next/link";
 
 import { StartInvestigation } from "@/components/overview/start-investigation";
@@ -126,23 +126,38 @@ export function OverviewBody({
    * 🔴 고치는 자리는 이동이 아니라 **듣는 쪽**이다. 이동을 신뢰할 수 있게 만드는 일은 이
    *    화면 밖(라우터 축)이고, 여기서 필요한 것은 「열라」는 신호를 투어와 «같이» 받는 것뿐이다.
    */
-  const [openedBySignal, setOpenedBySignal] = useState(false);
-  useEffect(() => {
-    const onOpen = () => setOpenedBySignal(true);
-    window.addEventListener(TOUR_OPEN_EVENT, onOpen);
-    return () => window.removeEventListener(TOUR_OPEN_EVENT, onOpen);
-  }, []);
+  /* 🔴 **D-95 — 「열라」를 이벤트가 아니라 «래치»로 읽는다.** 이벤트만 듣던 앞판은
+     이 컴포넌트가 서기 «전»에 지나간 신호를 영영 못 봤다(M-1 실측: 이벤트 도달 1 · 투어
+     열림 1 · 카드 0 · 412×600 직행 2/2 빨강). 구독으로 읽으면 늦게 선 회차도 첫 렌더에
+     같은 클릭을 본다 — 「따라가야 할 상태」가 없어지고 파생 하나만 남는다.
+     서버 스냅샷 false = 서버에는 누른 사람이 없다(저장소 훅과 같은 규칙). */
+  const openedBySignal = useSyncExternalStore(
+    subscribeTourOpenRequest,
+    tourOpenRequested,
+    () => false,
+  );
 
   const showIntro = forceIntro || openedBySignal || !seen;
 
   const closeIntro = useCallback(() => {
     markIntroSeen(sessionId);
     // 🔴 신호로 열린 것도 «닫힘»이 이겨야 한다 — 안 내리면 이 카드는 다시 못 닫는다.
-    setOpenedBySignal(false);
+    //    래치는 «적힌 자리»에서 지운다: 여기서 지우지 않으면 이 화면에 다시 들어올 때
+    //    아무도 안 눌렀는데 열린다(창이 지나기 전이라면).
+    clearTourOpenRequest();
     // 🔴 `?intro=1` 을 남긴 채 닫으면 새로고침이 다시 연다 — 「닫았다」가 지켜지지 않는다.
     //    🔴 `history.replaceState` 가 아니라 라우터로 지운다: 주소만 바꾸면 `forceIntro`
     //       프롭이 true 로 남아 카드가 닫히지 않는다.
-    if (forceIntro) router.replace(pathname, { scroll: false });
+    /* 🔴 **D-95 ⑥ — 「닫았다」가 새로고침을 넘지 못한 자리.** `forceIntro` 는 **서버가
+       읽은** 쿼리다. 앱바 「튜토리얼」은 같은 화면일 때 `pushState` 로만 `?intro=1` 을 붙이므로
+       그 회차의 서버 렌더는 쿼리를 본 적이 없고 `forceIntro` 는 false 다 — 그래서 닫아도 주소가
+       안 지워지고, 새로고침한 서버가 그 `?intro=1` 을 읽어 **다시 열었다**(실측: 닫기 뒤
+       새로고침 카드 1). 앞판에서 이 자리가 안 보였던 이유는 그 앞 단계(재열기)가 애초에
+       실패해 여기까지 오지 못했기 때문이다 — 한 겹을 고치면 다음 겹이 드러난다.
+       🔴 그래서 「서버가 읽었는가」가 아니라 **「지금 주소에 있는가」**로 묻는다. */
+    const addressHasIntro =
+      typeof window !== "undefined" && new URLSearchParams(window.location.search).has("intro");
+    if (forceIntro || addressHasIntro) router.replace(pathname, { scroll: false });
   }, [forceIntro, sessionId, router, pathname]);
 
   const shown = useMemo(

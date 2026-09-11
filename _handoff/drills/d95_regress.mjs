@@ -1,0 +1,43 @@
+/** D-95 회귀 — 래치가 «한 번만» 열고, 닫힘이 이기고, 다음 방문에 저절로 열지 않는가.
+ *  node d95_regress.mjs <base> <w> <h> */
+/* 🔴 개인 절대경로 금지(ci hygiene) — 상대 경로 · 다른 트리는 FKT_PW 로 덮는다. */
+const PW_ENTRY = process["env"].FKT_PW ?? "../../tests/web/node_modules/@playwright/test/index.js";
+const _pw = await import(new URL(PW_ENTRY, import.meta.url).href);
+const chromium = _pw.chromium ?? _pw.default.chromium;
+const [B = "http://127.0.0.1:8805", W = "412", H = "600"] = process.argv.slice(2);
+const br = await chromium.launch();
+const ctx = await br.newContext({ viewport: { width: +W, height: +H } });
+const page = await ctx.newPage();
+const card = () => page.locator('[data-testid="intro-card"]').count();
+const settle = () => page.waitForFunction(() => { const b = document.querySelector('[data-testid="mode-badge"]'); return b && b.getAttribute("data-mode") !== "checking"; }, null, { timeout: 15000 });
+const rows = [];
+await page.goto(`${B}/overview`, { waitUntil: "domcontentloaded" });
+await page.waitForSelector('[data-testid="intro-card"]', { timeout: 20000 });
+rows.push(["① 첫 진입 = 뜬다", await card(), 1]);
+await page.getByTestId("intro-card").getByRole("button", { name: "안내 닫기" }).click();
+await page.waitForTimeout(400);
+rows.push(["② 닫으면 사라진다", await card(), 0]);
+await page.reload(); await settle(); await page.waitForTimeout(2500);
+rows.push(["③ 새로고침에 안 뜬다", await card(), 0]);
+await page.getByTestId("intro-reopen").click();
+await page.waitForTimeout(2500);
+rows.push(["④ 「튜토리얼」로 다시 열린다", await card(), 1]);
+await page.getByTestId("intro-card").getByRole("button", { name: "안내 닫기" }).click();
+await page.waitForTimeout(600);
+rows.push(["⑤ 다시 닫으면 닫힌다", await card(), 0]);
+await page.reload(); await settle(); await page.waitForTimeout(2500);
+rows.push(["⑥ 🔴 래치 잔여로 되열지 않는다", await card(), 0]);
+await page.goto(`${B}/incidents`, { waitUntil: "domcontentloaded" }).catch(() => {});
+await page.waitForTimeout(800);
+await page.goto(`${B}/overview`, { waitUntil: "domcontentloaded" });
+await settle(); await page.waitForTimeout(2500);
+rows.push(["⑦ 🔴 딴 화면 갔다 와도 안 열린다", await card(), 0]);
+const fresh = await br.newContext({ viewport: { width: +W, height: +H } });
+const p2 = await fresh.newPage();
+await p2.goto(`${B}/overview`, { waitUntil: "domcontentloaded" });
+await p2.waitForSelector('[data-testid="intro-card"]', { timeout: 20000 }).catch(() => {});
+rows.push(["⑧ 새 세션은 다시 본다", await p2.locator('[data-testid="intro-card"]').count(), 1]);
+console.log(`== ${W}x${H} ==`);
+for (const [name, got, want] of rows) console.log(`${got === want ? "PASS" : "FAIL"} | ${name.padEnd(34)} 기대 ${want} 실측 ${got}`);
+console.log(rows.every(([, g, w]) => g === w) ? "전건 PASS" : "🔴 FAIL 있음");
+await br.close();

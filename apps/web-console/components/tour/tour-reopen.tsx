@@ -32,6 +32,65 @@ import { useTourAllowed } from "@/components/tour/tour-allowed";
  */
 export const TOUR_OPEN_EVENT = "fkt:tour-open";
 
+/**
+ * 🔴 **D-95 — 이벤트는 «그 순간» 듣고 있던 것에게만 간다.**
+ *
+ * 실측(M-1 · 8/8 일치): 새로고침 뒤 앱바의 「튜토리얼」을 누르면 신호는 창에 분명히 닿고
+ * 투어도 열리는데 **안내 카드만 안 열리는 회차**가 있었다. 갈림을 전부 설명한 열은 하나였다 —
+ * 「클릭 «직전»에 개요 본문이 DOM 에 있었는가」. 본문이 스트리밍으로 늦게 붙는 회차에는 그
+ * 1회성 신호를 들을 사람이 아직 없고, 뒤늦게 마운트한 본문에는 신호가 지나갔다는 사실조차
+ * 남지 않는다(412×600 × `/overview` 직행 = **2/2 빨강**).
+ *
+ * 🔴 그래서 「열라」를 **적어 둔다**(래치). 듣는 쪽은 구독으로 읽으므로 두 경우가 한 길이 된다:
+ *    이미 서 있었으면 통지로, 늦게 섰으면 첫 렌더에 그 값을 읽어서.
+ *
+ * 🔴 **저절로 꺼진다** — 적힌 신호는 창이 지나면 스스로 지워지고 통지한다. 스냅샷이
+ *    「시간을 재는 식」이면 구독자가 통지 없이 값이 바뀌는 것을 보게 되므로, 값은 **불린**으로
+ *    두고 끄는 일만 타이머가 한다. 닫기는 그보다 먼저 지운다(아래 `clearTourOpenRequest`).
+ * 🔴 서버 스냅샷은 **false** — 서버에는 누른 사람이 없다.
+ */
+const OPEN_REQUEST_TTL_MS = 10_000;
+let openRequested = false;
+let expiry: ReturnType<typeof setTimeout> | null = null;
+const openListeners = new Set<() => void>();
+
+function notifyOpenRequest(): void {
+  for (const l of openListeners) l();
+}
+
+/** 「열라」를 적는다 — 쏘는 쪽(클릭)이 부른다. */
+export function markTourOpenRequested(): void {
+  openRequested = true;
+  if (expiry) clearTimeout(expiry);
+  expiry = setTimeout(() => {
+    expiry = null;
+    if (!openRequested) return;
+    openRequested = false;
+    notifyOpenRequest();
+  }, OPEN_REQUEST_TTL_MS);
+  notifyOpenRequest();
+}
+
+/** 적힌 것을 지운다 — 닫기가 부른다(안 지우면 다음 마운트가 한 번 더 연다). */
+export function clearTourOpenRequest(): void {
+  if (expiry) {
+    clearTimeout(expiry);
+    expiry = null;
+  }
+  if (!openRequested) return;
+  openRequested = false;
+  notifyOpenRequest();
+}
+
+export function tourOpenRequested(): boolean {
+  return openRequested;
+}
+
+export function subscribeTourOpenRequest(onChange: () => void): () => void {
+  openListeners.add(onChange);
+  return () => openListeners.delete(onChange);
+}
+
 /** 🔴 목적지는 «한 곳»에만 적는다 — 두 자리에 적으면 pushState 와 router.push 가 갈린다. */
 const TOUR_HREF = "/overview?intro=1&tour=1";
 const OVERVIEW_PATH = "/overview";
@@ -72,6 +131,9 @@ export function TourReopen() {
       title="처음부터 다시 보기"
       data-testid="intro-reopen"
       onClick={() => {
+        /* 🔴 적는 것이 «먼저»다 — 쏘기 전에 적어야 이 클릭으로 새로 마운트하는 쪽도
+           같은 신호를 읽는다. 순서를 뒤집으면 그 사이에 선 본문이 빈손으로 뜬다. */
+        markTourOpenRequested();
         window.dispatchEvent(new CustomEvent(TOUR_OPEN_EVENT));
         if (pathname === OVERVIEW_PATH) {
           /* 🔴 같은 화면 — 라우터를 거치지 않고 주소만 바꾼다. 새로고침·딥링크 공유가
