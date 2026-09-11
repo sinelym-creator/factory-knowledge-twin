@@ -5,7 +5,7 @@
 // 여기에 추가해야 한다. 그 사실을 잊지 않도록 run.js가 자기 검증으로 감시한다.
 //
 // 지원: $ref · type · required · additionalProperties:false · properties
-//       enum · const · minimum · minItems · items · allOf · if/then · format(date-time)
+//       enum · const · minimum · maximum · minItems · items · allOf · if/then · format(date-time)
 //
 // 🔴 `format`은 JSON Schema 2020-12 기본 규정상 «주석»이지 «단언»이 아니다.
 //    본 harness는 계약 테스트이므로 의도적으로 «단언»으로 다룬다 — 계약이 date-time을
@@ -13,7 +13,7 @@
 
 const SUPPORTED = new Set([
   '$ref', 'type', 'required', 'additionalProperties', 'properties',
-  'enum', 'const', 'minimum', 'minItems', 'items', 'allOf', 'if', 'then', 'format',
+  'enum', 'const', 'minimum', 'maximum', 'minItems', 'items', 'allOf', 'if', 'then', 'format',
   // 검증에 영향 없는 주석성 키워드
   '$schema', '$id', 'title', 'description', '$defs',
 ]);
@@ -106,6 +106,9 @@ function validate(schema, root, value, path = '', touched = null) {
   }
   if ('const' in sch && value !== sch.const) errors.push(`${path}: const 불일치`);
   if (typeof sch.minimum === 'number' && typeof value === 'number' && value < sch.minimum) errors.push(`${path}: minimum 위반`);
+  // 🔴 v0.2.5 · D-97 — `synthesis.calls` 가 상한 2 를 선언하며 들어왔다.
+  //    상한을 안 재면 「최대 2회」가 문서에만 남는다 — 실측: 이 줄 없이는 `calls 3` 이 accept 였다.
+  if (typeof sch.maximum === 'number' && typeof value === 'number' && value > sch.maximum) errors.push(`${path}: maximum 위반`);
 
   if (Array.isArray(value)) {
     if (typeof sch.minItems === 'number' && value.length < sch.minItems) errors.push(`${path}: minItems 위반`);
