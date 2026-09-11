@@ -158,7 +158,10 @@ function SynthesisBadge({ synthesis }: { synthesis?: RunSynthesis }) {
     synthesis.axis === "live"
       ? { icon: "◉", text: "live 합성", cls: "text-ok" }
       : synthesis.axis === "live-rejected"
-        ? { icon: "◌", text: "live 거부", cls: "text-warn" }
+        /* 🔴 계약 v0.2.4 «화면 문면 개정» — 「live 거부」는 **우리 층의 사건 이름**이다.
+         방문자에게는 무엇이 거부됐는지가 아니라 «지금 무엇으로 보고 있는가»가 필요하다.
+         아이콘·`data-testid`·`data-axis` 는 그대로 둔다(계측 그물 보존 · 낱말만 바뀐다). */
+      ? { icon: "◌", text: "기록 기반 집계", cls: "text-warn" }
         : { icon: "◐", text: "결정적", cls: "text-muted" };
   return (
     <span
@@ -246,11 +249,29 @@ export function CandidateList({
       </div>
       {(() => {
         const synthesis = state.steps.find((s) => s.step === "synthesize")?.synthesis;
-        return synthesis?.axis === "live-rejected" && synthesis.rejectedReason ? (
-          <p className="mt-1 text-xs text-warn" data-testid="synthesis-rejected-reason">
-            AI 가 쓴 종합 문장이 근거를 인용하지 못해 전량 거부되었습니다.
-            ({synthesis.rejectedReason}) 아래 순위는 집계로 낸 결과입니다.
-          </p>
+        /* 🔴 **조건은 `axis` 하나다**(앞판은 `&& synthesis.rejectedReason`).
+           `live-rejected` 는 근거 결속 거부뿐 아니라 **CLI 오류·타임아웃**으로도 온다
+           (`live_synthesis.py` 가 `str(exc)` 를 그대로 싣는 경로). 그 회차에 사유 문자열이
+           비어 오면 앞판 조건은 **안내를 통째로 지웠다** — 완주 안내가 사라지는 자리다.
+           문장은 «항상», 원문은 «있을 때만» 낸다. */
+        return synthesis?.axis === "live-rejected" ? (
+          <div className="mt-1 text-xs text-warn" data-testid="synthesis-rejected-reason">
+            {/* 🔴 문면은 원인을 말하지 않는다 — 원인은 회차마다 다르고(거부·오류·타임아웃)
+                화면은 그것을 가를 정보를 갖고 있지 않다. 「지금 무엇으로 보고 있는가」와
+                「다음에 무엇을 보면 되는가」만 말한다(금칙어 0). */}
+            <p>
+              실시간 분석 대신 기록 기반 집계로 이어서 보여드립니다. 아래 순위는 집계 결과입니다.
+            </p>
+            {synthesis.rejectedReason ? (
+              /* 🔴 원문은 **숨기는 것이 아니라 접는다**. `<details>` 는 터치에서도 열리고,
+                 툴팁과 달리 hover 가 없는 기기에서 사라지지 않는다(D-62 형태). 안의 문자열은
+                 서버가 만든 것이라 여기서 고치지 않는다 — 화면 표기만 바꾼다는 규율. */
+              <details className="mt-0.5">
+                <summary className="cursor-pointer text-muted">자세히</summary>
+                <span className="id">{synthesis.rejectedReason}</span>
+              </details>
+            ) : null}
+          </div>
         ) : null;
       })()}
       {state.candidates.length === 0 && synthesizing(state, showingPast) ? (

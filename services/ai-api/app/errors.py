@@ -171,6 +171,36 @@ class SessionRunCapExceeded(StarletteHTTPException):
         )
 
 
+class LiveHourlyCapExceeded(StarletteHTTPException):
+    """전역 시간당 Live 상한 — 계약 v0.2.4 `429 live_hourly_cap_exceeded`.
+
+    🔴 `session_run_cap_exceeded` 와 **다른 code** 다. 둘은 방문자에게 다른 말을 해야 한다:
+       세션 축은 「당신이 이 시간에 3회를 썼다」이고, 이 축은 「지금 이 서비스 전체가 다 썼다」다.
+       한 code 로 뭉치면 아무것도 안 쓴 방문자가 자기 탓이라는 문면을 읽는다.
+    🔴 `remaining` 은 **상수 0**이다(세션 축과 같은 규율) — 이 예외가 서는 조건 자체가
+       「남은 자리가 없다」이므로, 계산값을 다시 넣으면 계산이 틀린 날 거절 응답이
+       「아직 남았다」고 말하게 된다.
+    🔴 `Retry-After` 헤더와 본문 `retryAfterSec` 을 **둘 다** 낸다(세션 축 선례 — 헤더만
+       읽는 소비자가 이미 있다).
+    """
+
+    def __init__(self, retry_after_sec: int, limit: int, used: int) -> None:
+        super().__init__(
+            status_code=429,
+            detail={
+                "code": "live_hourly_cap_exceeded",
+                "message": (
+                    f"이 시간 Live 조사 상한({limit}/시간) 소진 · 녹화 재생으로 계속"
+                ),
+                "limit": limit,
+                "used": used,
+                "remaining": 0,
+                "retryAfterSec": retry_after_sec,
+            },
+            headers={"Retry-After": str(retry_after_sec)},
+        )
+
+
 # 🔴 「의존이 죽었다」와 「우리 코드가 틀렸다」는 다른 사건이라 코드가 달라야 한다(V-2).
 #    이 목록과 아래 `dependency_guard` 가 **그 변환의 유일한 정의**다(V-7 정정 · 「1곳 수렴」).
 #    전에는 compare 만 자기 안에 이 목록을 갖고 있었고, 나중에 열린 읽기 라우트에는 그 자리가

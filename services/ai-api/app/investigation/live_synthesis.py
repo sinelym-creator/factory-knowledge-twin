@@ -358,7 +358,7 @@ def _headers(base: dict[str, str] | None = None) -> dict[str, str]:
     return headers
 
 
-_probe_cache: dict[str, Any] = {"at": 0.0, "online": False}
+_probe_cache: dict[str, Any] = {"at": 0.0, "online": False, "latched_until": None}
 
 
 def probe_reachable() -> bool:
@@ -379,17 +379,42 @@ def probe_reachable() -> bool:
     if now - float(_probe_cache["at"]) < PROBE_CACHE_SEC:
         return bool(_probe_cache["online"])
     online = False
+    latched_until: str | None = None
     try:
         request = urllib.request.Request(                    # noqa: S310 — 루프백 고정 URL
             f"{url}/health", headers=_headers(), method="GET"
         )
         with urllib.request.urlopen(request, timeout=PROBE_TIMEOUT_SEC) as response:  # noqa: S310
             online = response.status == 200
+            if online:
+                # 🔴 **같은 요청에서 걸쇠도 읽는다**(계약 v0.2.4 ②). 따로 한 번 더 두드리면
+                #    두 사실이 다른 순간의 것이 되고, 캐시 주기도 둘로 갈린다.
+                # 🔴 **본문에 `synth` 가 없으면 「도달만」이다** — 구 게이트웨이와의 하위 호환.
+                #    없는 것을 「실패 아님」으로도 「실패」로도 읽지 않고, 그냥 모른다로 둔다.
+                try:
+                    payload = json.loads(response.read().decode("utf-8") or "{}")
+                    synth = payload.get("synth")
+                    if isinstance(synth, dict):
+                        value = synth.get("latchedUntil")
+                        latched_until = value if isinstance(value, str) else None
+                except Exception:                            # noqa: BLE001 — 본문이 깨져도 도달은 참
+                    latched_until = None
     except Exception:                                        # noqa: BLE001 — 못 닿는 것도 «답»이다
         online = False
     _probe_cache["at"] = now
     _probe_cache["online"] = online
+    _probe_cache["latched_until"] = latched_until
     return online
+
+
+def probe_live_state() -> tuple[bool, str | None]:
+    """`(닿는가, 합성 걸쇠 만료시각 iso|None)` — 계약 v0.2.4 ②.
+
+    🔴 `probe_reachable()` 과 **같은 캐시 한 벌**을 쓴다. 두 함수가 각자 두드리면
+       「닿는다」와 「걸쇠」가 서로 다른 순간의 사실이 되어, 배지가 한 응답 안에서 모순된다.
+    """
+    online = probe_reachable()
+    return online, (_probe_cache["latched_until"] if online else None)
 
 
 def _post(

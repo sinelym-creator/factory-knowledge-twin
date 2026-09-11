@@ -376,3 +376,11 @@ class LiveStatus(BaseModel):
     #    `response_model_exclude_unset=True` 로 그 규율을 집행한다(설정하지 않은 필드는
     #    직렬화에서 빠진다 · 명시적으로 준 `None` 은 남는다 = 상한 없음의 `remaining: null`).
     runCap: RunCapStatus | None = None
+    # 🔴 계약 v0.2.4 ② — **`online:false` 일 때만** 실린다. true 회차의 응답은 v0.1.2
+    #    형상 그대로여야 하므로(기존 소비자 무영향), 라우트가 «설정하지 않는» 것으로 그 규율을
+    #    집행한다(`response_model_exclude_unset=True`).
+    #    🔴 `until` 은 **서버가 계산해서 준다** — 셸이 초를 시각으로 바꾸면 두 층이 서로
+    #       다른 시계를 갖게 되고, 화면의 「HH:MM」이 서버가 아는 시각과 어긋난다.
+    reason: Literal["gateway_unreachable", "synthesis_failing", "hourly_cap_exhausted"] | None = None
+    until: datetime | None = None
+    hourlyCap: RunCapStatus | None = None

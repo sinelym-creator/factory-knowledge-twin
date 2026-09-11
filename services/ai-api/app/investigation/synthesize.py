@@ -217,6 +217,23 @@ def live_gateway_reachable() -> bool:
     return live_synthesis.probe_reachable()
 
 
+def live_gateway_state() -> tuple[bool, str | None]:
+    """`(닿는가, 합성 걸쇠 만료 iso|None)` — 계약 v0.2.4 ②.
+
+    🔴 `live_gateway_reachable` 과 **같은 게이트 규율**이다: 게이트가 꺼져 있으면 live
+       구현을 import 하지 않는다(공개 배포 프로세스 안에 Claude 로 가는 코드가 «존재하지
+       않는다»는 성질 · baseline §15.2).
+    🔴 구 게이트웨이(본문에 `synth` 없음)는 `(True, None)` = 「도달만」이다 — 하위 호환.
+    """
+    if not live_gateway_available():
+        return False, None
+    try:
+        from . import live_synthesis                       # noqa: PLC0415 — 게이트 뒤에서만
+    except ImportError:
+        return False, None
+    return live_synthesis.probe_live_state()
+
+
 class LiveSynthesisUnavailable(RuntimeError):
     """게이트는 켜졌는데 로컬 합성 구현이 없다 — 조용히 결정적 축으로 내려가지 않는다."""
 

@@ -7,11 +7,12 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Query, Request, Response
 
-from ..investigation.synthesize import live_gateway_reachable
+from ..investigation.session_cap import GLOBAL_RUN_CAP_KEY
+from ..investigation.synthesize import live_gateway_state
 from ..probes import Resources
 from ..retrieval import embedding
 from ..schemas import HealthResponse, LiveStatus, ModelReadiness, RunCapStatus
@@ -83,18 +84,76 @@ async def live_status(
     response.headers["cache-control"] = "no-store"
 
     # 🔴 도달 프로브 1회(몇 초 캐시). blocking 이라 스레드로 던진다 — 이 라우트가 막히면
-    #    배지 폴링이 서비스를 막는다.
-    online = await asyncio.to_thread(live_gateway_reachable)
+    #    배지 폴링이 서비스를 막는다. 걸쇠도 **같은 요청**에서 읽는다(계약 v0.2.4 ②).
+    reachable, latched_until = await asyncio.to_thread(live_gateway_state)
+
+    # 🔴 **전역 잔여는 «읽기»로만 본다**(`peek`). 배지 폴링이 여기서 세면 아무도 조사하지
+    #    않는데 시간당 상한이 소진된다 — 세션 축이 이미 성문한 규율과 같은 자리다.
+    global_cap = request.app.state.global_run_cap
+    global_peek = global_cap.peek(GLOBAL_RUN_CAP_KEY)
+    global_remaining = global_peek["remaining"]
+    # `limit <= 0`(상한 없음) → `remaining` 은 None 이고, 그때는 「소진」이 성립하지 않는다.
+    hourly_exhausted = global_remaining is not None and int(global_remaining) <= 0
+
+    now = datetime.now(timezone.utc)
+    latched = _latch_active(latched_until, now)
+    online = reachable and not latched and not hourly_exhausted
+
+    # 🔴 **우선순위는 계약이 정한 순서 그대로**(도달 → 합성 → 상한). 한 회차에 둘 이상이
+    #    참일 수 있고, 그때 화면은 «가장 바깥 원인»을 말해야 한다 — 게이트웨이가 꺼져 있는데
+    #    「이 시간 상한 소진」이라고 말하면 방문자는 한 시간 뒤에 와서 또 막힌다.
+    reason: str | None = None
+    until: datetime | None = None
+    if not online:
+        if not reachable:
+            reason = "gateway_unreachable"          # `until` 없음 — 언제 켜질지 우리는 모른다
+        elif latched:
+            reason = "synthesis_failing"
+            until = _parse_iso(latched_until)
+        else:
+            reason = "hourly_cap_exhausted"
+            next_free = global_peek["next_free_sec"]
+            if next_free is not None:
+                until = now + timedelta(seconds=int(next_free))
+
+    # 🔴 `online:true` 회차는 **필드를 설정하지 않는다** — 설정하면 `null` 이 실려 v0.1.2
+    #    형상이 깨진다(`response_model_exclude_unset=True` 가 이 규율을 집행한다).
+    extra: dict[str, object] = {}
+    if reason is not None:
+        extra["reason"] = reason
+        if until is not None:
+            extra["until"] = until
+
     if sessionId is None:
-        # 🔴 **쿼리가 없으면 v0.1.2 형상 그대로**(대조군). `runCap=None` 을 «주지» 않는다 —
+        # 🔴 **쿼리가 없으면 세션 축 필드는 없다**(대조군). `runCap=None` 을 «주지» 않는다 —
         #    주면 필드가 set 이 되어 `null` 이 실리고, 기존 소비자의 응답이 달라진다.
-        return LiveStatus(online=online, checkedAt=datetime.now(timezone.utc))
+        return LiveStatus(online=online, checkedAt=now, **extra)
     # 🔴 **읽기만 한다** — `peek` 이지 `admit` 이 아니다(계약 v0.1.15 · session_cap 머리말).
     #    배지 폴링이 30초마다 도는 자리라, 여기서 세면 «보는 것»이 «쓰는 것»이 되어 방문자는
     #    아무것도 안 하고 상한에 닿는다.
     cap = request.app.state.session_run_cap
     return LiveStatus(
         online=online,
-        checkedAt=datetime.now(timezone.utc),
+        checkedAt=now,
         runCap=RunCapStatus.of(cap.peek(sessionId), cap.window_sec),
+        hourlyCap=RunCapStatus.of(global_peek, global_cap.window_sec),
+        **extra,
     )
+
+
+def _parse_iso(value: str | None) -> datetime | None:
+    """게이트웨이가 준 iso 문자열 → aware datetime. 못 읽으면 None(없는 것으로 친다)."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _latch_active(value: str | None, now: datetime) -> bool:
+    """걸쇠가 «지금» 걸려 있는가. 🔴 못 읽는 값은 **걸리지 않은 것**으로 친다 —
+    읽기 실패로 Live 를 닫으면, 게이트웨이 본문이 한 글자 바뀐 날 전 방문자가 재생으로 간다."""
+    until = _parse_iso(value)
+    return until is not None and until > now
