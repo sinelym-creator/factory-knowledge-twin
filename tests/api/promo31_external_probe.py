@@ -82,6 +82,9 @@ def resolved_peer() -> dict:
     """도메인이 실제로 어느 주소로 붙는지 — vantage 귀속의 바닥 근거."""
     host = BASE.split("//", 1)[1]
     ctx = ssl.create_default_context()
+    # 🔴 기본 컨텍스트는 TLSv1·TLSv1.1 까지 허용한다(CodeQL `py/insecure-protocol`).
+    #    이 창의 실측값은 TLSv1.3 이었지만, «이번에 뭐가 나왔는가» 와 «무엇을 허용하는가» 는 다른 사실이다.
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
     with socket.create_connection((host, 443), timeout=TIMEOUT) as sock:
         with ctx.wrap_socket(sock, server_hostname=host) as tls:
             return {"peer": tls.getpeername()[0], "tls": tls.version()}
