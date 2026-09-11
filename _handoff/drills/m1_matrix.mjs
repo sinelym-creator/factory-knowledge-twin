@@ -1,7 +1,11 @@
 /** M-1 3변수 표 — 입장 경로 × 뷰포트 × (손). 러너 축은 playwright 러너가 따로 돈다.
  *  🔴 재는 것: 재열기 클릭 «그 순간» 개요 본문(OverviewBody)이 DOM 에 있었는가 + 카드가 열렸는가.
  *  node m1_matrix.mjs <base> <entry> <w> <h> <rep> */
-const _pw = await import("file:///C:/Users/sinel/repos/_wt/senku2-m1/tests/web/node_modules/@playwright/test/index.js"); const chromium = _pw.chromium ?? _pw.default.chromium;
+/* 🔴 개인 절대경로를 적지 않는다(ci hygiene `.github/workflows/ci.yml:27` 게이트).
+   이 트리의 `tests/web` 에 설치된 playwright 를 **상대 경로**로 연다 — 다른 사람의
+   체크아웃에서도 같은 자리를 가리킨다. 다른 트리를 쓰려면 `FKT_PW` 로 덮는다. */
+const PW_ENTRY = process["env"].FKT_PW ?? "../../tests/web/node_modules/@playwright/test/index.js";
+const _pw = await import(new URL(PW_ENTRY, import.meta.url).href); const chromium = _pw.chromium ?? _pw.default.chromium;
 const [B = "http://127.0.0.1:8801", ENTRY = "overview", W = "1440", H = "900", REP = "1"] = process.argv.slice(2);
 const br = await chromium.launch();
 const ctx = await br.newContext({ viewport: { width: +W, height: +H } });

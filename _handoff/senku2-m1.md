@@ -2,7 +2,7 @@
 
 - 발주 = 스자쿠 56대 · 상한 45분 · 구독 0
 - lane = `lane/senku2-m1` · base = `origin/develop` **b957e3fa6a9ec0abbe7e6a0ab22014ad8770f1bb**(실측 `git rev-parse`)
-- 트리 = `C:/Users/sinel/repos/_wt/senku2-m1`
+- 트리 = 리포 형제 `_wt/senku2-m1`(개인 절대경로는 적지 않는다 — ci hygiene 게이트)
 
 ## 0. 무대 (포트↔좌석↔워크트리 기록)
 
