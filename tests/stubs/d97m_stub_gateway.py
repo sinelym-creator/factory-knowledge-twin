@@ -45,7 +45,8 @@ MODE = os.environ.get("FKT_STUB_SAFETY", "retry")
 MODEL = os.environ.get("FKT_STUB_MODEL", "stub-no-subscription")
 
 _lock = threading.Lock()
-_calls: list[dict] = []
+_calls: list[dict] = []      # «소모» 가 일어난 회차(CLI 를 부를 자리까지 간 것)
+_raw: list[str] = []         # 받은 요청 전수(4xx 거부 포함) — 둘은 다른 사실이다
 
 
 def _utc_iso(dt: datetime) -> str:
@@ -144,8 +145,11 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/_stub/calls":
             with _lock:
                 log = list(_calls)
+            with _lock:
+                raw = len(_raw)
             self._send(200, {
                 "total": len(log),
+                "rawRequests": raw,
                 "mode": MODE,
                 "byNotice": {
                     "first": sum(1 for c in log if not c["isRetry"]),
@@ -161,13 +165,32 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/_stub/reset":
             with _lock:
                 _calls.clear()
-            self._send(200, {"total": 0})
+                _raw.clear()
+            self._send(200, {"total": 0, "rawRequests": 0})
             return
         if path != "/synthesize":
             self._send(404, {"rejectedReason": "없는 경로"})
             return
         length = int(self.headers.get("Content-Length") or 0)
         req = json.loads(self.rfile.read(length).decode("utf-8")) if length > 0 else {}
+        with _lock:
+            _raw.append(_utc_iso(datetime.now(timezone.utc)))
+        if MODE == "http4xx":
+            # 🔴 200 «전» 거부다 — 이 자리에서는 CLI 를 부르지 않았으므로 소모가 아니다.
+            #    그래서 `_calls`(소모 계수)에는 안 싣고 `_raw`(요청 전수)에만 남는다.
+            self._send(400, {"rejectedReason": "stub 이 200 전에 거부했다"})
+            return
+        if MODE == "noresult" and "application/x-ndjson" in (self.headers.get("Accept") or ""):
+            # 🔴 200 을 내고 문장만 흘리고 **result 줄 없이** 끝난다 — README 가 1 로 적은 갈래.
+            self._count(req, {"isRetry": "guardNotice" in req, "namedRules": False, "rulesInEvidence": []})
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+            self.send_header("Transfer-Encoding", "chunked")
+            self.end_headers()
+            raw = (json.dumps({"kind": "sentence", "sentence": {"failureModeId": "FM-BRG-WEAR", "text": "잠정"}}, ensure_ascii=False) + "\n").encode("utf-8")
+            self.wfile.write(f"{len(raw):X}\r\n".encode() + raw + b"\r\n")
+            self.wfile.write(b"0\r\n\r\n")
+            return
         if MODE == "streamerr" and "application/x-ndjson" in (self.headers.get("Accept") or ""):
             # 🔴 200 을 낸 «뒤» 본문 안에서 끊는 갈래(D-24b). 호출은 갔고 응답도 시작됐다
             #    — 실 게이트웨이였다면 CLI 가 이미 돌았을 수 있는 자리다. 그러니 «소모 새는 지점» 이다.
