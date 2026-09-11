@@ -335,6 +335,28 @@ VOLUME_ROOT=<리포 밖 고정 경로>/.volumes-<좌석>
 🔴 postgres 는 **named volume** 이라 `COMPOSE_PROJECT_NAME` 만 달라도 자동 분리된다. **neo4j·models 는
 아직 bind** 라 `VOLUME_ROOT` 를 빠뜨리면 두 스택이 같은 데이터를 문다.
 
+#### 컨테이너를 지우기 «전» 두 축 — 🔴 이름표는 소유를 말하지 않는다 (D-92 · E1 2026-09-11 13:10~13:27)
+
+컨테이너·워크트리 정리 발주에서 「자기 접두 = 자기 것」으로 귀속하면 **다른 컨테이너가 읽고 있는
+DB 를 지운다.** 2026-09-11 실증: `fkt-levi2-postgres-1`(5534)·`fkt-levi2-neo4j-1`(7587)은 이름이
+좌석 접두였지만 **develop 무대 `fkt-dev-ai-api`(:8020) 의 DSN 이 그 포트를 물고 있었고**, 발주문이
+좌석 자원으로 적어 `docker rm -f` → `:8020` degraded. 같은 날 같은 발주에서 `fkt-senku2-t15-postgres-1`·
+`neo4j-1` 은 **production** `fkt-deploy-ai-api` 의 DB 였다(네트워크 `fkt-senku2-t15_default` · 서비스명 DNS).
+둘 다 접두는 «만든 자리»를 말할 뿐이다.
+
+삭제 후보 컨테이너마다, 지우기 **전**에 아래 두 축을 값으로 남긴다(발주자가 먼저 돌리고 결과를
+발주문에 이름으로 박는다 · 좌석에게 접두 규칙을 주지 않는다):
+
+| # | 축 | 명령 | 판정 |
+|---|---|---|---|
+| ⑥ | **참조 축** — 누가 이걸 읽는가 | `docker ps -a` 전수 `docker inspect -f '{{.Name}} {{.HostConfig.NetworkMode}} {{range .Config.Env}}{{.}} {{end}}'` 에서 후보의 **포트·컨테이너 이름·네트워크**를 역참조 | 1건이라도 걸리면 삭제 금지(팀 공용 자산으로 재분류) |
+| ⑦ | **마운트 기록** — 무엇을 물고 있었나 | 후보 자신의 `docker inspect -f '{{json .Mounts}}'` 를 발주 보고에 **그대로** 남긴다 | 지우는 순간 이 기록이 유일하게 사라진다 — named volume 이면 사후에 「어느 볼륨이었는지」를 말할 수 없다 |
+
+🔴 되살릴 때 `docker compose up` 을 그대로 치지 않는다 — compose 의 postgres 는 named volume
+`pgdata`(D-2 개정)인데 옛 컨테이너는 bind `.volumes-<좌석>/postgres` 로 서 있을 수 있다. ⑦의 기록대로
+**원래 마운트를 그대로 물리는 `docker run`**(`MSYS_NO_PATHCONV=1` · 경로 인용)으로 세운 뒤 §4-2 게이트
+4행(벡터 계수)까지 센다. 2026-09-11 복구 = 13:27:16 `:8020 ok` · `document_chunk` 59/59 · 데이터 손실 0.
+
 #### 재구성(D-13 형) 게이트 — 🔴 **벡터 계수 행을 반드시 센다** (D-16)
 
 볼륨을 잃고 다시 세운 뒤에는 아래를 **행으로** 확인한다. 앞 세 줄이 전부 초록이어도 넷째 줄이
