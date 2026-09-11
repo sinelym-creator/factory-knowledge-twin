@@ -82,6 +82,13 @@ type Sample = {
   pending: number;
   bar: number;
   skeleton: number;
+  /**
+   * 🔴 **선표시(결정적 순위 카드)가 서 있는가** — 스켈레톤의 조건이 이 값이다(T6-3 ① `a50c926`):
+   *    `run-panels.tsx` 는 `<SynthesisPending skeleton={!progress || progress.ranking.length === 0} />`
+   *    로 그린다. 즉 **선표시가 서면 스켈레톤은 꺼지는 것이 설계**다(「올 것은 문장이지 카드가 아니다」).
+   *    이 칸이 없으면 두 사건이 한 숫자로 접혀, 설계대로 꺼진 스켈레톤을 결함으로 회부하게 된다.
+   */
+  provisional: number;
   percent: number | null;
   since: string | null;
 };
@@ -103,6 +110,9 @@ async function sample(page: Page): Promise<Sample> {
       pending: n('[data-testid="synthesis-pending"]'),
       bar: n('[data-testid="synthesis-pending-bar"]'),
       skeleton: n('[data-testid="synthesis-pending-skeleton"]'),
+      /* testid 는 `run-panels.tsx` 실물에서 잡았다(지어낸 셀렉터는 빨강만이 아니라
+         «판정력 없는 초록»도 만든다 — 늘 0 을 세면 어느 방향도 안 문다). */
+      provisional: n('[data-testid="synthesis-provisional"]'),
       percent: raw === null || raw === undefined ? null : Number(raw),
       since: p?.getAttribute("data-since") ?? null,
     };
@@ -257,7 +267,35 @@ test.describe("T6-6 ③ — 합성 대기 표시", () => {
 
     // 한 벌로 그려지는가 — 바·스켈레톤이 «같은 표본»에 함께 있어야 한다.
     expect(shown.every((s) => s.bar === 1), "표시는 있는데 진행 바가 없는 표본이 있다").toBe(true);
-    expect(shown.every((s) => s.skeleton >= 1), "표시는 있는데 스켈레톤 자리표시가 없는 표본이 있다").toBe(true);
+
+    /**
+     * 🔴 **스켈레톤은 «무조건»이 아니라 조건부다**(T6-3 ① `a50c926` · `run-panels.tsx`:
+     *    `skeleton={!progress || progress.ranking.length === 0}`). 앞판은 `skeleton >= 1` 을
+     *    모든 표본에 걸었고, 그래서 **선표시가 선 뒤 설계대로 꺼진 스켈레톤**을 결함으로 읽었다.
+     *    그때 낡은 것은 화면이 아니라 이 그물이었다(스펙 `a240896` 09:46 은 T6-3 ① 14:12 «전»).
+     *
+     * 🔴 **두 방향 모두 건다.** 한쪽만 걸면 「스켈레톤이 영영 안 뜨는」 회귀도, 「선표시가 섰는데
+     *    계속 뜨는」 회귀도 초록으로 지나간다 — 그건 검출력을 파는 것이다.
+     * 🔴 **걸린 칸이 0 인 방향은 「판정력 없음」으로 이름을 남긴다.** 빈 열의 `every()` 는
+     *    언제나 참이라, 그 초록은 아무것도 막지 않는다.
+     */
+    const cold = shown.filter((s) => s.provisional === 0); // 선표시 «전»
+    const warm = shown.filter((s) => s.provisional >= 1); // 선표시 «후»
+    console.log(`   ⓢ 스켈레톤 규칙 표본 — 선표시 0: ${cold.length}개 · 선표시 ≥1: ${warm.length}개`);
+    test.info().annotations.push({
+      type: "스켈레톤 규칙 표본",
+      description:
+        `선표시 0 = ${cold.length}개(${cold.length ? "판정" : "🔴 판정력 없음 — 이 방향은 시험되지 않았다"})` +
+        ` · 선표시 ≥1 = ${warm.length}개(${warm.length ? "판정" : "🔴 판정력 없음 — 이 방향은 시험되지 않았다"})`,
+    });
+    expect(
+      cold.every((s) => s.skeleton >= 1),
+      `선표시가 «없는» 표본에 스켈레톤 자리표시가 없다(표본 ${cold.length}개) — 아직 모르는 것을 그리는 자리가 비었다`,
+    ).toBe(true);
+    expect(
+      warm.every((s) => s.skeleton === 0),
+      `선표시가 «선» 표본에 스켈레톤이 남아 있다(표본 ${warm.length}개) — 순위는 이미 아는 사실인데 모르는 척한다`,
+    ).toBe(true);
 
     // 정직성 — 끝을 모르는 바가 100 을 그리면 「끝났는데 화면이 멈췄다」로 읽힌다(처방의 자기 선언 = 92 상한).
     expect(
