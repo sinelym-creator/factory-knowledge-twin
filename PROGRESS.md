@@ -1,5 +1,7 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
+> **09-11 22:43 스자쿠 59대 T5-1 완결(원장 67/68 불변 — T5-1 은 이미 ✅ 마커 · 진짜 잔여 1 = T5-2 Gate 7 부분 ①⑨ · 22:47 자수)**(폐하 「잔여 1건 마무리」 22:01 · 「전건 권장안 승인」 · 「승격까지 위임(테스트 기준 전건 통과 시)」 22:05) — T5-1F(1/2) 최종 report #996(raw 재집계 · 검색 hybrid 18/26 · 답변 25 run 앵커 1문 · 지연 중앙값 14.1s · 못 잰 축 6 이름) · (2/2)-A 실 CLI 재요청 발생률 0/5 #999 · (2/2)-B 시간당 상한 문장 실렌더 PASS + 재요청 1/2 관측 #1001(합산 1/7 · 원인 미측 · 호출 실소모 8/14) · 전용 무대 T51(센쿠2 · `:8030`/`:8798` · 캡 손잡이) · 부수 = **D-98**(compose 빈 문자열 bool → bootstrap 1커맨드 실패 · FIX #998) · **O-56**(compose ai-api 게이트웨이 배선 부재 = 의도 · §15.2 보증) · README 「벤치마크 · 지연」 절 신설. 다음 = 승격 32(위임 · 조건 전건 초록) · T51 무대 내림.
+>
 > **09-11 20:29 스자쿠 59대 승격 31 외부 재검 PASS 착지**(리바이2 PROMO31-X · 공개면 · 구독 0 · 밖 근거 = TLS peer Vercel edge) — 前 `20:06` → 後 `20:22` · build `4225b4f`→`509f625` 전이 · 세션 없는 `/api/live/status` 200 불변 · run 생성·목록 401 · `?sessionId=` 상한 3/3 · replay 완주 불변(`calls` 부재 = 예측 선기록 일치 · 재생은 기록을 읽는다) · 새 빨강 0 · evidence #994 병합(CodeQL `py/insecure-protocol` 탐침 TLS 하한 1줄 수리 `8b74037` · 판정 불변) → develop `5cb3c36`. 열린 PR = #617(보류) 뿐. 59대 기동 20:25(자비스 집행 · 잔존 0·오살 0).
 >
 > **09-11 20:21 스자쿠 58대 승격 31 집행·완결**(폐하 「승격승인」 20:20:01 · 청구 20:03:50 · draft #991 선개설 → ready → 병합 20:20:11) — main **`509f625`**(= develop `61cc3d3` · checks 34 초록) · ai-api `:8010` 재생성 센쿠2 20:21:20(build `509f625` · 트리 sha 일치 · 이미지 내부 수리분 grep · env 13본 재계수 − BUILD_SHA · 캡 3/3 · replay `/srv/data/replay` 3본 · 구 세대 `-4225b4f` 보존 · 세대 3본 보존) · Vercel production READY 20:20:43 `dpl_GGCMS3knGDbbgLRFXqPLiDZxKCzV`(화면 변경 0 · 자동 재배포) · 게이트웨이 `:8787` 무접촉. 내용 = **D-97 계측 칸**(`synthesis.calls` 0|1|2 · `safetyRetried` 항상 · 거동 변경 0 · 계약 v0.2.5 #986/#988 · 구현 #985 · 독검 #987→#989 PASS · 원장 #990). 외부 재검 = 리바이2 PROMO31-X(前 열 20:06 · 後 열 진행 · 구독 0 · 결과 = 별 항). 되돌림 = §7-3 6(`-4225b4f`) · Vercel 불변. 예산 문면 결정(19:17 청구) = 20:22 까지 회신 없음 → ⓐ 유지. 이월 = 실 CLI 미호명 발생률(production 에서 이제 셀 수 있음).
@@ -80,7 +82,7 @@
 | 🔶 **Q-72 부분 저하** | 색인과 어긋난 문서 조각이 있으면 지금은 조사 전체가 `step_failed:vector` 로 멈춘다(fail-closed · 승인) → 어긋난 조각만 배제 + 경고 이벤트로 계속(코드 변경 + GS-01 회귀 1회) | 원장 Q-72 · runbook §4-1d |
 | ✅ **D-22 reset-modal 귀속** | 대상 결함 아님 · 진범 = 그물 전제(`FallbackBanner` 는 online 이면 안 뜸) · 손잡이 1개 프록시 3열(자극 계수 overridden 0/9) · 그물 수정 PR 후보(`reset-modal.spec.ts:72` → `getByText(...).toHaveCount(0)`) | 원장 D-22 · #414 · 그물 수정 #416 병합(09-03) |
 | ✅ **D-21 ⓒ 폴링 전환** | 구현 #397 · 계약 v0.1.10 #396 · README 각주 #402 · **독립 검증 PASS #404**(로컬 ⓗ 5/5 · 공개 3/4 · 간격 = 못 잼 = 제품 진실) · 429 = 드러냄+중단 · 🔴 WS 미개통 자체는 남음(대체 ≠ 해소 · 층 소견) · 잔여 = main 승격 3회차(T6-1 과 묶음) | 원장 D-21 · #404 |
-| 🔶 **T5-1 Benchmark** | 평가셋 30문·전략 4 비교(§30.4) · §35.7 ⑥ · 초안 10문 v0.2 까지 착지 | 원장 T5-1 · D-004 |
+| ✅ **T5-1 Benchmark = 완결 09-11 22:43**(최종 report #996 · 발생률 #999/#1001 · README 절) | 40문 검색 축 + 앵커 1문 답변 축 27 run + 실 CLI 재요청 발생률 1/7 · 못 잰 축 6 이름 | 원장 T5-1 · `benchmarks/eval-report-final.md` |
 | 🔶 **T5-2 Gate 7 잔여** | ⑤ 관리자 endpoint · ⑨ malformed WS 미충족 · ⑦⑧⑪ 대조군 서버 2본 측정 불가 · 재색인 경유 주입 미측 | 원장 T5-2 · `evidence/t5-2-gate7-map.md` |
 | 🔶 **T5-3 CI 보류 workflow** | 보류 6종(API contract · fixture schema · SSOT manifest · ontology · Docker build · Replay E2E smoke) | 원장 T5-3 |
 | ✅ **T5-4 운영 절차 티켓 = 완결 09-04 09:48**(「새 클론 → 1커맨드」 `infra/bootstrap.ps1` #561 · 콜드 완주 실증 · 원장 50/60) | restart/health 대응 절차 정본화(runbook §4·D-17 정책 ⓒ·재부팅 갈림은 이미 착지 · 티켓 단위 미발주) | 원장 T5-4 |
