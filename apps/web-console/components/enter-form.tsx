@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { enterSession } from "@/lib/contract";
-import { ENTRY_DESTINATION } from "@/lib/session";
+import { ENTRY_DESTINATION, resolveNext } from "@/lib/session";
 
 /**
  * 입장 «실행» — `/` 화면의 클라이언트 마운트가 `POST /enter` 를 명시 호출한다 (Q-39 ⓒ).
@@ -52,6 +52,9 @@ export function EnterForm() {
   const form = useRef<HTMLFormElement>(null);
   const fired = useRef(false);
   const router = useRouter();
+  /* 🔴 원시값 그대로 든다 — 거르는 일은 `resolveNext` 한 곳에서만 한다(두 번 거르면
+     두 규칙이 생긴다). hidden input 에도 이 값이 그대로 실리고, 핸들러가 다시 거른다. */
+  const next = useSearchParams().get("next");
 
   useEffect(() => {
     if (fired.current) return;
@@ -67,7 +70,10 @@ export function EnterForm() {
         // 🔴 입장 요청이 실패해도 «화면을 세운다». 세션은 핸들러가 pending 으로 답하거나
         //    다음 화면의 가드가 다시 물을 일이고, 여기서 멈추면 방문자는 빈 자리에 선다.
       }
-      router.push(ENTRY_DESTINATION);
+      /* 🔴 **JS 있는 길과 없는 길이 같은 자리에 도착해야 한다**(D-3 규율). 핸들러의
+         303 은 `resolveNext` 로 목적지를 정하므로, 여기도 «같은 함수»를 쓴다 — 두 곳에
+         각자 적으면 그날부터 두 방문자가 다른 화면에 선다. */
+      router.push(resolveNext(next) ?? ENTRY_DESTINATION);
       // 🔴 **섬을 옳기고 난 뒤, 서버 트리를 한 번 다시 받는다**(D-3 회귀 방지).
       //
       // 소프트 항해는 페이지만 다시 가져오고 **루트 레이아웃은 재사용한다** — 그런데
@@ -87,7 +93,7 @@ export function EnterForm() {
       //    때 교체될 뿐이라, 배지·배너가 상한 안에 사람에게 닿는 것은 그대로다(q50 그물로 재측).
       router.refresh();
     })();
-  }, [router]);
+  }, [router, next]);
 
   return (
     <form
@@ -97,6 +103,10 @@ export function EnterForm() {
       className="mx-auto mt-24 flex max-w-sm flex-col items-center gap-3 text-center"
       data-testid="entry-form"
     >
+      {/* 🔴 JS 없는 방문자의 네이티브 제출에도 목적지가 실려야 한다 — 쿼리는 폼 action
+          에 안 붙으므로 hidden 으로 나른다. 값은 핸들러가 다시 `resolveNext` 로 거른다
+          (보내는 쪽을 믿지 않는다 · 이 input 은 사람이 고칠 수 있는 자리다). */}
+      {next ? <input type="hidden" name="next" value={next} data-testid="entry-next" /> : null}
       <p className="text-body-c" role="status">
         세션을 만들고 조사 화면으로 들어갑니다…
       </p>
