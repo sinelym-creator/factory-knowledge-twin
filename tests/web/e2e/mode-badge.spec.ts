@@ -121,7 +121,13 @@ test.describe("모드 배지", () => {
   });
 
   test("online:true → LIVE", async ({ page }) => {
-    await page.route(LIVE, (route) =>
+    /**
+     * 🔴 이 행에도 **자극 도달 가드**를 단다(D-93b 이월분). 앞의 두 행과 같은 결함이 여기에도
+     *    살 수 있었다 — 모킹이 한 번도 안 걸린 채 실서버가 `online:true` 를 말하면 이 행은
+     *    **내 자극과 무관하게** 초록이 된다. 그 초록은 「모킹이 통했다」가 아니라 「무대가 마침
+     *    그랬다」이고, 두 문장은 다른 값이다.
+     */
+    const live = routeLive(page, (route) =>
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -136,6 +142,7 @@ test.describe("모드 배지", () => {
       { name: "fkt_session", value: "api:LIVE0000test", url: process.env.FKT_WEB_BASE ?? "http://127.0.0.1:3101" },
     ]);
     await enter(page);
+    expectStimulusLanded(live);
     const badge = page.getByTestId("mode-badge");
     await expect(badge).toHaveAttribute("data-mode", "live");
     await expect(badge).toContainText("LIVE");
