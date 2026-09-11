@@ -88,6 +88,28 @@ MSYS 경로 변환을 고친 뒤 표지를 심은 fixture 로 다시 쟀다. 30�
 
 **다음 사람이 닫는 법**: playwright `page.on("websocket")` 으로 프레임을 받아 `evidence.flagged` 문자열을 세면 한 번에 갈린다.
 
+### 5-2. WS 프레임 계수 — 「전송 층」이라 쓸 뻔했고, 프레임 분포가 막았다 (E1)
+
+`page.on("websocket")` 으로 프레임을 받아 세었다.
+
+| 값 | 실측 |
+|---|---|
+| 소켓 | 1 (`ws://…/api/ws/runs/RUN-aca2cf940388`) |
+| 프레임 | **36** |
+| 타입 분포 | `step.evidence` **23** · `step.started` 5 · `step.completed` 5 · `run.started` 1 · `plan.updated` 1 · `run.completed` 1 |
+| `evidence.flagged` 프레임 | **0** |
+| 배지 | 0 |
+
+내 러너는 이 값을 보고 **「TRANSPORT — 이벤트가 브라우저에 도달하지 않았다」**로 판정했다. **그 판정은 틀렸다.**
+
+🔴 **대조**: 내가 심은 fixture 의 타입 분포는 `step.evidence` **19** · `step.progress` **6** · `evidence.flagged` **1**(총 39)이다. WS 로 온 것은 `step.evidence` **23** · `step.progress` **0**(총 36) — **완전히 다른 분포**다. 그리고 그 23/0 은 앞서 잰 **live run 의 서명과 일치**한다.
+
+⇒ **그 run 은 fixture 재생이 아니다.** 화면의 「조사 시작」이 replay 가 아닌 경로로 돌았고, **내 자극은 그 run 에 애초에 없었다**. 배지 0 은 **당연한 결과**이지 전송 층 결함이 아니다.
+
+**그래서 ⑤ 는 여전히 미측이다.** 다만 이번에는 **못 잰 이유가 정확해졌다**: 화면에서 시작하는 경로로는 내 replay 자극에 닿지 못한다. 닫으려면 **replay 로 만든 run 의 화면을 직접 열어야** 하고, 그 경로는 세션 쿠키를 심어도 `/overview` 로 되돌려졌다(가드). 그 한 칸이 남았다.
+
+🔴 **자수 13** — 나는 하마터면 **「전송 층이 이벤트를 안 보낸다」는 없는 결함을 회부할 뻔했다**. 막은 것은 판정값이 아니라 **fixture 의 타입 분포를 옆에 놓고 본 한 줄**이다. 프레임 총계만 봤으면 못 막았다.
+
 ## 6. CI (PASS · E1)
 
 `e8b2e9e` check-runs **total 17** · 비완료 또는 비성공 **0건**. (`141dc93` 은 `tests/**`·`evidence/**` 만 바뀐 후속 병합이다.)
