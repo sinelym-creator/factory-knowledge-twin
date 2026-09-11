@@ -449,6 +449,28 @@ docker compose up -d          # postgres · neo4j · ai-api (healthcheck = /api/
 
 `admit()` 은 상한 안이면 `None`, 넘으면 **`Retry-After`(정수 초)**를 돌려주고 `429 session_run_cap_exceeded` 가 된다. 🔴 `Retry-After: 0` 을 내지 않는다 — 그것은 「지금 다시 두드리라」가 되어 거절의 뜻을 지운다. 🔴 **replay 는 이 상한이 막지 않는다**(runbook §7-2).
 
+🔴 **이 상한이 세는 것은 «조사»이지 «합성 호출»이 아니다**(D-97). 조사 1건은 게이트웨이를
+**1~2회** 부른다 — 근거 발췌 본문에 `SAF-*` 규정 id 가 있는데 답변이 그것을 호명하지 않으면
+같은 발췌를 통지와 함께 **정확히 1회** 다시 보낸다(D-84 · 계약 v0.1.19). 그래서 실제 예산은
+이렇게 읽는다:
+
+| 축 | 값 |
+|---|---|
+| Live 조사 | 세션당 **3** · 시간당 전역 **3** |
+| 조사 1건당 합성 호출 | **1~2**(안전규정 재요청이 일어나면 2) |
+| 구독 호출 | 시간당 **최대 6** |
+
+호출 수는 `step.completed(synthesize).payload.synthesis` 의 **`calls`**(**0|1|2**)와
+**`safetyRetried`**(bool)로 매 run 남는다 — 둘 다 **항상** 실린다(0/false 도 값이다).
+「시간당 3」만 적고 6을 적지 않으면, 예산 문면이 자기가 세는 것과 다른 것을 약속하게 된다.
+
+🔴 **`calls` 의 기준은 「게이트웨이 200 을 받았는가」다**(D-97-M2). 200 을 받은 뒤 본문 안에서
+끊긴 회차(스트림 `kind:error` · result 줄 없음 · 본문 파싱 실패)도, 가드가 내용을 물린 회차도
+**1이다** — 그때는 CLI 가 이미 불렸으므로 구독을 썼다. **0은 「200 을 못 받았다」**뿐이다:
+게이트웨이 주소 없음 · 보낼 발췌 0건 · 미도달·연결 거부 · 4xx·5xx 거부(우리 요청이 막힌
+회차라 CLI 를 부르지 않았다). 🔴 이 경계를 반환 시점으로 잡으면 200 뒤 중단이 「도달 못 함」과
+같은 0 이 되어, **어디에도 남지 않는 소모**가 생긴다(리바이2 독검이 잡은 결함).
+
 ### 마이그레이션 — 실물 8본 (2026-09-04 확인)
 
 `services/ai-api/db/migrations/` = `001_core_schema` · `002_id_integrity_checks` · `003_vector_index_build` · `004_ontology_freshness` · `005_ssot_manifest` · `006_graph_projection` · `007_freshness_unverified_and_integrity` · `008_graph_source_digest`. `pwsh db/migrate.ps1` 이 001~008 을 순차 적용한다(runbook §4-1 손순서 2단). 🔴 **`COMPOSE_PROJECT_NAME` 을 안 주면 postgres 가 healthy 인데도 「기동 중이 아닙니다」로 죽는다**(D-18 · runbook §4-1a).
