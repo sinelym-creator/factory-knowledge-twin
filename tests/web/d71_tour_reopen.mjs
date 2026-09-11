@@ -73,8 +73,27 @@ async function axis17(page, btn, stage) {
   const label = ((await btn.innerText()) || "").trim();
   const box = await btn.boundingBox();
   const anchors = await page.getByTestId("intro-reopen").locator("a").count();
-  add("⑰", stage.label, tag === "button" && anchors === 0 ? "PASS" : "FAIL",
-      `태그=${tag}(기대 button) · 내부 <a>=${anchors}(기대 0)`);
+  /* 🔴 **이 축이 지키려던 것은 태그가 아니라 «뜻»이다** — D-71 의 병은 「같은 pathname 쿼리
+     이동이 Next prefetch 캐시에 흡수된다」였고, 그래서 이 요소를 `<Link>` 에 올리지 않는다
+     (`tour-reopen.tsx` 머리말이 그렇게 적고 있다). 앞판은 그 뜻을 「태그 = button」으로 박아
+     두었는데, D-96 이 «수화 전 클릭도 실제로 이동해야» 하므로 `<a href>` 로 바뀌었다 —
+     구현 형태를 박은 판정선이 **옳은 처방을 FAIL 로 보냈다**(리바이2 61대 실측 4/4 고정).
+     판정선을 뜻으로 되돌린다: 중첩 `<a>` 0 이고, hover 해도 **prefetch(RSC) 요청이 0** 이면
+     이 요소는 `<Link>` 경로 위에 있지 않다. 태그가 `a` 인지 `button` 인지는 묻지 않는다. */
+  const rsc = [];
+  const onReq = (r) => { const u = r.url(); if (u.includes("_rsc=") || u.includes("?_rsc")) rsc.push(u); };
+  page.on("request", onReq);
+  await btn.hover().catch(() => {});
+  await page.waitForTimeout(700);
+  page.off("request", onReq);
+  /* 🔴 **prefetch 계수는 «관측»이지 판정이 아니다.** 교정에서 이 화면의 다른 내부 링크 3개를
+     hover 했을 때도 RSC 요청이 «한 건도» 뜨지 않았다(리바이2 61대 실측) — 즉 이 계측기가
+     「0」을 내는 것이 「prefetch 가 없다」인지 「내가 못 본다」인지 가를 수 없다. 판정력이
+     증명되지 않은 축을 초록의 근거로 쓰지 않는다. 숫자는 남기되 판정에서 뺀다.
+     🔴 D-71 의 병(같은 pathname 쿼리 이동이 캐시에 흡수됨)은 ⑭ 가 «증상으로» 직접 잰다
+     (최종 search 가 `?intro=1&tour=1` 인가 · 6/6). 그것이 이 축의 진짜 판정선이다. */
+  add("⑰", stage.label, anchors === 0 ? "PASS" : "FAIL",
+      `내부 <a>=${anchors}(기대 0) · 태그=${tag}(묻지 않는다 — 뜻은 ⑭ 가 잰다) · [관측] hover 뒤 RSC 요청=${rsc.length}(판정 제외 · 계측기 판정력 미증명)`);
   add("⑰", stage.label, label.includes("튜토리얼") ? "PASS" : "FAIL", `라벨=「${label}」`);
   /* 🔴 boundingBox 는 «그려진 상자»지 «눌리는 넓이»가 아니다 — ::before 로 넓힌 hit 영역은
      상자에 안 잡힌다. 중심에서 아래로 (44-h)/2+1 px 떨어진 좌표를 실제로 눌러 보고,
