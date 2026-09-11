@@ -296,3 +296,6 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - 🔴 **깜빡임 0** — 배지 전환은 «실패 직후 다음 폴링 1회» 와 «시각 도달 뒤 다음 폴링 1회» 두 지점뿐 · 폴링 주기 30s 그대로 · 걸쇠 중 `online:true` 로 되돌리는 경로는 「성공 1회」뿐(자기 프로브 없음).
 - `reason` 을 실을 때 **`until`(iso · 선택)** 을 함께 싣는다(`synthesis_failing` = `latchedUntil` · `hourly_cap_exhausted` = now+`nextFreeInSec` · `gateway_unreachable` = 없음) — 셸이 시각을 계산하지 않고 «받는다».
 - 검증 축 추가(리바이2) — 문장 3종 렌더(reason 별) · `until` 표기 = 로컬 시각 · 금칙어 grep 0(`apps/web-console` 사용자 문장) · 실패 run 완주 前後(스텁 5xx 주입 → 후보 카드 결정적 축 + 안내 1줄 · 오류 화면 0).
+
+### v0.2.4 정정(09-11 17:1x · 리바이2 CAP3-V #967 O-1 회부 — `429 live_hourly_cap_exceeded` 본문 형상)
+- 본문은 **평탄**하다: `{ "error": { "code": "live_hourly_cap_exceeded", "message": "…", "limit": 3, "used": 3, "remaining": 0, "retryAfterSec": n } }` — 위 ①의 「`detail { … }`」 문면은 오케 초안 오기(실물 = v0.1.12 `session_run_cap_exceeded` 와 같은 평탄 형상 · 두 429 가 한 형상). 코드 무변 · 문면만 정정.
