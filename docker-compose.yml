@@ -151,7 +151,13 @@ services:
       #    기본은 «닫힘»이고, 이 줄이 없으면 셸 값이 컨테이너에 «닿지 않아» 여기에 1 을 적어도
       #    아무 일도 일어나지 않는다(O-43). 줄이 생겼다는 것과 열렸다는 것은 다른 사실이다 —
       #    `.env` 가 비면 기본값 그대로 닫힘이다.
-      FKT_EXPOSE_API_DOCS: ${FKT_EXPOSE_API_DOCS:-}
+      # 🔴 기본값을 «비움»(`:-`)이 아니라 `false` 로 둔다 — 위 `FKT_TRUST_FORWARDED_FOR` 와
+      #    같은 처방이다(D-98). 빈 문자열은 bool 로 파싱되지 않아 `Settings()` 가
+      #    `bool_parsing` ValidationError 로 죽고, 컨테이너는 기동하지 못한다. 앞판은 두 bool
+      #    중 한쪽만 막혀 있었고, 그래서 이 변수를 갖지 않은 셸에서는 `bootstrap.ps1` 의
+      #    「1커맨드」가 ai-api 단계에서 섰다(실측 09-11 · `Exited (1)`).
+      #    🔴 기본값은 여전히 «닫힘»이다 — 이 줄은 문을 열지 않고, 못 읽는 값을 읽히게만 한다.
+      FKT_EXPOSE_API_DOCS: ${FKT_EXPOSE_API_DOCS:-false}
     ports:
       - "${AI_API_PORT:-8000}:8000"
     volumes:
