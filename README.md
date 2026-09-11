@@ -94,9 +94,11 @@ bootstrap이 돌리는 여섯 단계의 정본 명령입니다. 5·6단은 venv�
 | 축 | 결과 (2026-09-04) |
 |---|---|
 | 골든 시나리오 | 10/10 완주 · 런타임 오류 0 |
-| API 계약 | 74/74 |
+| API 계약 | 74/74 (09-04) → 99/99 (09-11 · 계약 v0.2.5 · 커버리지 63/63) |
 | E2E (Playwright) | 135 passed · 3 failed(무대 부재) · 4 skipped |
 | 예외 상황 25건 | 23 PASS · 2 미검증 |
+
+**2026-09-11 갱신** — E2E 의 「3 failed(무대 부재)」는 전용 스텁 무대에서 «무대 조건»으로 확정했습니다(대상 결함 0 · [evidence/e2e-stub-stage.md](evidence/e2e-stub-stage.md)). API 계약 케이스는 계약 v0.2.5 기준 99건이며 CI 가 매 PR 에 돌립니다. Gate 7(보안·오남용 13항)은 부분 판정 2건을 정적 감사·구조적 면역으로 닫아 종결했습니다([evidence/t5-2-gate7-close.md](evidence/t5-2-gate7-close.md)). 승격 26~32 는 각각 공개면 외부 재검 PASS 를 남겼습니다(`evidence/promo{26..32}-external-recheck.md`).
 
 구현 좌석의 초록은 완료가 아닙니다. 검증 좌석이 독립 무대에서 다시 잰 뒤에만 완료로 칩니다.
 
@@ -115,7 +117,7 @@ bootstrap이 돌리는 여섯 단계의 정본 명령입니다. 5·6단은 venv�
 
 ## 알려진 제약
 
-- 공개 셸(Vercel 경로)에서는 조사 실행의 WebSocket 스트림이 열리지 않습니다. 2초 간격 조회로 같은 화면을 만들고, 그 사실을 화면에 띄웁니다. 어느 구간이 끊는지는 아직 좁혀 재지 않았습니다.
+- 공개 셸(Vercel 경로)에서는 조사 실행의 WebSocket 스트림이 열리지 않습니다. 2초 간격 조회로 같은 화면을 만들고, 그 사실을 화면에 띄웁니다. 층은 갈랐습니다 — 같은 쿠키·같은 run 으로 Vercel 경유만 닫히고 터널 직결은 열립니다([evidence/d21-ws-layer-split.md](evidence/d21-ws-layer-split.md)). 그 안의 어느 홉인지는 재지 않았습니다.
 - 오프라인 머신에서 임베딩 모델 다운로드 없이 세울 수 있는지는 재보지 않았습니다.
 - 라이브 데모 링크는 이 문서에 싣지 않습니다.
 
@@ -128,7 +130,7 @@ bootstrap이 돌리는 여섯 단계의 정본 명령입니다. 5·6단은 venv�
 
 ## 현재 상태
 
-Release 후보 — 축소 적용(v0.3). 판정 정본 = [evidence/t5-5-gate-verdict.md](evidence/t5-5-gate-verdict.md), 결정 = [docs/decisions/004](docs/decisions/004-release-gate-verdict.md). 진행 원장 = [docs/plan/ticket-ledger.md](docs/plan/ticket-ledger.md).
+**완료(2026-09-11)** — 티켓 원장 68/68, 열린 결함 0. 마지막 승격 = 32(main `c35377d` · 공개면 외부 재검 [evidence/promo32-external-recheck.md](evidence/promo32-external-recheck.md)). Gate 1~8 판정 = [evidence/t5-5-gate-verdict.md](evidence/t5-5-gate-verdict.md)(축소 적용 v0.3) + Gate 7 종결 [evidence/t5-2-gate7-close.md](evidence/t5-2-gate7-close.md). 결정 = [docs/decisions/004](docs/decisions/004-release-gate-verdict.md). 진행 원장 = [docs/plan/ticket-ledger.md](docs/plan/ticket-ledger.md). 이후는 신규 기능 없이 결함 착신 시 수리만 합니다.
 
 ## License
 

@@ -112,7 +112,7 @@ neo4j 대조가 전부 초록인 채로 공개 Live 경로만 죽었다(`retriev
 | Docker Desktop 자동 시작 | `settings-store.json` 의 `AutoStart` | **`True`** | E1 |
 | Docker Desktop 시작 항목 | `HKCU:\...\CurrentVersion\Run` 의 `Docker Desktop` | **있다**(활성) | E1 |
 | `com.docker.service` | `Get-Service` | `StartType=Manual` — 🔴 **결함이 아니다**(설계상 앱이 띄운다) | E1 |
-| **Funnel «설정» 복원** | 재부팅 «후» `tailscale funnel status` | 🔴 **미실측** (복원된다는 것은 E4) | — |
+| **Funnel «설정» 복원** | 재부팅 «후» `tailscale funnel status` | **복원됨** — 2026-09-11 09:11:47 재부팅(`LastBootUpTime`) 뒤 손대지 않은 상태에서 00:03 `funnel status` = `:8443` on · 게이트웨이 `:8787`·production 스택 3본 생존(`fkt-deploy-ai-api` + 네트워크 `fkt-senku2-t15_default` 의 postgres·neo4j · 이름 아닌 네트워크·DSN 귀속) | E1 (1회) |
 | 절전 / 최대절전 진입 | `STANDBYIDLE` / `HIBERNATEIDLE` | **0 = 안 함** (AC·DC 전부) | E1 |
 
 🔴 **「데몬이 자동 시작한다」 ≠ 「노출이 복원된다」.** Tailscale 은 서비스라 로그온과 무관하게 뜨고,
