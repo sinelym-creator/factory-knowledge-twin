@@ -18,8 +18,22 @@ import { execFileSync } from "node:child_process";
 const DOC_CHUNK = "DOC-MAN-0021@r1#000";
 const DOC_ID = "DOC-MAN-0021";
 const RECORD = "MR-2024-0001";
-/** 계약 v0.1.1 이 다루지 않는 kind — 서버는 404 로 답한다(Q-34 · 현행 참). */
-const OUT_OF_KIND = "GP-not-a-doc-chunk";
+/**
+ * 계약이 다루지 않는 id — 서버는 `404 not_found` 로 답한다(Q-34).
+ *
+ * 🔴 **앞판은 `GP-not-a-doc-chunk` 였고, 그 id 는 더 이상 「계약 밖」이 아니다**(D-93b 실측).
+ *    계약 v0.1.17(09-04)이 `GP-` 접두를 **graph-path 근거의 갈래로 성문**했고, 같은 줄이
+ *    「쿠키 없음 = **401 `session_required`**」라고 정한다. 이 행은 쿠키 없는 새 브라우저로
+ *    딥링크를 여는 축이라, 서버는 계약대로 401 을 냈고 화면은 그것을 `unavailable` 로 적었다.
+ *    즉 빨강은 **화면의 것도 서버의 것도 아니라 이 그물이 낡은 것**이었다(실측 · `:8020`):
+ *      `GP-not-a-doc-chunk` → **401** `session_required`   ← 계약 v0.1.17 대로
+ *      `GP-anything`        → **401** `session_required`   ← 접두가 변수임을 가르는 대조군
+ *      `ZZ-not-a-doc-chunk` → **404** `not_found`
+ *      `MR-9999-0000`       → **404** `not_found`
+ *    그래서 **접두가 갈래를 타지 않는 id** 로 바꾼다 — 이 행이 재려던 것(계약이 모르는 id 는
+ *    404 이고 화면은 추정 없이 그 사실만 적는다)은 그대로다.
+ */
+const OUT_OF_KIND = "ZZ-not-a-doc-chunk";
 
 const enc = encodeURIComponent;
 
@@ -138,8 +152,18 @@ test.describe("T3-3 근거 열람 — kind 2종·인용 강조", () => {
     // 기다리던 것: 판정선은 아래 screen-unavailable 의 toHaveAttribute 가 기다린다
     await page.goto(`/evidence/${enc(OUT_OF_KIND)}`);
     await expect(page.getByTestId("screen-unavailable")).toHaveAttribute("data-kind", "not-found");
-    // 🔴 화면이 id 모양으로 kind 를 갈라 그리면 계약이 정하지 않은 것을 화면이 정한 것이다.
-    await expect(page.getByTestId("screen-unavailable").locator("..")).toContainText("Q-34");
+    /**
+     * 🔴 화면이 id 모양으로 kind 를 갈라 그리면 계약이 정하지 않은 것을 화면이 정한 것이다.
+     *    앞판은 화면에 **`"Q-34"` 라는 낱말이 있는지**를 물었다 — 그건 원장 번호이지 화면이
+     *    사용자에게 할 말이 아니라, 문면이 다듬어지면서 사라졌다(D-93b 실측: 지금 문면은
+     *    「요청한 항목을 찾을 수 없습니다 · 사유: 그런 항목이 없습니다」).
+     *    그래서 **주장 두 갈래**로 다시 적는다 — 느슨해진 것이 아니라 자리를 옮긴 것이다:
+     *      ⓐ 없음의 «사유»를 말한다(추정 없이 그 사실만)
+     *      ⓑ 「서버에 닿지 못했다」로 **모르는 것을 아는 척하지 않는다**(D-68b 가 그 오표기였다)
+     */
+    const around = page.getByTestId("screen-unavailable").locator("..");
+    await expect(around).toContainText(/사유:/);
+    await expect(around).not.toContainText("서버에 닿지 못했습니다");
   });
 
   test("문서 화면이 신뢰 6필드를 «전부» 그린다 (wireframes §3 문서 헤더 · F-4)", async ({ page }) => {

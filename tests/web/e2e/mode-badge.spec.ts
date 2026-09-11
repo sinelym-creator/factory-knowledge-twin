@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page, type Route } from "@playwright/test";
 
 /**
  * 축 ① — 모드 배지 «전이». 구현이 「재지 않았다」고 명시 이월한 축이다.
@@ -12,7 +12,32 @@ import { test, expect, type Page } from "@playwright/test";
  *    모킹만으로 낸 초록은 「내 mock 이 계약대로다」의 초록이지 「셸이 백엔드와 맞물린다」가 아니다.
  */
 
-const LIVE = "**/api/live/status";
+/**
+ * 🔴 끝의 `**` 가 없으면 **query 가 붙은 요청을 물지 않는다**(D-93 · 센쿠2 54대 실측).
+ *    세션이 선 뒤의 폴링은 전부 `?sessionId=…` 를 달고 나가므로, 배지의 값을 정하는 응답이
+ *    모킹이 아니라 **실서버**의 것이 된다 — 그러면 초록도 빨강도 대상의 것이 아니다.
+ *    대조군(한 변수만): 넓히면 히트 1 → 2 · `data-mode` live → replay(화면 무변경).
+ */
+const LIVE = "**/api/live/status**";
+
+/**
+ * 🔴 **자극이 실재했는가를 세는 칸.** 0건 모킹은 언제나 「실서버가 답한 값」을 내므로,
+ *    가드가 없으면 위 결함이 **조용히** 돌아온다. 라우팅을 이 헬퍼로만 걸고, 판정 «전»에
+ *    `expectStimulusLanded()` 로 히트 수를 묻는다 — 0 이면 그 실행의 색은 판정이 아니다.
+ */
+function routeLive(page: Page, handler: (route: Route) => Promise<void> | void) {
+  const state = { hits: 0 };
+  page.route(LIVE, async (route) => {
+    state.hits += 1;
+    await handler(route);
+  });
+  return state;
+}
+
+function expectStimulusLanded(state: { hits: number }) {
+  expect(state.hits, "모킹이 한 번도 안 걸렸다 — 이 값은 실서버의 답이지 자극의 결과가 아니다")
+    .toBeGreaterThan(0);
+}
 
 /** 세션을 발급받아 셸이 선 상태로 만든다(`/` 가 쿠키를 심고 `/overview` 로 보낸다). */
 async function enter(page: Page) {
@@ -64,7 +89,7 @@ test.describe("모드 배지", () => {
     });
 
     const asked = page.waitForRequest(LIVE, { timeout: 10_000 });
-    await page.route(LIVE, async (route) => {
+    const live = routeLive(page, async (route) => {
       // 지연은 «확인 중» 창이 실재하게 만드는 자극이다(계약 시간초과 2s 안쪽).
       // 관측이 그 안에 들어야 할 이유는 이제 없다 — 자취가 대신 본다.
       await new Promise((r) => setTimeout(r, 800));
@@ -77,6 +102,7 @@ test.describe("모드 배지", () => {
 
     await enter(page);
     await asked;
+    expectStimulusLanded(live);
     const badge = page.getByTestId("mode-badge");
 
     await expect(badge).toHaveAttribute("data-mode", "replay");
@@ -119,8 +145,9 @@ test.describe("모드 배지", () => {
   });
 
   test("응답 없음 → «미연결» + fallback 배너 · 🔴 REPLAY 라고 적지 않는다", async ({ page }) => {
-    await page.route(LIVE, (route) => route.abort("connectionrefused"));
+    const live = routeLive(page, (route) => route.abort("connectionrefused"));
     await enter(page);
+    expectStimulusLanded(live);
     const badge = page.getByTestId("mode-badge");
     await expect(badge).toHaveAttribute("data-mode", "unavailable");
     await expect(badge).toContainText("미연결");
@@ -130,10 +157,33 @@ test.describe("모드 배지", () => {
     const banner = page.getByTestId("fallback-banner");
     await expect(banner).toBeVisible();
     await expect(banner).toContainText("확인하지 못했습니다");
-    await expect(banner).toContainText("오류가 아닙니다");
+    /**
+     * 🔴 **낱말이 아니라 주장을 잰다**(D-93b 실측). 앞판은 `"오류가 아닙니다"` 완전일치였는데
+     *    화면 문면은 「…서버가 아직 연결되지 않았을 뿐 **오류는** 아닙니다.」다 — 조사 한 글자
+     *    차이로 이 행이 죽었고, 그때 죽은 것은 화면이 아니라 **이 그물**이었다.
+     *    판정선은 그대로다: 「못 물어본 것」을 「오류」로 적지 않는가.
+     */
+    await expect(banner).toContainText(/오류.{0,3}아닙니다/);
   });
 
-  test("모킹 없이 실제 ai-api 로 — online:false → REPLAY (E1 왕복)", async ({ page }) => {
+  test("모킹 없이 실제 ai-api 로 — online:false → REPLAY (E1 왕복)", async ({ page, request }) => {
+    /**
+     * 🔴 **이 행은 무대 전제를 하나 요구한다 — 게이트웨이가 «없어야» 한다**(D-93).
+     *    모킹을 쓰지 않는 축이라 `online` 값을 무대가 정하고, 게이트웨이가 살아 있으면
+     *    `online:true` 라 REPLAY 가 «틀린 기대»가 된다. 그때의 빨강은 화면의 것이 아니다.
+     *    그래서 전제를 실측해서, 안 서면 **빨강 대신 사유를 적고 건너뛴다**
+     *    — 「못 쟀다」와 「틀렸다」는 다른 값이기 때문이다.
+     */
+    const online = await request
+      .get("/api/live/status")
+      .then((r) => r.json())
+      .then((j: { online?: boolean }) => j.online === true)
+      .catch(() => false);
+    test.skip(
+      online,
+      "무대 조건 미충족 — `/api/live/status.online` 이 true 다(게이트웨이가 살아 있다). " +
+        "이 축은 게이트웨이가 없는 무대에서만 성립한다: 미측이지 FAIL 이 아니다.",
+    );
     await enter(page);
     const badge = page.getByTestId("mode-badge");
     await expect(badge).toHaveAttribute("data-mode", "replay");
