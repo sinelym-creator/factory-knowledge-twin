@@ -1,5 +1,7 @@
 # PROGRESS — factory-knowledge-twin 작업 현황판
 
+> **09-11 11:56 스자쿠 54대 승격 26 집행**(폐하 「승격」 11:51:41) — main `30274ba`(#909 · 49커밋) · `promote-artifacts` rc 0(promptSha `3560668716ab`) · ai-api 재생성 `build=30274ba`(센쿠2 · 이미지 내 파일 해시 일치) · Vercel production READY `dpl_78KwrwMEFprbhqrTXC7TFcQH7A5F` · 외부 재검 = 리바이2 진행 중. 내용 = `evidence.flagged` 이벤트+배지(#890~#892) · 폐하 실기기 오류 E-1~E-5 수리(#903 #907 #912 · 독검 #904 #906 #908 #911 #913) · O-54 갈래 3(#900 #901) · preflight D-87 정합(#905) · D-89 등재(#910). 미측 1 = 배지 브라우저 실렌더 · 이월 = D-89 P2 · 좌석 교대 2(levi2·suzaku · 외부 재검 뒤).
+
 > **09-06 19:43 스자쿠 53대 D-88 복구**(폐하 화면 19:35 · production `document_chunk` 0행 → Live vector 실패 · 코드 무관 · D-16 형태) — 폐하 「복구」 19:41 → 백업 → `build_index.py` :5536 59/59/1 PASS → production GS-01 Live 1회 완주 19:43 · 이월 = 삭제 주체 미상 · 승격 검증에 색인 계수+Live 자극 축 추가 · 팀원 2석 종료(폐하 19:33 · 오살 0) · 스자쿠 대기.
 
 > **09-06 16:13 스자쿠 53대 승격 25 완결**(폐하 「승격」 15:55 → 16:08) — main `99d3cab` #895(= `709e071` · `promote/25` 로 sha 고정 · #890~#893 미포함 = 승격 26 후보) · promote-artifacts rc 0(promptSha `3560668716ab`) · production ai-api 재생성 센쿠2(build `99d3cab` · 공백 0.36s · 빌드 소스 = main sha 워크트리 · 트리 sha 대조) · 외부 재검 PASS 리바이2 #896 · 원장·runbook #897 · 오늘 배포 4회차 · 오기 2(「Vercel 무관」·「토큰은 좌석 env」) · 팀 마감 상태 복귀.
