@@ -10,6 +10,7 @@
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "@tailwindcss/cli": "4.3.3",
+    "playwright": "1.62.1",
     "tailwindcss": "4.3.3"
   },
   "//tailwind": "🔴 4.3.3 «정확히» 고정한다. token_layer_probe 는 apps/web-console 이 실측으로 쓰는 바로 그 버전이 같은 표기에 무엇을 내는지를 재는 대조군이라, 버전이 흐르면 대조가 아니라 다른 실험이 된다."
