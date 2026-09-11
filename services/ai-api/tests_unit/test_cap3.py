@@ -8,8 +8,77 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
+from app.errors import LiveHourlyCapExceeded, SessionRunCapExceeded
 from app.investigation.session_cap import GLOBAL_RUN_CAP_KEY, SessionRunCap
+from app.routers.investigations import _admit_run_caps
 from app.routers.ops import _latch_active, _parse_iso
+
+
+class _Settings:
+    """거절 본문이 싣는 두 칸만 있는 최소 설정 — 실제 Settings 를 끌어오지 않는다."""
+
+    def __init__(self, per_session: int, per_hour: int) -> None:
+        self.run_cap_per_session = per_session
+        self.run_cap_global_per_hour = per_hour
+
+
+def _caps(session_limit: int, global_limit: int) -> tuple[SessionRunCap, SessionRunCap]:
+    return (
+        SessionRunCap(limit=session_limit, window_sec=3600.0),
+        SessionRunCap(limit=global_limit, window_sec=3600.0),
+    )
+
+
+def test_global_refusal_does_not_consume_the_session_axis() -> None:
+    """🔴 D-1 수리의 판정선 — 전역이 거절하면 세션 `used` 가 **움직이지 않는다**.
+
+    이 케이스는 낡은 순서(`session.admit` → `global.admit`)에서 **반드시 빨강**이다:
+    세션을 먼저 세고 나서 전역이 거절하면 되돌릴 자리가 없어 `used` 가 0→1 로 남았다
+    (리바이2 CAP3-V 4/4 재현).
+    """
+    session_cap, global_cap = _caps(session_limit=3, global_limit=1)
+    global_cap.commit(GLOBAL_RUN_CAP_KEY, now=0.0)  # 전역 한 자리를 남이 먼저 썼다
+
+    with pytest.raises(LiveHourlyCapExceeded):
+        _admit_run_caps(session_cap, global_cap, "s", _Settings(3, 1), now=1.0)
+
+    assert session_cap.peek("s", now=1.0)["used"] == 0
+    assert session_cap.peek("s", now=1.0)["remaining"] == 3
+
+
+def test_session_refusal_does_not_consume_the_global_axis() -> None:
+    """반대 방향 — 세션이 거절하면 전역 `used` 가 움직이지 않는다(순서가 집행하는 축)."""
+    session_cap, global_cap = _caps(session_limit=1, global_limit=5)
+    session_cap.commit("s", now=0.0)
+    before = global_cap.peek(GLOBAL_RUN_CAP_KEY, now=1.0)["used"]
+
+    with pytest.raises(SessionRunCapExceeded):
+        _admit_run_caps(session_cap, global_cap, "s", _Settings(1, 5), now=1.0)
+
+    assert global_cap.peek(GLOBAL_RUN_CAP_KEY, now=1.0)["used"] == before == 0
+
+
+def test_pass_counts_both_axes_exactly_once() -> None:
+    """🔴 대조군 — 통과 회차는 **양쪽 다** 1 이어야 한다. 없으면 「아무것도 안 세기」가
+       위 두 케이스를 통과시킨다(거절도 계수 0 · 통과도 계수 0 이면 상한이 사라진다)."""
+    session_cap, global_cap = _caps(session_limit=3, global_limit=5)
+    _admit_run_caps(session_cap, global_cap, "s", _Settings(3, 5), now=0.0)
+    assert session_cap.peek("s", now=0.0)["used"] == 1
+    assert global_cap.peek(GLOBAL_RUN_CAP_KEY, now=0.0)["used"] == 1
+
+
+def test_check_does_not_count_but_commit_does() -> None:
+    """2단의 성질 자체 — `check` 를 몇 번 불러도 자리가 줄지 않는다."""
+    cap = SessionRunCap(limit=1, window_sec=3600.0)
+    for _ in range(5):
+        assert cap.check("s", now=0.0) is None
+    assert cap.peek("s", now=0.0)["used"] == 0
+    cap.commit("s", now=0.0)
+    assert cap.peek("s", now=0.0)["used"] == 1
+    retry = cap.check("s", now=0.0)
+    assert retry is not None and retry > 0
 
 
 def test_global_cap_admits_limit_then_refuses() -> None:

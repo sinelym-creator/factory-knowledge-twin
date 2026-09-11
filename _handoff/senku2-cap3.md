@@ -59,3 +59,54 @@ base = `origin/develop` **6544615**(생성) → `adcc08c`(v0.2.4 화면 문면 �
 - 단위 그물 1본(`components/incident/synthesis-wording.test.tsx` · 4 케이스) — 🔴 판정선은
   「사유가 비어 오는 회차에도 문장이 선다」다. 「문장이 보인다」만 재면 앞판의 구멍이 그대로 통과한다.
 - rc 재측: web-console `lint` **0** · `test:unit` **47 passed**(신규 4) · `build` **0** · `tsc`(build 뒤) **0**.
+
+## 5. CAP3-FIX — 독검 결함 1(D-1) + 회부 1(O-2)
+
+### ⓐ D-1 — 전역 거절이 세션 1회를 먹었다 (리바이2 4/4 재현)
+
+- **뿌리**: 두 축이 각자 `admit`(판정+기록 한 호출)이었다. 세션이 먼저 세고 나서 전역이
+  거절하면 **되돌릴 자리가 없다** — 거절인데 소모된다(계약 v0.2.4 ① 「어느 하나라도 거절이면
+  계수하지 않는다」 위반). 앞판 주석의 「순서가 그 규율을 집행한다」는 **한 방향만** 참이었다.
+- **처방 = 예약-확정 2단**: `SessionRunCap.check`(판정 · 기록 0) + `.commit`(기록)으로 가르고,
+  라우트는 **두 축을 `check` → 둘 다 통과한 뒤 두 축을 `commit`** 한다. `admit` 은 `check+commit`
+  으로 남겨 축이 하나뿐인 호출부와 기존 단위를 그대로 통과시킨다.
+- 두 축이 **같은 `now`** 를 본다(각자 시계를 읽으면 창 경계에서 판정이 시각 차로 갈린다) ·
+  `check`~`commit` 사이에 `await` 없음(동기라야 마지막 자리를 둘이 함께 받지 않는다).
+- 🔴 순서 규칙을 **라우트 밖 함수**(`_admit_run_caps`)로 꺼냈다 — 인라인이면 「거절 뒤 계수
+  불변」을 무대 없이 증명할 수 없다. 규칙이면 단위로 재야 한다.
+- 단위 4본(`tests_unit/test_cap3.py`): 전역 거절 뒤 세션 `used` 불변 · 세션 거절 뒤 전역 `used`
+  불변 · 🔴 **대조군「통과는 양쪽 다 정확히 1」**(없으면 「아무것도 안 세기」가 위 둘을 통과시킨다) ·
+  `check` 는 안 세고 `commit` 은 센다.
+- 🔴 **known-true 실측**: 낡은 순서(`admit`×2)를 일부러 되살리니 `test_global_refusal_…` 이
+  `assert 1 == 0` 으로 **빨강**(= 결함의 정확한 모양) · 되돌리니 9/9 초록. 그물이 이 결함을
+  실제로 잡는다는 것을 본 뒤에 초록을 값으로 쓴다.
+
+### ⓑ O-2 — 배지 사유가 툴팁 전용이었다
+
+- `live-status.tsx` `ModeBadge` 에 사유를 **본문 한 줄**로 세웠다(`data-testid="mode-badge-why"`).
+  `title` 은 hover 가 있어야 보이고 폐하 기기는 터치라 그 표면뿐이면 「숨긴 것과 같다」
+  (`run-panels.tsx:150~153` 규약). 기존 배지 레이아웃 **안** · `data-mode`·`data-why` **불변**.
+- **혼잡 회차에는 붙이지 않는다** — 혼잡 문장이 이미 자기 사유를 말한다(같은 말 2회 방지).
+- 단위 4본(`components/mode-badge-why.test.tsx`): 🔴 판정선은 **`title="…"` 를 지운 마크업에
+  사유가 남는가** · 대조군 2(사유 없음 = 조각 없음 · 혼잡 = 조각 없음) · `data-mode` 불변.
+- known-true: 본문 조각을 빼니 판정선 1본만 빨강 · 되돌리니 4/4 초록.
+- `LiveContext` 를 export 했다 — **단위 측정 하나 때문**이다(Provider 는 fetch·폴링을 함께
+  끌고 온다). 앱 소비 경로는 `useLiveStatus()` 그대로.
+
+### ⓒ rc 전수 재측 (`date 17:16:37`)
+
+| 축 | 값 |
+|---|---|
+| web-console `eslint .` | rc **0** |
+| web-console `next build`(`FKT_API_BASE` 지정) | rc **0** |
+| web-console `tsc --noEmit`(build 뒤) | rc **0** |
+| web-console `vitest run` | **51 passed**(신규 4) |
+| ai-api `pytest tests_unit` | **101 passed + 12 subtests** |
+| synthesis-gateway `pytest` | **23 passed** |
+
+### 안 잰 것 (CAP3-FIX)
+
+- **동시성**: 2단 사이가 동기라는 것은 코드로 보증했을 뿐, 워커 다수·경합 부하로 **재지 않았다**.
+- **거동 축**: 실제 429 두 종이 화면에서 어떻게 보이는가는 무대 몫(독검) — 이번에도 안 세웠다.
+- **색·대비·좁은 폭 겹침**: 사유가 배지 안에서 한 줄 늘어난 만큼 폭이 는다. `renderToStaticMarkup`
+  은 CSS 를 모른다 — 브라우저 층에서 재야 한다(재검 ③ 후보).

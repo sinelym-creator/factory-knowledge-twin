@@ -105,7 +105,10 @@ export function announceSessionExpired(): void {
   for (const fn of sessionExpiredListeners) fn();
 }
 
-const LiveContext = createContext<State>({
+/* 🔴 **export 하는 이유는 단위 측정 하나뿐이다.** 배지 문면은 상태(`why`·`mode`)가 정하는데,
+   Provider 는 fetch·폴링을 함께 들고 와서 문면만 재려면 무대를 세워야 한다. 소비 경로는
+   `useLiveStatus()` 그대로다 — 앱 코드에서 이 상수를 직접 읽지 않는다. */
+export const LiveContext = createContext<State>({
   mode: "checking",
   checkedAt: null,
   why: null,
@@ -353,6 +356,15 @@ export function ModeBadge() {
     >
       <span aria-hidden>{face.icon}</span>
       <span>{text}</span>
+      {/* 🔴 **O-2 — 사유는 «본문»이다.** `title` 은 hover 가 있어야 보이는데 폐하 기기는
+          터치라 그 표면만으로는 사유가 없는 것과 같다(`run-panels.tsx` SynthesisBadge 규약
+          「사유를 툴팁에만 넣으면 숨긴 것과 같다」). 배지 안 한 줄로 세우되, 혼잡 문장이
+          이미 자기 사유를 말하는 회차에는 같은 말을 두 번 하지 않는다. */}
+      {why && !congestion && (
+        <span className="text-muted" data-testid="mode-badge-why">
+          · {why}
+        </span>
+      )}
     </span>
   );
 }

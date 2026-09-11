@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
@@ -97,6 +98,53 @@ RUN_REUSED_HEADER = "X-FKT-Run-Reused"
 RUN_CAP_LIMIT_HEADER = "X-FKT-Run-Cap-Limit"
 RUN_CAP_USED_HEADER = "X-FKT-Run-Cap-Used"
 RUN_CAP_REMAINING_HEADER = "X-FKT-Run-Cap-Remaining"
+
+
+def _admit_run_caps(
+    session_cap: Any,
+    global_cap: Any,
+    session_id: str,
+    settings: Any,
+    now: float | None = None,
+) -> None:
+    """세션 축과 전역 축을 **둘 다 판정한 뒤에 둘 다 센다**. 거절이면 해당 429 를 raise 한다.
+
+    🔴 계약 v0.2.4 ① 「어느 하나라도 거절이면 계수하지 않는다」의 집행 자리다. `admit` 으로
+       세션을 먼저 세면, 그 뒤 전역이 거절할 때 세션 1회가 **이미 소모된 채로 남는다** —
+       거절인데 소모되는 자리(리바이2 CAP3-V 독검 4/4 재현 · D-1). 순서만으로는 한 방향
+       (세션 거절 → 전역 무계수)밖에 못 막는다. 그래서 `check`(기록 0) 둘 → `commit` 둘이다.
+    🔴 두 축이 **같은 `now`** 를 본다. 각자 시계를 읽으면 창 경계에서 한 축만 만료를 인정해
+       판정이 시각 차로 갈린다.
+    🔴 `check` 와 `commit` 사이에 **`await` 가 없다**. 그 구간이 동기여야 두 요청이 같은
+       마지막 자리를 함께 받지 않는다(`session_cap.commit` 머리말 · `capacity.admit` 규율).
+    🔴 라우트 «밖»의 함수인 이유: 이 순서가 규칙이고, 규칙은 단위로 재야 한다. 인라인으로
+       두면 「거절 뒤 계수 불변」을 무대 없이 증명할 방법이 없다.
+    """
+    now = time.monotonic() if now is None else now
+
+    # 세션 축이 먼저인 이유는 방문자에게 더 정확한 말을 해 주기 때문이다 — 자기 3회를 다 쓴
+    # 사람에게 「서비스 전체가 소진」이라고 말하면 언제 다시 되는지를 틀리게 안내한다.
+    retry_after = session_cap.check(session_id, now)
+    if retry_after is not None:
+        log.info("세션 조사 상한 초과 — 재생으로 안내한다(Retry-After %ds)", retry_after)
+        # 🔴 `used` 는 «지금 창 안의 실측»이다(계약 v0.1.15) — `limit` 을 그대로 베끼지 않는다.
+        #    둘은 거의 언제나 같지만, 운영자가 상한을 «내리는» 순간 창 안에는 옛 상한만큼의
+        #    기록이 남아 `used > limit` 이 참이 된다. 그때 limit 을 베낀 응답은 사실을 지운다.
+        used = int(session_cap.peek(session_id, now)["used"])
+        raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session, used)
+
+    global_retry = global_cap.check(GLOBAL_RUN_CAP_KEY, now)
+    if global_retry is not None:
+        log.info("전역 시간당 Live 상한 초과 — 재생으로 안내한다(Retry-After %ds)", global_retry)
+        global_used = int(global_cap.peek(GLOBAL_RUN_CAP_KEY, now)["used"])
+        raise LiveHourlyCapExceeded(
+            global_retry, settings.run_cap_global_per_hour, global_used
+        )
+
+    # 여기까지 왔다 = 두 축 모두 통과. 이제서야 «센다» — 이 아래에서 실패(자리 없음·의존 정지)해도
+    # 계수는 남는다. 그것은 계약이 정한 자리다(live 시도는 자리 잡기 전까지가 「소모」).
+    session_cap.commit(session_id, now)
+    global_cap.commit(GLOBAL_RUN_CAP_KEY, now)
 
 
 def _stamp_run_cap(response: Response, request: Request, session_id: str) -> None:
@@ -300,36 +348,18 @@ async def start_run(
         log.info("의존 정지로 live 를 강등한다 — %s", ", ".join(down))
         return _degrade_to_replay(request, scenarioId, anchor, session, down[0])
 
-    # --- 세션 조사 상한 (계약 v0.1.12 · T6-2 ②) --------------------------------
+    # --- 조사 실행 상한 (계약 v0.1.12 · v0.2.4 ① · T6-2 ②) ---------------------
     #
     # 🔴 **의존 강등보다 «뒤»에 둔다.** 의존이 죽어 replay 로 내려가는 run 은 구독을 쓰지
     #    않는다 — 그것까지 상한에 세면 게이트웨이가 꺼진 시간에 상한만 소진된다.
     # 🔴 **자리 잡기보다 «앞»에 둔다.** 순서가 바뀌면 상한에 걸릴 요청이 슬롯을 먼저 잡았다가
     #    돌려주고, 그 찰나에 정상 요청이 503 을 맞는다.
-    retry_after = request.app.state.session_run_cap.admit(session)
-    if retry_after is not None:
-        log.info("세션 조사 상한 초과 — 재생으로 안내한다(Retry-After %ds)", retry_after)
-        # 🔴 `used` 는 «지금 창 안의 실측»이다(계약 v0.1.15) — `limit` 을 그대로 베끼지 않는다.
-        #    둘은 거의 언제나 같지만, 운영자가 상한을 «내리는» 순간 창 안에는 옛 상한만큼의
-        #    기록이 남아 `used > limit` 이 참이 된다. 그때 limit 을 베낀 응답은 사실을 지운다.
-        used = int(request.app.state.session_run_cap.peek(session)["used"])
-        raise SessionRunCapExceeded(retry_after, settings.run_cap_per_session, used)
-
-    # --- 전역 시간당 상한 (계약 v0.2.4 ① ⓑ) -------------------------------------
-    #
-    # 🔴 **세션 «뒤», 자리 잡기 «앞»**이다(계약의 판정 순서 그대로). 세션 축이 먼저인 이유는
-    #    방문자에게 더 정확한 말을 해 주기 때문이다 — 자기 3회를 다 쓴 사람에게 「서비스 전체가
-    #    소진」이라고 말하면 언제 다시 되는지를 틀리게 안내한다.
-    # 🔴 세션 축이 **거절한 회차는 여기 오지 않는다** — 거절은 소모가 아니므로 전역 계수도
-    #    올리면 안 된다(계약 「어느 하나라도 거절이면 계수하지 않는다」). 순서가 그 규율을 집행한다.
-    global_cap = request.app.state.global_run_cap
-    global_retry = global_cap.admit(GLOBAL_RUN_CAP_KEY)
-    if global_retry is not None:
-        log.info("전역 시간당 Live 상한 초과 — 재생으로 안내한다(Retry-After %ds)", global_retry)
-        global_used = int(global_cap.peek(GLOBAL_RUN_CAP_KEY)["used"])
-        raise LiveHourlyCapExceeded(
-            global_retry, settings.run_cap_global_per_hour, global_used
-        )
+    _admit_run_caps(
+        request.app.state.session_run_cap,
+        request.app.state.global_run_cap,
+        session,
+        settings,
+    )
 
     # --- ⓐ 자리 잡기 --------------------------------------------------------
     #
