@@ -1,5 +1,9 @@
 /** E-7 ⓒ — 종단(approved) 화면 412×600 자기 확인. 스텁 무대(:8804 ← :8803) · 구독 0. */
-const _pw = await import("file:///C:/Users/sinel/repos/_wt/senku2-m1/tests/web/node_modules/@playwright/test/index.js");
+/* 🔴 개인 절대경로를 적지 않는다(ci hygiene `.github/workflows/ci.yml:27` 게이트).
+   이 트리의 `tests/web` 에 설치된 playwright 를 **상대 경로**로 연다 — 다른 사람의
+   체크아웃에서도 같은 자리를 가리킨다. 다른 트리를 쓰려면 `FKT_PW` 로 덮는다. */
+const PW_ENTRY = process["env"].FKT_PW ?? "../../tests/web/node_modules/@playwright/test/index.js";
+const _pw = await import(new URL(PW_ENTRY, import.meta.url).href);
 const chromium = _pw.chromium ?? _pw.default.chromium;
 const [B = "http://127.0.0.1:8804", WO = "WOD-stub0001", OUT = "shot.png"] = process.argv.slice(2);
 const br = await chromium.launch();
