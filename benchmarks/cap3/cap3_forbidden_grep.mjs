@@ -61,6 +61,38 @@ if (scan(planted).length === 0) {
 }
 console.log("[교정] 심은 위반 1줄 검출 = O");
 
+/* 🔴 **B 열 — 서버가 만들어 화면으로 흘러가는 문장.**
+   A 열(셸 리터럴)만 보면 「0건」이 나오는데, 방문자가 읽는 문장이 거기서만 오지 않는다:
+   `rejectedReason` 은 ai-api 가 만들고 `run-panels.tsx` 가 **본문에 그대로** 싣는다.
+   실측(前): `_refusal_wording()` 의 반환 5종 중 3종이 「게이트웨이」를 담는다.
+   그래서 이 열은 «관측»한다 — 판정(허용/위반)은 정본 해석이 갈리는 자리라 여기서 내리지 않고,
+   숫자와 문자열을 그대로 보고한다. A 열의 0 을 「화면에 금칙어가 없다」로 읽지 않기 위한 열이다. */
+function serverColumn(apiRoot) {
+  if (!apiRoot) return null;
+  const out = [];
+  for (const f of files(apiRoot).concat(pyFiles(apiRoot))) {
+    const src = readFileSync(f, "utf8");
+    for (const s of userSentences(src)) {
+      for (const w of WORDS) if (s.text.includes(w)) out.push({ f, n: s.n, word: w, text: s.text });
+    }
+  }
+  return out;
+}
+/* 🔴 **`tools/`·`tests/` 는 화면에 닿지 않는다.** 1차 B 열은 28건을 냈는데 대부분이
+   `tools/live_synthesis_guard_drill.py` — 제 드릴이 자기 콘솔에 찍는 문장이었다.
+   그 넓은 축은 엄격함이 아니라 오답이다(옳은 코드를 고발한다). 방문자에게 갈 수 있는
+   자리는 앱 코드(`app/`)뿐이므로 거기로 좁힌다. */
+function pyFiles(dir, acc = []) {
+  for (const e of readdirSync(dir)) {
+    if (e === "node_modules" || e === "__pycache__" || e === ".venv") continue;
+    if (e === "tools" || e === "tests" || e === "scripts") continue;
+    const p = join(dir, e);
+    if (statSync(p).isDirectory()) pyFiles(p, acc);
+    else if (/\.py$/.test(e)) acc.push(p);
+  }
+  return acc;
+}
+
 const list = files(ROOT);
 let total = 0;
 for (const f of list) {
@@ -69,4 +101,12 @@ for (const f of list) {
     console.log(`  ${f.replace(ROOT, "")}:${h.n}  [${h.word}]  ${h.text.slice(0, 90)}`);
   }
 }
-console.log(`== 금칙어 위반 ${total}건 · 대상 파일 ${list.length}본 ==`);
+console.log(`== A 열(셸 리터럴) ${total}건 · 대상 파일 ${list.length}본 ==`);
+
+const API = process.argv[3];
+if (API) {
+  const rows = serverColumn(API) ?? [];
+  for (const r of rows) console.log(`  [B/서버] ${r.f.replace(API, "")}:${r.n}  [${r.word}]  ${r.text.slice(0, 90)}`);
+  console.log(`== B 열(서버 문자열 · 관측) ${rows.length}건 ==`);
+  console.log("   🔴 B 열은 판정이 아니라 관측이다 — 이 문자열이 «화면 본문»에 실리는지는 셸 렌더 축이 답한다.");
+}
