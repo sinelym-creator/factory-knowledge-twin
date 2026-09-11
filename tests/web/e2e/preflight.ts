@@ -40,22 +40,34 @@ export default async function preflight() {
    * 실제로 그런 스텁(`:8101`)을 물고 전량을 돌렸더니 **깊은 API 를 부르는 63본이 무더기로 빨강**이었고,
    * 얕은 화면 스펙은 전건 초록이었다 — **대상 결함처럼 보이는 무대 결함**이다.
    *
-   * ⇒ **대조군의 깊이를 측정 대상의 깊이에 맞춘다.** 계약 표면이 실제로 서 있는지를
-   *    `/openapi.json` 의 경로 수로 묻는다(계약 v0.1 표면 = 20 남짓 · 스텁은 0).
-   *    🔴 여기 «지금의 수»(21)를 박지 않는다 — 계약이 늘면 그 수가 먼저 늙는다. 하한만 둔다.
+   * ⇒ **대조군의 깊이를 측정 대상의 깊이에 맞춘다.**
+   *
+   * 🔴 **09-11 교체(T-TOUR-V ③ · 오케 승인)**: 앞판은 `/openapi.json` 의 경로 수로 물었다.
+   *    **D-87 이 그 표면을 닫은 뒤로 그 질문은 항상 404 → `paths=-1` 이라, 이 preflight 는
+   *    무대가 멀쩡해도 «무조건» throw 한다**(실측: `:8020/openapi.json` → 404).
+   *    그러면 `tests/web/e2e/**` 전량이 서지 못한다 — **그물이 대상보다 먼저 늙은 자리**다.
+   *    문서가 닫혔다고 해서 깊이 검사를 포기하지는 않는다. 같은 깊이를 **거동**으로 묻는다:
+   *      · 세션을 실제로 만들고(`POST /api/sessions` → `sessionId`)
+   *      · 그 세션으로 깊은 경로를 부른다(`GET /api/scenarios` → 200)
+   *      · 🔴 **음성 대조군**: 세션 «없이» 같은 경로를 부르면 401 이어야 한다.
+   *    두 칸이 함께 서야 통과다. 「전부 200 을 돌려주는 스텁」은 음성 칸에서 걸리고,
+   *    「전부 401 을 돌려주는 문」은 양성 칸에서 걸린다 — 문은 양면으로 시험한다.
    */
-  const MIN_PATHS = 10;
-  const surface = await probe(`${API}/openapi.json`);
-  let pathCount = -1;
-  if (surface.ok && surface.status === 200) {
-    const full = await fetch(`${API}/openapi.json`, { signal: AbortSignal.timeout(6000) }).then((r) => r.json());
-    pathCount = Object.keys((full as { paths?: Record<string, unknown> }).paths ?? {}).length;
-  }
-  console.log(`   ai-api 계약 표면      GET /openapi.json → ${surface.ok ? surface.status : surface.why} · paths=${pathCount}`);
-  if (pathCount < MIN_PATHS) {
+  const deepPath = "/api/scenarios";
+  let sid = "";
+  try { sid = String((JSON.parse(create.ok ? create.body : "{}") as { sessionId?: string }).sessionId ?? ""); } catch { sid = ""; }
+  const deepAnon = await probe(`${API}${deepPath}`);
+  const deepAuth = sid
+    ? await probe(`${API}${deepPath}`, { headers: { cookie: `fkt_sid=${sid}` } })
+    : { ok: false as const, why: "세션을 못 받았다 — POST /api/sessions 가 sessionId 를 주지 않았다" };
+  const authStatus = deepAuth.ok ? deepAuth.status : -1;
+  const anonStatus = deepAnon.ok ? deepAnon.status : -1;
+  console.log(`   ai-api 깊은 검사      GET ${deepPath} 세션 있음 → ${authStatus} · 세션 없음 → ${anonStatus}`);
+  if (authStatus !== 200 || anonStatus !== 401) {
     throw new Error(
-      `🔴 preflight 실패(깊은 검사) — ${API} 의 계약 표면이 ${pathCount} 개다(하한 ${MIN_PATHS}).\n` +
-        "     얕은 스텁을 물었을 가능성이 높다. 이 상태의 빨강은 «대상 결함»이 아니라 «무대 결함»이다.\n" +
+      `🔴 preflight 실패(깊은 검사) — ${API}${deepPath} 가 세션 있음 ${authStatus}(기대 200) · 세션 없음 ${anonStatus}(기대 401) 다.\n` +
+        "     양성·음성 두 칸이 함께 서야 «깊은 API 가 실제로 산다»가 참이다. 얕은 스텁이나\n" +
+        "     전부 거절하는 문을 물었을 수 있다. 이 상태의 빨강은 «대상 결함»이 아니라 «무대 결함»이다.\n" +
         "     cd services/ai-api && .venv/Scripts/python.exe -m uvicorn app.main:app --port <포트> --no-proxy-headers",
     );
   }
