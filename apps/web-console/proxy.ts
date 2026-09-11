@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { SESSION_COOKIE, parseSession } from "@/lib/session";
+import { ENTRY_DESTINATION, SESSION_COOKIE, parseSession, resolveNext } from "@/lib/session";
 import { isStaticRun } from "@/lib/static-replay/run-id";
 
 /**
@@ -131,7 +131,18 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect(new URL("/", req.url));
+  /* 🔴 **307 이 목적지를 «들고» 간다**(설계 §2 첫 행). 앞판은 `/` 로만 보냈고, 그래서
+     방문자가 무엇을 하러 왔는지가 사슬 첫 홉에서 사라졌다(#955 실측: 쿼리 붙인 요청과 안 붙인
+     요청의 종착지가 같았다). 🔴 **허용 목록을 통과한 것만** 싣는다 — `resolveNext` 가
+     `null` 이면 이 줄은 앞판과 «바이트 동일»하게 동작한다(새 거동 0). */
+  const wanted = resolveNext(`${path}${req.nextUrl.search}`);
+  const entry = new URL("/", req.url);
+  /* 🔴 **기본 목적지와 같으면 싣지 않는다.** `/overview`(쿼리 없음)는 `resolveNext` 를
+     통과하지만 그 값은 입장이 원래 가는 자리라, 실으면 **아무것도 바꾸지 않는 파라미터**가
+     모든 바운스에 붙는다 — 대조군의 응답 바이트가 이유 없이 달라지고, 표면만 넓어진다.
+     싣는 것은 「기본값과 다른 목적지」일 때뿐이다. */
+  if (wanted && wanted !== ENTRY_DESTINATION) entry.searchParams.set("next", wanted);
+  return NextResponse.redirect(entry);
 }
 
 export const config = {

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { apiBase, createSession } from "@/lib/contract";
-import { ENTRY_DESTINATION, SESSION_COOKIE, formatSession, parseSession } from "@/lib/session";
+import { ENTRY_DESTINATION, SESSION_COOKIE, formatSession, parseSession, resolveNext } from "@/lib/session";
 
 /**
  * 입장 핸들러 — 「입장은 «실행»하는 일이지, 지나가다 생기는 일이 아니다」(Q-39 ⓒ).
@@ -72,13 +72,28 @@ import { ENTRY_DESTINATION, SESSION_COOKIE, formatSession, parseSession } from "
  */
 export const maxDuration = 60;
 
-function seeOther(setCookie?: string | null) {
+/* 🔴 목적지는 **요청이 들고 온 것**을 쓰되, `resolveNext` 를 통과한 것만이다(설계 §3).
+   통과 못 하면 `ENTRY_DESTINATION` — 즉 «지금과 같은» 거동이 기본값이다. */
+function seeOther(setCookie?: string | null, next?: string | null) {
+  const location = resolveNext(next) ?? ENTRY_DESTINATION;
   return new NextResponse(null, {
     status: 303,
-    headers: setCookie
-      ? { location: ENTRY_DESTINATION, "set-cookie": setCookie }
-      : { location: ENTRY_DESTINATION },
+    headers: setCookie ? { location, "set-cookie": setCookie } : { location },
   });
+}
+
+/** 🔴 `next` 는 두 자리로 올 수 있다 — 폼(hidden input)과 쿼리. 폼이 먼저다(사람이
+ *  누른 그 화면의 값). 읽기 실패는 조용히 `null`(본문이 폼이 아닌 회차가 있다). */
+async function readNext(req: NextRequest): Promise<string | null> {
+  const fromQuery = req.nextUrl.searchParams.get("next");
+  try {
+    const form = await req.clone().formData();
+    const value = form.get("next");
+    if (typeof value === "string" && value) return value;
+  } catch {
+    // 폼이 아니거나 이미 읽힌 본문 — 쿼리로 떨어진다
+  }
+  return fromQuery;
 }
 
 export async function POST(req: NextRequest) {
@@ -106,7 +121,10 @@ export async function POST(req: NextRequest) {
    * 🔴 표면은 넓어지지 않는다: 쿠키 «없는» 방문자는 이미 이 줄 아래로 내려가 발급받는다.
    *    `renew` 는 그 길을 쿠키 든 사람에게 한 번 열 뿐, 새 권한이나 새 경로가 아니다. */
   const renew = req.nextUrl.searchParams.get("renew") === "1";
-  if (!renew && session?.origin === "api") return seeOther();
+  /* 🔴 **이미 선 사람도 목적지를 들고 간다.** 여기서 `next` 를 안 읽으면, 쿠키가 있는
+     방문자만 안내가 사라지는 «회차 의존 결함»이 남는다 — 고치는 김에 두 갈래를 같게 둔다. */
+  const next = await readNext(req);
+  if (!renew && session?.origin === "api") return seeOther(null, next);
 
   // 입장 1회: 계약대로 세션을 «발급받아» 본다. 닿지 않으면 pending으로 들어간다.
   const reply = await createSession(apiBase());
@@ -149,7 +167,7 @@ export async function POST(req: NextRequest) {
   //       — 실측으로 확인했다(뒤집기 + set 한 번 더 = fkt_sid 소멸 · 아래 방식 = 생존).
   //       그래서 초기화 헤더로 넘긴다: ResponseCookies 가 이 값을 자기 목록으로 «읽어 들여»
   //       이후의 `cookies.set` 이 몇 번 오든 함께 직렬화된다. 고치는 김에 재발 자리를 없앤다.
-  const res = seeOther(apiCookie);
+  const res = seeOther(apiCookie, next);
 
   res.cookies.set(SESSION_COOKIE, formatSession(created), {
     path: "/",
