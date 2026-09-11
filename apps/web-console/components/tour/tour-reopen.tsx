@@ -108,7 +108,7 @@ export function TourReopen() {
    *    빠지면 투어를 다시 보려는 사람이 그 투어에 갇힌다.
    */
   const { registerAllowed } = useTourAllowed();
-  const ref = useRef<HTMLButtonElement | null>(null);
+  const ref = useRef<HTMLAnchorElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   useEffect(() => {
@@ -118,11 +118,20 @@ export function TourReopen() {
   }, [registerAllowed]);
 
   return (
-    <button
+    /* 🔴 **D-96 — 수화 «전»에 눌린 클릭이 통째로 버려졌다.** 열림 로직이 전부 `onClick` 안에
+       있고 `<button>` 에는 기본 동작이 없어서, 느린 기기(실측: 400kbps·RTT 400ms·CPU×4)에서는
+       버튼이 «보이는데» 눌러도 아무 일이 없었다 — 이벤트 0건 · URL 쿼리 0 · 말풍선 0/3.
+       본문이 선 뒤에 누른 회차는 같은 무대에서 3/3 · 16~21ms 로 열렸다(갈림 변수 = 클릭 시점 하나).
+       🔴 그래서 «수화 전에도 기본 동작이 있는» 요소로 바꾼다: 평범한 `<a href>` 다.
+          수화 전 클릭 = 브라우저 기본 이동 → 서버가 `?tour=1` 을 읽어 연다(`tour-provider` `wants`).
+       🔴 **`<Link>` 가 아니다**(D-71 보존 · 위 머리말). Next 의 prefetch 경로에 올리면
+          같은 pathname 쿼리 이동이 자기 캐시에 흡수되는 그 병이 돌아온다. 수화 «뒤» 클릭은
+          `preventDefault()` 로 기본 이동을 막고 지금까지의 로직(래치·이벤트·pushState)을 그대로 쓴다.
+       🔴 `role="button"` 을 덧대지 않는다 — 이 요소는 이제 **정말로 이동한다**(수화 전 경로).
+          보조기술에 링크를 버튼이라고 말하면 그 경로가 거짓이 된다. */
+    <a
       ref={ref}
-      /* 🔴 `type="button"` — 기본값은 submit 이다. 앱바가 언젠가 form 안에 들어가는 날
-         이 버튼이 그 form 을 보내 버린다. */
-      type="button"
+      href={TOUR_HREF}
       /* 🔴 히트 44 는 «레이아웃 박스»로 만든다 — `::before` 를 좌우로 넓히면 요소가 그만큼
          밖으로 삐져나가 뷰포트 가장자리에서 문서가 넘친다(D-33 실측: coarse 60/60
          `scrollWidth 391 / clientWidth 390`). 이제 폭은 글자가 정하고(`px-3`), 고정 `w-11` 은
@@ -130,7 +139,10 @@ export function TourReopen() {
       className="fkt-hit fkt-hoverable flex h-8 items-center justify-center rounded-pill px-3 text-foot whitespace-nowrap text-muted hover:text-ink"
       title="처음부터 다시 보기"
       data-testid="intro-reopen"
-      onClick={() => {
+      onClick={(e) => {
+        /* 🔴 수화가 끝난 회차만 여기 온다 — 그때는 기본 이동을 막고 아래 로직이 연다.
+           (막지 않으면 전체 문서 이동이 나서 지금껏 지켜 온 SPA 거동이 깨진다.) */
+        e.preventDefault();
         /* 🔴 적는 것이 «먼저»다 — 쏘기 전에 적어야 이 클릭으로 새로 마운트하는 쪽도
            같은 신호를 읽는다. 순서를 뒤집으면 그 사이에 선 본문이 빈손으로 뜬다. */
         markTourOpenRequested();
@@ -150,6 +162,6 @@ export function TourReopen() {
       {/* 🔴 글자가 곧 이름이라 `sr-only` 를 함께 두지 않는다 — 두면 스크린리더가 같은 것을
           두 번 읽는다(보이는 라벨 + 숨은 라벨). `title` 은 설명이지 이름의 대체가 아니다. */}
       튜토리얼
-    </button>
+    </a>
   );
 }

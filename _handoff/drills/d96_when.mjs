@@ -15,6 +15,17 @@ for (let i = 1; i <= Number(N); i += 1) {
   const cdp = await ctx.newCDPSession(page);
   await cdp.send("Network.emulateNetworkConditions", { offline: false, downloadThroughput: (400 * 1024) / 8, uploadThroughput: (400 * 1024) / 8, latency: 400 });
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  if (WHEN === "warmearly") {
+    /* 🔴 세션을 «먼저» 세운다(빠른 조건으로 입장만 끝내고), 그 뒤 느린 조건에서
+       개요를 다시 열어 «수화 전»에 누른다. 이래야 입장 바운스가 쿼리를 지우는 층과
+       「수화 전 클릭」 층이 섞이지 않는다 — 한 번에 한 변수. */
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    await cdp.send("Network.emulateNetworkConditions", { offline: false, downloadThroughput: -1, uploadThroughput: -1, latency: 0 });
+    await page.goto(`${B}/overview`, { waitUntil: "domcontentloaded" });
+    await page.getByTestId("intro-card").waitFor({ state: "visible", timeout: 30000 }).catch(() => {});
+    await cdp.send("Network.emulateNetworkConditions", { offline: false, downloadThroughput: (400 * 1024) / 8, uploadThroughput: (400 * 1024) / 8, latency: 400 });
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  }
   await page.goto(`${B}/overview`, { waitUntil: "domcontentloaded" });
   await page.getByTestId("intro-reopen").waitFor({ state: "visible", timeout: 40000 });
   if (WHEN === "late") {
