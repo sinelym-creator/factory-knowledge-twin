@@ -71,6 +71,9 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
    *    (실측), 새로고침하면 사라진다. 그 한계를 화면이 스스로 말한다 — 남아 있는 척하지 않는다.
    */
   const [history, setHistory] = useState<{ at: string; text: string }[]>([]);
+  /** 🔴 종단 배지에 «있을 때만» 병기하는 감사 id — 이력과 같은 한계(세션 내)라
+   *    새로고침하면 사라진다. 없을 때 자리를 비워 두는 것이 지어내는 것보다 낫다. */
+  const [lastAuditId, setLastAuditId] = useState<string | null>(null);
 
   const readOnly = wo.approvalState !== "pending";
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,6 +118,7 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
     }
     const res: ApprovalResult = r.data;
     setWo({ ...wo, approvalState: decision === "approve" ? "approved" : "rejected" });
+    setLastAuditId(res.auditId);
     setHistory((h) => [
       ...h,
       {
@@ -383,26 +387,51 @@ export function WorkOrderScreen({ initial }: { initial: WorkOrderDraft }) {
             {why}
           </span>
         )}
-        <div className="ml-auto flex gap-2">
-          <button
-            type="button"
-            disabled={readOnly}
-            onClick={() => setAsking("reject")}
-            className="fkt-btn fkt-btn-secondary rounded-pill px-4 text-foot text-muted hover:text-ink disabled:opacity-40"
-            data-testid="wo-reject"
-          >
-            반려 (사유 입력)
-          </button>
-          <button
-            type="button"
-            disabled={readOnly}
-            onClick={() => setAsking("approve")}
-            className="fkt-btn fkt-btn-primary rounded-pill px-5 text-foot"
-            data-testid="wo-approve"
-          >
-            승인
-          </button>
-        </div>
+        {/* 🔴 **E-7 — 종단에서 「누를 것」을 남겨 두지 않는다.**
+            앞판은 최종 상태에서도 승인·반려 버튼을 «자리에» 두고 `disabled` 로만 잠갔다.
+            잠김 자체는 동작한다(`globals.css:304` `.fkt-btn:disabled{opacity:.4}` 전역 ·
+            실측 opacity 0.4) — 결함은 다른 데 있었다: **primary 채움은 40% 에서도 눌리는
+            것처럼 읽히고, 「승인됐다」를 말하는 요소가 화면에 없다**. 그래서 실기기에서
+            승인 뒤가 「끝났다」가 아니라 «멈췄다»로 보였다.
+            🔴 고치는 방법은 잠금을 더 진하게 칠하는 것이 아니라, 그 자리에 **결과와
+               출구**를 두는 것이다(D-91 이 문서 화면에서 푼 것과 같은 형태). 상태 낱말은
+               머리말 배지와 **같은 출처**(`badge`)를 쓴다 — 두 자리에 따로 적으면 낱말이
+               바뀌는 날 한 화면이 서로 다른 말을 한다. 감사 id 는 **있을 때만** 병기한다.
+            🔴 `pending` 일 때는 지금 그대로다 — 바뀌는 것은 종단뿐이다. */}
+        {readOnly ? (
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <span className="fkt-pill bg-fill text-foot text-muted" data-testid="wo-final">
+              {badge}
+              {lastAuditId && <span className="id ml-1.5">{lastAuditId}</span>}
+            </span>
+            <Link
+              href={`/incidents/${encodeURIComponent(wo.incidentId)}`}
+              className="fkt-hit fkt-btn fkt-btn-secondary rounded-pill px-4 text-foot"
+              data-testid="wo-exit"
+            >
+              조사로 돌아가기
+            </Link>
+          </div>
+        ) : (
+          <div className="ml-auto flex gap-2">
+            <button
+              type="button"
+              onClick={() => setAsking("reject")}
+              className="fkt-btn fkt-btn-secondary rounded-pill px-4 text-foot text-muted hover:text-ink disabled:opacity-40"
+              data-testid="wo-reject"
+            >
+              반려 (사유 입력)
+            </button>
+            <button
+              type="button"
+              onClick={() => setAsking("approve")}
+              className="fkt-btn fkt-btn-primary rounded-pill px-5 text-foot"
+              data-testid="wo-approve"
+            >
+              승인
+            </button>
+          </div>
+        )}
       </section>
 
       {history.length > 0 && (
