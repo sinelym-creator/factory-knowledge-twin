@@ -461,7 +461,7 @@ pwsh -File services/synthesis-gateway/run.ps1 -Bind 0.0.0.0 -Token <값> -Model 
 | `FKT_LOCAL_SYNTHESIS_GATEWAY` | `http://host.docker.internal:8787` | **없으면** live 모듈이 import 조차 되지 않는다(공개 배포의 기본 상태) |
 | `FKT_SYNTHESIS_GATEWAY_TOKEN` | 게이트웨이와 **같은 값** | 합성 요청과 도달 프로브 **양쪽** 헤더에 실린다 |
 
-선택: `FKT_RUN_CAP_PER_SESSION`(기본 3 · 세션당 시간당 Live 조사 상한 · 0 이하 = 상한 없음 ·
+선택: `FKT_RUN_CAP_PER_SESSION`(기본 3 · 세션당 시간당 Live 조사 상한 · 0 이하 = 상한 없음 · v0.2.4) · `FKT_RUN_CAP_GLOBAL_PER_HOUR`(기본 3 · 서비스 전체 시간당 Live 상한 · 프로세스 단위 · 초과 `429 live_hourly_cap_exceeded`) · `FKT_SYNTH_FAIL_LATCH_SEC`(게이트웨이 · 기본 900 · 합성 실패 뒤 배지가 재생으로 머무는 시간) ·
 초과 시 `429 session_run_cap_exceeded` + `Retry-After` · **replay 는 막지 않는다**) ·
 `SYNTHESIS_TIMEOUT_MS`(클라이언트 예산 · 기본 60000 → 실제 대기 65s).
 
