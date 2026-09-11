@@ -80,6 +80,12 @@ class LiveResult:
     rejected_reason: str | None = None
     rationale: dict[str, dict[str, Any]] = field(default_factory=dict)
     safety_omitted: bool = False
+    # 🔴 **이 run 이 게이트웨이를 몇 번 불렀는가**(D-97). 구독을 쓰는 단위는 run 이 아니라
+    #    호출인데, 지금까지 그 수는 어디에도 남지 않았다 — 2회차가 «성공한» run 은 페이로드상
+    #    1회 run 과 구별되지 않았고(그때는 `safetyOmitted` 조차 안 실린다), 남는 것은 로그 한
+    #    줄뿐이었다. 예산을 말하려면 먼저 세어야 한다.
+    calls: int = 0
+    safety_retried: bool = False
 
     def synthesis_payload(self) -> dict[str, Any]:
         """`step.completed(synthesize).payload.synthesis` — 계약 v0.1.11 형상 그대로.
@@ -95,6 +101,14 @@ class LiveResult:
             payload["rejectedReason"] = self.rejected_reason
         if self.safety_omitted:
             payload["safetyOmitted"] = True
+        # 🔴 이 둘은 **항상** 싣는다 — `safetyOmitted` 의 「참일 때만」 규약을 따르지 않는다.
+        #    저 칸은 «예외 표기»라 부재가 곧 「없었다」로 읽혀도 되지만, 이쪽은 «계수»다.
+        #    계수를 조건부로 실으면 「0회였다」와 「이 버전은 안 센다」가 같은 부재가 되어
+        #    예산 표가 어느 쪽인지 못 가른다(빈 결과는 통과가 아니다).
+        # 🔴 호출이 0 인 회차(주소 없음·발췌 0)도 그대로 0 을 싣는다 — 거기서 값을 빼면
+        #    「재는 축이 죽으면 조용해지는」 계측기가 된다.
+        payload["calls"] = self.calls
+        payload["safetyRetried"] = self.safety_retried
         return payload
 
 
@@ -623,11 +637,11 @@ async def synthesize(
     """live 축 1회. 예외를 밖으로 내보내지 않는다 — 실패도 «드러난 결과»로 돌려준다."""
     url = gateway_url()
     if not url:
-        return LiveResult(axis="live-rejected", candidates=candidates, rejected_reason="게이트웨이 주소가 비었다")
+        return LiveResult(axis="live-rejected", candidates=candidates, rejected_reason="게이트웨이 주소가 비었다")  # calls=0
 
     evidence_text = build_evidence_text(state)
     if not evidence_text:
-        return LiveResult(axis="live-rejected", candidates=candidates, rejected_reason="보낼 근거 발췌가 0건이다")
+        return LiveResult(axis="live-rejected", candidates=candidates, rejected_reason="보낼 근거 발췌가 0건이다")  # calls=0
 
     # 🔴 **지시문형 표지는 여기서 «한 번» 낸다**(O-48 ⓐ · 계약 v0.2.3). 자리가 아래 재요청
     #    루프 «밖»인 것이 규격이다 — `_request_body` 안에서 내면 규정 미호명 재요청 갈래에서
@@ -647,6 +661,11 @@ async def synthesize(
     model: str | None = None
     notice: str | None = None
     safety_omitted = False
+    # 🔴 «부른 횟수»는 루프 변수(`attempt`)가 아니라 따로 센다. `attempt` 는 «시도 번호»라
+    #    1회차에서 예외가 나면 1 이지만, 그때 호출이 실제로 갔는지(=구독을 썼는지)는 다른 사실이다.
+    #    그래서 `_post` 가 «돌아온 뒤» 올린다 — 도달하지 못한 호출을 소모로 세지 않는다.
+    calls = 0
+    safety_retried = False
     # 🔴 **최대 두 회차 · 그 이상 없다**(D-84). 규정 누락은 「답이 틀렸다」가 아니라 「덜 말했다」라
     #    거부로 승격시키지 않는다 — 거부하면 결정적 순위로 내려앉아 방문자가 보는 것이 더 나빠진다.
     #    그래서 재요청은 **1회**, 2회째 답은 누락이 남아도 **그대로 채택**하고 계측에만 표기한다.
@@ -659,14 +678,19 @@ async def synthesize(
             response = await asyncio.to_thread(
                 _post, url, body, budget_sec, on_sentence if attempt == 1 else None
             )
+            calls += 1
             model = response.get("model") if isinstance(response.get("model"), str) else UNKNOWN_MODEL
             reordered, rationale = apply_guard(response, candidates, set(evidence_ids))
         except _Rejected as exc:
+            # 🔴 가드가 물린 회차도 **호출은 갔다**(200 을 받고 그 내용을 물린 것) — `_post` 뒤에서
+            #    올린 `calls` 를 그대로 싣는다. 거절이라고 0 으로 적으면 소모가 표에서 사라진다.
             return LiveResult(
                 axis="live-rejected",
                 candidates=candidates,
                 model=model,
                 rejected_reason=str(exc),
+                calls=calls,
+                safety_retried=safety_retried,
             )
         except Exception as exc:                              # noqa: BLE001 — 축 하나가 run 을 죽이지 않는다
             # 🔴 원문은 «여기서만» 남는다. 아래 사유에는 클래스명이 들어가지 않는다(D-23).
@@ -676,6 +700,8 @@ async def synthesize(
                 candidates=candidates,
                 model=model,
                 rejected_reason=_refusal_wording(exc),
+                calls=calls,
+                safety_retried=safety_retried,
             )
 
         missing = unnamed_safety_rules(safety_rules, rationale)
@@ -689,17 +715,24 @@ async def synthesize(
                 ", ".join(missing[:MAX_NOTICE_RULES]),
             )
             notice = _guard_notice(missing)
+            safety_retried = True
             continue
         # 2회차에도 남았다 — 채택하되 계측이 볼 수 있게 표기한다(화면 문면은 바꾸지 않는다).
         safety_omitted = True
         log.warning("%s — 재요청 뒤에도 %d건 미호명, 그대로 채택", SAFETY_OMITTED_REASON, len(missing))
 
+    # 🔴 계수 1줄을 **ASCII 마커**로 남긴다(로그 문면 grep 이 깨진 한글에서 거짓 0 을 낸 선례).
+    #    `warning` 이 아니라 `info` 다 — 재요청은 사고가 아니라 설계된 갈래이고, 경고로 적으면
+    #    「매 run 이 경고를 낸다」가 되어 진짜 경고가 묻힌다.
+    log.info("synthesize calls=%d safetyRetried=%s", calls, str(safety_retried).lower())
     return LiveResult(
         axis="live",
         candidates=reordered,
         model=model,
         rationale=rationale,
         safety_omitted=safety_omitted,
+        calls=calls,
+        safety_retried=safety_retried,
     )
 
 
