@@ -14,17 +14,29 @@
 //    회귀 PASS/FAIL 판정은 다음 대가 낸다. 이 러너는 «구조 가드»만 실패로 만든다:
 //      · 표본 < 8      → exit 3 (표본이 성립하지 않으면 측정이 없다)
 //      · 서버 미도달    → exit 4
-//      · answerable 질문 전체 hit 0 → exit 5 (검색이 죽었다)  ← «200 위의 0» 일 때만
+//      · answerable 질문 전체 hit 0 → exit 5 (검색이 죽었다)  ← «전 호출 200» 일 때만
 //      · answerable 전체 hit 0 이며 **모든 호출이 비200 으로 일관**하고 그 `error.code` 가
 //        «부재»를 가리킬 때 → exit 7 (색인 없음 — 검색이 죽은 게 아니다)
+//      · answerable 전체 hit 0 이며 비200 이 «일관»되지만 그 code 가 부재가 아닐 때
+//        → exit 8 (측정 불가 — 이 실행으로는 재지 못했다)
+//      · answerable 전체 hit 0 이며 원인이 «섞였을» 때(status 2종+ · code 2종+ ·
+//        비200 이 일부만 · code 없는 비200) → exit 9 (판정 불가 — 주어를 말할 수 없다)
 //      · 교정 대조군(허구 needle) 이 hit>0 → exit 6 (지표가 아무거나 센다)
+//      · `--gate` 회귀 판정선 미달 → exit 10 (구조 가드 3~9 와 «대역 분리»)
 //
-// 🔴 **exit 5 를 둘로 가르는 이유(O-54 b · 09-06 실측)**: 색인 0 국면에서 이 러너는
+// 🔴 **exit 5 를 넷으로 가르는 이유(O-54 b · 09-06 실측 + 잔여 갈래 3 · 09-11)**: 색인 0 국면에서 이 러너는
 //    `검색이 죽었다`(exit 5)를 찍었지만, 서버는 그 20건에 503 과 함께
 //    `{"error":{"code":"index_unavailable","message":"document_chunk 에 임베딩이 0건이다 ..."}}`
 //    를 돌려주고 있었다. **「검색이 죽었다」와 「색인이 없다」는 같은 문장이 아니다** —
 //    앞엣것은 러너가 hit 수만 보고 붙인 이름이고, 뒤엣것은 대상이 스스로 말한 이름이다.
 //    원인을 오지칭하는 빨강은 다음 사람을 틀린 자리로 보낸다.
+//
+//    같은 이유로 exit 5 안쪽에 남아 있던 셋을 더 가른다(잔여 갈래 3):
+//      · exit 5 = 서버가 «다 200 으로 답했는데» 맞히지 못했다 — 회수 실패. 대상의 성질이다.
+//      · exit 8 = 서버가 일관되게 거절했고 그 이름이 부재가 아니다 — «우리가 못 쟀다».
+//                 이것을 exit 5 로 내면 「검색 사망」이 대상의 성질로 기록된다.
+//      · exit 9 = 원인이 섞였다 — 무엇도 주어가 아니다. `nonOk.firstRaw` 가 사후 추적선이다.
+//    🔴 가르는 축은 **status 가 아니라 `error.code`** 다(계약 v0.1 의 오류 봉투가 정본).
 //
 // 🔴 **`--out` 은 구조 가드 «앞»에서 쓴다(O-54 a)**: 앞판은 exit 5 가 쓰기보다 앞줄이라
 //    «빨강일 때 산출물이 없었다» — 정작 진단이 필요한 국면에서만 파일이 사라졌다.
@@ -195,14 +207,33 @@ async function main() {
   //    gate 는 아직 안 돌았으므로 여기서는 null 로 쓰고, 완주하면 gate 를 실어 덮어쓴다.
   const outWriteFailed = OUT ? !(await writeOut(null)) : false;
 
-  // 구조 가드 — exit 5 를 둘로 가른다(O-54 b).
+  // 🔴 원인이 «섞인» 국면 — status 가 두 가지 이상이거나, code 가 두 가지 이상이거나,
+  //    비200 이 일부 호출에만 났거나, 비200 인데 서버가 code 를 «대지 않았다». 어느 쪽이든
+  //    빨강의 주어를 한 가지로 말할 수 없다. 그때 「검색이 죽었다」라고 쓰면 지어낸 주어다.
+  const mixedCause = nonOk.length > 0 &&
+    (statusSet.length > 1 || codeSet.length > 1 || codeSet.length === 0 || nonOk.length !== calls.length);
+  // 🔴 비200 이 «일관»되지만 그 code 가 부재를 가리키지 않는다 — 검색이 죽은 게 아니라
+  //    우리가 «재지 못했다». 「안 잰 것」과 「못 재는 것」은 다른 값이어야 한다.
+  //    축은 status 가 아니라 `error.code` 다: index_unavailable 은 5xx 지만 부재(exit 7)이고,
+  //    not_found(404)·invalid_session_id(422) 는 4xx 지만 여기(측정 불가)다.
+  const unmeasurable = !mixedCause && nonOk.length > 0 && nonOk.length === calls.length;
+
+  // 구조 가드 — exit 5 를 넷으로 가른다(O-54 b 잔여 갈래 3).
   if (!anyHit && absence) {
     console.error(`구조 가드 FAIL: 전 호출 ${statusSet[0]} ${codeSet[0]} · hit 0 — 검색이 죽은 게 아니라 «색인이 없다»(서버가 부재를 이름으로 말했다)`);
     process.exit(7);
   }
+  if (!anyHit && mixedCause) {
+    console.error(`판정 불가: hit 0 이지만 원인이 섞였다 — 비200 ${nonOk.length}/${calls.length} · status ${JSON.stringify(statusSet)} · code ${JSON.stringify(codeSet)}`
+      + ` (첫 비200 원문: ${JSON.stringify(firstNon200Raw)})`);
+    process.exit(9);
+  }
+  if (!anyHit && unmeasurable) {
+    console.error(`측정 불가: 전 호출 ${statusSet[0]} ${codeSet[0]} · hit 0 — 검색이 죽은 게 아니라 이 실행으로는 «재지 못했다»(부재를 가리키는 code 가 아니다)`);
+    process.exit(8);
+  }
   if (!anyHit) {
-    console.error("구조 가드 FAIL: answerable 질문 전체 hit 0 — 검색이 죽었다"
-      + (nonOk.length ? ` (비200 ${nonOk.length}/${calls.length} · status ${JSON.stringify(statusSet)} · code ${JSON.stringify(codeSet)})` : ""));
+    console.error(`구조 가드 FAIL: 전 호출 200 · answerable 질문 전체 hit 0 — 검색이 죽었다 (비200 ${nonOk.length}/${calls.length})`);
     process.exit(5);
   }
   if (fakeAnywhere) { console.error(`구조 가드 FAIL: 허구 needle ${FAKE_NEEDLE} 가 hit 됐다 — 지표가 아무거나 센다`); process.exit(6); }

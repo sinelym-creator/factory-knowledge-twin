@@ -11,6 +11,15 @@
 // 🔴 대조군 없이 초록을 세지 않는다: 각 열은 «기대 rc» 를 미리 적고, 다르면 그 자리에서 빨강.
 //    특히 5열(부재 code 가 아닌 5xx)·6열(상태코드가 섞임)은 **exit 7 이 나오면 안 되는** 열이다
 //    — 그 둘이 없으면 「전부 7 로 보내는 문」도 초록으로 보인다.
+//
+// 🔴 **잔여 갈래 3 반영(09-11)**: 5·6 열의 기대 rc 를 5 에서 갈랐다 — 5열 = **exit 8**(측정
+//    불가 · 일관 거절인데 그 code 가 부재가 아니다) · 6열 = **exit 9**(판정 불가 · 원인 혼재).
+//    7·8 열을 신설해 「code 가 두 가지」와 「code 가 아예 없는 비200」도 9 로 떨어지는지 센다.
+//    가르는 축은 status 가 아니라 `error.code` 다 — index_unavailable 은 5xx 지만 7 이고,
+//    not_found(404) 는 4xx 지만 8 이다. status 로 자르면 두 방향 다 틀린다.
+//
+// 🔴 **자극 «도달» 건수를 센다**: 각 열은 `--out` 의 `nonOk.ofCalls`(그 실행의 전 호출 수)를
+//    함께 찍고, 0 이면 rc 가 맞아도 FAIL 이다. 안 불린 갈래의 초록은 갈래의 초록이 아니다.
 // =============================================================================
 
 import { createServer } from "node:http";
@@ -57,6 +66,11 @@ function stub(mode) {
           return send(503, { error: { code: "index_unavailable", message: "document_chunk 에 임베딩이 0건이다" } });
         case "otherCode":     // 전 호출 503 이지만 «부재가 아닌» code → 색인 없음이라 부르면 안 된다
           return send(503, { error: { code: "dependency_unavailable", message: "의존 단절" } });
+        case "noCode":        // 전 호출 비200 인데 서버가 code 를 «대지 않았다» → 주어 없음
+          return send(502, { detail: "Bad Gateway" });
+        case "mixedCode":     // 상태코드는 한 가지인데 code 가 두 가지 → 원인 섞임
+          return n % 2 ? send(503, { error: { code: "index_unavailable", message: "-" } })
+                       : send(503, { error: { code: "dependency_unavailable", message: "-" } });
         case "mixed":         // 상태코드가 섞임 → 원인을 한 가지로 말할 수 없다
           return n % 2 ? send(503, { error: { code: "index_unavailable", message: "-" } })
                        : send(200, [hit("DOC-XXX-0000@r1#000")]);
@@ -97,13 +111,16 @@ const COLUMNS = [
   { name: "2 200 위의 hit 0(정답 못 맞힘)",           mode: "okMiss",    want: 5, out: join(tmp, "c2.json") },
   { name: "3 정상(200 + 정답)",                        mode: "okHit",     want: 0, out: join(tmp, "c3.json") },
   { name: "4 허구 needle 이 잡힘(교정)",               mode: "fake",      want: 6, out: join(tmp, "c4.json") },
-  { name: "5 비200 이지만 부재 code 가 아님",          mode: "otherCode", want: 5, out: join(tmp, "c5.json") },
-  { name: "6 상태코드가 섞임",                         mode: "mixed",     want: 5, out: join(tmp, "c6.json") },
+  { name: "5 비200 일관 · 부재 code 가 아님(측정 불가)", mode: "otherCode", want: 8, out: join(tmp, "c5.json") },
+  { name: "6 상태코드가 섞임(판정 불가)",                mode: "mixed",     want: 9, out: join(tmp, "c6.json") },
+  { name: "7 code 가 두 가지(판정 불가)",                mode: "mixedCode", want: 9, out: join(tmp, "c7.json") },
+  { name: "8 비200 인데 code 없음(판정 불가)",           mode: "noCode",    want: 9, out: join(tmp, "c8.json") },
 ];
 
 let fails = 0;
 console.log(`표본 ${sample.length}문 (러너와 같은 정본·같은 필터)`);
-console.log("열 | 기대 rc | 실측 rc | --out 실재 | nonOk.absenceVerdict | 판정");
+// 🔴 자극 «도달» 건수 — 넣은 갈래가 실제로 불렸는가. 0 이면 그 열은 무효다(초록이 아니라).
+console.log("열 | 기대 rc | 실측 rc | --out 실재 | 자극 도달(비200/전호출) | absenceVerdict | 판정");
 for (const col of COLUMNS) {
   const srv = stub(col.mode);
   await new Promise((r) => srv.listen(0, "127.0.0.1", r));
@@ -112,11 +129,19 @@ for (const col of COLUMNS) {
   const r = await run(`http://127.0.0.1:${port}`, col.out);
   srv.close();
   const wrote = existsSync(col.out);
-  let verdictField = "-";
-  if (wrote) { try { verdictField = String(JSON.parse(readFileSync(col.out, "utf-8")).nonOk?.absenceVerdict); } catch {} }
-  const ok = r.code === col.want && wrote;   // 🔴 --out 은 «빨강일 때도» 있어야 한다(O-54 a)
+  let verdictField = "-", reach = "-", reached = null;
+  if (wrote) {
+    try {
+      const o = JSON.parse(readFileSync(col.out, "utf-8"));
+      verdictField = String(o.nonOk?.absenceVerdict);
+      reached = o.nonOk?.ofCalls ?? 0;
+      reach = `${o.nonOk?.n ?? 0}/${reached}`;
+    } catch {}
+  }
+  // 🔴 열이 성립하려면 rc 일치 + --out 실재 + «호출이 실제로 일어났다»(전 호출 0 = 무효)
+  const ok = r.code === col.want && wrote && reached > 0;
   if (!ok) fails += 1;
-  console.log(`${col.name.padEnd(38)} | ${col.want} | ${r.code} | ${wrote ? "있음" : "🔴 없음"} | ${verdictField} | ${ok ? "PASS" : "🔴 FAIL"}`);
+  console.log(`${col.name.padEnd(38)} | ${col.want} | ${r.code} | ${wrote ? "있음" : "🔴 없음"} | ${reach} | ${verdictField} | ${ok ? "PASS" : "🔴 FAIL"}`);
   if (!ok) console.log("    stderr: " + r.se.trim().split(/\r?\n/).slice(-3).join(" / "));
 }
 
@@ -134,5 +159,5 @@ for (const [mode, want, why] of [["absent", 7, "빨강이 먼저 — 쓰기 실�
   console.log(`쓰기 실패 · ${mode.padEnd(29)} | ${want} | ${r.code} | - | - | ${ok ? "PASS" : "🔴 FAIL"}   (${why})`);
 }
 
-console.log(fails === 0 ? "\n드릴 PASS — 갈래 8칸 전건 기대와 일치" : `\n🔴 드릴 FAIL — ${fails}칸 불일치`);
+console.log(fails === 0 ? "\n드릴 PASS — 갈래 10칸 전건 기대와 일치" : `\n🔴 드릴 FAIL — ${fails}칸 불일치`);
 process.exit(fails === 0 ? 0 : 1);
