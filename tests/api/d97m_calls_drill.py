@@ -118,7 +118,7 @@ def open_session(api: str):
 
 
 def start_and_wait(api: str, scenario: str, sid: str, cookie: str, deadline_sec: int = 300) -> dict:
-    status, created, _ = call(api, "POST", f"/api/scenarios/{scenario}/runs", {"sessionId": sid, "mode": "live"}, cookie)
+    status, created, created_headers = call(api, "POST", f"/api/scenarios/{scenario}/runs", {"sessionId": sid, "mode": "live"}, cookie)
     if status != 200 or not (created or {}).get("runId"):
         raise StageMissing(f"run 을 시작하지 못했다 — {status} {created}")
     run_id = created["runId"]
@@ -131,6 +131,9 @@ def start_and_wait(api: str, scenario: str, sid: str, cookie: str, deadline_sec:
         time.sleep(0.5)
     snap = snap or {}
     snap["_runId"] = run_id
+    # 🔴 상한 상태는 `/live/status` 가 아니라 **run 생성 응답의 헤더**에 찍힌다(`_stamp_run_cap`).
+    #    없는 자리를 보고 「상한이 없다」고 적으면 안 재 것을 재다고 말하게 된다.
+    snap["_capHeaders"] = {k: v for k, v in (created_headers or {}).items() if "cap" in k.lower() or "ratelimit" in k.lower()}
     return snap
 
 
@@ -174,6 +177,7 @@ def column(api: str, stub: str, scenario: str, sid: str, mode: str) -> dict:
             "safetyRetriedHits": [{"path": p, "value": v} for p, v in retried_hits],
             "safetyOmittedHits": [{"path": p, "value": v} for p, v in omitted_hits],
         },
+        "capHeaders": snap.get("_capHeaders"),
         "hourlyCap": {
             "before": ((cap_before or {}).get("hourlyCap") or {}).get("used"),
             "after": ((cap_after or {}).get("hourlyCap") or {}).get("used"),
