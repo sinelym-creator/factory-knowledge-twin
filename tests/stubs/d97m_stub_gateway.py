@@ -73,6 +73,18 @@ def _answer(req: dict) -> dict:
         name_rules = is_retry
 
     ranking = [c.get("failureModeId") for c in candidates if isinstance(c.get("failureModeId"), str)]
+    # 🔴 `guardfail` = 200 은 내지만 가드가 물리는 답(run 근거집합 밖 인용).
+    #    처방이 「가드가 물린 회차도 센다」라고 적어 둔 그 주장을 거동으로 물어보는 열이다.
+    if MODE == "guardfail":
+        return {
+            "ranking": ranking,
+            "rationale": {
+                fm: {"sentences": ["근거집합 밖 인용을 달았다."], "citedEvidenceIds": ["EV-NOT-IN-RUN"]}
+                for fm in ranking
+            },
+            "model": MODEL,
+            "_stub": {"mode": MODE, "isRetry": is_retry, "namedRules": False, "rulesInEvidence": rules},
+        }
     rationale: dict[str, dict] = {}
     for idx, cand in enumerate(candidates):
         fm_id = cand.get("failureModeId")
@@ -156,8 +168,31 @@ class Handler(BaseHTTPRequestHandler):
             return
         length = int(self.headers.get("Content-Length") or 0)
         req = json.loads(self.rfile.read(length).decode("utf-8")) if length > 0 else {}
+        if MODE == "streamerr" and "application/x-ndjson" in (self.headers.get("Accept") or ""):
+            # 🔴 200 을 낸 «뒤» 본문 안에서 끊는 갈래(D-24b). 호출은 갔고 응답도 시작됐다
+            #    — 실 게이트웨이였다면 CLI 가 이미 돌았을 수 있는 자리다. 그러니 «소모 새는 지점» 이다.
+            self._count(req, {"isRetry": "guardNotice" in req, "namedRules": False,
+                              "rulesInEvidence": sorted({r for t in (req.get("evidenceText") or {}).values()
+                                                         if isinstance(t, str) for r in SAFETY_RULE_RE.findall(t)})})
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+            self.send_header("Transfer-Encoding", "chunked")
+            self.end_headers()
+            for line in (
+                {"kind": "sentence", "sentence": {"failureModeId": "FM-BRG-WEAR", "text": "잠정 문장 1"}},
+                {"kind": "error", "rejectedReason": "stub 이 본문 안에서 끊었다", "reasonCode": "evidence_binding"},
+            ):
+                raw = (json.dumps(line, ensure_ascii=False) + "\n").encode("utf-8")
+                self.wfile.write(f"{len(raw):X}\r\n".encode() + raw + b"\r\n")
+            self.wfile.write(b"0\r\n\r\n")
+            return
         out = _answer(req)
         stub = out.pop("_stub")
+        self._count(req, stub)
+        self._send(200, out)
+
+    def _count(self, req: dict, stub: dict) -> None:
+        """계수는 «받은 즉시» 한다 — 답을 끝까지 못 내는 갈래도 호출은 간 것이다."""
         with _lock:
             _calls.append({
                 "at": _utc_iso(datetime.now(timezone.utc)),
@@ -167,7 +202,6 @@ class Handler(BaseHTTPRequestHandler):
                 "anchor": (req.get("anchor") or {}).get("scenarioId"),
                 "candidates": len(req.get("candidates") or []),
             })
-        self._send(200, out)
 
     def log_message(self, fmt: str, *args) -> None:  # noqa: A003
         print(f"[stub] {self.address_string()} {fmt % args}", flush=True)

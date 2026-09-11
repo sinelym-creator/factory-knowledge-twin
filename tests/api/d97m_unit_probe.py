@@ -32,6 +32,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 
 import asyncio
 import json
+import logging
 import os
 import socket
 import subprocess
@@ -40,9 +41,18 @@ import time
 import urllib.request
 from pathlib import Path
 
+# 🔴 로그 축을 재려면 **내 쪽 레벨을 먼저 열어야** 한다 — 기본 WARNING 이라
+#    `log.info` 는 안 찍힌다. 그 침묵을 「대상이 안 남겼다」로 읽으면 없는 결함을 짓는다.
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
+
 ROOT = Path(__file__).resolve().parents[2]
 STUB = ROOT / "tests" / "stubs" / "d97m_stub_gateway.py"
-sys.path.insert(0, str(ROOT / "services" / "ai-api"))
+
+# 🔴 **재는 대상을 인자로 고른다** — 같은 계측기로 «처방 전» 트리와 «처방 후» 트리를
+#    나란히 재야 두 열이 선다. 기본값은 이 파일이 사는 리포다.
+_target = os.environ.get("FKT_TARGET_ROOT")
+TARGET_ROOT = Path(_target).resolve() if _target else ROOT
+sys.path.insert(0, str(TARGET_ROOT / "services" / "ai-api"))
 
 from app.investigation import live_synthesis as ls          # noqa: E402
 from app.investigation.synthesize import Candidate          # noqa: E402
@@ -98,7 +108,30 @@ def get(url: str) -> dict:
 
 
 def run_column(mode: str) -> dict:
+    """열 하나 = 스턴 1모드 · `synthesize()` 1회.
+
+    🔴 `unreachable` 은 스턴을 **안 띄운다** — 계약 v0.2.5 「도달 못 한 회차는 0」 축.
+       이 열의 참값은 «서버가 없었다»라는 구성이지 스턴 계수가 아니다.
+    """
     port = free_port()
+    if mode == "unreachable":
+        os.environ[ls.LIVE_GATE_ENV] = f"http://127.0.0.1:{port}"   # 아무도 안 듣는 포트
+        result = asyncio.run(ls.synthesize(
+            CANDIDATES, anchor=Anchor(), state=STATE, evidence_ids=list(EVIDENCE),
+        ))
+        payload = result.synthesis_payload()
+        return {
+            "mode": mode,
+            "stub": {"total": 0, "byNotice": {"first": 0, "retry": 0}, "note": "서버 없음(구성)"},
+            "target": {
+                "axis": result.axis,
+                "rejectedReason": result.rejected_reason,
+                "safety_omitted": result.safety_omitted,
+                "payloadKeys": sorted(payload),
+                "payload": payload,
+                "rationaleCited": {},
+            },
+        }
     env = dict(os.environ, FKT_STUB_SAFETY=mode, FKT_STUB_PORT=str(port))
     proc = subprocess.Popen([sys.executable, str(STUB)], env=env,
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -115,11 +148,15 @@ def run_column(mode: str) -> dict:
             raise SystemExit(f"스텁이 {base} 에서 안 떴다")
 
         os.environ[ls.LIVE_GATE_ENV] = base
+        # 🔴 `streamerr` 은 **스트리밍을 요청해야** 그 갈래가 선다 — 콜백이 없으면
+        #    ai-api 가 Accept 를 안 붙여 스턴이 단일 JSON 으로 답하고, 그럼 다른 것을 재게 된다.
+        seen: list = []
         result = asyncio.run(ls.synthesize(
             CANDIDATES,
             anchor=Anchor(),
             state=STATE,
             evidence_ids=list(EVIDENCE),
+            on_sentence=(seen.append if mode == "streamerr" else None),
         ))
         calls = get(base + "/_stub/calls")
         payload = result.synthesis_payload()
@@ -141,11 +178,11 @@ def run_column(mode: str) -> dict:
 
 
 def main() -> int:
-    rows = [run_column(m) for m in ("named", "retry", "omitted")]
+    rows = [run_column(m) for m in ("named", "retry", "omitted", "guardfail", "streamerr", "unreachable")]
     by = {r["mode"]: r for r in rows}
     totals = {m: by[m]["stub"]["total"] for m in by}
 
-    out = {"at": time.strftime("%H:%M:%S"), "rows": rows, "axes": {}}
+    out = {"at": time.strftime("%H:%M:%S"), "targetRoot": str(TARGET_ROOT), "rows": rows, "axes": {}}
 
     # A — 참값이 실제로 갈리는가. 안 갈리면 색을 내지 않는다.
     split_ok = totals.get("named") == 1 and totals.get("retry") == 2 and totals.get("omitted") == 2
@@ -168,13 +205,35 @@ def main() -> int:
         "why": "처방 전이면 calls·safetyRetried 는 없다 — 이 열이 그대로 «前» 칸이다",
     }
 
+    # D — 계약 v0.2.5 「도달 0 = calls 0」 · 200 뒤 끊긴 갈래
+    out["axes"]["D-도달0과스트림끊김"] = {
+        "unreachable": {
+            "stub": by["unreachable"]["stub"]["total"],
+            "target": by["unreachable"]["target"]["payload"].get("calls"),
+            "axis": by["unreachable"]["target"]["axis"],
+        },
+        "guardfail": {
+            "stub": by["guardfail"]["stub"]["total"],
+            "target": by["guardfail"]["target"]["payload"].get("calls"),
+            "axis": by["guardfail"]["target"]["axis"],
+            "rejectedReason": by["guardfail"]["target"]["rejectedReason"],
+        },
+        "streamerr": {
+            "stub": by["streamerr"]["stub"]["total"],
+            "target": by["streamerr"]["target"]["payload"].get("calls"),
+            "axis": by["streamerr"]["target"]["axis"],
+            "rejectedReason": by["streamerr"]["target"]["rejectedReason"],
+        },
+        "why": "둘 다 live-rejected 이지만 «호출이 갔는가» 가 다르다 — 스턴이 센 수와 대상 신고를 나란히 둔다",
+    }
+
     # C — 거동: 채택됐는가 · 끝갈래 표기
     out["axes"]["C-거동"] = {
-        "verdict": "PASS" if all(by[m]["target"]["axis"] == "live" for m in by)
+        "verdict": "PASS" if all(by[m]["target"]["axis"] == "live" for m in ("named", "retry", "omitted"))
         and by["omitted"]["target"]["safety_omitted"] is True
         and by["retry"]["target"]["safety_omitted"] is False
         and by["named"]["target"]["safety_omitted"] is False else "FAIL",
-        "axis": {m: by[m]["target"]["axis"] for m in by},
+        "axis": {m: by[m]["target"]["axis"] for m in by},  # 새 열 2개는 live-rejected 가 정상이다
         "safety_omitted": {m: by[m]["target"]["safety_omitted"] for m in by},
         "rejected": {m: by[m]["target"]["rejectedReason"] for m in by},
     }
