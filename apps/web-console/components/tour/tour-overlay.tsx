@@ -21,6 +21,12 @@ import { readAdvance, type TourStep } from "@/components/tour/tour-steps";
 
 type Rect = { top: number; left: number; width: number; height: number };
 
+/** 🔴 스포트라이트 링이 대상 «밖»으로 나가는 여백. 링 좌표(`hole`)와 스크롤 정착 판정이 같은
+ *    값을 써야 한다 — 두 곳에 따로 적으면 「대상은 들어왔는데 링은 잘린」 자리가 난다(E-4 잔여). */
+const SPOT_PAD = 8;
+/** 판정선 여백(리바이2 실측 기준 = 링 top ≥ 16). 링이 화면 맨 위에 닿아 잘리지 않게 띄운다. */
+const SPOT_MARGIN = 16;
+
 type Props =
   | {
       mode: "invite";
@@ -190,6 +196,7 @@ function TourStepView({
        스스로 움직이면 즉시 손을 뗀다(사람이 보던 자리를 빼앗지 않는다). */
     let settled = false;
     let userMoved = false;
+    let lastScrollAt = 0;
     const onUserIntent = () => { userMoved = true; };
     const find = () => document.querySelector<HTMLElement>(`[data-testid="${step.target}"]`);
     const measure = () => {
@@ -203,20 +210,39 @@ function TourStepView({
       const r = el.getBoundingClientRect();
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
       if (!settled && !userMoved) {
-        /* 머리가 화면 안에 들어왔으면 «도달»이다 — 더 끌지 않는다. */
-        /* 🔴 경계에 «여유»를 둔다 — 맨 위로 붙인 결과가 `-0.4px` 로 돌아오는 회차가 있고,
-           엄격한 `>= 0` 은 그것을 「아직 못 왔다」로 읽어 영원히 다시 끈다. */
-        if (r.top > -2 && r.top < window.innerHeight) {
-          settled = true;
-          return;
+        /* 🔴 **판정 주체는 «대상»이 아니라 «링»이다**(E-4 잔여 · 리바이2 실측). 앞판은 대상의
+           `top` 이 0 이면 도달로 봤는데, 링은 대상보다 `SPOT_PAD` 만큼 위로 나가므로 그때
+           링의 top 은 **−8** 이었다 — 화면 맨 위에서 링 윗변이 잘린 채 「도달」로 적혔다.
+           내 −60→0 과 리바이2의 −8 은 서로 모순이 아니라 **주어가 달랐다**(대상 ↔ 링).
+           주어를 링으로 옮기고, 맨 위에 닿지 않게 여백을 둔다. */
+        const vh = window.innerHeight;
+        const spotTop = r.top - SPOT_PAD;
+        const spotH = r.height + SPOT_PAD * 2;
+        /* 🔴 **링이 화면보다 크면 「아래도 들어와야 한다」를 요구할 수 없다**(390 step 4 실측:
+           링 높이 800 > 뷰포트 664). 그 걸음의 판정선은 «머리»뿐이다 — 못 지킬 조건을 걸면
+           폴링이 영원히 멈추지 않는다. 들어가는 걸음만 위아래를 둘 다 본다. */
+        const fits = spotH <= vh - SPOT_MARGIN * 2;
+        /* 🔴 «위로 안 잘렸다»만 보면 화면 «아래»로 한참 밀린 자리도 통과한다(실측: spotTop
+           1992 · 뷰포트 664 인데 `>= 16` 이 참이라 도달로 읽혔다). 머리는 **화면 안**이어야
+           한다 — 위 경계와 아래 경계를 둘 다 건다. */
+        const okTop = spotTop >= SPOT_MARGIN - 1 && spotTop <= vh - SPOT_MARGIN;
+        const okBottom = !fits || spotTop + spotH <= vh + 1;
+        /* 🔴 **도달을 «한 번» 확인하고 손을 떼면 안 된다**(390 step 4 실측: 처음 붙었을 때는
+           문서가 짧아 조건을 이미 만족했고, 그 뒤 내용이 채워지며 링이 1992px 로 밀려났다).
+           앞 대(代)가 「불렀다≠도달했다」로 고친 자리를 이번엔 「도달했다≠계속 도달해 있다」가
+           다시 깨뜨렸다. 그래서 래치를 걸지 않고 «창이 닫힐 때까지» 다시 본다 — 사람이
+           움직이면 그 즉시 끝이고, 아니면 8초 뒤 스스로 멈춘다. */
+        settled = okTop && okBottom;
+        if (settled) return;
+        /* 들어가면 가운데, 안 들어가면 머리를 여백만큼 띄워 붙인다. 🔴 `scrollIntoView` 를
+           쓰지 않는다 — `block:"start"` 는 여백을 모르고 딱 0 에 붙여 링을 잘라 먹는다.
+           🔴 smooth 가 도는 중에 또 밀면 서로 취소한다 — 한 번 민 뒤에는 잠깐 기다린다. */
+        const want = fits ? spotTop - Math.max(SPOT_MARGIN, (vh - spotH) / 2) : spotTop - SPOT_MARGIN;
+        const now = Date.now();
+        if (Math.abs(want) > 1 && now - lastScrollAt > 450) {
+          lastScrollAt = now;
+          window.scrollBy({ top: want, behavior: "smooth" });
         }
-        /* 🔴 **대상이 뷰포트를 채우면 `center` 가 머리를 잘라 먹는다.** 가운데 정렬은 대상의
-           중점을 화면 중점에 두므로, 대상이 화면보다 크면 «위쪽»이 그만큼 화면 밖으로 밀린다 —
-           사람이 먼저 읽는 곳이 거기다. 그때는 머리를 붙인다. 판정식은 배치 쪽
-           `targetFillsViewport` 와 같은 형태를 쓰되, 여기서는 말풍선 높이를 아직 모르므로
-           초기값(220)과 같은 여유를 상수로 둔다 — 경계에서 한 칸 보수적인 쪽이다. */
-        const fills = r.height > window.innerHeight - 220 - 24;
-        el.scrollIntoView({ block: fills ? "start" : "center", behavior: "smooth" });
       }
     };
     if (!find()) setMissing(true);
@@ -243,7 +269,7 @@ function TourStepView({
     /* 🔴 재측 계기는 위 두 타이머와 scroll·resize 뿐인데, 사람이 가만히 있으면 이벤트가 0 이다.
        대상이 «자리 잡을 때까지»만 짧게 두드리고, 도달하거나 사람이 움직이면 스스로 멈춘다. */
     const poll = setInterval(() => {
-      if (settled || userMoved) { clearInterval(poll); return; }
+      if (userMoved) { clearInterval(poll); return; }
       measure();
     }, 200);
     const pollStop = setTimeout(() => clearInterval(poll), 8000);
@@ -447,7 +473,7 @@ function TourStepView({
     ? `${step.note.lead} ${noteOffline ? step.note.offline : step.note.live}`
     : null;
 
-  const pad = 8;
+  const pad = SPOT_PAD;
   const hole: Rect | null = rect
     ? {
         top: rect.top - pad,
