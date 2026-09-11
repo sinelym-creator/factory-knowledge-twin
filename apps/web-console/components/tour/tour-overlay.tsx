@@ -27,6 +27,8 @@ type Props =
       /** 잠깐 끊었던 사람인가(⑧-2 `dismissed`) — 문면과 버튼이 「이어서」가 된다. */
       resume?: boolean;
       onStart: () => void;
+      /** 🔴 E-3 — 끊었던 사람만 받는다(«이어서» 카드에만 뜨는 보조). 없으면 안 그린다. */
+      onRestart?: () => void;
       onLater: () => void;
       onNever: () => void;
     }
@@ -40,6 +42,10 @@ type Props =
       onNext: () => void;
       onSkip: () => void;
       onGoto: (href: string) => void;
+      /** 🔴 E-2 — «이동만» 한다(진행 불변). 다른 화면에서 이어지는 걸음의 출구다. */
+      onRouteGo: () => void;
+      /** 목적지가 그 걸음의 화면이 아닐 수 있다(`/evidence/` = 칩에서만 열린다) — 문면이 그걸 말한다. */
+      routeGoLabel: string;
     };
 
 /** 포커스를 실제로 받을 수 있는 것들. `tabindex="-1"` 은 «순회» 대상이 아니라 제외한다. */
@@ -98,6 +104,19 @@ export function TourOverlay(props: Props) {
           >
             {props.resume ? "이어서 보기" : "둘러보기 시작"}
           </button>
+          {/* 🔴 **E-3 — 「처음부터」가 없었다.** 한 번 끊은 사람에게는 「이어서 보기」 하나뿐이라,
+              앞 걸음을 다시 보려면 저장소를 손대는 수밖에 없었다. 끊은 회차에만 보조로 둔다 —
+              처음 온 사람의 카드에 「처음부터」를 붙이면 두 버튼이 같은 일을 한다. */}
+          {props.onRestart ? (
+            <button
+              type="button"
+              onClick={props.onRestart}
+              className="fkt-btn fkt-btn-secondary rounded-pill px-4"
+              data-testid="tour-restart"
+            >
+              처음부터
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={props.onLater}
@@ -131,6 +150,8 @@ function TourStepView({
   onNext,
   onSkip,
   onGoto,
+  onRouteGo,
+  routeGoLabel,
 }: Extract<Props, { mode: "step" }>) {
   /* 🔴 진행 조건은 `readAdvance()` 로만 읽는다(규격 ⑧-3) — 화면이 `advance` 를 직접 뜯어보면
      조건을 읽는 자리가 둘이 되고, 그게 앞판이 어긋난 이유다. */
@@ -158,6 +179,18 @@ function TourStepView({
       return;
     }
     let raf = 0;
+    /* 🔴 **E-4 — 앞판은 효과가 도는 «그 순간» 요소를 한 번 찾아보고, 없으면 영영 스크롤하지
+       않았다.** 데이터가 늦게 오는 화면(조사 후보·타임라인)에서는 240/640ms 재측이 `rect` 만
+       갱신하므로, 나중에 붙은 대상은 **화면 밖에 있는 채로 가리켜졌다**.
+       🔴 **「첫 발견 1회」로도 모자랐다**(390 실측): 첫 사진에서 스크롤은 «불렸는데»
+       `scrollY` 가 0 이었다 — 그때는 문서가 아직 짧아 그 요소가 이미 맨 위였고, 그 뒤 내용이
+       채워지며 대상이 2000px 로 밀려났다. 계측기 눈금(`__fktMeasure` 5 · `__fktScrolled` 1)이
+       그 사실을 값으로 보여 줬다. 「한 번 불렀다」와 「자리에 도달했다」는 다른 사실이다.
+       그래서 **결과로 멈춘다**: 대상의 머리가 화면 안에 들어오면 그때 끝내고, 그 전에 사람이
+       스스로 움직이면 즉시 손을 뗀다(사람이 보던 자리를 빼앗지 않는다). */
+    let settled = false;
+    let userMoved = false;
+    const onUserIntent = () => { userMoved = true; };
     const find = () => document.querySelector<HTMLElement>(`[data-testid="${step.target}"]`);
     const measure = () => {
       const el = find();
@@ -169,11 +202,24 @@ function TourStepView({
       setMissing(false);
       const r = el.getBoundingClientRect();
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      if (!settled && !userMoved) {
+        /* 머리가 화면 안에 들어왔으면 «도달»이다 — 더 끌지 않는다. */
+        /* 🔴 경계에 «여유»를 둔다 — 맨 위로 붙인 결과가 `-0.4px` 로 돌아오는 회차가 있고,
+           엄격한 `>= 0` 은 그것을 「아직 못 왔다」로 읽어 영원히 다시 끈다. */
+        if (r.top > -2 && r.top < window.innerHeight) {
+          settled = true;
+          return;
+        }
+        /* 🔴 **대상이 뷰포트를 채우면 `center` 가 머리를 잘라 먹는다.** 가운데 정렬은 대상의
+           중점을 화면 중점에 두므로, 대상이 화면보다 크면 «위쪽»이 그만큼 화면 밖으로 밀린다 —
+           사람이 먼저 읽는 곳이 거기다. 그때는 머리를 붙인다. 판정식은 배치 쪽
+           `targetFillsViewport` 와 같은 형태를 쓰되, 여기서는 말풍선 높이를 아직 모르므로
+           초기값(220)과 같은 여유를 상수로 둔다 — 경계에서 한 칸 보수적인 쪽이다. */
+        const fills = r.height > window.innerHeight - 220 - 24;
+        el.scrollIntoView({ block: fills ? "start" : "center", behavior: "smooth" });
+      }
     };
-    // 대상이 화면 밖이면 가운데로 끌어온다(규격 ⑤ 모바일 항과 같은 처방).
-    const first = find();
-    if (first) first.scrollIntoView({ block: "center", behavior: "smooth" });
-    else setMissing(true);
+    if (!find()) setMissing(true);
 
     const onFrame = () => {
       cancelAnimationFrame(raf);
@@ -182,15 +228,37 @@ function TourStepView({
     measure();
     window.addEventListener("scroll", onFrame, true);
     window.addEventListener("resize", onFrame);
-    const ro = first ? new ResizeObserver(onFrame) : null;
-    if (first && ro) ro.observe(first);
+    /* 🔴 관찰 대상도 measure 와 «같은 순간»에 잡는다 — 위에서 미리 잡아 두면 늦게 붙는 요소는
+       영영 관찰되지 않는다(스크롤과 같은 병). */
+    const observed = find();
+    const ro = observed ? new ResizeObserver(onFrame) : null;
+    if (observed && ro) ro.observe(observed);
     // 스텝이 열린 직후 레이아웃이 한 번 더 움직이는 화면이 있어 두 박자 뒤 재측한다.
     const t1 = setTimeout(measure, 240);
     const t2 = setTimeout(measure, 640);
+    /* 🔴 **E-4 — 640ms 뒤에 붙는 대상은 아무도 다시 재지 않았다.** 재측 계기는 저 두 타이머와
+       scroll·resize 이벤트뿐인데, 사람이 가만히 있으면 이벤트가 0 이다. 그래서 늦게 붙는
+       대상(390 실측: 후보 카드가 640ms 안에 없었다)은 «발견»조차 되지 않아 스크롤도 못 했다.
+       요소를 찾을 때까지만 짧게 두드리고, 찾으면 스스로 멈춘다 — 무한 폴링이 아니다. */
+    /* 🔴 재측 계기는 위 두 타이머와 scroll·resize 뿐인데, 사람이 가만히 있으면 이벤트가 0 이다.
+       대상이 «자리 잡을 때까지»만 짧게 두드리고, 도달하거나 사람이 움직이면 스스로 멈춘다. */
+    const poll = setInterval(() => {
+      if (settled || userMoved) { clearInterval(poll); return; }
+      measure();
+    }, 200);
+    const pollStop = setTimeout(() => clearInterval(poll), 8000);
+    for (const ev of ["wheel", "touchstart", "keydown"] as const) {
+      window.addEventListener(ev, onUserIntent, { passive: true });
+    }
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(t1);
       clearTimeout(t2);
+      clearInterval(poll);
+      clearTimeout(pollStop);
+      for (const ev of ["wheel", "touchstart", "keydown"] as const) {
+        window.removeEventListener(ev, onUserIntent);
+      }
       window.removeEventListener("scroll", onFrame, true);
       window.removeEventListener("resize", onFrame);
       ro?.disconnect();
@@ -597,9 +665,24 @@ function TourStepView({
         </p>
 
         {!onRoute && (
-          <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn">
-            이 단계는 다른 화면에서 이어집니다. 아래 버튼으로 이동해 주세요.
-          </p>
+          <>
+            <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn">
+              이 단계는 다른 화면에서 이어집니다. 아래 버튼으로 이동해 주세요.
+            </p>
+            {/* 🔴 **E-2 — 그 「아래 버튼」이 없는 걸음이 있었다.** 이동 버튼은 `plan.ui==="link"`
+                걸음에만 렌더돼서, 나머지 걸음에서는 문구가 가리키는 버튼이 화면에 없었다.
+                화면이 있다고 말한 것이 없으면 그것은 안내가 아니라 막다른 길이다.
+                🔴 진행은 올리지 않는다(`onRouteGo`) — 여기서 한 칸 올리면 옮겨 간 사람만
+                   걸음 하나를 건너뛴다. */}
+            <button
+              type="button"
+              onClick={onRouteGo}
+              className="fkt-btn fkt-btn-primary mt-3 rounded-pill px-4 text-foot"
+              data-testid="tour-route-go"
+            >
+              {routeGoLabel}
+            </button>
+          </>
         )}
         {missing && onRoute && (
           <p className="mt-3 rounded-chip bg-inset px-3 py-2 text-foot text-warn" data-testid="tour-target-missing">
