@@ -1493,6 +1493,155 @@
           "note": "x"
         }
       }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls 0 · safetyRetried false(게이트웨이 주소 없음 — 도달 0회)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live-rejected",
+            "rejectedReason": "게이트웨이 주소가 비었다",
+            "calls": 0,
+            "safetyRetried": false
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls 1 · safetyRetried false(SAF-* 없는 run)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": 1,
+            "safetyRetried": false
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls 2 · safetyRetried true(1회차 미호명 → 재요청)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": 2,
+            "safetyRetried": true
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls 2 · safetyRetried true · safetyOmitted true(2회차도 미호명)",
+      "expect": "accept",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": 2,
+            "safetyRetried": true,
+            "safetyOmitted": true
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls 3",
+      "expect": "reject",
+      "why": "호출은 최대 2회다(`for attempt in (1, 2)`) — 3 이 통과하면 계약이 말하는 상한과 구현이 갈라도 아무도 못 본다",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": 3,
+            "safetyRetried": true
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls -1",
+      "expect": "reject",
+      "why": "계수는 음수가 될 수 없다 — minimum 쪽 문도 같은 실행에서 물어야 한쪽만 지키는 문이 안 된다",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": -1,
+            "safetyRetried": false
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "calls 가 문자열(\"2\")",
+      "expect": "reject",
+      "why": "계수 칸이 문자열을 받으면 산술이 조용히 문자 이어붙이기로 바뀜다",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": "2",
+            "safetyRetried": true
+          }
+        }
+      }
+    },
+    {
+      "group": "⓫ v0.2.5 synthesis.calls·safetyRetried(D-97)",
+      "label": "safetyRetried 가 문자열(\"true\")",
+      "expect": "reject",
+      "why": "문자열 \"false\" 는 참이다 — 불리언을 문자열로 받으면 소비자가 거꾸로 읽는다",
+      "event": {
+        "type": "step.completed",
+        "payload": {
+          "step": "vector",
+          "elapsedMs": 120,
+          "synthesis": {
+            "axis": "live",
+            "model": "claude-opus-5",
+            "calls": 1,
+            "safetyRetried": "true"
+          }
+        }
+      }
     }
   ]
 }
