@@ -9,8 +9,11 @@
 
 | 포트 | 정체 | 실측 |
 |---|---|---|
-| `:8859` | **게이트웨이 스텁** = `tests/api/t61_gateway_stub.py`(`mode=real` · 계약 형상 200) | `/health` 200 · 호출 JSONL 계수 = 자극 실재 칸 |
+| `:8859` | **게이트웨이 스텁** = `tests/api/t61_gateway_stub.py`(`mode=real` · 계약 형상 200) | `/health` 200 · **호출 26건**(JSONL · 🔴 무대를 «내린 뒤» 읽은 최종 계수) |
 | `:8851` | 컨테이너 `fkt-levi2-cap3v-api`(`fkt-ai-api:dev-3ac2508`) · `FKT_LOCAL_SYNTHESIS_GATEWAY=http://host.docker.internal:8859` | `/api/health` ok · 컨테이너 안 `printenv` 로 env 실측 |
+
+스텁이 답하므로 Claude 호출이 발생할 자리가 없다. **26건 = 자극이 실제로 그 문을 두드렸다**는 뜻이다 —
+0 건이었다면 「스텁이 무대에 있기는 했는가」를 말할 수 없는 칸이다(어느 색도 못 냄).
 
 🔴 **상한 env 를 두 열 모두 «명시»한다** — 기본값에 기대면 「기본값이 바뀌었나 / 내가 다른 값을 줬나」를 못 가른다.
 前 열 = `FKT_RUN_CAP_PER_SESSION=5` · `FKT_RUN_CAP_WINDOW_SEC=3600` (컨테이너 `printenv` 실측).
