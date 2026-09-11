@@ -281,3 +281,18 @@ Overview·추세·시나리오 실행/중지(reset)·session 격리·event repla
 - **② 화면** — `data-mode` 집합(`checking|live|replay|unavailable`) **불변**. `online:false` = `replay` 배지(기존) + `why` 를 `reason` 별 셸 문장으로: `gateway_unreachable` → 「소유자 게이트웨이 OFF · 녹화 재생」(기존) · `synthesis_failing` → 「LLM 호출 실패 · 녹화 재생(복구까지 최대 15분)」 · `hourly_cap_exhausted` → 「이 시간 Live 상한 소진 · 녹화 재생(n분 뒤)」. 🔴 배지가 `replay` 인 동안 셸은 `mode:"live"` 를 «요청하지 않는다»(강등 요청 = 기존 fallback 경로).
 - **검증 축(리바이2)** — ① 세션 4발째 429 `session_run_cap_exceeded`(3/3 뒤) · 세션 3개 × 1발 뒤 4발째 429 `live_hourly_cap_exceeded` · `Retry-After` · 거절 미계수(peek used 불변) · replay 무영향 ② 게이트웨이 실패 주입(CLI 부재 `FKT_SYNTH_CLI` 오경로 · 스텁 무대 · 구독 0) → `/health.synth.consecutiveFailures 1` · `latchedUntil` · `/live/status {online:false, reason:"synthesis_failing"}` · 배지 `replay` + 문장 · 걸쇠 만료 후 `online` 복귀 · 성공 1회 즉시 해제(스텁 200) ③ `online:true` 응답 바이트 형상 前後 동일(대조군) ④ `?sessionId` 응답에 `hourlyCap` · 없으면 없음.
 - 잰 것/안 잰 것 — 실제 구독 한도(Claude 사용량 초과)로 인한 실패는 «CLI 종료코드/`is_error`» 축으로만 관측된다(그 축이 참인지 = 운영자 실기기 회차 E3 · 스텁으로는 형태만 잰다).
+
+### v0.2.4 화면 문면 개정(09-11 16:38 · 운영자 승인 ⓒ 「막다른 길 없음」 — 위 ② 「화면」 항의 문장 3종을 이 표로 «대체» · `data-mode` 집합·`reason` enum·걸쇠 900s·구독 소모 0 은 그대로)
+
+| 상황(`/live/status`) | 배지 | 문장(셸이 만든다 · `reason`·시각 값만 서버) | 방문자 경험 |
+|---|---|---|---|
+| `online:true` | **LIVE** | (없음) | 지금과 같음 |
+| Live run 도중 합성 실패(게이트웨이 거부·타임아웃·CLI 오류) | 배지 즉시 전환 없음 → 다음 폴링에서 REPLAY | run 화면에 안내 1줄 **「녹화 재생으로 이어서 보여드립니다」** · 조사는 결정적 집계로 **그대로 완주**(`workflow.py` 기존 경로 · 후보 카드 문구 「live 응답 거부」 → 「실시간 분석 대신 기록 기반 집계」로 순화) | 오류 화면 0 · 다시 누를 필요 0 |
+| `reason:"synthesis_failing"`(걸쇠 중) | **REPLAY** | 「실시간 분석은 잠시 쉬는 중 · **HH:MM** 에 다시 시도」(HH:MM = `latchedUntil` 로컬 시각) | 기다릴지 재생으로 볼지 스스로 정함 |
+| `reason:"hourly_cap_exhausted"` | **REPLAY** | 「이 시간 실시간 분석 **3회** 사용 · **HH:MM** 에 다시 열림」(HH:MM = now+`nextFreeInSec`) | 왜·언제가 한 줄 |
+| `reason:"gateway_unreachable"` | **REPLAY** | 「녹화 재생 모드」(기존 문구 유지) | 변화 없음 |
+
+- 🔴 **화면 금칙어** = 「LLM」「게이트웨이」「429」「토큰」「걸쇠」— 사용자 문장에 쓰지 않는다(코드·evidence 에는 쓴다).
+- 🔴 **깜빡임 0** — 배지 전환은 «실패 직후 다음 폴링 1회» 와 «시각 도달 뒤 다음 폴링 1회» 두 지점뿐 · 폴링 주기 30s 그대로 · 걸쇠 중 `online:true` 로 되돌리는 경로는 「성공 1회」뿐(자기 프로브 없음).
+- `reason` 을 실을 때 **`until`(iso · 선택)** 을 함께 싣는다(`synthesis_failing` = `latchedUntil` · `hourly_cap_exhausted` = now+`nextFreeInSec` · `gateway_unreachable` = 없음) — 셸이 시각을 계산하지 않고 «받는다».
+- 검증 축 추가(리바이2) — 문장 3종 렌더(reason 별) · `until` 표기 = 로컬 시각 · 금칙어 grep 0(`apps/web-console` 사용자 문장) · 실패 run 완주 前後(스텁 5xx 주입 → 후보 카드 결정적 축 + 안내 1줄 · 오류 화면 0).
