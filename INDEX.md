@@ -68,4 +68,5 @@ size_limit: 4KB
 - `.workspace/retrospective/2026-09-06-suzaku50.md` — 스자쿠 50대 회고
 - `.workspace/retrospective/2026-09-12-suzaku61.md` — 스자쿠 61대 회고(순찰 6h · Gate-A 오독→정정 · 센쿠2 57대 · 폐하 마감 승인 07:31)
 - `.workspace/retrospective/2026-09-22-suzaku62.md` — 스자쿠 62대 회고(D-99 production Docker 2일 3시간 다운 검출·복구 · 계기 대조 · 자가복구 예약 작업)
+- `.workspace/drafts/d99-guard-and-experiment.md` — D-99 후속 협의 재료(장수 프로세스 가드 4층 · 신호 도달처 재현 실험 설계 4열 · 루루슈 단일 안에 붙일 몸)
 - `.workspace/retrospective/2026-09-06-suzaku53.md` — 스자쿠 53대 회고(기본값 ⓒ · 승격 25 청구 · O-48 ⓐ-2 이월 착지 · 주간 99% 마감)
