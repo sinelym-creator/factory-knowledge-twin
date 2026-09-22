@@ -68,6 +68,7 @@ size_limit: 4KB
 - `.workspace/retrospective/2026-09-06-suzaku50.md` — 스자쿠 50대 회고
 - `.workspace/retrospective/2026-09-12-suzaku61.md` — 스자쿠 61대 회고(순찰 6h · Gate-A 오독→정정 · 센쿠2 57대 · 폐하 마감 승인 07:31)
 - `.workspace/retrospective/2026-09-22-suzaku62.md` — 스자쿠 62대 회고(D-99 production Docker 2일 3시간 다운 검출·복구 · 계기 대조 · 자가복구 예약 작업)
+- `.workspace/retrospective/2026-09-23-suzaku63.md` — 스자쿠 63대 회고(폐하 하명 전계층 점검·LLM 실호출 · O-57~O-59 · 재부팅 절차서 · 오기 자수 2)
 - `.workspace/drafts/d99-guard-and-experiment.md` — D-99 후속 협의 재료(장수 프로세스 가드 4층 · 신호 도달처 재현 실험 설계 4열 · 루루슈 단일 안에 붙일 몸)
 - `docs/runbook-reboot-drill.md` — 재부팅 시험 절차서(자가 복구 완전 양성 대조 · O-57·O-58 동시 처리 · 폐하 재가 전 집행 금지)
 - `.workspace/retrospective/2026-09-06-suzaku53.md` — 스자쿠 53대 회고(기본값 ⓒ · 승격 25 청구 · O-48 ⓐ-2 이월 착지 · 주간 99% 마감)
