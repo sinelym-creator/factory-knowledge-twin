@@ -1,0 +1,31 @@
+# dependency-watch — audit 예외의 «수정판 감시»(S69-5 · 폐하 결정 DM 1559771292234678324)
+#
+# 예외(`.github/audit-exceptions.json`)는 «수정판이 없어서» 둔 것이다. 그 전제가 깨지는 날을
+# 사람이 기억하지 않게, 매주 묻는다: 권고에 수정판이 생겼는가 · 상위의 고정이 풀렸는가.
+# 🔴 실패 = 신호다(예외를 걷고 갱신하라). 조회 자체가 실패해도 실패한다 — 못 물은 주의 초록은
+#    「변화 없음」이 아니다.
+# 경계(baseline §34.4): GitHub-hosted(ubuntu-latest) 만 · 새 의존 0(표준 라이브러리만).
+
+name: dependency-watch
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # 매주 월 00:00 UTC (09:00 KST)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-exception-watch:
+    name: audit exception watch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 수정판·상위 고정 확인
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python .github/scripts/audit_exception_watch.py .github/audit-exceptions.json

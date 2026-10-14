@@ -1,0 +1,17 @@
+{
+  "$comment": "dependency audit 예외 정본(S69-5 · 폐하 결정 DM 1559771292234678324). 읽는 곳 = security.yml(pnpm_audit_gate.py) · dependency-watch.yml(audit_exception_watch.py). 항목마다 만료일·근거 문서가 필수다 — 만료가 지나거나 audit 결과에서 사라지면 게이트가 FAIL 한다.",
+  "exceptions": [
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "severity": "high",
+      "expires": "2026-11-13",
+      "doc": "docs/decisions/006-braces-audit-exception.md",
+      "watch": {
+        "parent": "@next/eslint-plugin-next",
+        "dependency": "fast-glob",
+        "pinned": "3.3.1"
+      }
+    }
+  ]
+}
