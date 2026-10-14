@@ -34,11 +34,22 @@ $envs = docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $cid
 $tok = ($envs | Where-Object { $_ -like 'FKT_SYNTHESIS_GATEWAY_TOKEN=*' } | Select-Object -First 1) -replace '^FKT_SYNTHESIS_GATEWAY_TOKEN=',''
 if (-not $tok) { L "ABORT token env missing"; exit 2 }
 
+# 🔴 health 는 **이 프로세스 안에서** 묻는다. `curl.exe -H "...: $tok"` 는 curl 의 명령줄에 토큰을
+#    평문으로 남긴다(O-58 과 같은 형태 · 수명만 짧다). 실패는 빈 문자열 — 아래 판정이 그대로 거부한다.
+#    본문은 바이트에서 직접 푼다 — `.Content` 는 Content-Type 이 텍스트가 아니면 byte[] 를 돌려주고,
+#    그러면 아래 `-match` 가 조용히 «안 맞음»이 된다(S69-1 단위 시험에서 실제로 났다).
+function Get-Health {
+    try {
+        $r = Invoke-WebRequest -Uri 'http://127.0.0.1:8787/health' -Headers @{ 'X-FKT-Gateway-Token' = $tok } -TimeoutSec 5 -UseBasicParsing
+        [Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray())
+    } catch { '' }
+}
+
 # 2) 이미 살아 있으면 — «무엇으로» 살아 있는지까지 본다.
 #    🔴 「200 이면 끝」으로 두면, 리포에 묶인 옛 게이트웨이가 떠 있는 한 자동 기동은 그것을
 #       영원히 축복한다. 그렇다고 여기서 죽이지도 않는다 — production 을 내리는 것은
 #       자동 기동의 권한이 아니다(승격 창 안에서 사람이 한다). 신호만 남기고 종료코드를 가른다.
-$h = curl.exe -s -m 5 -H "X-FKT-Gateway-Token: $tok" http://127.0.0.1:8787/health
+$h = Get-Health
 if ($h -match '"ok"\s*:\s*true') {
     $wanted = ($artifacts -replace '\\', '/')
     $seen   = ''
@@ -49,13 +60,22 @@ if ($h -match '"ok"\s*:\s*true') {
 }
 
 # 3) 기동 — 산출물의 run.ps1 · 프롬프트도 같은 디렉터리
+# 🔴 토큰은 **env 로 상속**시킨다(O-58). `-Token` 인자로 넘기면 자식 pwsh·python 의 명령줄에
+#    평문으로 남아, 같은 PC 의 아무 프로세스나 `Win32_Process` 로 읽는다. run.ps1 은 `-Token` 이
+#    없으면 이미 준 `SYNTHESIS_GATEWAY_TOKEN` 을 그대로 쓴다(run.ps1 무수정).
+# 🔴 바인드 = 127.0.0.1(S69-1 실측 2026-10-14 · E1): 컨테이너 → `host.docker.internal:<포트>` 는
+#    호스트 리스너가 127.0.0.1 이어도 200 이다(기본 bridge · 사용자 정의 bridge 둘 다 · 0.0.0.0 대조
+#    200). 반대로 LAN 주소로는 127.0.0.1 = 연결 실패 · 0.0.0.0 = 200. ⇒ 0.0.0.0 은 배포 컨테이너에
+#    필요하지 않고 LAN 노출만 더한다. 127.0.0.1 이면 gateway.py 의 「비루프백 + 토큰 없음 = 거부」
+#    조건에서도 벗어나지만, 토큰은 그대로 강제한다(같은 PC 의 다른 프로세스 차단).
+$env:SYNTHESIS_GATEWAY_TOKEN = $tok
 $p = Start-Process -FilePath 'pwsh' -ArgumentList @(
         '-NoProfile', '-File', (Join-Path $artifacts 'run.ps1'),
-        '-Bind', '0.0.0.0', '-Token', $tok, '-Model', 'opus', '-Effort', 'low',
+        '-Bind', '127.0.0.1', '-Model', 'opus', '-Effort', 'low',
         '-PromptFile', (Join-Path $artifacts 'system_prompt.txt')
      ) -WorkingDirectory $artifacts -RedirectStandardOutput $gwlog -RedirectStandardError "$gwlog.err" -PassThru -WindowStyle Hidden
 L "spawned gateway pid=$($p.Id)"
 Start-Sleep -Seconds 8
-$h = curl.exe -s -m 5 -H "X-FKT-Gateway-Token: $tok" http://127.0.0.1:8787/health
+$h = Get-Health
 L "health=$h"
 if ($h -match '"ok"\s*:\s*true') { exit 0 } else { exit 1 }
