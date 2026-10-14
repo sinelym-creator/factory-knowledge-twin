@@ -1,7 +1,10 @@
 # synthesis-gateway 실행 — 운영자 PC 호스트 프로세스.
 #
 #   pwsh -File services/synthesis-gateway/run.ps1                       # 루프백 전용(기본)
-#   pwsh -File services/synthesis-gateway/run.ps1 -Bind 0.0.0.0 -Token <값>   # 배포 컨테이너에서 닿게
+#   $env:SYNTHESIS_GATEWAY_TOKEN = '<값>'; pwsh -File services/synthesis-gateway/run.ps1   # 배포 컨테이너에서 닿게(토큰 강제)
+#     🔴 토큰은 env 로 준다 — `-Token <값>` 은 프로세스 명령줄에 평문으로 남는다(O-58).
+#     🔴 바인드는 루프백 그대로 둔다 — 컨테이너의 `host.docker.internal` 은 127.0.0.1 리스너에 닿는다
+#        (S69-1 실측 2026-10-14). `-Bind 0.0.0.0` 은 LAN 노출만 더한다.
 #
 # 실측·녹화·시연 때만 켜고 끝나면 Ctrl+C 로 내린다(상시 가동 0). 컨테이너에 넣지 않는다.
 # 켜고 끄기를 창 하나로 하려면 `switch.ps1 on|off|status` 를 쓴다.
