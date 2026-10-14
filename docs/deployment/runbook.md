@@ -430,8 +430,10 @@ main 승격도 못 한다** — 데모 전날에 배포를 몰아 쓰지 않는�
 
 ```powershell
 pwsh -File services/synthesis-gateway/switch.ps1 on|status|off       # 로컬 전용(루프백)
-# 배포 컨테이너(8010)가 닿아야 할 때 — 🔴 비루프백 bind 는 토큰이 없으면 «기동을 거부»한다
-pwsh -File services/synthesis-gateway/run.ps1 -Bind 0.0.0.0 -Token <값> -Model opus -Effort medium
+# 배포 컨테이너(8010)가 닿아야 할 때 — 토큰은 env 로(`-Token <값>` 은 명령줄에 평문으로 남는다 · O-58)
+# 🔴 바인드는 루프백 그대로 — 컨테이너의 host.docker.internal 은 127.0.0.1 리스너에 닿는다(S69-1 실측 10-14)
+$env:SYNTHESIS_GATEWAY_TOKEN = '<값>'
+pwsh -File services/synthesis-gateway/run.ps1 -Model opus -Effort medium
 ```
 
 | env(게이트웨이) | 기본 | 무엇 |
