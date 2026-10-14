@@ -4,6 +4,7 @@
     {
       "id": "GHSA-vfj7-8cjw-p6xm",
       "package": "braces",
+      "severity": "high",
       "expires": "2026-11-13",
       "doc": "docs/decisions/006-braces-audit-exception.md",
       "watch": {

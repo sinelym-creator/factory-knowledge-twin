@@ -17,9 +17,11 @@ lifecycle: 만료일(2026-11-13) 또는 dependency-watch 신호 시 재판정 ·
 
 | 장치 | 자리 | 동작 |
 |---|---|---|
-| 예외 목록 | `.github/audit-exceptions.json` | (id, package, 만료일, 근거 문서) 단위로 기록 |
-| 게이트 | `security.yml` dependency audit · `.github/scripts/pnpm_audit_gate.py` | 예외 id만 뺀다 · 다른 high/critical은 FAIL · **만료가 지나면 FAIL** · **audit 결과에서 사라진 예외도 FAIL**(「예외 정리하라」) |
+| 예외 목록 | `.github/audit-exceptions.json` | (id, package, **severity**, 만료일, 근거 문서) 단위로 기록 |
+| 게이트 | `security.yml` dependency audit · `.github/scripts/pnpm_audit_gate.py` | 예외 id만 뺀다 · 다른 high/critical은 FAIL · **만료가 지나면 FAIL** · **audit 결과에서 사라진 예외도 FAIL**(「예외 정리하라」) · **현재 심각도가 기록보다 높아지면 FAIL**(격상 = 재판정 · L3) · **권고 단위 계수(게이트+예외) ≠ metadata high+critical이면 FAIL**(옛 게이트보다 약해지지 않게 · L4) |
 | 주간 감시 | `dependency-watch.yml`(월 09:00 KST) · `.github/scripts/audit_exception_watch.py` | 권고에 수정판이 생기거나 상위 고정이 풀리면 FAIL(신호) · 조회에 실패해도 FAIL |
+
+- `check_patch`는 권고의 **어느 버전 계열이든** `first_patched_version`이 생기면 신호를 낸다. 우리가 쓰는 계열(3.x)과 무관한 계열의 수정판에도 울린다. 보수 방향이라 그대로 둔다(울리면 계열을 확인하고 재판정한다 · 스자쿠 10-14 판정).
 | 만료 | **2026-11-13** | 그 전에 재판정한다(연장 = 이 문서 갱신 + 결정 id) |
 
 ## 사슬 (E1 · 2026-10-14 · develop `26fcf32`)

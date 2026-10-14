@@ -6,6 +6,10 @@
   · 예외가 audit 결과에 **더 이상 없으면** FAIL 이다 — 「예외를 정리하라」. 죽은 예외는 다음에
     같은 id 가 다시 들어올 때 아무도 모르게 덮는다.
   · 예외 파일이 없거나 항목이 깨져 있으면 FAIL 이다(조용히 「예외 0」으로 읽지 않는다).
+  · 예외 권고의 **현재 심각도가 기록(`severity`)보다 높으면** FAIL 이다(L3 · 격상 = 재판정 신호).
+  · **권고 단위로 센 high+critical(게이트 + 예외)이 audit 의 metadata 계수와 다르면** FAIL 이다
+    (L4 · 옛 게이트는 metadata 계수로 판정했다 — 권고를 못 읽어 덜 세는 자리가 옛 게이트보다
+    약해지면 안 된다).
 
 🔴 이 스크립트는 실패로 끝나지 않는다(`--exit-code` 를 줄 때만 rc 로 말한다). 판정은
    security.yml 의 마지막 step 이 `JS_VERDICT_FAIL` 로 낸다 — 중간에서 죽으면 요약이 안 남는다.
@@ -27,7 +31,8 @@ for _s in (sys.stdout, sys.stderr):
         pass
 
 GATED = ("high", "critical")
-REQUIRED = ("id", "package", "expires", "doc")
+REQUIRED = ("id", "package", "severity", "expires", "doc")
+RANK = {"info": 0, "low": 1, "moderate": 2, "high": 3, "critical": 4}
 
 
 def load_exceptions(path: Path) -> tuple[list[dict], list[str]]:
@@ -43,6 +48,9 @@ def load_exceptions(path: Path) -> tuple[list[dict], list[str]]:
         missing = [k for k in REQUIRED if not x.get(k)]
         if missing:
             errors.append(f"예외 #{i} 필수 칸 없음: {','.join(missing)}")
+            continue
+        if x["severity"] not in RANK:
+            errors.append(f"예외 {x['id']} severity 값 오류: {x['severity']}")
             continue
         try:
             x["_expires"] = dt.date.fromisoformat(x["expires"])
@@ -60,15 +68,17 @@ def judge(audit: dict, exceptions: list[dict], now: dt.date) -> tuple[list[str],
     """(게이트에 걸린 권고, 예외로 뺀 권고, 예외 결함) 를 돌려준다."""
     keys = {(x["id"], x["package"]): x for x in exceptions}
     seen: set[tuple[str, str]] = set()
-    gated, excepted = [], []
+    gated, excepted, faults = [], [], []
     for a in (audit.get("advisories") or {}).values():
         key = (a.get("github_advisory_id") or "", a.get("module_name") or "")
         seen.add(key)
-        if a.get("severity") not in GATED:
+        sev = a.get("severity")
+        if key in keys and RANK.get(sev, -1) > RANK[keys[key]["severity"]]:
+            faults.append(f"예외 격상: {key[1]} {key[0]} 기록 {keys[key]['severity']} → 현재 {sev} — 재판정하라({keys[key]['doc']})")
+        if sev not in GATED:
             continue
-        label = f"{a.get('severity')} {key[1]} {key[0]}"
+        label = f"{sev} {key[1]} {key[0]}"
         (excepted if key in keys else gated).append(label)
-    faults = []
     for key, x in keys.items():
         if now > x["_expires"]:
             faults.append(f"예외 만료: {key[1]} {key[0]} (만료 {x['expires']} · 오늘 {now}) — 근거 {x['doc']}")
@@ -96,6 +106,12 @@ def main(argv: list[str]) -> int:
     # 🔴 audit 을 못 읽었으면 「예외가 결과에 없다」는 사실이 아니라 측정 실패의 그림자다 —
     #    거짓 「정리하라」를 내지 않는다(실패는 JS_PARSED=0 이 이미 낸다).
     faults += more if parsed else [f for f in more if not f.startswith("예외 정리하라")]
+    meta_gated = int(meta["high"] or 0) + int(meta["critical"] or 0)
+    if parsed and len(gated) + len(excepted) != meta_gated:
+        faults.append(
+            f"계수 불일치: 권고 단위 high+critical {len(gated)}+{len(excepted)} ≠ metadata {meta_gated}"
+            " — 권고를 다 읽지 못했다(옛 게이트보다 약해지지 않도록 실패시킨다)"
+        )
     fail = 1 if (not parsed or gated or faults) else 0
     out = {
         "JS_PARSED": parsed, "JS_HIGH": meta["high"], "JS_CRITICAL": meta["critical"],
