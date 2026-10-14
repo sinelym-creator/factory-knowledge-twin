@@ -23,7 +23,7 @@ size_limit: 4KB
 | `docs/plan/ticket-ledger.md` | 티켓 원장 = 진행률 유일 산법 | 단위 완료·분모 변경 시 |
 | `docs/plan/test-plan-v1.md` | 🔴 **테스트 계획 v1 = 케이스 대장 60건**(U 단위 10 · I 통합 12 · E 화면 13 · **X 예외 25** — 멱등 5·폴백 6 포함) · 판정선·사정거리 · 폐하 하명 09-04 07:16~07:20 | 케이스 추가·판정선 변경 시 |
 | `docs/plan/tickets/` | 티켓 상세(1티켓 1파일) | 발주 시 생성 |
-| `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) — 001 7일 계획 · 002 UX 방향 A · 003 Q-30 이력 잔존 · **004 §35.7 최종 관문 「Release 후보 — 축소 적용(v0.3)」 + D-21 ⓐ(폐하 「전건 권장안 승인」 09-02 16:59 · id 1544617819784609803)** | 확정 시 · **005 운영자 확정 결정 12건 09-03(#431 · 요청 = 확정 결정 기록)** |
+| `docs/decisions/` | 운영자 확정 기록(개정 = 새 번호 · 승인 원문 id 추적) — 001 7일 계획 · 002 UX 방향 A · 003 Q-30 이력 잔존 · **004 §35.7 최종 관문 「Release 후보 — 축소 적용(v0.3)」 + D-21 ⓐ(폐하 「전건 권장안 승인」 09-02 16:59 · id 1544617819784609803)** | 확정 시 · **005 운영자 확정 결정 12건 09-03(#431 · 요청 = 확정 결정 기록)** · **006 braces audit 예외 — 남기되 감시(만료 2026-11-13 · 폐하 10-14 DM 1559771292234678324 · S69-5)** |
 | `apps/web-console/components/tour/` | T6-5 가이드 투어 — `tour-steps.ts`(9스텝 표 · 대상 testid·문구) · `tour-provider.tsx`(상태 `localStorage fkt.tour.v1` · Esc·Enter·클릭 감지 · OFF 렌더 0) · `tour-overlay.tsx`(스포트라이트 딤+구멍 · 콜아웃 · 초대 카드 · 진행 점) |
 | `apps/web-console/lib/chart-band.ts` | 시계열 «구간 min~max 밴드 + 중앙선» 공용 유틸(스파크라인·센서 추세가 같은 손) + 센서 종류 라벨(모르면 id 유지) — T6-4 「차트 라인 뭉개짐」 처방 |
 | `apps/web-console/components/{icons.tsx,shell-nav.tsx}` | 선형 SVG 아이콘 12종(유니코드 글리프 대체) · 셸 내비(레일 라벨형/앱바 텍스트 · 목록 1곳) |
@@ -56,7 +56,8 @@ size_limit: 4KB
 | `.workspace/retrospective/` | 오케 세션 회고(날짜별 · `INDEX.md` 상태 추적 · 신설 09-03 25대 마감 · 역할봇 사적 회고는 각자 namespace) | 세션 마감마다 |
 | `.workspace/drafts/` | 초안(SSOT 아님) — decision-004 초안은 **09-02 16:59 승인으로 `docs/decisions/004` 승격 · 초안 파일 제거**(이력 = git) · `baseline-v0.3-scope-cut-draft.md`(축소 안 · 폐하 A~G 승인 09-01 · **baseline 본문 반영 완료 09-02 #356** · 재가 칸 ☑ · 이력 보존) · 🔴 **투어 참고 3본 신설 09-03 30대**(폐하 하명 21:09~21:24 · **폐하께 첨부 발신 완료**): `tour-reference-study.md`(사이트 **7/9** 판독 · 대조표 · **적용안 3순위**) · `tour-reference-boundaries.md`(**「배움」과 「이식」의 경계** · 라이선스 확인 3/미확인 5) · `open-problems-20260903.md`(**미결 구체 목록** A~E · **D 절 = 우리가 구조적으로 못 재는 것 = 폐하 청구분**) | 초안 추가·baseline 반영 시 |
 | `.github/workflows/ci.yml` | CI 위생 게이트(GitHub-hosted 전용) + **`unit-ai-api` job**(O-20 · `pytest tests_unit` · 설치 = 실측 import 체인 4패키지만 · torch 없음 · #676) | 게이트 확장 시 |
-| `.github/workflows/security.yml` | CodeQL 정적 분석(JS/TS+Python · build-mode none · T5-3 최소본 #337) + dependency-audit(JS 게이트 · Python 보고 전용 · #350 · D-17) · GitHub-hosted 전용 | 보류 항목(dependency audit·container scan·license·endpoint policy) 추가 시 |
+| `.github/workflows/security.yml` | CodeQL 정적 분석(JS/TS+Python · build-mode none · T5-3 최소본 #337) + dependency-audit(JS 게이트 · Python 보고 전용 · #350 · D-17) · GitHub-hosted 전용 · JS 게이트 예외 판정 = `.github/scripts/pnpm_audit_gate.py` + 정본 `.github/audit-exceptions.json`(S69-5 · 만료·죽은 예외 = FAIL) | 보류 항목(dependency audit·container scan·license·endpoint policy) 추가 시 |
+| `.github/workflows/dependency-watch.yml` | audit 예외 «수정판 감시»(주간 월 09:00 KST + 수동) — 권고 수정판 · 상위 고정 풀림 · 조회 실패 = FAIL(신호) · `.github/scripts/audit_exception_watch.py`(S69-5 · D-006) | 예외 추가·제거 시 |
 | `.claude/context/checkpoint.md` | 재개점(로컬 전용·비추적 · 백지 재작성) | 세션 마감 시 |
 | `docs/plan/phase4-5-decomposition.md` | P4·P5 분해안(분모 37→46 · 결정 5건 · 관문 산정 · 선택지 ⓑ — 폐하 재가 08-31 09:55/09:57 · 원장 등재 10:05) | 분모·순서 변경 시 |
 | `docs/plan/tickets/T3-4.md` · `T3-5.md` · `T3-6.md` | Phase 3 «최소 형상» 티켓(조사 실행·전략 비교 화면 / WO 편집·승인 화면 — Feature Freeze 조기 08-31 09:57) + Phase 3 통합 독립 검증(§21 증거 4종 · Gate smoke · 그물 선행) | 발주·완결 시 |

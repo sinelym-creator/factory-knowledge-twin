@@ -127,30 +127,10 @@ jobs:
           set -uo pipefail
           # 🔴 실패시키지 않는다(`|| true`) — 판정은 마지막 step 이 낸다. 여기서 죽으면 요약이 없다.
           pnpm audit --json > "$RUNNER_TEMP/pnpm-audit.json" 2> "$RUNNER_TEMP/pnpm-audit.err" || true
-          node -e '
-            const fs = require("fs");
-            const p = process.env.RUNNER_TEMP + "/pnpm-audit.json";
-            let v = { info: 0, low: 0, moderate: 0, high: 0, critical: 0 };
-            let parsed = false;
-            try {
-              const j = JSON.parse(fs.readFileSync(p, "utf8"));
-              v = Object.assign(v, (j.metadata && j.metadata.vulnerabilities) || {});
-              parsed = true;
-            } catch (e) {
-              console.log("::warning::pnpm audit JSON 파싱 실패 — " + e.message);
-            }
-            const gate = (v.high || 0) + (v.critical || 0);
-            const out = [
-              "JS_PARSED=" + (parsed ? "1" : "0"),
-              "JS_HIGH=" + (v.high || 0),
-              "JS_CRITICAL=" + (v.critical || 0),
-              "JS_MODERATE=" + (v.moderate || 0),
-              "JS_LOW=" + (v.low || 0),
-              "JS_GATE=" + gate,
-            ].join("\n");
-            fs.appendFileSync(process.env.GITHUB_ENV, out + "\n");
-            console.log(out);
-          '
+          # 🔴 예외 판정(S69-5) — 정본 `.github/audit-exceptions.json`. 예외 id 만 빼고, 만료·죽은
+          #    예외는 FAIL 이다. 계수(JS_HIGH 등)는 audit 원값 그대로 남기고, 게이트는 JS_VERDICT_FAIL 이 낸다.
+          python "$GITHUB_WORKSPACE/.github/scripts/pnpm_audit_gate.py" \
+            "$RUNNER_TEMP/pnpm-audit.json" "$GITHUB_WORKSPACE/.github/audit-exceptions.json"
           head -c 2000 "$RUNNER_TEMP/pnpm-audit.err" || true
 
       - name: ai-api — pip-audit
@@ -208,7 +188,8 @@ jobs:
             echo "| apps/web-console (pnpm) | lockfile 패키지 ${NPKG:-?}개 | high ${JS_HIGH:-?} · critical ${JS_CRITICAL:-?} · moderate ${JS_MODERATE:-?} · low ${JS_LOW:-?} |"
             echo "| services/ai-api (pip-audit --no-deps) | 선언 핀 ${NREQ:-?}개 / 감사 ${PY_DEPS:-?}개 | 취약 ${PY_VULNS:-?}건 |"
             echo ""
-            echo "게이트: **JS 는 high 이상이면 실패** · **Python 은 취약 1건 이상이면 실패**(D-17 착지 2026-09-02 · 보고 전용에서 승격)."
+            echo "게이트: **JS 는 high 이상이면 실패**(예외 목록의 id 만 제외 · 예외로 뺀 것 ${JS_EXCEPTED:-?}건 · 예외 결함 ${JS_EXC_FAULTS:-?}건) · **Python 은 취약 1건 이상이면 실패**(D-17 착지 2026-09-02 · 보고 전용에서 승격)."
+            echo "예외 정본 = \`.github/audit-exceptions.json\` — 만료가 지나거나 audit 결과에서 사라진 예외는 실패한다."
             echo "감사 «대상 수»가 0 이면 두 축 다 실패한다 — 「취약 0건」과 「아무것도 안 봤다」는 다른 사실이다."
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -216,7 +197,11 @@ jobs:
           [ "${JS_PARSED:-0}" = "1" ] || { echo "::error::pnpm audit 결과를 읽지 못했다 — 측정 실패"; fail=1; }
           [ "${PY_PARSED:-0}" = "1" ] || { echo "::error::pip-audit 결과를 읽지 못했다 — 측정 실패"; fail=1; }
           [ "${PY_DEPS:-0}" -gt 0 ] || { echo "::error::pip-audit 가 0개를 봤다 — 빈 초록은 게이트가 아니다"; fail=1; }
-          [ "${JS_GATE:-0}" -eq 0 ] || { echo "::error::web-console high 이상 취약 ${JS_GATE}건"; fail=1; }
+          # 🔴 기본값 1 — 판정 값이 안 써졌으면(스크립트가 못 돌았으면) 통과가 아니라 실패다.
+          [ "${JS_VERDICT_FAIL:-1}" -eq 0 ] || {
+            echo "::error::web-console 게이트 실패 — 예외 밖 high 이상 ${JS_GATE:-?}건 · 예외 결함 ${JS_EXC_FAULTS:-?}건(위 pnpm audit step 의 사유 참조)"
+            fail=1
+          }
           # 🔴 게이트 축(D-17 착지 2026-09-02 승격) — JS 와 달리 severity 로 거르지 않는다:
           #    PYSEC 권고는 severity 를 일관되게 싣지 않아, 「high 이상만」이 곧 «못 읽은 것은
           #    통과»가 된다. 그래서 취약 1건이라도 실패시킨다.
